@@ -8,6 +8,8 @@ class TestConnect < Test::Unit::TestCase
 
     TEST_CAPS = "<capabilities>\n  <host>\n    <cpu>\n      <arch>i686</arch>\n      <features>\n        <pae/>\n        <nonpae/>\n      </features>\n    </cpu>\n  </host>\n\n  <guest>\n    <os_type>linux</os_type>\n    <arch name=\"i686\">\n      <wordsize>32</wordsize>\n      <domain type=\"test\"/>\n    </arch>\n    <features>\n      <pae/>\n      <nonpae/>\n    </features>\n  </guest>\n</capabilities>\n"
 
+    UUID = "004b96e1-2d78-c30f-5aa5-f03c87d21e69"
+
     def connect_default
         c = Libvirt::open("test:///default")
         assert_not_nil(c)
@@ -44,6 +46,23 @@ class TestConnect < Test::Unit::TestCase
         assert_equal(["default"], c.listNetworks)
         assert_equal(0, c.numOfDefinedNetworks)
         assert_equal([], c.listDefinedNetworks)
+    end
+
+    def test_domain
+        c = connect_default;
+
+        dom = c.lookupDomainByID(1)
+        assert_equal("test", dom.name)
+        assert_equal("linux", dom.osType)
+        assert_equal(UUID, dom.uuid)
+        assert_equal(UUID, c.lookupDomainByUUID(UUID).uuid)
+        assert_equal(UUID, c.lookupDomainByName("test").uuid)
+
+        info = dom.info
+        assert_equal(8388608, info.maxMem)
+        assert_equal(2097152, info.memory)
+        assert_equal(2, info.nrVirtCpu)
+        assert_equal(Libvirt::Domain::RUNNING, info.state)
     end
 
 end

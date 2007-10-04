@@ -104,6 +104,48 @@ module Libvirt
         #                                   char **const names,
         #                                   int maxnames);
         def listDefinedNetworks; [ "net1", "net2", "net3" ]; end
+
+        #
+        # Domain creation and destruction
+        #
+
+        # virDomainPtr virDomainCreateLinux(virConnectPtr conn,
+        #                                   const char *xmlDesc,
+        #                                   unsigned int flags);
+        def createDomainLinux(xmlDesc, flags)
+            Domain.new()
+        end
+
+        # virDomainPtr virDomainLookupByName(virConnectPtr conn,
+        #                                    const char *name);
+        def lookupDomainByName(name)
+            Domain.new()
+        end
+
+        # virDomainPtr virDomainLookupByID(virConnectPtr conn,
+        #                                  int id);
+        def lookupDomainByID(id)
+            Domain.new()
+        end
+
+        # virDomainPtr virDomainLookupByUUID(virConnectPtr conn,
+        #                                    const unsigned char *uuid);
+        # Not implemented
+        # virDomainPtr virDomainLookupByUUIDString(virConnectPtr conn,
+        #                                          const char *uuid);
+        def lookupDomainByUUID(uuid)
+            Domain.new()
+        end
+
+
+        #
+        # defined but not running domains
+        #
+        
+        # virDomainPtr virDomainDefineXML(virConnectPtr conn,
+        #                                 const char *xml);
+        def defineDomainXML(xml); Domain.new(); end
+
     end
 
     # typedef struct _virDomain virDomain;
@@ -140,7 +182,8 @@ module Libvirt
         end
 
         # virConnectPtr	virDomainGetConnect(virDomainPtr domain);
-        def connect; Connect.new(); end
+        # Stored internally, not through the C API
+        def connection; Connect.new(); end
 
         #
         # Lifecycle management
@@ -170,7 +213,7 @@ module Libvirt
 
         # int virDomainRestore(virConnectPtr conn,
         #                      const char *from);
-        def restore(fname); true; end
+        def self.restore(conn, fname); Domain.new() end
 
         # int virDomainCoreDump(virDomainPtr domain,
         #                       const char *to,
@@ -245,47 +288,6 @@ module Libvirt
         
         # int virDomainUndefine(virDomainPtr domain);
         def undefine; true; end
-
-        #
-        # Domain creation and destruction
-        #
-
-        # virDomainPtr virDomainCreateLinux(virConnectPtr conn,
-        #                                   const char *xmlDesc,
-        #                                   unsigned int flags);
-        def self.createLinux(conn, xmlDesc, flags)
-            Domain.new()
-        end
-
-        # virDomainPtr virDomainLookupByName(virConnectPtr conn,
-        #                                    const char *name);
-        def self.lookupByName(conn, name)
-            Domain.new()
-        end
-
-        # virDomainPtr virDomainLookupByID(virConnectPtr conn,
-        #                                  int id);
-        def self.lookupByID(conn, id)
-            Domain.new()
-        end
-
-        # virDomainPtr virDomainLookupByUUID(virConnectPtr conn,
-        #                                    const unsigned char *uuid);
-        def self.lookupByUUID(conn, uuid)
-            Domain.new()
-        end
-
-        # virDomainPtr virDomainLookupByUUIDString(virConnectPtr conn,
-        #                                          const char *uuid);
-        # No method, use lookupByUUID
-
-        #
-        # defined but not running domains
-        #
-        
-        # virDomainPtr virDomainDefineXML(virConnectPtr conn,
-        #                                 const char *xml);
-        def self.defineDomainXML(conn, xml); Domain.new(); end
 
         # int virDomainCreate(virDomainPtr domain);
         def create; true; end
