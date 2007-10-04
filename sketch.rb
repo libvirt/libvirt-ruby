@@ -12,15 +12,6 @@ module Libvirt
         return [:libVer, :typeVer]
     end
 
-    # int virInitialize(void);
-    def initialize
-        if :success
-            true
-        else
-            raise VirtError
-        end
-    end
-
     # virConnectPtr virConnectOpen(const char *name);
     def open(name)
         Connect.new(name)
@@ -64,7 +55,7 @@ module Libvirt
         # Capabilities of the connection / driver.
         # int virConnectGetMaxVcpus(virConnectPtr conn,
 	#                           const char *type);
-        def maxVcpus
+        def maxVcpus(type)
             5
         end
         
@@ -81,7 +72,7 @@ module Libvirt
 
         # int virConnectListDomains(virConnectPtr conn,
         #       int *ids, int maxids);
-        def domains
+        def listDomains
             [3, 4, 5]
         end
 
@@ -96,7 +87,7 @@ module Libvirt
         # int virConnectListDefinedDomains (virConnectPtr conn,
         #                                   char **const names,
         #                                   int maxnames);
-        def definedDomains; [ "dom1", "dom2", "domN" ]; end
+        def listDefinedDomains; [ "dom1", "dom2", "domN" ]; end
 
         # int virConnectNumOfNetworks(virConnectPtr conn);
         def numOfNetworks; 10; end
@@ -104,7 +95,7 @@ module Libvirt
         # int virConnectListNetworks(virConnectPtr conn,
         #                            char **const names,
         #                            int maxnames);
-        def networks; [ "net1", "net2", "net3" ]; end
+        def listNetworks; [ "net1", "net2", "net3" ]; end
 
         # int virConnectNumOfDefinedNetworks(virConnectPtr conn);
         def numOfDefinedNetworks; 20; end
@@ -112,7 +103,7 @@ module Libvirt
         # int virConnectListDefinedNetworks(virConnectPtr conn,
         #                                   char **const names,
         #                                   int maxnames);
-        def definedNetworks; [ "net1", "net2", "net3" ]; end
+        def listDefinedNetworks; [ "net1", "net2", "net3" ]; end
     end
 
     # typedef struct _virDomain virDomain;
