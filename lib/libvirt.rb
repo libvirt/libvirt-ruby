@@ -1,1 +1,1 @@
-require 'rblibvirt'
+require '_libvirt'

@@ -1,6 +1,6 @@
 require 'mkmf'
 
-extension_name = 'rblibvirt'
+extension_name = '_libvirt'
 
 dir_config(extension_name)
 

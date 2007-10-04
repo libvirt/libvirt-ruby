@@ -299,7 +299,7 @@ static VALUE c_conn_list_defined_networks(VALUE s) {
     return result;
 }
 
-void Init_rblibvirt() {
+void Init__libvirt() {
     int r;
 
     m_libvirt = rb_define_module("Libvirt");
