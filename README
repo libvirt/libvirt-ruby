@@ -1,0 +1,21 @@
+ruby-libvirt
+============
+
+Ruby bindings for libvirt (http://libvirt.org)
+
+Usage
+-----
+
+In your ruby code, do a "require 'libvirt'"; to obtain a connection, use
+'Libvirt::open' or 'Libvirt::openReadOnly'. See tests/*.rb for more
+examples.
+
+Hacking
+-------
+
+On a Fedora machine, run
+  yum install libvirt-devel ruby-devel rubygems-rake
+and then
+  rake build
+  rake test
+

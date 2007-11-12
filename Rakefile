@@ -1,3 +1,13 @@
+#
+# Rakefile: build ruby libvirt bindings
+#
+# Copyright (C) 2007 Red Hat, Inc.
+#
+# Distributed under the GNU Lesser General Public License v2.1 or later.
+# See COPYING for details
+#
+# David Lutterkort <dlutter@redhat.com>
+
 # Rakefile for ruby-rpm -*- ruby -*-
 require 'rake/clean'
 require 'rake/testtask'
@@ -58,9 +68,7 @@ task :test => :build
 #
 
 PKG_FILES = FileList[
-  "Rakefile", "ChangeLog", "COPYING", "README", "NEWS",
-  "install.rb",
-  "doc/refm.rd.ja",
+  "Rakefile", "COPYING", "README", "NEWS",
   "lib/**/*.rb",
   "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
   "tests/**/*",
@@ -74,7 +82,6 @@ SPEC = Gem::Specification.new do |s|
     s.homepage = "http://rubyforge.org/projects/ruby-libvirt/"
     s.summary = "Ruby bindings for LIBVIRT"
     s.files = PKG_FILES
-    s.test_file = "tests/runner.rb"
     s.autorequire = "libvirt"
     s.required_ruby_version = '>= 1.8.1'
     s.extensions = "ext/libvirt/extconf.rb"
