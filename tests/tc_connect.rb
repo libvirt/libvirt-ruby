@@ -10,6 +10,19 @@ class TestConnect < Test::Unit::TestCase
 
     UUID = "004b96e1-2d78-c30f-5aa5-f03c87d21e69"
 
+    NETWORK_XML = "<network>
+  <name>local</name>
+  <uuid>9b562b27-0969-4b39-8c96-ef7858152ccc</uuid>
+  <bridge name='virbr0'/>
+  <forward/>
+  <ip address='172.31.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='172.31.122.2' end='172.31.122.254'/>
+    </dhcp>
+  </ip>
+</network>
+"
+
     def connect_default
         c = Libvirt::open("test:///default")
         assert_not_nil(c)
@@ -65,5 +78,27 @@ class TestConnect < Test::Unit::TestCase
         assert_equal(Libvirt::Domain::RUNNING, info.state)
     end
 
+    def test_network
+        c = connect_default;
+
+        netw = c.lookupNetworkByName("default")
+        assert_equal("default", netw.name)
+        assert_equal("default", netw.bridgeName)
+        assert_equal(UUID, netw.uuid)
+        assert_equal(UUID, c.lookupNetworkByUUID(UUID).uuid)
+        assert_equal(UUID, c.lookupNetworkByName("default").uuid)
+        assert_equal(false, netw.autostart)
+        netw.autostart = true
+        assert_equal(true, netw.autostart)
+        netw.autostart = false
+        assert_equal(false, netw.autostart)
+
+        netw = c.defineNetworkXML(NETWORK_XML)
+        assert_equal(NETWORK_XML, netw.xmlDesc(nil))
+        assert_equal(c, netw.connection)
+
+        assert_equal(2, c.numOfNetworks)
+        assert_equal(["default", "local"], c.listNetworks)
+    end
 end
 

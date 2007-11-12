@@ -73,14 +73,14 @@ libpath = . $(libdir)
 LIBPATH =  -L"." -L"$(libdir)"
 DEFFILE = 
 
-CLEANFILES = 
+CLEANFILES = mkmf.log
 DISTCLEANFILES = 
 
 extout = 
 extout_prefix = 
 target_prefix = 
 LOCAL_LIBS = 
-LIBS = $(LIBRUBYARG_SHARED)  -lvirt -lgnutls -lxenstore   -lpthread -ldl -lcrypt -lm   -lc
+LIBS = $(LIBRUBYARG_SHARED)  -lvirt -lxenstore   -lpthread -ldl -lcrypt -lm   -lc
 SRCS = _libvirt.c
 OBJS = _libvirt.o
 TARGET = _libvirt

@@ -137,7 +137,6 @@ module Libvirt
             Domain.new()
         end
 
-
         #
         # defined but not running domains
         #
@@ -145,6 +144,27 @@ module Libvirt
         # virDomainPtr virDomainDefineXML(virConnectPtr conn,
         #                                 const char *xml);
         def defineDomainXML(xml); Domain.new(); end
+
+        #
+        # Lookup network by name or uuid
+        #
+        # virNetworkPtr	virNetworkLookupByName(virConnectPtr conn,
+        #                                      const char *name);
+        def lookupNetworkByName(conn, name); Network.new(); end
+
+        # virNetworkPtr	virNetworkLookupByUUID(virConnectPtr conn,
+        #                                      const unsigned char *uuid);
+        # virNetworkPtr	virNetworkLookupByUUIDString(virConnectPtr conn,
+        #                                      const char *uuid);
+        def lookupNetworkByUUID(conn, uuid); Network.new(); end
+
+        # virNetworkPtr	virNetworkCreateXML(virConnectPtr conn,
+        #                                   const char *xmlDesc);
+        def createNetworkXML(conn, xmlDesc); Netowrk.new(); end
+
+        # virNetworkPtr	virNetworkDefineXML(virConnectPtr conn,
+        #                                   const char *xmlDesc);
+        def defineNetworkXML(conn, xmlDesc); Network.new(); end
 
     end
 
@@ -310,28 +330,7 @@ module Libvirt
     # typedef struct _virNetwork virNetwork;
     class Network
         # virConnectPtr	virNetworkGetConnect(virNetworkPtr network);
-        def connect; Connect.new(); end
-
-        #
-        # Lookup network by name or uuid
-        #
-        # virNetworkPtr	virNetworkLookupByName(virConnectPtr conn,
-        #                                      const char *name);
-        def self.lookupByName(conn, name); Network.new(); end
-
-        # virNetworkPtr	virNetworkLookupByUUID(virConnectPtr conn,
-        #                                      const unsigned char *uuid);
-        # virNetworkPtr	virNetworkLookupByUUIDString(virConnectPtr conn,
-        #                                      const char *uuid);
-        def self.lookupByUUID(conn, uuid); Network.new(); end
-
-        # virNetworkPtr	virNetworkCreateXML(virConnectPtr conn,
-        #                                   const char *xmlDesc);
-        def self.createXML(conn, xmlDesc); Netowrk.new(); end
-
-        # virNetworkPtr	virNetworkDefineXML(virConnectPtr conn,
-        #                                   const char *xmlDesc);
-        def self.defineXML(conn, xmlDesc); Network.new(); end
+        def connection; Connect.new(); end
 
         # int virNetworkUndefine(virNetworkPtr network);
         def undefine; true; end

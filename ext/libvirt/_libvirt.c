@@ -27,6 +27,7 @@ static VALUE m_libvirt;
 static VALUE c_connect;
 static VALUE c_domain;
 static VALUE c_domain_info;
+static VALUE c_network;
 
 /*
  * Internal helpers
@@ -83,6 +84,37 @@ static virConnectPtr domain_conn(VALUE dom) {
     VALUE c = rb_iv_get(dom, "@connection");
     return connect_get(c);
 }
+
+
+static void network_free(void *d) {
+    int r;
+    r = virNetworkFree((virNetworkPtr) d);
+    if (r == -1)
+        rb_raise(rb_eSystemCallError, "Network free failed");
+}
+
+static virNetworkPtr network_get(VALUE s) {
+    virNetworkPtr netw;
+
+    Data_Get_Struct(s, virNetwork, netw);
+    if (!netw)
+        rb_raise(rb_eArgError, "Connection has been closed");
+
+    return netw;
+}
+
+static VALUE network_new(virNetworkPtr n, VALUE conn) {
+    VALUE result;
+    result = Data_Wrap_Struct(c_network, NULL, network_free, n);
+    rb_iv_set(result, "@connection", conn);
+    return result;
+}
+
+static virConnectPtr network_conn(VALUE dom) {
+    VALUE c = rb_iv_get(dom, "@connection");
+    return connect_get(c);
+}
+
 
 /* Error handling */
 #define _E(cond, conn, fn) \
@@ -517,7 +549,7 @@ VALUE libvirt_dom_max_vcpus(VALUE s) {
     return INT2NUM(vcpus);
 }
 
-VALUE libvirt_dom_xml_desc(VALUE s) {
+VALUE libvirt_dom_xml_desc(VALUE s, VALUE flags) {
     virDomainPtr dom = domain_get(s);
     char *xml;
     VALUE result;
@@ -567,7 +599,7 @@ VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
     r = virDomainSetAutostart(dom, RTEST(autostart) ? 1 : 0);
     _E(r == -1, domain_conn(s), "virDomainAutostart");
 
-    return INT2NUM(autostart);
+    return Qnil;
 }
 
 VALUE libvirt_conn_create_linux(VALUE c, VALUE xml, VALUE flags) {
@@ -623,6 +655,149 @@ VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
     return domain_new(dom, c);
 }
 
+/*
+ * Class Libvirt::Network
+ */
+VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkLookupByName(conn, StringValueCStr(name));
+    _E(netw == NULL, conn, "virNetworkLookupByName");
+
+    return network_new(netw, c);
+}
+
+VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(netw == NULL, conn, "virNetworkLookupByUUID");
+
+    return network_new(netw, c);
+}
+
+VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+    char *xmlDesc;
+
+    xmlDesc = StringValueCStr(xml);
+
+    netw = virNetworkCreateXML(conn, xmlDesc);
+    _E(netw == NULL, conn, "virNetworkCreateXML");
+
+    return network_new(netw, c);
+}
+
+VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkDefineXML(conn, StringValueCStr(xml));
+    _E(netw == NULL, conn, "virNetworkDefineXML");
+
+    return network_new(netw, c);
+}
+
+VALUE libvirt_netw_undefine(VALUE s) {
+    virNetworkPtr netw = network_get(s);
+    int r;
+
+    r = virNetworkUndefine(netw);
+    _E(r == -1, network_conn(s), "virNetworkUndefine");
+
+    return Qnil;
+}
+
+VALUE libvirt_netw_create(VALUE s) {
+    virNetworkPtr netw = network_get(s);
+    int r;
+
+    r = virNetworkCreate(netw);
+    _E(r == -1, network_conn(s), "virNetworkCreate");
+
+    return Qnil;
+}
+
+VALUE libvirt_netw_destroy(VALUE s) {
+    virNetworkPtr netw = network_get(s);
+    int r;
+
+    r = virNetworkDestroy(netw);
+    _E(r == -1, network_conn(s), "virNetworkDestroy");
+
+    return Qnil;
+}
+
+VALUE libvirt_netw_name(VALUE s) {
+    virNetworkPtr netw = network_get(s);
+    const char *name;
+
+    name = virNetworkGetName(netw);
+    _E(name == NULL, network_conn(s), "virNetworkGetName");
+
+    return rb_str_new2(name);
+}
+
+VALUE libvirt_netw_uuid(VALUE s) {
+    virNetworkPtr netw = network_get(s);
+    char uuid[VIR_UUID_STRING_BUFLEN];
+    int r;
+
+    r = virNetworkGetUUIDString(netw, uuid);
+    _E(r == -1, network_conn(s), "virNetworkGetUUIDString");
+
+    return rb_str_new2((char *) uuid);
+}
+
+VALUE libvirt_netw_xml_desc(VALUE s, VALUE flags) {
+    virNetworkPtr netw = network_get(s);
+    char *xml;
+    VALUE result;
+
+    xml = virNetworkGetXMLDesc(netw, 0);
+    _E(xml == NULL, network_conn(s), "virNetworkGetXMLDesc");
+
+    result = rb_str_new2(xml);
+    free(xml);
+    return result;
+}
+
+VALUE libvirt_netw_bridge_name(VALUE s) {
+    virNetworkPtr netw = network_get(s);
+    char *bridge_name;
+    VALUE result;
+
+    bridge_name = virNetworkGetBridgeName(netw);
+    _E(bridge_name == NULL, network_conn(s), "virNetworkGetBridgeName");
+
+    result = rb_str_new2(bridge_name);
+    free(bridge_name);
+    return result;
+}
+
+VALUE libvirt_netw_autostart(VALUE s){
+    virNetworkPtr netw = network_get(s);
+    int r, autostart;
+
+    r = virNetworkGetAutostart(netw, &autostart);
+    _E(r == -1, network_conn(s), "virNetworkAutostart");
+
+    return autostart ? Qtrue : Qfalse;
+}
+
+VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
+    virNetworkPtr netw = network_get(s);
+    int r;
+
+    r = virNetworkSetAutostart(netw, RTEST(autostart) ? 1 : 0);
+    _E(r == -1, network_conn(s), "virNetworkSetAutostart");
+
+    return Qnil;
+}
+
 void Init__libvirt() {
     int r;
 
@@ -633,6 +808,7 @@ void Init__libvirt() {
      */
     c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
 
+    // TODO: virGetVersion
 	rb_define_module_function(m_libvirt, "open", libvirt_open, 1);
 	rb_define_module_function(m_libvirt, "openReadOnly", 
                               libvirt_open_read_only, 1);
@@ -670,6 +846,15 @@ void Init__libvirt() {
                      libvirt_conn_lookup_domain_by_uuid, 1);
     rb_define_method(c_connect, "defineDomainXML",
                      libvirt_conn_define_domain_xml, 1);
+    // Network creation/lookup
+    rb_define_method(c_connect, "lookupNetworkByName", 
+                     libvirt_conn_lookup_network_by_name, 1);
+    rb_define_method(c_connect, "lookupNetworkByUUID", 
+                     libvirt_conn_lookup_network_by_uuid, 1);
+    rb_define_method(c_connect, "createNetworkXML",
+                     libvirt_conn_create_network_xml, 1);
+    rb_define_method(c_connect, "defineNetworkXML",
+                     libvirt_conn_define_network_xml, 1);
     
     /* 
      * Class Libvirt::Domain 
@@ -726,6 +911,22 @@ void Init__libvirt() {
     rb_define_attr(c_domain_info, "nrVirtCpu", 1, 0);
     rb_define_attr(c_domain_info, "cpuTime", 1, 0);
 
+    /* 
+     * Class Libvirt::Network
+     */
+    c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
+    rb_define_attr(c_network, "connection", 1, 0);
+    rb_define_method(c_network, "undefine", libvirt_netw_undefine, 0);
+    rb_define_method(c_network, "create", libvirt_netw_create, 0);
+    rb_define_method(c_network, "destroy", libvirt_netw_destroy, 0);
+    rb_define_method(c_network, "name", libvirt_netw_name, 0);
+    rb_define_method(c_network, "uuid", libvirt_netw_uuid, 0);
+    rb_define_method(c_network, "xmlDesc", libvirt_netw_xml_desc, 1);
+    rb_define_method(c_network, "bridgeName", libvirt_netw_bridge_name, 0);
+    rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
+    rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
+
+    
     r = virInitialize();
     if (r == -1)
         rb_raise(rb_eSystemCallError, "virInitialize failed");

@@ -9,6 +9,3 @@ unless pkg_config("libvirt")
 end
 
 create_makefile(extension_name)
-
-
-
