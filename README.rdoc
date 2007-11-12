@@ -1,0 +1,11 @@
+= Ruby bindings for libvirt
+
+The module Libvirt provides bindings to libvirt[http://libvirt.org]
+
+The various +*Ptr+ types in Libvirt map loosely to the following Ruby classes:
+
+[virConnectPtr] Libvirt::Connect
+[virDomainPtr]  Libvirt::Domain
+[virDomainInfoPtr]  Libvirt::Domain::Info
+[virNetworkPtr] Libvirt::Network
+

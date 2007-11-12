@@ -10,6 +10,7 @@
 
 # Rakefile for ruby-rpm -*- ruby -*-
 require 'rake/clean'
+require 'rake/rdoctask'
 require 'rake/testtask'
 require 'rake/gempackagetask'
 
@@ -62,6 +63,12 @@ Rake::TestTask.new(:test) do |t|
     t.libs = [ 'lib', 'ext/libvirt' ]
 end
 task :test => :build
+
+Rake::RDocTask.new do |rd|
+    rd.main = "README.rdoc"
+    rd.rdoc_dir = "doc/html"
+    rd.rdoc_files.include("README.rdoc", "lib/**/*.rb", "ext/**/*.[ch]")
+end
 
 #
 # Package tasks

@@ -127,6 +127,13 @@ NORETURN(static void vir_error(virConnectPtr conn, const char *fn)) {
 /* 
  * Module Libvirt 
  */
+
+/*
+ * call-seq:
+ *   Libvirt::open(url) -> Libvirt::Connect
+ * 
+ * Open a connection to URL with virConnectOpen[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
+ */
 VALUE libvirt_open(VALUE m, VALUE url) {
     char *str = NULL;
     
@@ -141,6 +148,13 @@ VALUE libvirt_open(VALUE m, VALUE url) {
     return connect_new(ptr);
 }
 
+/*
+ * call-seq:
+ *   Libvirt::openReadOnly(url) -> Libvirt::Connect
+ * 
+ * Open a read-only connection to URL with
+ * virConnectOpenReadOnly[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
+ */
 VALUE libvirt_open_read_only(VALUE m, VALUE url) {
     char *str = NULL;
     
@@ -158,6 +172,13 @@ VALUE libvirt_open_read_only(VALUE m, VALUE url) {
 /* 
  * Class Libvirt::Connect 
  */
+
+/*
+ * call-seq:
+ *   conn.close
+ *
+ * Close the connection
+ */
 VALUE libvirt_conn_close(VALUE s) {
     virConnectPtr conn;
     Data_Get_Struct(s, virConnect, conn);
@@ -168,12 +189,24 @@ VALUE libvirt_conn_close(VALUE s) {
     return Qnil;
 }
 
+/*
+ * call-seq:
+ *   conn.closed?
+ *
+ * Return +true+ if the connection is closed, +false+ if it is open
+ */
 VALUE libvirt_conn_closed_p(VALUE s) {
     virConnectPtr conn;
     Data_Get_Struct(s, virConnect, conn);
     return (conn==NULL) ? Qtrue : Qfalse;
 }
 
+/*
+ * call-seq:
+ *   conn.type -> string
+ *
+ * Call +virConnectGetType+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetType]
+ */
 VALUE libvirt_conn_type(VALUE s) {
     virConnectPtr conn = connect_get(s);
     const char *type;
@@ -184,6 +217,12 @@ VALUE libvirt_conn_type(VALUE s) {
     return rb_str_new2(type);
 }
 
+/*
+ * call-seq:
+ *   conn.version -> fixnum
+ *
+ * Call +virConnectGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetVersion]
+ */
 VALUE libvirt_conn_version(VALUE s) {
     int r;
     unsigned long v;
@@ -195,6 +234,12 @@ VALUE libvirt_conn_version(VALUE s) {
     return ULONG2NUM(v);
 }
 
+/*
+ * call-seq:
+ *   conn.hostname -> string
+ *
+ * Call +virConnectGetHostname+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetHostname]
+ */
 VALUE libvirt_conn_hostname(VALUE s) {
     char *hostname;
     virConnectPtr conn = connect_get(s);
@@ -209,6 +254,9 @@ VALUE libvirt_conn_hostname(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virConnectGetURI+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetURI]
+ */
 VALUE libvirt_conn_uri(VALUE s) {
     char *uri;
     virConnectPtr conn = connect_get(s);
@@ -223,6 +271,9 @@ VALUE libvirt_conn_uri(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virConnectGetMaxVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetMaxVcpus]
+ */
 VALUE libvirt_conn_max_vcpus(VALUE s, VALUE type) {
     int result;
     virConnectPtr conn = connect_get(s);
@@ -233,6 +284,9 @@ VALUE libvirt_conn_max_vcpus(VALUE s, VALUE type) {
     return INT2NUM(result);
 }
 
+/*
+ * Call +virConnectGetCapabilities+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
+ */
 VALUE libvirt_conn_capabilities(VALUE s) {
     char *caps;
     VALUE result;
@@ -247,6 +301,9 @@ VALUE libvirt_conn_capabilities(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virConnectNumOfDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDomains]
+ */
 VALUE libvirt_conn_num_of_domains(VALUE s) {
     int result;
     virConnectPtr conn = connect_get(s);
@@ -257,6 +314,9 @@ VALUE libvirt_conn_num_of_domains(VALUE s) {
     return INT2NUM(result);
 }
 
+/*
+ * Call +virConnectListDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDomains]
+ */
 VALUE libvirt_conn_list_domains(VALUE s) {
     int i, r, num, *ids;
     virConnectPtr conn = connect_get(s);
@@ -276,6 +336,9 @@ VALUE libvirt_conn_list_domains(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virConnectNumOfDefinedDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedDomains]
+ */
 VALUE libvirt_conn_num_of_defined_domains(VALUE s) {
     int result;
     virConnectPtr conn = connect_get(s);
@@ -286,6 +349,9 @@ VALUE libvirt_conn_num_of_defined_domains(VALUE s) {
     return INT2NUM(result);
 }
 
+/*
+ * Call +virConnectListDefinedDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedDomains]
+ */
 VALUE libvirt_conn_list_defined_domains(VALUE s) {
     int i, r, num;
     char **names;
@@ -307,6 +373,9 @@ VALUE libvirt_conn_list_defined_domains(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virConnectNumOfNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNetworks]
+ */
 VALUE libvirt_conn_num_of_networks(VALUE s) {
     int result;
     virConnectPtr conn = connect_get(s);
@@ -317,6 +386,9 @@ VALUE libvirt_conn_num_of_networks(VALUE s) {
     return INT2NUM(result);
 }
 
+/*
+ * Call +virConnectListNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListNetworks]
+ */
 VALUE libvirt_conn_list_networks(VALUE s) {
     int i, r, num;
     char **names;
@@ -338,6 +410,9 @@ VALUE libvirt_conn_list_networks(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virConnectNumOfDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedNetworks]
+ */
 VALUE libvirt_conn_num_of_defined_networks(VALUE s) {
     int result;
     virConnectPtr conn = connect_get(s);
@@ -348,6 +423,9 @@ VALUE libvirt_conn_num_of_defined_networks(VALUE s) {
     return INT2NUM(result);
 }
 
+/*
+ * Call +virConnectListDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedNetworks]
+ */
 VALUE libvirt_conn_list_defined_networks(VALUE s) {
     int i, r, num;
     char **names;
@@ -377,6 +455,9 @@ VALUE libvirt_dom_migrate(VALUE s, VALUE dconn, VALUE flags,
     rb_raise(rb_eNotImpError, "c_dom_migrate");
 }
 
+/*
+ * Call +virDomainShutdown+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainShutdown]
+ */
 VALUE libvirt_dom_shutdown(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -387,6 +468,9 @@ VALUE libvirt_dom_shutdown(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainReboot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReboot]
+ */
 VALUE libvirt_dom_reboot(VALUE s, VALUE flags) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -397,6 +481,9 @@ VALUE libvirt_dom_reboot(VALUE s, VALUE flags) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDestroy]
+ */
 VALUE libvirt_dom_destroy(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -407,6 +494,9 @@ VALUE libvirt_dom_destroy(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainSuspend+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSuspend]
+ */
 VALUE libvirt_dom_suspend(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -417,6 +507,9 @@ VALUE libvirt_dom_suspend(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainResume+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainResume]
+ */
 VALUE libvirt_dom_resume(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -427,6 +520,9 @@ VALUE libvirt_dom_resume(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainSave+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSave]
+ */
 VALUE libvirt_dom_save(VALUE s, VALUE to) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -437,6 +533,9 @@ VALUE libvirt_dom_save(VALUE s, VALUE to) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainCoreDump+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
+ */
 VALUE libvirt_dom_core_dump(VALUE s, VALUE to, VALUE flags) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -447,6 +546,9 @@ VALUE libvirt_dom_core_dump(VALUE s, VALUE to, VALUE flags) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
+ */
 VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
     virConnectPtr conn = connect_get(c);
     int r;
@@ -457,6 +559,12 @@ VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
     return Qnil;
 }
 
+/*
+ * call-seq:
+ *   domain.info -> Libvirt::Domain::Info
+ *
+ * Call +virDomainGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
+ */
 VALUE libvirt_dom_info(VALUE s) {
     virDomainPtr dom = domain_get(s);
     virDomainInfo info;
@@ -475,6 +583,9 @@ VALUE libvirt_dom_info(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virDomainGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
+ */
 VALUE libvirt_dom_name(VALUE s) {
     virDomainPtr dom = domain_get(s);
     const char *name;
@@ -485,6 +596,9 @@ VALUE libvirt_dom_name(VALUE s) {
     return rb_str_new2(name);
 }
 
+/*
+ * Call +virDomainGetID+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetID]
+ */
 VALUE libvirt_dom_id(VALUE s) {
     virDomainPtr dom = domain_get(s);
     unsigned int id;
@@ -495,6 +609,9 @@ VALUE libvirt_dom_id(VALUE s) {
     return UINT2NUM(id);
 }
 
+/*
+ * Call +virDomainGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetUUIDString]
+ */
 VALUE libvirt_dom_uuid(VALUE s) {
     virDomainPtr dom = domain_get(s);
     char uuid[VIR_UUID_STRING_BUFLEN];
@@ -506,6 +623,9 @@ VALUE libvirt_dom_uuid(VALUE s) {
     return rb_str_new2((char *) uuid);
 }
 
+/*
+ * Call +virDomainGetOSType+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetOSType]
+ */
 VALUE libvirt_dom_os_type(VALUE s) {
     virDomainPtr dom = domain_get(s);
     char *os_type;
@@ -519,6 +639,9 @@ VALUE libvirt_dom_os_type(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virDomainGetMaxMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxMemory]
+ */
 VALUE libvirt_dom_max_memory(VALUE s) {
     virDomainPtr dom = domain_get(s);
     unsigned long max_memory;
@@ -529,6 +652,9 @@ VALUE libvirt_dom_max_memory(VALUE s) {
     return ULONG2NUM(max_memory);
 }
 
+/*
+ * Call +virDomainSetMaxMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMaxMemory]
+ */
 VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -539,6 +665,9 @@ VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     return ULONG2NUM(max_memory);
 }
 
+/*
+ * Call +virDomainGetMaxVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxVcpus]
+ */
 VALUE libvirt_dom_max_vcpus(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int vcpus;
@@ -549,6 +678,9 @@ VALUE libvirt_dom_max_vcpus(VALUE s) {
     return INT2NUM(vcpus);
 }
 
+/*
+ * Call +virDomainGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
+ */
 VALUE libvirt_dom_xml_desc(VALUE s, VALUE flags) {
     virDomainPtr dom = domain_get(s);
     char *xml;
@@ -562,6 +694,9 @@ VALUE libvirt_dom_xml_desc(VALUE s, VALUE flags) {
     return result;
 }
 
+/*
+ * Call +virDomainUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUndefine]
+ */
 VALUE libvirt_dom_undefine(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -572,6 +707,9 @@ VALUE libvirt_dom_undefine(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreate]
+ */
 VALUE libvirt_dom_create(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -582,6 +720,9 @@ VALUE libvirt_dom_create(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainGetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetAutostart]
+ */
 VALUE libvirt_dom_autostart(VALUE s){
     virDomainPtr dom = domain_get(s);
     int r, autostart;
@@ -592,6 +733,9 @@ VALUE libvirt_dom_autostart(VALUE s){
     return autostart ? Qtrue : Qfalse;
 }
 
+/*
+ * Call +virDomainSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetAutostart]
+ */
 VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
     virDomainPtr dom = domain_get(s);
     int r;
@@ -602,6 +746,9 @@ VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
     return Qnil;
 }
 
+/*
+ * Call +virDomainCreateLinux+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateLinux]
+ */
 VALUE libvirt_conn_create_linux(VALUE c, VALUE xml, VALUE flags) {
     virDomainPtr dom;
     virConnectPtr conn = connect_get(c);
@@ -615,6 +762,9 @@ VALUE libvirt_conn_create_linux(VALUE c, VALUE xml, VALUE flags) {
     return domain_new(dom, c);
 }
 
+/*
+ * Call +virDomainLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByName]
+ */
 VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name) {
     virDomainPtr dom;
     virConnectPtr conn = connect_get(c);
@@ -625,6 +775,9 @@ VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name) {
     return domain_new(dom, c);
 }
 
+/*
+ * Call +virDomainLookupByID+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByID]
+ */
 VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id) {
     virDomainPtr dom;
     virConnectPtr conn = connect_get(c);
@@ -635,6 +788,9 @@ VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id) {
     return domain_new(dom, c);
 }
 
+/*
+ * Call +virDomainLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByUUIDString]
+ */
 VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid) {
     virDomainPtr dom;
     virConnectPtr conn = connect_get(c);
@@ -645,6 +801,9 @@ VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid) {
     return domain_new(dom, c);
 }
 
+/*
+ * Call +virDomainDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDefineXML]
+ */
 VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
     virDomainPtr dom;
     virConnectPtr conn = connect_get(c);
@@ -658,6 +817,10 @@ VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
 /*
  * Class Libvirt::Network
  */
+
+/*
+ * Call +virNetworkLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByName]
+ */
 VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
     virNetworkPtr netw;
     virConnectPtr conn = connect_get(c);
@@ -668,6 +831,9 @@ VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
     return network_new(netw, c);
 }
 
+/*
+ * Call +virNetworkLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByUUIDString]
+ */
 VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
     virNetworkPtr netw;
     virConnectPtr conn = connect_get(c);
@@ -678,6 +844,9 @@ VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
     return network_new(netw, c);
 }
 
+/*
+ * Call +virNetworkCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreateXML]
+ */
 VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml) {
     virNetworkPtr netw;
     virConnectPtr conn = connect_get(c);
@@ -691,6 +860,9 @@ VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml) {
     return network_new(netw, c);
 }
 
+/*
+ * Call +virNetworkDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDefineXML]
+ */
 VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
     virNetworkPtr netw;
     virConnectPtr conn = connect_get(c);
@@ -701,6 +873,9 @@ VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
     return network_new(netw, c);
 }
 
+/*
+ * Call +virNetworkUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUndefine]
+ */
 VALUE libvirt_netw_undefine(VALUE s) {
     virNetworkPtr netw = network_get(s);
     int r;
@@ -711,6 +886,9 @@ VALUE libvirt_netw_undefine(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virNetworkCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreate]
+ */
 VALUE libvirt_netw_create(VALUE s) {
     virNetworkPtr netw = network_get(s);
     int r;
@@ -721,6 +899,9 @@ VALUE libvirt_netw_create(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virNetworkDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDestroy]
+ */
 VALUE libvirt_netw_destroy(VALUE s) {
     virNetworkPtr netw = network_get(s);
     int r;
@@ -731,6 +912,9 @@ VALUE libvirt_netw_destroy(VALUE s) {
     return Qnil;
 }
 
+/*
+ * Call +virNetworkGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
+ */
 VALUE libvirt_netw_name(VALUE s) {
     virNetworkPtr netw = network_get(s);
     const char *name;
@@ -741,6 +925,9 @@ VALUE libvirt_netw_name(VALUE s) {
     return rb_str_new2(name);
 }
 
+/*
+ * Call +virNetworkGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetUUIDString]
+ */
 VALUE libvirt_netw_uuid(VALUE s) {
     virNetworkPtr netw = network_get(s);
     char uuid[VIR_UUID_STRING_BUFLEN];
@@ -752,6 +939,9 @@ VALUE libvirt_netw_uuid(VALUE s) {
     return rb_str_new2((char *) uuid);
 }
 
+/*
+ * Call +virNetworkGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
+ */
 VALUE libvirt_netw_xml_desc(VALUE s, VALUE flags) {
     virNetworkPtr netw = network_get(s);
     char *xml;
@@ -765,6 +955,9 @@ VALUE libvirt_netw_xml_desc(VALUE s, VALUE flags) {
     return result;
 }
 
+/*
+ * Call +virNetworkGetBridgeName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
+ */
 VALUE libvirt_netw_bridge_name(VALUE s) {
     virNetworkPtr netw = network_get(s);
     char *bridge_name;
@@ -778,6 +971,9 @@ VALUE libvirt_netw_bridge_name(VALUE s) {
     return result;
 }
 
+/*
+ * Call +virNetworkGetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetAutostart]
+ */
 VALUE libvirt_netw_autostart(VALUE s){
     virNetworkPtr netw = network_get(s);
     int r, autostart;
@@ -788,6 +984,9 @@ VALUE libvirt_netw_autostart(VALUE s){
     return autostart ? Qtrue : Qfalse;
 }
 
+/*
+ * Call +virNetworkSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
+ */
 VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
     virNetworkPtr netw = network_get(s);
     int r;
