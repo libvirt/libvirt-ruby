@@ -59,6 +59,10 @@ class TestConnect < Test::Unit::TestCase
         assert_equal(["default"], c.listNetworks)
         assert_equal(0, c.numOfDefinedNetworks)
         assert_equal([], c.listDefinedNetworks)
+
+        v = Libvirt::version("Test")
+        assert_equal("libvirt", v[0].type)
+        assert_equal("Test", v[1].type)
     end
 
     def test_domain

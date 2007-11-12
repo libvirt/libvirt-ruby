@@ -28,6 +28,7 @@ static VALUE c_connect;
 static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_network;
+static VALUE c_libvirt_version;
 
 /*
  * Internal helpers
@@ -127,6 +128,38 @@ NORETURN(static void vir_error(virConnectPtr conn, const char *fn)) {
 /* 
  * Module Libvirt 
  */
+
+/*
+ * call-seq:
+ *   Libvirt::version(type) -> [ libvirt_version, type_version ]
+ *
+ * Call
+ * +virGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
+ * to get the version of libvirt and of the hypervisor TYPE. Returns an
+ * array with two entries of type Libvirt::Version.
+ *
+ */
+VALUE libvirt_version(VALUE m, VALUE t) {
+    unsigned long libVer;
+    const char *type = NULL;
+    unsigned long typeVer;
+    int r;
+    VALUE result, argv[1];
+    
+    type = StringValueCStr(t);
+    r = virGetVersion(&libVer, type, &typeVer);
+    if (r == -1)
+        rb_raise(rb_eArgError, "Failed to get version for %s", type);
+
+    result = rb_ary_new2(2);
+    argv[0] = rb_str_new2("libvirt");
+    argv[1] = ULONG2NUM(libVer);
+    rb_ary_push(result, rb_class_new_instance(2, argv, c_libvirt_version));
+    argv[0] = t;
+    argv[1] = ULONG2NUM(typeVer);
+    rb_ary_push(result, rb_class_new_instance(2, argv, c_libvirt_version));
+    return result;
+}
 
 /*
  * call-seq:
@@ -1001,13 +1034,15 @@ void Init__libvirt() {
     int r;
 
     m_libvirt = rb_define_module("Libvirt");
+    c_libvirt_version = rb_define_class_under(m_libvirt, "Version", 
+                                              rb_cObject);
 
     /* 
      * Class Libvirt::Connect 
      */
     c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
 
-    // TODO: virGetVersion
+    rb_define_module_function(m_libvirt, "version", libvirt_version, 1);
 	rb_define_module_function(m_libvirt, "open", libvirt_open, 1);
 	rb_define_module_function(m_libvirt, "openReadOnly", 
                               libvirt_open_read_only, 1);
