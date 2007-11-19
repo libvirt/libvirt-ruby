@@ -85,8 +85,8 @@ PKG_FILES = FileList[
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
     s.version = PKG_VERSION
-    s.email = "ruby-libvirt-devel@rubyforge.org"
-    s.homepage = "http://rubyforge.org/projects/ruby-libvirt/"
+    s.email = "libvir-list@redhat.com"
+    s.homepage = "http://libvirt.org/ruby/"
     s.summary = "Ruby bindings for LIBVIRT"
     s.files = PKG_FILES
     s.autorequire = "libvirt"
@@ -120,12 +120,4 @@ task :rpm => [ :package ] do |t|
             raise "rpmbuild failed"
         end
     end
-end
-
-desc "Release a version"
-task :dist => [ :rpm, :test ] do |t|
-    puts "svn commit -m 'Release #{PKG_VERSION}' #{SPEC_FILE}"
-    puts "svn cp -m 'Tag release #{PKG_VERSION}' svn+ssh://lutter@rubyforge.org/var/svn/ruby-libvirt/trunk svn+ssh://lutter@rubyforge.org/var/svn/ruby-libvirt/tags/release-#{PKG_VERSION}"
-    puts "Upload files"
-    puts "Announce on rubyforge and freshmeat"
 end
