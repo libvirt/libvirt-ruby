@@ -4,4 +4,4 @@
 Makefile$
 ^pkg/
 ^ext/libvirt/mkmf.log$
-^doc/html
+^doc/site/api

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <link rel="stylesheet" type="text/css" href="http://libvirt.org/libvirt.css" />
+    <link rel="SHORTCUT ICON" href="/32favicon.png" />
+    <title>Ruby bindings for libvirt</title>
+  </head>
+  <body>
+    <div id="container">
+      <div id="intro">
+        <div id="adjustments">
+          <p class="p1"></p>
+        </div>
+        <div id="content">
+          <h3>What is <span class="style1">ruby-libvirt</span>?</h3>
+
+          <p>ruby-libvirt provides <a href="">Ruby</a> bindings for
+          libvirt. With that you can use libvirt directly from your Ruby
+          programs: </p>
+          <pre>
+   require 'libvirt'
+
+   conn = Libvirt::open("qemu:///system")
+   puts conn.capabilities
+   
+   File::open("domain.xml") do |f| 
+     conn.createDomainLinux(f.readlines, nil)
+   end
+
+   dom = conn.lookupDomainByName("mydomain")
+   dom.suspend
+   dom.resume
+   puts dom.xmlDesc
+          </pre>
+          <h4 id="developers">Developers</h4>
+          <p>The sources are available with mercurial. To clone, run</p>
+          <pre>hg clone http://libvirt.org/hg/ruby-libvirt/</pre>
+          <p>For more information about Mercurial see the <a href="http://www.selenic.com/mercurial/wiki/">Mercurial website</a>
+          and <a href="http://virt-manager.et.redhat.com/scmrepo.html">these instructions</a>.</p>
+
+          <p>Please use the <a href="https://www.redhat.com/mailman/listinfo/libvir-list/">libvir mailing list</a> for questions,
+          comments and patches.
+          </p>
+
+          <h4 id="downloads">Downloads</h4>
+          <p>No releases have been made yet</p>
+        </div>
+      </div>
+      <div class="linkList2">
+        <div class="llinks2">
+          <h3 class="links2">
+            <span>main menu</span>
+          </h3>
+          <ul>
+            <li>
+              <a href="index.html">Home</a>
+            </li>
+            <!--
+            <li>
+              <a href="news.html">Releases</a>
+            </li>
+            -->
+            <li>
+              <a href="#intro">Introduction</a>
+            </li>
+            <li>
+              <a href="#downloads">Downloads</a>
+            </li>
+            <li>
+              <a href="#developers">Developers</a>
+            </li>
+            <li>
+              <a href="api/index.html">Documentation</a>
+            </li>
+          </ul>
+        </div>
+        <div class="llinks2">
+          <h3 class="links2">
+            <span>related links</span>
+          </h3>
+          <ul>
+            <li>
+              <a href="https://www.redhat.com/mailman/listinfo/libvir-list/">Mailing list</a>
+            </li>
+            <li>
+              <a href="http://libvirt.org/">libvirt</a>
+            </li>
+            <li>
+              <a href="http://xmlsoft.org/">
+                <img src="http://libvirt.org/Libxml2-Logo-90x34.gif" alt="Made with Libxml2 Logo" />
+              </a>
+            </li>
+          </ul>
+          <p class="credits">Graphics and design by <a href="mail:dfong@redhat.com">Diana Fong</a></p>
+        </div>
+      </div>
+      <div id="bottom">
+        <p class="p1"></p>
+      </div>
+    </div>
+  </body>
+</html>

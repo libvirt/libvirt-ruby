@@ -66,7 +66,7 @@ task :test => :build
 
 Rake::RDocTask.new do |rd|
     rd.main = "README.rdoc"
-    rd.rdoc_dir = "doc/html"
+    rd.rdoc_dir = "doc/site/api"
     rd.rdoc_files.include("README.rdoc", "lib/**/*.rb", "ext/**/*.[ch]")
 end
 
@@ -100,6 +100,14 @@ end
 Rake::GemPackageTask.new(SPEC) do |pkg|
     pkg.need_tar = true
     pkg.need_zip = true
+end
+
+desc "Update the ruby-libvirt site"
+task :site => [ :rdoc ] do |t|
+    system("rsync -av doc/site/ libvirt:/data/www/libvirt.org/ruby/")
+    if $? != 0
+        raise "rsync failed: #{$?}"
+    end
 end
 
 desc "Build (S)RPM for #{PKG_NAME}"
