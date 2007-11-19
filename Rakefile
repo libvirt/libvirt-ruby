@@ -82,6 +82,10 @@ PKG_FILES = FileList[
   "spec/**/*"
 ]
 
+DIST_FILES = FileList[
+  "pkg/*.rpm",  "pkg/*.gem",  "pkg/*.zip", "pkg/*.tgz"
+]
+
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
     s.version = PKG_VERSION
@@ -120,4 +124,16 @@ task :rpm => [ :package ] do |t|
             raise "rpmbuild failed"
         end
     end
+end
+
+desc "Release a version to the site"
+task :dist => [ :rpm ] do |t|
+    puts "Copying files"
+    unless sh "scp -p #{DIST_FILES.to_s} libvirt:/data/www/libvirt.org/ruby/download"
+        $stderr.puts "Copy to libvirt failed"
+        break
+    end
+    puts "Commit and tag #{PKG_VERSION}"
+    system "hg commit -m 'Released version #{PKG_VERSION}'"
+    system "hg tag -m 'Tag release #{PKG_VERSION}' #{PKG_NAME}-#{PKG_VERSION}"
 end
