@@ -14,7 +14,7 @@ Hacking
 -------
 
 On a Fedora machine, run
-  yum install libvirt-devel ruby-devel rubygems-rake
+  yum install libvirt-devel ruby-devel rubygem-rake
 and then
   rake build
   rake test
