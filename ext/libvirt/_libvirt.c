@@ -1104,11 +1104,6 @@ void Init__libvirt() {
     DEF_DOMSTATE(SHUTDOWN);
     DEF_DOMSTATE(SHUTOFF);
     DEF_DOMSTATE(CRASHED);
-    /* virDomainRestart */
-    DEF_DOMSTATE(DESTROY);
-    DEF_DOMSTATE(RESTART);
-    DEF_DOMSTATE(PRESERVE);
-    DEF_DOMSTATE(RENAME_RESTART);
 #undef DEF_DOMSTATE
 
     rb_define_method(c_domain, "migrate", libvirt_dom_migrate, 5);
