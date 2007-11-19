@@ -19,3 +19,8 @@ and then
   rake build
   rake test
 
+To run against the checkout, make sure you set RUBYLIB (assuming DIR is the
+toplevel of your source checkout):
+
+  export RUBYLIB=$dir/lib:$dir/ext/libvirt
+  ruby -rlibvirt -e 'puts Libvirt::version("xen")[0]'
