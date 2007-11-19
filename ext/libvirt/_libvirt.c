@@ -29,6 +29,7 @@ static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_network;
 static VALUE c_libvirt_version;
+static VALUE c_node_info;
 
 /*
  * Internal helpers
@@ -315,6 +316,33 @@ VALUE libvirt_conn_max_vcpus(VALUE s, VALUE type) {
     _E(result == -1, conn, "virConnectGetMaxVcpus");
 
     return INT2NUM(result);
+}
+
+/*
+ * Call +virNodeInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetInfo]
+ */
+VALUE libvirt_conn_node_get_info(VALUE s){
+    int r;
+    virConnectPtr conn = connect_get(s);
+    virNodeInfo nodeinfo;
+    VALUE result;
+    VALUE modelstr;
+
+    r = virNodeGetInfo(conn, &nodeinfo);
+    _E(r == -1, conn, "virNodeGetInfo");
+
+    modelstr = rb_str_new2(nodeinfo.model);
+
+    result = rb_class_new_instance(0, NULL, c_node_info);
+    rb_iv_set(result, "@model", modelstr);
+    rb_iv_set(result, "@memory", ULONG2NUM(nodeinfo.memory));
+    rb_iv_set(result, "@cpus", UINT2NUM(nodeinfo.cpus));
+    rb_iv_set(result, "@mhz", UINT2NUM(nodeinfo.mhz));
+    rb_iv_set(result, "@nodes", UINT2NUM(nodeinfo.nodes));
+    rb_iv_set(result, "@sockets", UINT2NUM(nodeinfo.sockets));
+    rb_iv_set(result, "@cores", UINT2NUM(nodeinfo.cores));
+    rb_iv_set(result, "@threads", UINT2NUM(nodeinfo.threads));
+    return result;
 }
 
 /*
@@ -1054,7 +1082,7 @@ void Init__libvirt() {
     rb_define_method(c_connect, "hostname", libvirt_conn_hostname, 0);
     rb_define_method(c_connect, "uri", libvirt_conn_uri, 0);
     rb_define_method(c_connect, "maxVcpus", libvirt_conn_max_vcpus, 1);
-    // TODO: virNodeGetInfo
+    rb_define_method(c_connect, "nodeGetInfo", libvirt_conn_node_get_info, 0);
     rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
     rb_define_method(c_connect, "numOfDomains", libvirt_conn_num_of_domains, 0);
     rb_define_method(c_connect, "listDomains", libvirt_conn_list_domains, 0);
@@ -1090,6 +1118,19 @@ void Init__libvirt() {
     rb_define_method(c_connect, "defineNetworkXML",
                      libvirt_conn_define_network_xml, 1);
     
+    /*
+     * Class Libvirt::Connect::Nodeinfo
+     */
+    c_node_info = rb_define_class_under(c_connect, "Nodeinfo", rb_cObject);
+    rb_define_attr(c_node_info, "model", 1, 0);
+    rb_define_attr(c_node_info, "memory", 1, 0);
+    rb_define_attr(c_node_info, "cpus", 1, 0);
+    rb_define_attr(c_node_info, "mhz", 1, 0);
+    rb_define_attr(c_node_info, "nodes", 1, 0);
+    rb_define_attr(c_node_info, "sockets", 1, 0);
+    rb_define_attr(c_node_info, "cores", 1, 0);
+    rb_define_attr(c_node_info, "threads", 1, 0);
+
     /* 
      * Class Libvirt::Domain 
      */

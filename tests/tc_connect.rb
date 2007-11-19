@@ -42,6 +42,17 @@ class TestConnect < Test::Unit::TestCase
         assert(c.closed?)
     end
 
+    def test_node_info
+        ni = connect_default.nodeGetInfo
+        assert_equal(2, ni.nodes)
+        assert_equal(16, ni.cpus)
+        assert_equal(2, ni.threads)
+        assert_equal(2, ni.sockets)
+        assert_equal(1400, ni.mhz)
+        assert_equal(2, ni.cores)
+        assert_equal("i686", ni.model)
+    end
+
     def test_misc
         c = connect_default
         assert_equal("Test", c.type)
