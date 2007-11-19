@@ -20,7 +20,7 @@ PKG_VERSION='0.0.1'
 EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"
 LIBVIRT_MODULE="ext/libvirt/_libvirt.so"
-SPEC_FILE="spec/fedora/ruby-libvirt.spec"
+SPEC_FILE="ruby-libvirt.spec"
 LIBVIRT_SRC=LIBVIRT_MODULE.gsub(/.so$/, ".c")
 
 #
@@ -75,7 +75,7 @@ end
 #
 
 PKG_FILES = FileList[
-  "Rakefile", "COPYING", "README", "NEWS",
+  "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
   "lib/**/*.rb",
   "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
   "tests/**/*",
@@ -112,10 +112,10 @@ end
 
 desc "Build (S)RPM for #{PKG_NAME}"
 task :rpm => [ :package ] do |t|
-    system("sed -i -e 's/^Version:.*$/Version: #{PKG_VERSION}/' #{SPEC_FILE}")
+    system("sed -e 's/@VERSION@/#{PKG_VERSION}/' #{SPEC_FILE} > pkg/#{SPEC_FILE}")
     Dir::chdir("pkg") do |dir|
         dir = File::expand_path(".")
-        system("rpmbuild --define '_topdir #{dir}' --define '_sourcedir #{dir}' --define '_srcrpmdir #{dir}' --define '_rpmdir #{dir}' -ba ../#{SPEC_FILE} > rpmbuild.log 2>&1")
+        system("rpmbuild --define '_topdir #{dir}' --define '_sourcedir #{dir}' --define '_srcrpmdir #{dir}' --define '_rpmdir #{dir}' -ba #{SPEC_FILE} > rpmbuild.log 2>&1")
         if $? != 0
             raise "rpmbuild failed"
         end
