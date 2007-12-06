@@ -55,13 +55,13 @@ module Libvirt
         # Capabilities of the connection / driver.
         # int virConnectGetMaxVcpus(virConnectPtr conn,
 	#                           const char *type);
-        def maxVcpus(type)
+        def max_vcpus(type)
             5
         end
         
         # int virNodeGetInfo(virConnectPtr conn,
         #                    virNodeInfoPtr info);
-        def nodeInfo
+        def node_info
             NodeInfo.new()
         end
 
@@ -72,38 +72,38 @@ module Libvirt
 
         # int virConnectListDomains(virConnectPtr conn,
         #       int *ids, int maxids);
-        def listDomains
+        def list_domains
             [3, 4, 5]
         end
 
         # int virConnectNumOfDomains(virConnectPtr conn);
-        def numOfDomains
+        def num_of_domains
             3
         end
 
         # int virConnectNumOfDefinedDomains(virConnectPtr conn);
-        def numOfDefinedDomains; 10; end
+        def num_of_defined_domains; 10; end
 
         # int virConnectListDefinedDomains (virConnectPtr conn,
         #                                   char **const names,
         #                                   int maxnames);
-        def listDefinedDomains; [ "dom1", "dom2", "domN" ]; end
+        def list_defined_domains; [ "dom1", "dom2", "domN" ]; end
 
         # int virConnectNumOfNetworks(virConnectPtr conn);
-        def numOfNetworks; 10; end
+        def num_of_networks; 10; end
 
         # int virConnectListNetworks(virConnectPtr conn,
         #                            char **const names,
         #                            int maxnames);
-        def listNetworks; [ "net1", "net2", "net3" ]; end
+        def list_networks; [ "net1", "net2", "net3" ]; end
 
         # int virConnectNumOfDefinedNetworks(virConnectPtr conn);
-        def numOfDefinedNetworks; 20; end
+        def num_of_defined_networks; 20; end
 
         # int virConnectListDefinedNetworks(virConnectPtr conn,
         #                                   char **const names,
         #                                   int maxnames);
-        def listDefinedNetworks; [ "net1", "net2", "net3" ]; end
+        def list_defined_networks; [ "net1", "net2", "net3" ]; end
 
         #
         # Domain creation and destruction
@@ -112,19 +112,19 @@ module Libvirt
         # virDomainPtr virDomainCreateLinux(virConnectPtr conn,
         #                                   const char *xmlDesc,
         #                                   unsigned int flags);
-        def createDomainLinux(xmlDesc, flags)
+        def create_domain_linux(xml_desc, flags)
             Domain.new()
         end
 
         # virDomainPtr virDomainLookupByName(virConnectPtr conn,
         #                                    const char *name);
-        def lookupDomainByName(name)
+        def lookup_domain_by_name(name)
             Domain.new()
         end
 
         # virDomainPtr virDomainLookupByID(virConnectPtr conn,
         #                                  int id);
-        def lookupDomainByID(id)
+        def lookup_domain_by_id(id)
             Domain.new()
         end
 
@@ -133,7 +133,7 @@ module Libvirt
         # Not implemented
         # virDomainPtr virDomainLookupByUUIDString(virConnectPtr conn,
         #                                          const char *uuid);
-        def lookupDomainByUUID(uuid)
+        def lookup_domain_by_uuid(uuid)
             Domain.new()
         end
 
@@ -143,28 +143,28 @@ module Libvirt
         
         # virDomainPtr virDomainDefineXML(virConnectPtr conn,
         #                                 const char *xml);
-        def defineDomainXML(xml); Domain.new(); end
+        def define_domain_xml(xml); Domain.new(); end
 
         #
         # Lookup network by name or uuid
         #
         # virNetworkPtr	virNetworkLookupByName(virConnectPtr conn,
         #                                      const char *name);
-        def lookupNetworkByName(conn, name); Network.new(); end
+        def lookup_network_by_name(conn, name); Network.new(); end
 
         # virNetworkPtr	virNetworkLookupByUUID(virConnectPtr conn,
         #                                      const unsigned char *uuid);
         # virNetworkPtr	virNetworkLookupByUUIDString(virConnectPtr conn,
         #                                      const char *uuid);
-        def lookupNetworkByUUID(conn, uuid); Network.new(); end
+        def lookup_network_by_uuid(conn, uuid); Network.new(); end
 
         # virNetworkPtr	virNetworkCreateXML(virConnectPtr conn,
         #                                   const char *xmlDesc);
-        def createNetworkXML(conn, xmlDesc); Netowrk.new(); end
+        def create_network_xml(conn, xml_desc); Netowrk.new(); end
 
         # virNetworkPtr	virNetworkDefineXML(virConnectPtr conn,
         #                                   const char *xmlDesc);
-        def defineNetworkXML(conn, xmlDesc); Network.new(); end
+        def define_network_xml(conn, xml_desc); Network.new(); end
 
     end
 
@@ -238,7 +238,7 @@ module Libvirt
         # int virDomainCoreDump(virDomainPtr domain,
         #                       const char *to,
         # int flags);
-        def coreDump(fname, flags); true; end
+        def core_dump(fname, flags); true; end
 
         # int virDomainGetInfo(virDomainPtr domain,
         #                      virDomainInfoPtr info);
@@ -266,21 +266,21 @@ module Libvirt
         def uuid; "xyz-bla-bla"; end
 
         # char *virDomainGetOSType(virDomainPtr domain);
-        def osType; "linux"; end
+        def os_type; "linux"; end
 
         # unsigned long	virDomainGetMaxMemory(virDomainPtr domain);
-        def maxMemory; 256*1024; end
+        def max_memory; 256*1024; end
 
         # int virDomainSetMaxMemory(virDomainPtr domain,
         #                           unsigned long memory);
-        def maxMemory=(v); @maxMemory=v; end
+        def max_memory=(v); @max_memory=v; end
 
         # int virDomainSetMemory(virDomainPtr domain,
         #                        unsigned long memory);
         def memory=(v); @memory=v; end
 
         # int virDomainGetMaxVcpus(virDomainPtr domain);
-        def maxVcpus; 32; end
+        def max_vcpus; 32; end
 
         #
         # XML domain description
@@ -288,7 +288,7 @@ module Libvirt
 
         # char *virDomainGetXMLDesc(virDomainPtr domain,
         #                           int flags);
-        def xmlDesc; "<domain>..</domain>"; end
+        def xml_desc; "<domain>..</domain>"; end
 
         # int virDomainBlockStats(virDomainPtr dom,
         #                         const char *path,
@@ -359,10 +359,10 @@ module Libvirt
 
         # char *virNetworkGetXMLDesc(virNetworkPtr network,
         #                            int flags);
-        def xmlDesc(flags); "<network>..</network>"; end
+        def xml_desc(flags); "<network>..</network>"; end
 
         # char *virNetworkGetBridgeName (virNetworkPtr network);
-        def bridgeName; "br0"; end
+        def bridge_name; "br0"; end
 
         # int virNetworkGetAutostart(virNetworkPtr network,
         #                            int *autostart);

@@ -637,10 +637,10 @@ VALUE libvirt_dom_info(VALUE s) {
 
     result = rb_class_new_instance(0, NULL, c_domain_info);
     rb_iv_set(result, "@state", CHR2FIX(info.state));
-    rb_iv_set(result, "@maxMem", ULONG2NUM(info.maxMem));
+    rb_iv_set(result, "@max_mem", ULONG2NUM(info.maxMem));
     rb_iv_set(result, "@memory", ULONG2NUM(info.memory));
-    rb_iv_set(result, "@nrVirtCpu", INT2FIX((int) info.nrVirtCpu));
-    rb_iv_set(result, "@cpuTime", ULL2NUM(info.cpuTime));
+    rb_iv_set(result, "@nr_virt_cpu", INT2FIX((int) info.nrVirtCpu));
+    rb_iv_set(result, "@cpu_time", ULL2NUM(info.cpuTime));
     return result;
 }
 
@@ -1072,7 +1072,7 @@ void Init__libvirt() {
 
     rb_define_module_function(m_libvirt, "version", libvirt_version, 1);
 	rb_define_module_function(m_libvirt, "open", libvirt_open, 1);
-	rb_define_module_function(m_libvirt, "openReadOnly", 
+	rb_define_module_function(m_libvirt, "open_read_only", 
                               libvirt_open_read_only, 1);
 
     rb_define_method(c_connect, "close", libvirt_conn_close, 0);
@@ -1081,41 +1081,41 @@ void Init__libvirt() {
     rb_define_method(c_connect, "version", libvirt_conn_version, 0);
     rb_define_method(c_connect, "hostname", libvirt_conn_hostname, 0);
     rb_define_method(c_connect, "uri", libvirt_conn_uri, 0);
-    rb_define_method(c_connect, "maxVcpus", libvirt_conn_max_vcpus, 1);
-    rb_define_method(c_connect, "nodeGetInfo", libvirt_conn_node_get_info, 0);
+    rb_define_method(c_connect, "max_vcpus", libvirt_conn_max_vcpus, 1);
+    rb_define_method(c_connect, "node_get_info", libvirt_conn_node_get_info, 0);
     rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
-    rb_define_method(c_connect, "numOfDomains", libvirt_conn_num_of_domains, 0);
-    rb_define_method(c_connect, "listDomains", libvirt_conn_list_domains, 0);
-    rb_define_method(c_connect, "numOfDefinedDomains",
+    rb_define_method(c_connect, "num_of_domains", libvirt_conn_num_of_domains, 0);
+    rb_define_method(c_connect, "list_domains", libvirt_conn_list_domains, 0);
+    rb_define_method(c_connect, "num_of_defined_domains",
                      libvirt_conn_num_of_defined_domains, 0);
-    rb_define_method(c_connect, "listDefinedDomains",
+    rb_define_method(c_connect, "list_defined_domains",
                      libvirt_conn_list_defined_domains, 0);
-    rb_define_method(c_connect, "numOfNetworks",
+    rb_define_method(c_connect, "num_of_networks",
                      libvirt_conn_num_of_networks, 0);
-    rb_define_method(c_connect, "listNetworks", libvirt_conn_list_networks, 0);
-    rb_define_method(c_connect, "numOfDefinedNetworks",
+    rb_define_method(c_connect, "list_networks", libvirt_conn_list_networks, 0);
+    rb_define_method(c_connect, "num_of_defined_networks",
                      libvirt_conn_num_of_defined_networks, 0);
-    rb_define_method(c_connect, "listDefinedNetworks",
+    rb_define_method(c_connect, "list_defined_networks",
                      libvirt_conn_list_defined_networks, 0);
     // Domain creation/lookup
-    rb_define_method(c_connect, "createDomainLinux",
+    rb_define_method(c_connect, "create_domain_linux",
                      libvirt_conn_create_linux, 2);
-    rb_define_method(c_connect, "lookupDomainByName", 
+    rb_define_method(c_connect, "lookup_domain_by_name", 
                      libvirt_conn_lookup_domain_by_name, 1);
-    rb_define_method(c_connect, "lookupDomainByID",
+    rb_define_method(c_connect, "lookup_domain_by_id",
                      libvirt_conn_lookup_domain_by_id, 1);
-    rb_define_method(c_connect, "lookupDomainByUUID", 
+    rb_define_method(c_connect, "lookup_domain_by_uuid", 
                      libvirt_conn_lookup_domain_by_uuid, 1);
-    rb_define_method(c_connect, "defineDomainXML",
+    rb_define_method(c_connect, "define_domain_xml",
                      libvirt_conn_define_domain_xml, 1);
     // Network creation/lookup
-    rb_define_method(c_connect, "lookupNetworkByName", 
+    rb_define_method(c_connect, "lookup_network_by_name", 
                      libvirt_conn_lookup_network_by_name, 1);
-    rb_define_method(c_connect, "lookupNetworkByUUID", 
+    rb_define_method(c_connect, "lookup_network_by_uuid", 
                      libvirt_conn_lookup_network_by_uuid, 1);
-    rb_define_method(c_connect, "createNetworkXML",
+    rb_define_method(c_connect, "create_network_xml",
                      libvirt_conn_create_network_xml, 1);
-    rb_define_method(c_connect, "defineNetworkXML",
+    rb_define_method(c_connect, "define_network_xml",
                      libvirt_conn_define_network_xml, 1);
     
     /*
@@ -1156,16 +1156,16 @@ void Init__libvirt() {
     rb_define_method(c_domain, "resume", libvirt_dom_resume, 0);
     rb_define_method(c_domain, "save", libvirt_dom_save, 1);
     rb_define_singleton_method(c_domain, "restore", libvirt_dom_s_restore, 2);
-    rb_define_method(c_domain, "coreDump", libvirt_dom_core_dump, 2);
+    rb_define_method(c_domain, "core_dump", libvirt_dom_core_dump, 2);
     rb_define_method(c_domain, "info", libvirt_dom_info, 0);
     rb_define_method(c_domain, "name", libvirt_dom_name, 0);
     rb_define_method(c_domain, "id", libvirt_dom_id, 0);
     rb_define_method(c_domain, "uuid", libvirt_dom_uuid, 0);
-    rb_define_method(c_domain, "osType", libvirt_dom_os_type, 0);
-    rb_define_method(c_domain, "maxMemory", libvirt_dom_max_memory, 0);
-    rb_define_method(c_domain, "maxMemory=", libvirt_dom_max_memory_set, 1);
-    rb_define_method(c_domain, "maxVcpus", libvirt_dom_max_vcpus, 0);
-    rb_define_method(c_domain, "xmlDesc", libvirt_dom_xml_desc, 0);
+    rb_define_method(c_domain, "os_type", libvirt_dom_os_type, 0);
+    rb_define_method(c_domain, "max_memory", libvirt_dom_max_memory, 0);
+    rb_define_method(c_domain, "max_memory=", libvirt_dom_max_memory_set, 1);
+    rb_define_method(c_domain, "max_vcpus", libvirt_dom_max_vcpus, 0);
+    rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, 0);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
@@ -1176,10 +1176,10 @@ void Init__libvirt() {
      */
     c_domain_info = rb_define_class_under(c_domain, "Info", rb_cObject);
     rb_define_attr(c_domain_info, "state", 1, 0);
-    rb_define_attr(c_domain_info, "maxMem", 1, 0);
+    rb_define_attr(c_domain_info, "max_mem", 1, 0);
     rb_define_attr(c_domain_info, "memory", 1, 0);
-    rb_define_attr(c_domain_info, "nrVirtCpu", 1, 0);
-    rb_define_attr(c_domain_info, "cpuTime", 1, 0);
+    rb_define_attr(c_domain_info, "nr_virt_cpu", 1, 0);
+    rb_define_attr(c_domain_info, "cpu_time", 1, 0);
 
     /* 
      * Class Libvirt::Network
@@ -1191,8 +1191,8 @@ void Init__libvirt() {
     rb_define_method(c_network, "destroy", libvirt_netw_destroy, 0);
     rb_define_method(c_network, "name", libvirt_netw_name, 0);
     rb_define_method(c_network, "uuid", libvirt_netw_uuid, 0);
-    rb_define_method(c_network, "xmlDesc", libvirt_netw_xml_desc, 1);
-    rb_define_method(c_network, "bridgeName", libvirt_netw_bridge_name, 0);
+    rb_define_method(c_network, "xml_desc", libvirt_netw_xml_desc, 1);
+    rb_define_method(c_network, "bridge_name", libvirt_netw_bridge_name, 0);
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
 
