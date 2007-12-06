@@ -1,0 +1,8 @@
+2007-12-06 0.0.2
+  * Add virNodeGetInfo binding
+
+  * Convert Ruby API from StudlyCaps to under_score_separation, since that's
+    the Ruby convention
+
+2007-11-19 0.0.1
+  * Initial release

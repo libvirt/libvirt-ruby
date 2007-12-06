@@ -1,4 +1,4 @@
-#
+# -*- ruby -*-
 # Rakefile: build ruby libvirt bindings
 #
 # Copyright (C) 2007 Red Hat, Inc.
@@ -15,7 +15,7 @@ require 'rake/testtask'
 require 'rake/gempackagetask'
 
 PKG_NAME='ruby-libvirt'
-PKG_VERSION='0.0.1'
+PKG_VERSION='0.0.2'
 
 EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"
