@@ -7,14 +7,14 @@ Release:        1%{?dist}
 Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
-License:        LGPL
+License:        LGPLv2+
 URL:            http://libvirt.org/ruby/
 Source0:        http://libvirt.org/ruby/downloads/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
+BuildRequires:  libvirt-devel
 Requires:       ruby(abi) = 1.8
-Requires:       libvirt-devel
 Provides:       ruby(libvirt) = %{version}
 
 %description
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Dec  6 2007 David Lutterkort <dlutter@redhat.com> - 0.0.2-1
+- New version
+
 * Mon Nov 19 2007 David Lutterkort <dlutter@redhat.com> - 0.0.1-1
 - Initial specfile
 
