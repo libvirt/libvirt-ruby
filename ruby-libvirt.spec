@@ -3,13 +3,13 @@
 
 Name:           ruby-libvirt
 Version:        @VERSION@
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
 License:        LGPLv2+
 URL:            http://libvirt.org/ruby/
-Source0:        http://libvirt.org/ruby/downloads/ruby-libvirt-@VERSION@.tgz
+Source0:        http://libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
@@ -29,7 +29,7 @@ export CFLAGS="$RPM_OPT_FLAGS"
 rake build
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 install -d -m0755 %{buildroot}%{ruby_sitelib}
 install -d -m0755 %{buildroot}%{ruby_sitearch}
 install -p -m0644 lib/libvirt.rb %{buildroot}%{ruby_sitelib}
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Dec 19 2007 David Lutterkort <dlutter@redhat.com> - @VERSION@-2
+- Replace use of RPM_BUILD_ROOT by buildroot macro
+- Fix URL
+
 * Thu Dec  6 2007 David Lutterkort <dlutter@redhat.com> - 0.0.2-1
 - New version
 
