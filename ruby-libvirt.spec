@@ -3,7 +3,7 @@
 
 Name:           ruby-libvirt
 Version:        @VERSION@
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
@@ -33,7 +33,7 @@ rm -rf %{buildroot}
 install -d -m0755 %{buildroot}%{ruby_sitelib}
 install -d -m0755 %{buildroot}%{ruby_sitearch}
 install -p -m0644 lib/libvirt.rb %{buildroot}%{ruby_sitelib}
-install -p -m0644 ext/libvirt/_libvirt.so %{buildroot}%{ruby_sitearch}
+install -p -m0755 ext/libvirt/_libvirt.so %{buildroot}%{ruby_sitearch}
  
 %check
 rake test
@@ -50,7 +50,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Wed Dec 19 2007 David Lutterkort <dlutter@redhat.com> - @VERSION@-2
+* Wed Jan  2 2008 David Lutterkort <dlutter@redhat.com> - 0.0.2-3
+- Make _libvirt.so stripable by changing permissions to +x
+
+* Wed Dec 19 2007 David Lutterkort <dlutter@redhat.com> - 0.0.2-2
 - Replace use of RPM_BUILD_ROOT by buildroot macro
 - Fix URL
 
