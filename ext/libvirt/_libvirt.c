@@ -145,8 +145,8 @@ VALUE libvirt_version(VALUE m, VALUE t) {
     const char *type = NULL;
     unsigned long typeVer;
     int r;
-    VALUE result, argv[1];
-    
+    VALUE result, argv[2];
+
     type = StringValueCStr(t);
     r = virGetVersion(&libVer, type, &typeVer);
     if (r == -1)
