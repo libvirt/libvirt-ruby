@@ -36,7 +36,7 @@ static VALUE c_node_info;
  */
 static void connect_close(void *p) {
     int r;
-    
+
     if (!p)
         return;
     r = virConnectClose((virConnectPtr) p);
@@ -126,8 +126,8 @@ NORETURN(static void vir_error(virConnectPtr conn, const char *fn)) {
     rb_raise(rb_eSystemCallError, "libvir call %s failed", fn);
 }
 
-/* 
- * Module Libvirt 
+/*
+ * Module Libvirt
  */
 
 /*
@@ -165,12 +165,12 @@ VALUE libvirt_version(VALUE m, VALUE t) {
 /*
  * call-seq:
  *   Libvirt::open(url) -> Libvirt::Connect
- * 
+ *
  * Open a connection to URL with virConnectOpen[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
  */
 VALUE libvirt_open(VALUE m, VALUE url) {
     char *str = NULL;
-    
+
     if (url) {
         str = StringValueCStr(url);
         if (!str)
@@ -185,13 +185,13 @@ VALUE libvirt_open(VALUE m, VALUE url) {
 /*
  * call-seq:
  *   Libvirt::openReadOnly(url) -> Libvirt::Connect
- * 
+ *
  * Open a read-only connection to URL with
  * virConnectOpenReadOnly[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
  */
 VALUE libvirt_open_read_only(VALUE m, VALUE url) {
     char *str = NULL;
-    
+
     if (url) {
         str = StringValueCStr(url);
         if (!str)
@@ -203,8 +203,8 @@ VALUE libvirt_open_read_only(VALUE m, VALUE url) {
     return connect_new(ptr);
 }
 
-/* 
- * Class Libvirt::Connect 
+/*
+ * Class Libvirt::Connect
  */
 
 /*
@@ -284,7 +284,7 @@ VALUE libvirt_conn_hostname(VALUE s) {
 
     result = rb_str_new2(hostname);
     free(hostname);
-    
+
     return result;
 }
 
@@ -301,7 +301,7 @@ VALUE libvirt_conn_uri(VALUE s) {
 
     result = rb_str_new2(uri);
     free(uri);
-    
+
     return result;
 }
 
@@ -358,7 +358,7 @@ VALUE libvirt_conn_capabilities(VALUE s) {
 
     result = rb_str_new2(caps);
     free(caps);
-    
+
     return result;
 }
 
@@ -385,7 +385,7 @@ VALUE libvirt_conn_list_domains(VALUE s) {
 
     num = virConnectNumOfDomains(conn);
     _E(num == -1, conn, "virConnectNumOfDomains");
-    
+
     ids = alloca(num * sizeof(int));
     r = virConnectListDomains(conn, ids, num);
     _E(r == -1, conn, "virConnectListDomains");
@@ -421,7 +421,7 @@ VALUE libvirt_conn_list_defined_domains(VALUE s) {
 
     num = virConnectNumOfDefinedDomains(conn);
     _E(num == -1, conn, "virConnectNumOfDefinedDomains");
-    
+
     names = alloca(num * sizeof(char*));
     r = virConnectListDefinedDomains(conn, names, num);
     _E(r == -1, conn, "virConnectListDefinedDomains");
@@ -458,7 +458,7 @@ VALUE libvirt_conn_list_networks(VALUE s) {
 
     num = virConnectNumOfNetworks(conn);
     _E(num == -1, conn, "virConnectNumOfNetworks");
-    
+
     names = alloca(num * sizeof(char *));
     r = virConnectListNetworks(conn, names, num);
     _E(r == -1, conn, "virConnectListNetworks");
@@ -495,7 +495,7 @@ VALUE libvirt_conn_list_defined_networks(VALUE s) {
 
     num = virConnectNumOfDefinedNetworks(conn);
     _E(num == -1, conn, "virConnectNumOfDefinedNetworks");
-    
+
     names = alloca(num * sizeof(char*));
     r = virConnectListDefinedNetworks(conn, names, num);
     _E(r == -1, conn, "virConnectListDefinedNetworks");
@@ -508,8 +508,8 @@ VALUE libvirt_conn_list_defined_networks(VALUE s) {
     return result;
 }
 
-/* 
- * Class Libvirt::Domain 
+/*
+ * Class Libvirt::Domain
  */
 VALUE libvirt_dom_migrate(VALUE s, VALUE dconn, VALUE flags,
                            VALUE dname, VALUE uri, VALUE bandwidth) {
@@ -719,7 +719,7 @@ VALUE libvirt_dom_max_memory(VALUE s) {
 VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     virDomainPtr dom = domain_get(s);
     int r;
-    
+
     r = virDomainSetMaxMemory(dom, NUM2ULONG(max_memory));
     _E(r == -1, domain_conn(s), "virDomainSetMaxMemory");
 
@@ -732,7 +732,7 @@ VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
 VALUE libvirt_dom_max_vcpus(VALUE s) {
     virDomainPtr dom = domain_get(s);
     int vcpus;
-    
+
     vcpus = virDomainGetMaxVcpus(dom);
     _E(vcpus == -1, domain_conn(s), "virDomainGetMaxVcpus");
 
@@ -1062,17 +1062,17 @@ void Init__libvirt() {
     int r;
 
     m_libvirt = rb_define_module("Libvirt");
-    c_libvirt_version = rb_define_class_under(m_libvirt, "Version", 
+    c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
                                               rb_cObject);
 
-    /* 
-     * Class Libvirt::Connect 
+    /*
+     * Class Libvirt::Connect
      */
     c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
 
     rb_define_module_function(m_libvirt, "version", libvirt_version, 1);
 	rb_define_module_function(m_libvirt, "open", libvirt_open, 1);
-	rb_define_module_function(m_libvirt, "open_read_only", 
+	rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, 1);
 
     rb_define_method(c_connect, "close", libvirt_conn_close, 0);
@@ -1100,24 +1100,24 @@ void Init__libvirt() {
     // Domain creation/lookup
     rb_define_method(c_connect, "create_domain_linux",
                      libvirt_conn_create_linux, 2);
-    rb_define_method(c_connect, "lookup_domain_by_name", 
+    rb_define_method(c_connect, "lookup_domain_by_name",
                      libvirt_conn_lookup_domain_by_name, 1);
     rb_define_method(c_connect, "lookup_domain_by_id",
                      libvirt_conn_lookup_domain_by_id, 1);
-    rb_define_method(c_connect, "lookup_domain_by_uuid", 
+    rb_define_method(c_connect, "lookup_domain_by_uuid",
                      libvirt_conn_lookup_domain_by_uuid, 1);
     rb_define_method(c_connect, "define_domain_xml",
                      libvirt_conn_define_domain_xml, 1);
     // Network creation/lookup
-    rb_define_method(c_connect, "lookup_network_by_name", 
+    rb_define_method(c_connect, "lookup_network_by_name",
                      libvirt_conn_lookup_network_by_name, 1);
-    rb_define_method(c_connect, "lookup_network_by_uuid", 
+    rb_define_method(c_connect, "lookup_network_by_uuid",
                      libvirt_conn_lookup_network_by_uuid, 1);
     rb_define_method(c_connect, "create_network_xml",
                      libvirt_conn_create_network_xml, 1);
     rb_define_method(c_connect, "define_network_xml",
                      libvirt_conn_define_network_xml, 1);
-    
+
     /*
      * Class Libvirt::Connect::Nodeinfo
      */
@@ -1131,8 +1131,8 @@ void Init__libvirt() {
     rb_define_attr(c_node_info, "cores", 1, 0);
     rb_define_attr(c_node_info, "threads", 1, 0);
 
-    /* 
-     * Class Libvirt::Domain 
+    /*
+     * Class Libvirt::Domain
      */
     c_domain = rb_define_class_under(m_libvirt, "Domain", rb_cObject);
 #define DEF_DOMSTATE(name) \
@@ -1181,7 +1181,7 @@ void Init__libvirt() {
     rb_define_attr(c_domain_info, "nr_virt_cpu", 1, 0);
     rb_define_attr(c_domain_info, "cpu_time", 1, 0);
 
-    /* 
+    /*
      * Class Libvirt::Network
      */
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
@@ -1196,7 +1196,7 @@ void Init__libvirt() {
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
 
-    
+
     r = virInitialize();
     if (r == -1)
         rb_raise(rb_eSystemCallError, "virInitialize failed");
