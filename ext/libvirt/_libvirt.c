@@ -34,6 +34,35 @@ static VALUE c_node_info;
 /*
  * Internal helpers
  */
+
+/* Macros to ease some of the boilerplate */
+
+#define generic_free(kind, p)                                           \
+    do {                                                                \
+        int r;                                                          \
+        r = vir##kind##Free((vir##kind##Ptr) p);                        \
+        if (r == -1)                                                    \
+            rb_raise(rb_eSystemCallError, # kind " free failed");       \
+    } while(0);
+
+#define generic_get(kind, v)                                            \
+    do {                                                                \
+        vir##kind##Ptr ptr;                                             \
+        Data_Get_Struct(v, vir##kind, ptr);                             \
+        if (!ptr)                                                       \
+            rb_raise(rb_eArgError, "Connection has been closed");       \
+        return ptr;                                                     \
+    } while (0);
+
+static VALUE generic_new(VALUE klass, void *ptr, VALUE conn, 
+                         RUBY_DATA_FUNC free_func) {
+    VALUE result;
+    result = Data_Wrap_Struct(klass, NULL, free_func, ptr);
+    rb_iv_set(result, "@connection", conn);
+    return result;
+}
+
+/* Connections */
 static void connect_close(void *p) {
     int r;
 
@@ -49,74 +78,53 @@ static VALUE connect_new(virConnectPtr p) {
 }
 
 static virConnectPtr connect_get(VALUE s) {
-    virConnectPtr conn;
+    generic_get(Connect, s);
+}
 
+static VALUE conn_attr(VALUE s) {
+    if (rb_obj_is_instance_of(s, c_connect) != Qtrue) {
+        s = rb_iv_get(s, "@connection");
+    }
+    if (rb_obj_is_instance_of(s, c_connect) != Qtrue) {
+        rb_raise(rb_eArgError, "Expected Connection object");
+    }
+    return s;
+}
+
+static virConnectPtr conn(VALUE s) {
+    s = conn_attr(s);
+    virConnectPtr conn;
     Data_Get_Struct(s, virConnect, conn);
     if (!conn)
         rb_raise(rb_eArgError, "Connection has been closed");
-
     return conn;
 }
 
+/* Domains */
 static void domain_free(void *d) {
-    int r;
-    r = virDomainFree((virDomainPtr) d);
-    if (r == -1)
-        rb_raise(rb_eSystemCallError, "Domain free failed");
+    generic_free(Domain, d);
 }
 
 static virDomainPtr domain_get(VALUE s) {
-    virDomainPtr dom;
-
-    Data_Get_Struct(s, virDomain, dom);
-    if (!dom)
-        rb_raise(rb_eArgError, "Connection has been closed");
-
-    return dom;
+    generic_get(Domain, s);
 }
 
 static VALUE domain_new(virDomainPtr d, VALUE conn) {
-    VALUE result;
-    result = Data_Wrap_Struct(c_domain, NULL, domain_free, d);
-    rb_iv_set(result, "@connection", conn);
-    return result;
+    return generic_new(c_domain, d, conn, domain_free);
 }
 
-static virConnectPtr domain_conn(VALUE dom) {
-    VALUE c = rb_iv_get(dom, "@connection");
-    return connect_get(c);
-}
-
-
+/* Network */
 static void network_free(void *d) {
-    int r;
-    r = virNetworkFree((virNetworkPtr) d);
-    if (r == -1)
-        rb_raise(rb_eSystemCallError, "Network free failed");
+    generic_free(Network, d);
 }
 
 static virNetworkPtr network_get(VALUE s) {
-    virNetworkPtr netw;
-
-    Data_Get_Struct(s, virNetwork, netw);
-    if (!netw)
-        rb_raise(rb_eArgError, "Connection has been closed");
-
-    return netw;
+    generic_get(Network, s);
 }
 
 static VALUE network_new(virNetworkPtr n, VALUE conn) {
-    VALUE result;
-    result = Data_Wrap_Struct(c_network, NULL, network_free, n);
-    rb_iv_set(result, "@connection", conn);
-    return result;
+    return generic_new(c_network, n, conn, network_free);
 }
-
-static virConnectPtr network_conn(VALUE dom) {
-    VALUE c = rb_iv_get(dom, "@connection");
-    return connect_get(c);
-}
-
 
 /* Error handling */
 #define _E(cond, conn, fn) \
@@ -524,7 +532,7 @@ VALUE libvirt_dom_shutdown(VALUE s) {
     int r;
 
     r = virDomainShutdown(dom);
-    _E(r == -1, domain_conn(s), "virDomainShutdown");
+    _E(r == -1, conn(s), "virDomainShutdown");
 
     return Qnil;
 }
@@ -537,7 +545,7 @@ VALUE libvirt_dom_reboot(VALUE s, VALUE flags) {
     int r;
 
     r = virDomainReboot(dom, NUM2UINT(flags));
-    _E(r == -1, domain_conn(s), "virDomainReboot");
+    _E(r == -1, conn(s), "virDomainReboot");
 
     return Qnil;
 }
@@ -550,7 +558,7 @@ VALUE libvirt_dom_destroy(VALUE s) {
     int r;
 
     r = virDomainDestroy(dom);
-    _E(r == -1, domain_conn(s), "virDomainDestroy");
+    _E(r == -1, conn(s), "virDomainDestroy");
 
     return Qnil;
 }
@@ -563,7 +571,7 @@ VALUE libvirt_dom_suspend(VALUE s) {
     int r;
 
     r = virDomainSuspend(dom);
-    _E(r == -1, domain_conn(s), "virDomainSuspend");
+    _E(r == -1, conn(s), "virDomainSuspend");
 
     return Qnil;
 }
@@ -576,7 +584,7 @@ VALUE libvirt_dom_resume(VALUE s) {
     int r;
 
     r = virDomainResume(dom);
-    _E(r == -1, domain_conn(s), "virDomainResume");
+    _E(r == -1, conn(s), "virDomainResume");
 
     return Qnil;
 }
@@ -589,7 +597,7 @@ VALUE libvirt_dom_save(VALUE s, VALUE to) {
     int r;
 
     r = virDomainSave(dom, StringValueCStr(to));
-    _E(r == -1, domain_conn(s), "virDomainSave");
+    _E(r == -1, conn(s), "virDomainSave");
 
     return Qnil;
 }
@@ -602,7 +610,7 @@ VALUE libvirt_dom_core_dump(VALUE s, VALUE to, VALUE flags) {
     int r;
 
     r = virDomainCoreDump(dom, StringValueCStr(to), NUM2UINT(flags));
-    _E(r == -1, domain_conn(s), "virDomainCoreDump");
+    _E(r == -1, conn(s), "virDomainCoreDump");
 
     return Qnil;
 }
@@ -633,7 +641,7 @@ VALUE libvirt_dom_info(VALUE s) {
     VALUE result;
 
     r = virDomainGetInfo(dom, &info);
-    _E(r == -1, domain_conn(s), "virDomainGetInfo");
+    _E(r == -1, conn(s), "virDomainGetInfo");
 
     result = rb_class_new_instance(0, NULL, c_domain_info);
     rb_iv_set(result, "@state", CHR2FIX(info.state));
@@ -652,7 +660,7 @@ VALUE libvirt_dom_name(VALUE s) {
     const char *name;
 
     name = virDomainGetName(dom);
-    _E(name == NULL, domain_conn(s), "virDomainGetName");
+    _E(name == NULL, conn(s), "virDomainGetName");
 
     return rb_str_new2(name);
 }
@@ -665,7 +673,7 @@ VALUE libvirt_dom_id(VALUE s) {
     unsigned int id;
 
     id = virDomainGetID(dom);
-    _E(id == -1, domain_conn(s), "virDomainGetID");
+    _E(id == -1, conn(s), "virDomainGetID");
 
     return UINT2NUM(id);
 }
@@ -679,7 +687,7 @@ VALUE libvirt_dom_uuid(VALUE s) {
     int r;
 
     r = virDomainGetUUIDString(dom, uuid);
-    _E(r == -1, domain_conn(s), "virDomainGetUUIDString");
+    _E(r == -1, conn(s), "virDomainGetUUIDString");
 
     return rb_str_new2((char *) uuid);
 }
@@ -693,7 +701,7 @@ VALUE libvirt_dom_os_type(VALUE s) {
     VALUE result;
 
     os_type = virDomainGetOSType(dom);
-    _E(os_type == NULL, domain_conn(s), "virDomainGetOSType");
+    _E(os_type == NULL, conn(s), "virDomainGetOSType");
 
     result = rb_str_new2(os_type);
     free(os_type);
@@ -708,7 +716,7 @@ VALUE libvirt_dom_max_memory(VALUE s) {
     unsigned long max_memory;
 
     max_memory = virDomainGetMaxMemory(dom);
-    _E(max_memory == 0, domain_conn(s), "virDomainGetMaxMemory");
+    _E(max_memory == 0, conn(s), "virDomainGetMaxMemory");
 
     return ULONG2NUM(max_memory);
 }
@@ -721,7 +729,7 @@ VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     int r;
 
     r = virDomainSetMaxMemory(dom, NUM2ULONG(max_memory));
-    _E(r == -1, domain_conn(s), "virDomainSetMaxMemory");
+    _E(r == -1, conn(s), "virDomainSetMaxMemory");
 
     return ULONG2NUM(max_memory);
 }
@@ -734,7 +742,7 @@ VALUE libvirt_dom_max_vcpus(VALUE s) {
     int vcpus;
 
     vcpus = virDomainGetMaxVcpus(dom);
-    _E(vcpus == -1, domain_conn(s), "virDomainGetMaxVcpus");
+    _E(vcpus == -1, conn(s), "virDomainGetMaxVcpus");
 
     return INT2NUM(vcpus);
 }
@@ -748,7 +756,7 @@ VALUE libvirt_dom_xml_desc(VALUE s, VALUE flags) {
     VALUE result;
 
     xml = virDomainGetXMLDesc(dom, 0);
-    _E(xml == NULL, domain_conn(s), "virDomainGetXMLDesc");
+    _E(xml == NULL, conn(s), "virDomainGetXMLDesc");
 
     result = rb_str_new2(xml);
     free(xml);
@@ -763,7 +771,7 @@ VALUE libvirt_dom_undefine(VALUE s) {
     int r;
 
     r = virDomainUndefine(dom);
-    _E(r == -1, domain_conn(s), "virDomainUndefine");
+    _E(r == -1, conn(s), "virDomainUndefine");
 
     return Qnil;
 }
@@ -776,7 +784,7 @@ VALUE libvirt_dom_create(VALUE s) {
     int r;
 
     r = virDomainCreate(dom);
-    _E(r == -1, domain_conn(s), "virDomainCreate");
+    _E(r == -1, conn(s), "virDomainCreate");
 
     return Qnil;
 }
@@ -789,7 +797,7 @@ VALUE libvirt_dom_autostart(VALUE s){
     int r, autostart;
 
     r = virDomainGetAutostart(dom, &autostart);
-    _E(r == -1, domain_conn(s), "virDomainAutostart");
+    _E(r == -1, conn(s), "virDomainAutostart");
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -802,7 +810,7 @@ VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
     int r;
 
     r = virDomainSetAutostart(dom, RTEST(autostart) ? 1 : 0);
-    _E(r == -1, domain_conn(s), "virDomainAutostart");
+    _E(r == -1, conn(s), "virDomainAutostart");
 
     return Qnil;
 }
@@ -942,7 +950,7 @@ VALUE libvirt_netw_undefine(VALUE s) {
     int r;
 
     r = virNetworkUndefine(netw);
-    _E(r == -1, network_conn(s), "virNetworkUndefine");
+    _E(r == -1, conn(s), "virNetworkUndefine");
 
     return Qnil;
 }
@@ -955,7 +963,7 @@ VALUE libvirt_netw_create(VALUE s) {
     int r;
 
     r = virNetworkCreate(netw);
-    _E(r == -1, network_conn(s), "virNetworkCreate");
+    _E(r == -1, conn(s), "virNetworkCreate");
 
     return Qnil;
 }
@@ -968,7 +976,7 @@ VALUE libvirt_netw_destroy(VALUE s) {
     int r;
 
     r = virNetworkDestroy(netw);
-    _E(r == -1, network_conn(s), "virNetworkDestroy");
+    _E(r == -1, conn(s), "virNetworkDestroy");
 
     return Qnil;
 }
@@ -981,7 +989,7 @@ VALUE libvirt_netw_name(VALUE s) {
     const char *name;
 
     name = virNetworkGetName(netw);
-    _E(name == NULL, network_conn(s), "virNetworkGetName");
+    _E(name == NULL, conn(s), "virNetworkGetName");
 
     return rb_str_new2(name);
 }
@@ -995,7 +1003,7 @@ VALUE libvirt_netw_uuid(VALUE s) {
     int r;
 
     r = virNetworkGetUUIDString(netw, uuid);
-    _E(r == -1, network_conn(s), "virNetworkGetUUIDString");
+    _E(r == -1, conn(s), "virNetworkGetUUIDString");
 
     return rb_str_new2((char *) uuid);
 }
@@ -1009,7 +1017,7 @@ VALUE libvirt_netw_xml_desc(VALUE s, VALUE flags) {
     VALUE result;
 
     xml = virNetworkGetXMLDesc(netw, 0);
-    _E(xml == NULL, network_conn(s), "virNetworkGetXMLDesc");
+    _E(xml == NULL, conn(s), "virNetworkGetXMLDesc");
 
     result = rb_str_new2(xml);
     free(xml);
@@ -1025,7 +1033,7 @@ VALUE libvirt_netw_bridge_name(VALUE s) {
     VALUE result;
 
     bridge_name = virNetworkGetBridgeName(netw);
-    _E(bridge_name == NULL, network_conn(s), "virNetworkGetBridgeName");
+    _E(bridge_name == NULL, conn(s), "virNetworkGetBridgeName");
 
     result = rb_str_new2(bridge_name);
     free(bridge_name);
@@ -1040,7 +1048,7 @@ VALUE libvirt_netw_autostart(VALUE s){
     int r, autostart;
 
     r = virNetworkGetAutostart(netw, &autostart);
-    _E(r == -1, network_conn(s), "virNetworkAutostart");
+    _E(r == -1, conn(s), "virNetworkAutostart");
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -1053,7 +1061,7 @@ VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
     int r;
 
     r = virNetworkSetAutostart(netw, RTEST(autostart) ? 1 : 0);
-    _E(r == -1, network_conn(s), "virNetworkSetAutostart");
+    _E(r == -1, conn(s), "virNetworkSetAutostart");
 
     return Qnil;
 }
