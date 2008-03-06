@@ -135,6 +135,87 @@ NORETURN(static void vir_error(virConnectPtr conn, const char *fn)) {
 }
 
 /*
+ * Code generating macros.
+ *
+ * We only generate function bodies, not the whole function
+ * declaration.
+ */
+
+/*
+ * Generate a call to a virConnectNumOf... function. C is the Ruby VALUE
+ * holding the connection and OBJS is a token indicating what objects to
+ * get the number of, e.g. 'Domains'
+ */
+#define gen_conn_num_of(c, objs)                                        \
+    do {                                                                \
+        int result;                                                     \
+        virConnectPtr conn = connect_get(c);                            \
+                                                                        \
+        result = virConnectNumOf##objs(conn);                           \
+        _E(result == -1, conn, "virConnectNumOf" # objs);               \
+                                                                        \
+        return INT2NUM(result);                                         \
+    } while(0)
+
+/*
+ * Generate a call to a virConnectList... function. C is the Ruby VALUE
+ * holding the connection and OBJS is a token indicating what objects to
+ * get the number of, e.g. 'Domains' The list function must return an array
+ * of strings, which is returned as a Ruby array
+ */
+#define gen_conn_list_names(s, objs)                                    \
+    do {                                                                \
+        int i, r, num;                                                  \
+        char **names;                                                   \
+        virConnectPtr conn = connect_get(s);                            \
+        VALUE result;                                                   \
+                                                                        \
+        num = virConnectNumOf##objs(conn);                              \
+        _E(num == -1, conn, "virConnectNumOf" # objs);                  \
+                                                                        \
+        names = alloca(num * sizeof(char*));                            \
+        r = virConnectList##objs(conn, names, num);                     \
+        _E(r == -1, conn, "virConnectList" # objs);                     \
+                                                                        \
+        result = rb_ary_new2(num);                                      \
+        for (i=0; i<num; i++) {                                         \
+            rb_ary_push(result, rb_str_new2(names[i]));                 \
+            free(names[i]);                                             \
+        }                                                               \
+        return result;                                                  \
+    } while(0)
+
+/* Generate a call to a function FUNC which returns an int error, where -1
+ * indicates error and 0 success. The Ruby function will return Qnil on
+ * success and throw an exception on error.
+ */
+#define gen_call_void(func, conn, args...)                               \
+    do {                                                                \
+        int _r_##func;                                                  \
+        _r_##func = func(args);                                         \
+        _E(_r_##func == -1, conn, #func);                               \
+        return Qnil;                                                    \
+    } while(0)
+
+/* Generate a call to a function FUNC which returns a string. The Ruby
+ * function will return the string on success and throw an exception on
+ * error. The string returned by FUNC is freed if dealloc is true.
+ */
+#define gen_call_string(func, conn, dealloc, args...)                   \
+    do {                                                                \
+        const char *str;                                                \
+        VALUE result;                                                   \
+                                                                        \
+        str = func(args);                                               \
+        _E(str == NULL, conn, # func);                                  \
+                                                                        \
+        result = rb_str_new2(str);                                      \
+        if (dealloc)                                                    \
+            free((void *) str);                                         \
+        return result;                                                  \
+    } while(0)
+
+/*
  * Module Libvirt
  */
 
@@ -250,13 +331,8 @@ VALUE libvirt_conn_closed_p(VALUE s) {
  * Call +virConnectGetType+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetType]
  */
 VALUE libvirt_conn_type(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    const char *type;
-
-    type = virConnectGetType(conn);
-    _E(type == NULL, conn, "virConnectGetType");
-
-    return rb_str_new2(type);
+    gen_call_string(virConnectGetType, connect_get(s), 0,
+                    connect_get(s));
 }
 
 /*
@@ -283,34 +359,17 @@ VALUE libvirt_conn_version(VALUE s) {
  * Call +virConnectGetHostname+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetHostname]
  */
 VALUE libvirt_conn_hostname(VALUE s) {
-    char *hostname;
-    virConnectPtr conn = connect_get(s);
-    VALUE result;
-
-    hostname = virConnectGetHostname(conn);
-    _E(!hostname, conn, "virConnectGetHostname");
-
-    result = rb_str_new2(hostname);
-    free(hostname);
-
-    return result;
+    gen_call_string(virConnectGetHostname, connect_get(s), 1,
+                    connect_get(s));
 }
 
 /*
  * Call +virConnectGetURI+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetURI]
  */
 VALUE libvirt_conn_uri(VALUE s) {
-    char *uri;
     virConnectPtr conn = connect_get(s);
-    VALUE result;
-
-    uri = virConnectGetURI(conn);
-    _E(!uri, conn, "virConnectGetURI");
-
-    result = rb_str_new2(uri);
-    free(uri);
-
-    return result;
+    gen_call_string(virConnectGetURI, conn, 1,
+                    conn);
 }
 
 /*
@@ -357,30 +416,16 @@ VALUE libvirt_conn_node_get_info(VALUE s){
  * Call +virConnectGetCapabilities+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
  */
 VALUE libvirt_conn_capabilities(VALUE s) {
-    char *caps;
-    VALUE result;
     virConnectPtr conn = connect_get(s);
-
-    caps = virConnectGetCapabilities(conn);
-    _E(caps == NULL, conn, "virConnectGetCapabilities");
-
-    result = rb_str_new2(caps);
-    free(caps);
-
-    return result;
+    gen_call_string(virConnectGetCapabilities, conn, 1,
+                    conn);
 }
 
 /*
  * Call +virConnectNumOfDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDomains]
  */
 VALUE libvirt_conn_num_of_domains(VALUE s) {
-    int result;
-    virConnectPtr conn = connect_get(s);
-
-    result = virConnectNumOfDomains(conn);
-    _E(result == -1, conn, "virConnectNumOfDomains");
-
-    return INT2NUM(result);
+    gen_conn_num_of(s, Domains);
 }
 
 /*
@@ -409,111 +454,42 @@ VALUE libvirt_conn_list_domains(VALUE s) {
  * Call +virConnectNumOfDefinedDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedDomains]
  */
 VALUE libvirt_conn_num_of_defined_domains(VALUE s) {
-    int result;
-    virConnectPtr conn = connect_get(s);
-
-    result = virConnectNumOfDefinedDomains(conn);
-    _E(result == -1, conn, "virConnectNumOfDefinedDomains");
-
-    return INT2NUM(result);
+    gen_conn_num_of(s, DefinedDomains);
 }
 
 /*
  * Call +virConnectListDefinedDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedDomains]
  */
 VALUE libvirt_conn_list_defined_domains(VALUE s) {
-    int i, r, num;
-    char **names;
-    virConnectPtr conn = connect_get(s);
-    VALUE result;
-
-    num = virConnectNumOfDefinedDomains(conn);
-    _E(num == -1, conn, "virConnectNumOfDefinedDomains");
-
-    names = alloca(num * sizeof(char*));
-    r = virConnectListDefinedDomains(conn, names, num);
-    _E(r == -1, conn, "virConnectListDefinedDomains");
-
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    return result;
+    gen_conn_list_names(s, DefinedDomains);
 }
 
 /*
  * Call +virConnectNumOfNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNetworks]
  */
 VALUE libvirt_conn_num_of_networks(VALUE s) {
-    int result;
-    virConnectPtr conn = connect_get(s);
-
-    result = virConnectNumOfNetworks(conn);
-    _E(result == -1, conn, "virConnectNumOfNetworks");
-
-    return INT2NUM(result);
+    gen_conn_num_of(s, Networks);
 }
 
 /*
  * Call +virConnectListNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListNetworks]
  */
 VALUE libvirt_conn_list_networks(VALUE s) {
-    int i, r, num;
-    char **names;
-    virConnectPtr conn = connect_get(s);
-    VALUE result;
-
-    num = virConnectNumOfNetworks(conn);
-    _E(num == -1, conn, "virConnectNumOfNetworks");
-
-    names = alloca(num * sizeof(char *));
-    r = virConnectListNetworks(conn, names, num);
-    _E(r == -1, conn, "virConnectListNetworks");
-
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    return result;
+    gen_conn_list_names(s, Networks);
 }
 
 /*
  * Call +virConnectNumOfDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedNetworks]
  */
 VALUE libvirt_conn_num_of_defined_networks(VALUE s) {
-    int result;
-    virConnectPtr conn = connect_get(s);
-
-    result = virConnectNumOfDefinedNetworks(conn);
-    _E(result == -1, conn, "virConnectNumOfDefinedNetworks");
-
-    return INT2NUM(result);
+    gen_conn_num_of(s, DefinedNetworks);
 }
 
 /*
  * Call +virConnectListDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedNetworks]
  */
 VALUE libvirt_conn_list_defined_networks(VALUE s) {
-    int i, r, num;
-    char **names;
-    virConnectPtr conn = connect_get(s);
-    VALUE result;
-
-    num = virConnectNumOfDefinedNetworks(conn);
-    _E(num == -1, conn, "virConnectNumOfDefinedNetworks");
-
-    names = alloca(num * sizeof(char*));
-    r = virConnectListDefinedNetworks(conn, names, num);
-    _E(r == -1, conn, "virConnectListDefinedNetworks");
-
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    return result;
+    gen_conn_list_names(s, DefinedNetworks);
 }
 
 /*
@@ -528,104 +504,64 @@ VALUE libvirt_dom_migrate(VALUE s, VALUE dconn, VALUE flags,
  * Call +virDomainShutdown+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainShutdown]
  */
 VALUE libvirt_dom_shutdown(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainShutdown(dom);
-    _E(r == -1, conn(s), "virDomainShutdown");
-
-    return Qnil;
+    gen_call_void(virDomainShutdown, conn(s),
+                  domain_get(s));
 }
 
 /*
  * Call +virDomainReboot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReboot]
  */
 VALUE libvirt_dom_reboot(VALUE s, VALUE flags) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainReboot(dom, NUM2UINT(flags));
-    _E(r == -1, conn(s), "virDomainReboot");
-
-    return Qnil;
+    gen_call_void(virDomainReboot, conn(s), 
+                  domain_get(s), NUM2UINT(flags));
 }
 
 /*
  * Call +virDomainDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDestroy]
  */
 VALUE libvirt_dom_destroy(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainDestroy(dom);
-    _E(r == -1, conn(s), "virDomainDestroy");
-
-    return Qnil;
+    gen_call_void(virDomainDestroy, conn(s),
+                  domain_get(s));
 }
 
 /*
  * Call +virDomainSuspend+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSuspend]
  */
 VALUE libvirt_dom_suspend(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainSuspend(dom);
-    _E(r == -1, conn(s), "virDomainSuspend");
-
-    return Qnil;
+    gen_call_void(virDomainSuspend, conn(s),
+                  domain_get(s));
 }
 
 /*
  * Call +virDomainResume+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainResume]
  */
 VALUE libvirt_dom_resume(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainResume(dom);
-    _E(r == -1, conn(s), "virDomainResume");
-
-    return Qnil;
+    gen_call_void(virDomainResume, conn(s),
+                  domain_get(s));
 }
 
 /*
  * Call +virDomainSave+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSave]
  */
 VALUE libvirt_dom_save(VALUE s, VALUE to) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainSave(dom, StringValueCStr(to));
-    _E(r == -1, conn(s), "virDomainSave");
-
-    return Qnil;
+    gen_call_void(virDomainSave, conn(s),
+                  domain_get(s), StringValueCStr(to));
 }
 
 /*
  * Call +virDomainCoreDump+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
  */
 VALUE libvirt_dom_core_dump(VALUE s, VALUE to, VALUE flags) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainCoreDump(dom, StringValueCStr(to), NUM2UINT(flags));
-    _E(r == -1, conn(s), "virDomainCoreDump");
-
-    return Qnil;
+    gen_call_void(virDomainCoreDump, conn(s),
+                  domain_get(s), StringValueCStr(to), NUM2UINT(flags));
 }
 
 /*
  * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
  */
 VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
-    virConnectPtr conn = connect_get(c);
-    int r;
-
-    r = virDomainRestore(conn, StringValueCStr(from));
-    _E(r == -1, conn, "virDomainRestore");
-
-    return Qnil;
+    gen_call_void(virDomainRestore, connect_get(c),
+                  connect_get(c), StringValueCStr(from));
 }
 
 /*
@@ -656,13 +592,8 @@ VALUE libvirt_dom_info(VALUE s) {
  * Call +virDomainGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
  */
 VALUE libvirt_dom_name(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    const char *name;
-
-    name = virDomainGetName(dom);
-    _E(name == NULL, conn(s), "virDomainGetName");
-
-    return rb_str_new2(name);
+    gen_call_string(virDomainGetName, conn(s), 0,
+                    domain_get(s));
 }
 
 /*
@@ -696,16 +627,8 @@ VALUE libvirt_dom_uuid(VALUE s) {
  * Call +virDomainGetOSType+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetOSType]
  */
 VALUE libvirt_dom_os_type(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    char *os_type;
-    VALUE result;
-
-    os_type = virDomainGetOSType(dom);
-    _E(os_type == NULL, conn(s), "virDomainGetOSType");
-
-    result = rb_str_new2(os_type);
-    free(os_type);
-    return result;
+    gen_call_string(virDomainGetOSType, conn(s), 1,
+                    domain_get(s));
 }
 
 /*
@@ -751,42 +674,24 @@ VALUE libvirt_dom_max_vcpus(VALUE s) {
  * Call +virDomainGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
  */
 VALUE libvirt_dom_xml_desc(VALUE s, VALUE flags) {
-    virDomainPtr dom = domain_get(s);
-    char *xml;
-    VALUE result;
-
-    xml = virDomainGetXMLDesc(dom, 0);
-    _E(xml == NULL, conn(s), "virDomainGetXMLDesc");
-
-    result = rb_str_new2(xml);
-    free(xml);
-    return result;
+    gen_call_string(virDomainGetXMLDesc, conn(s), 1,
+                    domain_get(s), 0);
 }
 
 /*
  * Call +virDomainUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUndefine]
  */
 VALUE libvirt_dom_undefine(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainUndefine(dom);
-    _E(r == -1, conn(s), "virDomainUndefine");
-
-    return Qnil;
+    gen_call_void(virDomainUndefine, conn(s),
+                  domain_get(s));
 }
 
 /*
  * Call +virDomainCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreate]
  */
 VALUE libvirt_dom_create(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainCreate(dom);
-    _E(r == -1, conn(s), "virDomainCreate");
-
-    return Qnil;
+    gen_call_void(virDomainCreate, conn(s),
+                  domain_get(s));
 }
 
 /*
@@ -806,13 +711,8 @@ VALUE libvirt_dom_autostart(VALUE s){
  * Call +virDomainSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetAutostart]
  */
 VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
-    virDomainPtr dom = domain_get(s);
-    int r;
-
-    r = virDomainSetAutostart(dom, RTEST(autostart) ? 1 : 0);
-    _E(r == -1, conn(s), "virDomainAutostart");
-
-    return Qnil;
+    gen_call_void(virDomainSetAutostart, conn(s),
+                  domain_get(s), RTEST(autostart) ? 1 : 0);
 }
 
 /*
@@ -946,52 +846,32 @@ VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
  * Call +virNetworkUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUndefine]
  */
 VALUE libvirt_netw_undefine(VALUE s) {
-    virNetworkPtr netw = network_get(s);
-    int r;
-
-    r = virNetworkUndefine(netw);
-    _E(r == -1, conn(s), "virNetworkUndefine");
-
-    return Qnil;
+    gen_call_void(virNetworkUndefine, conn(s),
+                  network_get(s));
 }
 
 /*
  * Call +virNetworkCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreate]
  */
 VALUE libvirt_netw_create(VALUE s) {
-    virNetworkPtr netw = network_get(s);
-    int r;
-
-    r = virNetworkCreate(netw);
-    _E(r == -1, conn(s), "virNetworkCreate");
-
-    return Qnil;
+    gen_call_void(virNetworkCreate, conn(s),
+                  network_get(s));
 }
 
 /*
  * Call +virNetworkDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDestroy]
  */
 VALUE libvirt_netw_destroy(VALUE s) {
-    virNetworkPtr netw = network_get(s);
-    int r;
-
-    r = virNetworkDestroy(netw);
-    _E(r == -1, conn(s), "virNetworkDestroy");
-
-    return Qnil;
+    gen_call_void(virNetworkDestroy, conn(s),
+                  network_get(s));
 }
 
 /*
  * Call +virNetworkGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
  */
 VALUE libvirt_netw_name(VALUE s) {
-    virNetworkPtr netw = network_get(s);
-    const char *name;
-
-    name = virNetworkGetName(netw);
-    _E(name == NULL, conn(s), "virNetworkGetName");
-
-    return rb_str_new2(name);
+    gen_call_string(virNetworkGetName, conn(s), 0,
+                    network_get(s));
 }
 
 /*
@@ -1012,32 +892,16 @@ VALUE libvirt_netw_uuid(VALUE s) {
  * Call +virNetworkGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
  */
 VALUE libvirt_netw_xml_desc(VALUE s, VALUE flags) {
-    virNetworkPtr netw = network_get(s);
-    char *xml;
-    VALUE result;
-
-    xml = virNetworkGetXMLDesc(netw, 0);
-    _E(xml == NULL, conn(s), "virNetworkGetXMLDesc");
-
-    result = rb_str_new2(xml);
-    free(xml);
-    return result;
+    gen_call_string(virNetworkGetXMLDesc, conn(s), 1,
+                    network_get(s), 0);
 }
 
 /*
  * Call +virNetworkGetBridgeName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
  */
 VALUE libvirt_netw_bridge_name(VALUE s) {
-    virNetworkPtr netw = network_get(s);
-    char *bridge_name;
-    VALUE result;
-
-    bridge_name = virNetworkGetBridgeName(netw);
-    _E(bridge_name == NULL, conn(s), "virNetworkGetBridgeName");
-
-    result = rb_str_new2(bridge_name);
-    free(bridge_name);
-    return result;
+    gen_call_string(virNetworkGetBridgeName, conn(s), 1,
+                    network_get(s));
 }
 
 /*
@@ -1057,13 +921,8 @@ VALUE libvirt_netw_autostart(VALUE s){
  * Call +virNetworkSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
  */
 VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
-    virNetworkPtr netw = network_get(s);
-    int r;
-
-    r = virNetworkSetAutostart(netw, RTEST(autostart) ? 1 : 0);
-    _E(r == -1, conn(s), "virNetworkSetAutostart");
-
-    return Qnil;
+    gen_call_void(virNetworkSetAutostart, conn(s),
+                  network_get(s), RTEST(autostart) ? 1 : 0);
 }
 
 void Init__libvirt() {
