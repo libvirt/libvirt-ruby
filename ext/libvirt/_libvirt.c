@@ -158,7 +158,7 @@ NORETURN(static void vir_error(virConnectPtr conn, const char *fn)) {
     } while(0)
 
 /*
- * Generate a call to a virConnectList... function. C is the Ruby VALUE
+ * Generate a call to a virConnectList... function. S is the Ruby VALUE
  * holding the connection and OBJS is a token indicating what objects to
  * get the number of, e.g. 'Domains' The list function must return an array
  * of strings, which is returned as a Ruby array
