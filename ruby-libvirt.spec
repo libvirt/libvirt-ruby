@@ -3,7 +3,7 @@
 
 Name:           ruby-libvirt
 Version:        @VERSION@
-Release:        3%{?dist}
+Release:        1%{?dist}
 Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
@@ -13,7 +13,7 @@ Source0:        http://libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
-BuildRequires:  libvirt-devel
+BuildRequires:  libvirt-devel >= 0.4.1
 Requires:       ruby(abi) = 1.8
 Provides:       ruby(libvirt) = %{version}
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Mar  6 2008 David Lutterkort <dlutter@redhat.com> - 0.0.3-1
+- Updated for libvirt 0.4.1
+
 * Wed Jan  2 2008 David Lutterkort <dlutter@redhat.com> - 0.0.2-3
 - Make _libvirt.so stripable by changing permissions to +x
 
