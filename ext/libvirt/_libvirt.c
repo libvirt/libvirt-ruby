@@ -30,6 +30,10 @@ static VALUE c_domain_info;
 static VALUE c_network;
 static VALUE c_libvirt_version;
 static VALUE c_node_info;
+static VALUE c_storage_pool;
+static VALUE c_storage_pool_info;
+static VALUE c_storage_vol;
+static VALUE c_storage_vol_info;
 
 /*
  * Internal helpers
@@ -124,6 +128,32 @@ static virNetworkPtr network_get(VALUE s) {
 
 static VALUE network_new(virNetworkPtr n, VALUE conn) {
     return generic_new(c_network, n, conn, network_free);
+}
+
+/* StoragePool */
+static void pool_free(void *d) {
+    generic_free(StoragePool, d);
+}
+ 
+static virStoragePoolPtr pool_get(VALUE s) {
+    generic_get(StoragePool, s);
+}
+ 
+static VALUE pool_new(virStoragePoolPtr n, VALUE conn) {
+    return generic_new(c_storage_pool, n, conn, pool_free);
+}
+ 
+/* StorageVol */
+static void vol_free(void *d) {
+    generic_free(StorageVol, d);
+}
+ 
+static virStorageVolPtr vol_get(VALUE s) {
+    generic_get(StorageVol, s);
+}
+ 
+static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
+    return generic_new(c_storage_vol, n, conn, vol_free);
 }
 
 /* Error handling */
@@ -493,6 +523,34 @@ VALUE libvirt_conn_list_defined_networks(VALUE s) {
 }
 
 /*
+ * Call +virConnectListStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListStoragePools]
+ */
+VALUE libvirt_conn_list_storage_pools(VALUE s) {
+    gen_conn_list_names(s, StoragePools);
+}
+
+/*
+ * Call +virConnectNumOfStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfStoragePools]
+ */
+VALUE libvirt_conn_num_of_storage_pools(VALUE s) {
+    gen_conn_num_of(s, StoragePools);
+}
+
+/*
+ * Call +virConnectListDefinedStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedStoragePools]
+ */
+VALUE libvirt_conn_list_defined_storage_pools(VALUE s) {
+    gen_conn_list_names(s, DefinedStoragePools);
+}
+
+/*
+ * Call +virConnectNumOfDefinedStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedStoragePools]
+ */
+VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
+    gen_conn_num_of(s, DefinedStoragePools);
+}
+
+/*
  * Class Libvirt::Domain
  */
 VALUE libvirt_dom_migrate(VALUE s, VALUE dconn, VALUE flags,
@@ -587,6 +645,7 @@ VALUE libvirt_dom_info(VALUE s) {
     rb_iv_set(result, "@cpu_time", ULL2NUM(info.cpuTime));
     return result;
 }
+
 
 /*
  * Call +virDomainGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
@@ -925,6 +984,436 @@ VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
                   network_get(s), RTEST(autostart) ? 1 : 0);
 }
 
+/*
+ * Libvirt::StoragePool
+ */
+
+/*
+ * Call +virStoragePoolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByName]
+ */
+VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+
+    pool = virStoragePoolLookupByName(conn, StringValueCStr(name));
+    _E(pool == NULL, conn, "virStoragePoolLookupByName");
+
+    return pool_new(pool, c);
+}
+
+/*
+ * Call +virStoragePoolLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByUUIDString]
+ */
+VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+
+    pool = virStoragePoolLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(pool == NULL, conn, "virStoragePoolLookupByUUID");
+
+    return pool_new(pool, c);
+}
+
+/*
+ * Call +virStoragePoolLookupByVolume+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByVolume]
+ */
+VALUE libvirt_vol_get_pool(VALUE v) {
+    virStoragePoolPtr pool;
+
+    pool = virStoragePoolLookupByVolume(vol_get(v));
+    _E(pool == NULL, conn(v), "virStoragePoolLookupByVolume");
+
+    return pool_new(pool, conn_attr(v));
+}
+
+/*
+ * Call +virStoragePoolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreateXML]
+ */
+VALUE libvirt_conn_create_pool_xml(VALUE c, VALUE xml, VALUE flags) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+    char *xmlDesc;
+
+    xmlDesc = StringValueCStr(xml);
+
+    pool = virStoragePoolCreateXML(conn, xmlDesc, NUM2UINT(flags));
+    _E(pool == NULL, conn, "virStoragePoolCreateXML");
+
+    return pool_new(pool, c);
+}
+
+/*
+ * Call +virStoragePoolDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDefineXML]
+ */
+VALUE libvirt_conn_define_pool_xml(VALUE c, VALUE xml, VALUE flags) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+
+    pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(pool == NULL, conn, "virStoragePoolDefineXML");
+
+    return pool_new(pool, c);
+}
+
+/*
+ * Call +virStoragePoolBuild+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolBuild]
+ */
+VALUE libvirt_pool_build(VALUE p, VALUE flags) {
+    gen_call_void(virStoragePoolBuild, conn(p),
+                  pool_get(p), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStoragePoolUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolUndefine]
+ */
+VALUE libvirt_pool_undefine(VALUE p) {
+    gen_call_void(virStoragePoolUndefine, conn(p),
+                  pool_get(p));
+}
+
+/*
+ * Call +virStoragePoolCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreate]
+ */
+VALUE libvirt_pool_create(VALUE p, VALUE flags) {
+    gen_call_void(virStoragePoolCreate, conn(p),
+                  pool_get(p), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStoragePoolDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDestroy]
+ */
+VALUE libvirt_pool_destroy(VALUE p) {
+    gen_call_void(virStoragePoolDestroy, conn(p),
+                  pool_get(p));
+}
+
+/*
+ * Call +virStoragePoolDelete+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDelete]
+ */
+VALUE libvirt_pool_delete(VALUE p, VALUE flags) {
+    gen_call_void(virStoragePoolDelete, conn(p),
+                  pool_get(p), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStoragePoolRefresh+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolRefresh]
+ */
+VALUE libvirt_pool_refresh(VALUE p, VALUE flags) {
+    gen_call_void(virStoragePoolRefresh, conn(p),
+                  pool_get(p), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStoragePoolGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetName]
+ */
+VALUE libvirt_pool_name(VALUE s) {
+    const char *name;
+
+    name = virStoragePoolGetName(pool_get(s));
+    _E(name == NULL, conn(s), "virStoragePoolGetName");
+
+    return rb_str_new2(name);
+}
+
+/*
+ * Call +virStoragePoolGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetUUIDString]
+ */
+VALUE libvirt_pool_uuid(VALUE s) {
+    char uuid[VIR_UUID_STRING_BUFLEN];
+    int r;
+
+    r = virStoragePoolGetUUIDString(pool_get(s), uuid);
+    _E(r == -1, conn(s), "virStoragePoolGetUUIDString");
+
+    return rb_str_new2((char *) uuid);
+}
+
+/*
+ * Call +virStoragePoolGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetInfo]
+ */
+VALUE libvirt_pool_info(VALUE s) {
+    virStoragePoolInfo info;
+    int r;
+    VALUE result;
+
+    r = virStoragePoolGetInfo(pool_get(s), &info);
+    _E(r == -1, conn(s), "virStoragePoolGetInfo");
+
+    result = rb_class_new_instance(0, NULL, c_storage_pool_info);
+    rb_iv_set(result, "@state", INT2FIX(info.state));
+    rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
+    rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
+    rb_iv_set(result, "@available", ULL2NUM(info.available));
+
+    return result;
+}
+
+/*
+ * Call +virStoragePoolGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetXMLDesc]
+ */
+VALUE libvirt_pool_xml_desc(VALUE s, VALUE flags) {
+    gen_call_string(virStoragePoolGetXMLDesc, conn(s), 1,
+                    pool_get(s), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStoragePoolGetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetAutostart]
+ */
+VALUE libvirt_pool_autostart(VALUE s){
+    int r, autostart;
+
+    r = virStoragePoolGetAutostart(pool_get(s), &autostart);
+    _E(r == -1, conn(s), "virStoragePoolGetAutostart");
+
+    return autostart ? Qtrue : Qfalse;
+}
+
+/*
+ * Call +virStoragePoolSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolSetAutostart]
+ */
+VALUE libvirt_pool_autostart_set(VALUE s, VALUE autostart) {
+    gen_call_void(virStoragePoolSetAutostart, conn(s),
+                  pool_get(s), RTEST(autostart) ? 1 : 0);
+}
+
+/*
+ * Call +virStoragePoolNumOfVolumes+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolNumOfVolumes]
+ */
+VALUE libvirt_pool_num_of_volumes(VALUE s) {
+    int n = virStoragePoolNumOfVolumes(pool_get(s));
+    _E(n == -1, conn(s), "virStoragePoolNumOfVolumes");
+
+    return INT2FIX(n);
+}
+
+/*
+ * Call +virStoragePoolListVolumes+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolListVolumes]
+ */
+VALUE libvirt_pool_list_volumes(VALUE s) {
+    int i, r, num;
+    char **names;
+    virStoragePoolPtr pool = pool_get(s);
+    VALUE result;
+
+    num = virStoragePoolNumOfVolumes(pool);
+    _E(num == -1, conn(s), "virStoragePoolNumOfVolumes");
+
+    names = alloca(num * sizeof(char*));
+    r = virStoragePoolListVolumes(pool, names, num);
+    _E(r == -1, conn(s), "virStoragePoolListVolumes");
+
+    result = rb_ary_new2(num);
+    for (i=0; i<num; i++) {
+        rb_ary_push(result, rb_str_new2(names[i]));
+        // FIXME: Should these really be freed ?
+        free(names[i]);
+    }
+    return result;
+}
+
+/*
+ * Libvirt::StorageVol
+ */
+
+/*
+ * Call +virStorageVolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByName]
+ */
+VALUE libvirt_pool_lookup_vol_by_name(VALUE p, VALUE name) {
+    virStorageVolPtr vol;
+
+    vol = virStorageVolLookupByName(pool_get(p), StringValueCStr(name));
+    _E(vol == NULL, conn(p), "virStorageVolLookupByName");
+
+    return vol_new(vol, conn_attr(p));
+}
+
+/*
+ * Call +virStorageVolLookupByKey+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByKey]
+ */
+VALUE libvirt_pool_lookup_vol_by_key(VALUE p, VALUE key) {
+    virStorageVolPtr vol;
+
+    // FIXME: Why does this take a connection, not a pool ?
+    vol = virStorageVolLookupByKey(conn(p), StringValueCStr(key));
+    _E(vol == NULL, conn(p), "virStorageVolLookupByKey");
+
+    return vol_new(vol, conn_attr(p));
+}
+
+/*
+ * Call +virStorageVolLookupByPath+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByPath]
+ */
+VALUE libvirt_pool_lookup_vol_by_path(VALUE p, VALUE path) {
+    virStorageVolPtr vol;
+
+    // FIXME: Why does this take a connection, not a pool ?
+    vol = virStorageVolLookupByPath(conn(p), StringValueCStr(path));
+    _E(vol == NULL, conn(p), "virStorageVolLookupByPath");
+
+    return vol_new(vol, conn_attr(p));
+}
+
+/*
+ * Call +virStorageVolGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetName]
+ */
+VALUE libvirt_vol_name(VALUE v) {
+    gen_call_string(virStorageVolGetName, conn(v), 0,
+                    vol_get(v));
+}
+
+/*
+ * Call +virStorageVolGetKey+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetKey]
+ */
+VALUE libvirt_vol_key(VALUE v) {
+    gen_call_string(virStorageVolGetKey, conn(v), 0,
+                    vol_get(v));
+}
+
+/*
+ * Call +virStorageVolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
+ */
+VALUE libvirt_vol_create_xml(VALUE p, VALUE xml, VALUE flags) {
+    virStorageVolPtr vol;
+    virConnectPtr c = conn(p);
+    char *xmlDesc;
+
+    xmlDesc = StringValueCStr(xml);
+
+    vol = virStorageVolCreateXML(pool_get(p), xmlDesc, NUM2UINT(flags));
+    _E(vol == NULL, c, "virNetworkCreateXML");
+
+    return vol_new(vol, conn_attr(p));
+}
+
+/*
+ * Call +virStorageVolDelete+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolDelete]
+ */
+VALUE libvirt_vol_delete(VALUE v, VALUE flags) {
+    gen_call_void(virStorageVolDelete, conn(v),
+                  vol_get(v), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStorageVolGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetInfo]
+ */
+VALUE libvirt_vol_info(VALUE v) {
+    virStorageVolInfo info;
+    int r;
+    VALUE result;
+
+    r = virStorageVolGetInfo(vol_get(v), &info);
+    _E(r == -1, conn(v), "virStorageVolGetInfo");
+
+    result = rb_class_new_instance(0, NULL, c_storage_vol_info);
+    rb_iv_set(result, "@type", INT2NUM(info.type));
+    rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
+    rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
+
+    return result;
+}
+
+/*
+ * Call +virStorageVolGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetXMLDesc]
+ */
+VALUE libvirt_vol_xml_desc(VALUE v, VALUE flags) {
+    gen_call_string(virStorageVolGetXMLDesc, conn(v), 1,
+                    vol_get(v), NUM2UINT(flags));
+}
+
+/*
+ * Call +virStorageVolGetPath+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetPath]
+ */
+VALUE libvirt_vol_path(VALUE v) {
+    gen_call_string(virStorageVolGetPath, conn(v), 1,
+                    vol_get(v));
+}
+
+static void init_storage(void) {
+    /*
+     * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo
+     */
+    c_storage_pool_info = rb_define_class_under(m_libvirt, "StoragePoolInfo",
+                                                rb_cObject);
+    rb_define_attr(c_storage_pool_info, "state", 1, 0);
+    rb_define_attr(c_storage_pool_info, "capacity", 1, 0);
+    rb_define_attr(c_storage_pool_info, "allocation", 1, 0);
+    rb_define_attr(c_storage_pool_info, "available", 1, 0);
+ 
+    c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool", 
+                                           rb_cObject);
+#define DEF_POOLCONST(name)                                        \
+    rb_define_const(c_storage_pool, #name, INT2NUM(VIR_STORAGE_POOL_##name))
+    /* virStoragePoolState */
+    DEF_POOLCONST(INACTIVE);
+    DEF_POOLCONST(BUILDING);
+    DEF_POOLCONST(RUNNING);
+    DEF_POOLCONST(DEGRADED);
+    /* virStoragePoolBuildFlags */
+    DEF_POOLCONST(BUILD_NEW);
+    DEF_POOLCONST(BUILD_REPAIR);
+    DEF_POOLCONST(BUILD_RESIZE);
+    /* virStoragePoolDeleteFlags */
+    DEF_POOLCONST(DELETE_NORMAL);
+    DEF_POOLCONST(DELETE_ZEROED);
+#undef DEF_POOLCONST
+    /* Creating/destroying pools */
+    rb_define_method(c_storage_pool, "build", libvirt_pool_build, 1);
+    rb_define_method(c_storage_pool, "undefine", libvirt_pool_undefine, 0);
+    rb_define_method(c_storage_pool, "create", libvirt_pool_create, 1);
+    rb_define_method(c_storage_pool, "destroy", libvirt_pool_destroy, 0);
+    rb_define_method(c_storage_pool, "delete", libvirt_pool_delete, 1);
+    rb_define_method(c_storage_pool, "refresh", libvirt_pool_refresh, 1);
+    /* StoragePool information */
+    rb_define_method(c_storage_pool, "name", libvirt_pool_name, 0);
+    rb_define_method(c_storage_pool, "uuid", libvirt_pool_uuid, 0);
+    rb_define_method(c_storage_pool, "info", libvirt_pool_info, 0);
+    rb_define_method(c_storage_pool, "xml_desc", libvirt_pool_xml_desc, 1);
+    rb_define_method(c_storage_pool, "autostart", libvirt_pool_autostart, 0);
+    rb_define_method(c_storage_pool, "autostart=",
+                     libvirt_pool_autostart_set, 1);
+    /* List/lookup storage volumes within a pool */
+    rb_define_method(c_storage_pool, "num_of_volumes",
+                     libvirt_pool_num_of_volumes, 0);
+    rb_define_method(c_storage_pool, "list_volumes",
+                     libvirt_pool_list_volumes, 0);
+    /* Lookup volumes based on various attributes */
+    rb_define_method(c_storage_pool, "lookup_volume_by_name",
+                     libvirt_pool_lookup_vol_by_name, 1);
+    rb_define_method(c_storage_pool, "lookup_volume_by_key",
+                     libvirt_pool_lookup_vol_by_key, 1);
+    rb_define_method(c_storage_pool, "lookup_volume_by_path",
+                     libvirt_pool_lookup_vol_by_path, 1);
+
+    /*
+     * Class Libvirt::StorageVol and Libvirt::StorageVolInfo
+     */
+    c_storage_vol_info = rb_define_class_under(m_libvirt, "StorageVolInfo",
+                                               rb_cObject);
+    rb_define_attr(c_storage_vol_info, "type", 1, 0);
+    rb_define_attr(c_storage_vol_info, "capacity", 1, 0);
+    rb_define_attr(c_storage_vol_info, "allocation", 1, 0);
+
+    c_storage_vol = rb_define_class_under(m_libvirt, "StorageVol",
+                                          rb_cObject);
+#define DEF_VOLCONST(name)                                        \
+    rb_define_const(c_storage_vol, #name, INT2NUM(VIR_STORAGE_VOL_##name))
+    /* virStorageVolType */
+    DEF_VOLCONST(FILE);
+    DEF_VOLCONST(BLOCK);
+    /* virStorageVolDeleteFlags */
+    DEF_VOLCONST(DELETE_NORMAL);
+    DEF_VOLCONST(DELETE_ZEROED);
+#undef DEF_VOLCONST
+
+    rb_define_method(c_storage_vol, "pool", libvirt_vol_get_pool, 0);
+    rb_define_method(c_storage_vol, "name", libvirt_vol_name, 0);
+    rb_define_method(c_storage_vol, "key", libvirt_vol_key, 0);
+    rb_define_method(c_storage_vol, "delete", libvirt_vol_delete, 1);
+    rb_define_method(c_storage_vol, "info", libvirt_vol_info, 0);
+    rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, 1);
+    rb_define_method(c_storage_vol, "path", libvirt_vol_path, 0);
+}
+
 void Init__libvirt() {
     int r;
 
@@ -964,6 +1453,14 @@ void Init__libvirt() {
                      libvirt_conn_num_of_defined_networks, 0);
     rb_define_method(c_connect, "list_defined_networks",
                      libvirt_conn_list_defined_networks, 0);
+    rb_define_method(c_connect, "num_of_storage_pools",
+                     libvirt_conn_num_of_storage_pools, 0);
+    rb_define_method(c_connect, "list_storage_pools",
+                     libvirt_conn_list_storage_pools, 0);
+    rb_define_method(c_connect, "num_of_defined_storage_pools",
+                     libvirt_conn_num_of_defined_storage_pools, 0);
+    rb_define_method(c_connect, "list_defined_storage_pools",
+                     libvirt_conn_list_defined_storage_pools, 0);
     // Domain creation/lookup
     rb_define_method(c_connect, "create_domain_linux",
                      libvirt_conn_create_linux, 2);
@@ -984,6 +1481,15 @@ void Init__libvirt() {
                      libvirt_conn_create_network_xml, 1);
     rb_define_method(c_connect, "define_network_xml",
                      libvirt_conn_define_network_xml, 1);
+    // Storage pool creation/lookup
+    rb_define_method(c_connect, "lookup_storage_pool_by_name",
+                     libvirt_conn_lookup_pool_by_name, 1);
+    rb_define_method(c_connect, "lookup_storage_pool_by_uuid",
+                     libvirt_conn_lookup_pool_by_uuid, 1);
+    rb_define_method(c_connect, "create_storage_pool_xml",
+                     libvirt_conn_create_pool_xml, 2);
+    rb_define_method(c_connect, "define_storage_pool_xml",
+                     libvirt_conn_define_pool_xml, 2);
 
     /*
      * Class Libvirt::Connect::Nodeinfo
@@ -1063,6 +1569,7 @@ void Init__libvirt() {
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
 
+    init_storage();
 
     r = virInitialize();
     if (r == -1)

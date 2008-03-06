@@ -15,7 +15,7 @@ module Libvirt
     # A version in Libvirt's representation
     class Version
         attr_reader :version, :type
-        
+
         def initialize(type, version)
             @type = type
             @version = version
