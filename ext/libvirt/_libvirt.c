@@ -160,7 +160,7 @@ static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
 #define _E(cond, conn, fn) \
     do { if (cond) vir_error(conn, fn); } while(0)
 
-NORETURN(static void vir_error(virConnectPtr conn, const char *fn)) {
+NORETURN( )static void vir_error(virConnectPtr conn, const char *fn) {
     rb_raise(rb_eSystemCallError, "libvir call %s failed", fn);
 }
 
