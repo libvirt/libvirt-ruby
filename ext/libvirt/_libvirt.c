@@ -22,18 +22,25 @@
 
 #include <ruby.h>
 #include <libvirt/libvirt.h>
+#include "extconf.h"
 
 static VALUE m_libvirt;
 static VALUE c_connect;
 static VALUE c_domain;
 static VALUE c_domain_info;
+#if HAVE_TYPE_VIRNETWORKPTR
 static VALUE c_network;
+#endif
 static VALUE c_libvirt_version;
 static VALUE c_node_info;
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
 static VALUE c_storage_pool;
 static VALUE c_storage_pool_info;
+#endif
+#if HAVE_TYPE_VIRSTORAGEVOLPTR
 static VALUE c_storage_vol;
 static VALUE c_storage_vol_info;
+#endif
 
 /*
  * Internal helpers
@@ -118,6 +125,7 @@ static VALUE domain_new(virDomainPtr d, VALUE conn) {
 }
 
 /* Network */
+#if HAVE_TYPE_VIRNETWORKPTR
 static void network_free(void *d) {
     generic_free(Network, d);
 }
@@ -129,21 +137,25 @@ static virNetworkPtr network_get(VALUE s) {
 static VALUE network_new(virNetworkPtr n, VALUE conn) {
     return generic_new(c_network, n, conn, network_free);
 }
+#endif
 
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
 /* StoragePool */
 static void pool_free(void *d) {
     generic_free(StoragePool, d);
 }
- 
+
 static virStoragePoolPtr pool_get(VALUE s) {
     generic_get(StoragePool, s);
 }
- 
+
 static VALUE pool_new(virStoragePoolPtr n, VALUE conn) {
     return generic_new(c_storage_pool, n, conn, pool_free);
 }
- 
+#endif
+
 /* StorageVol */
+#if HAVE_TYPE_VIRSTORAGEVOLPTR
 static void vol_free(void *d) {
     generic_free(StorageVol, d);
 }
@@ -155,12 +167,13 @@ static virStorageVolPtr vol_get(VALUE s) {
 static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
     return generic_new(c_storage_vol, n, conn, vol_free);
 }
+#endif
 
 /* Error handling */
 #define _E(cond, conn, fn) \
     do { if (cond) vir_error(conn, fn); } while(0)
 
-NORETURN( )static void vir_error(virConnectPtr conn, const char *fn) {
+NORETURN( ) static void vir_error(virConnectPtr conn, const char *fn) {
     rb_raise(rb_eSystemCallError, "libvir call %s failed", fn);
 }
 
@@ -522,6 +535,7 @@ VALUE libvirt_conn_list_defined_networks(VALUE s) {
     gen_conn_list_names(s, DefinedNetworks);
 }
 
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
 /*
  * Call +virConnectListStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListStoragePools]
  */
@@ -549,6 +563,7 @@ VALUE libvirt_conn_list_defined_storage_pools(VALUE s) {
 VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
     gen_conn_num_of(s, DefinedStoragePools);
 }
+#endif
 
 /*
  * Class Libvirt::Domain
@@ -846,6 +861,7 @@ VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
  * Class Libvirt::Network
  */
 
+#if HAVE_TYPE_VIRNETWORKPTR
 /*
  * Call +virNetworkLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByName]
  */
@@ -900,7 +916,9 @@ VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
 
     return network_new(netw, c);
 }
+#endif
 
+#if HAVE_TYPE_VIRNETWORKPTR
 /*
  * Call +virNetworkUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUndefine]
  */
@@ -983,11 +1001,13 @@ VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
     gen_call_void(virNetworkSetAutostart, conn(s),
                   network_get(s), RTEST(autostart) ? 1 : 0);
 }
+#endif
 
 /*
  * Libvirt::StoragePool
  */
 
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
 /*
  * Call +virStoragePoolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByName]
  */
@@ -1210,11 +1230,12 @@ VALUE libvirt_pool_list_volumes(VALUE s) {
     }
     return result;
 }
+#endif
 
 /*
  * Libvirt::StorageVol
  */
-
+#if HAVE_TYPE_VIRSTORAGEVOLPTR
 /*
  * Call +virStorageVolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByName]
  */
@@ -1327,11 +1348,13 @@ VALUE libvirt_vol_path(VALUE v) {
     gen_call_string(virStorageVolGetPath, conn(v), 1,
                     vol_get(v));
 }
+#endif
 
 static void init_storage(void) {
     /*
      * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo
      */
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     c_storage_pool_info = rb_define_class_under(m_libvirt, "StoragePoolInfo",
                                                 rb_cObject);
     rb_define_attr(c_storage_pool_info, "state", 1, 0);
@@ -1383,7 +1406,9 @@ static void init_storage(void) {
                      libvirt_pool_lookup_vol_by_key, 1);
     rb_define_method(c_storage_pool, "lookup_volume_by_path",
                      libvirt_pool_lookup_vol_by_path, 1);
+#endif
 
+#if HAVE_TYPE_VIRSTORAGEVOLPTR
     /*
      * Class Libvirt::StorageVol and Libvirt::StorageVolInfo
      */
@@ -1412,6 +1437,7 @@ static void init_storage(void) {
     rb_define_method(c_storage_vol, "info", libvirt_vol_info, 0);
     rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, 1);
     rb_define_method(c_storage_vol, "path", libvirt_vol_path, 0);
+#endif
 }
 
 void Init__libvirt() {
@@ -1446,6 +1472,7 @@ void Init__libvirt() {
                      libvirt_conn_num_of_defined_domains, 0);
     rb_define_method(c_connect, "list_defined_domains",
                      libvirt_conn_list_defined_domains, 0);
+#if HAVE_TYPE_VIRNETWORKPTR
     rb_define_method(c_connect, "num_of_networks",
                      libvirt_conn_num_of_networks, 0);
     rb_define_method(c_connect, "list_networks", libvirt_conn_list_networks, 0);
@@ -1453,6 +1480,8 @@ void Init__libvirt() {
                      libvirt_conn_num_of_defined_networks, 0);
     rb_define_method(c_connect, "list_defined_networks",
                      libvirt_conn_list_defined_networks, 0);
+#endif
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     rb_define_method(c_connect, "num_of_storage_pools",
                      libvirt_conn_num_of_storage_pools, 0);
     rb_define_method(c_connect, "list_storage_pools",
@@ -1461,6 +1490,7 @@ void Init__libvirt() {
                      libvirt_conn_num_of_defined_storage_pools, 0);
     rb_define_method(c_connect, "list_defined_storage_pools",
                      libvirt_conn_list_defined_storage_pools, 0);
+#endif
     // Domain creation/lookup
     rb_define_method(c_connect, "create_domain_linux",
                      libvirt_conn_create_linux, 2);
@@ -1473,6 +1503,7 @@ void Init__libvirt() {
     rb_define_method(c_connect, "define_domain_xml",
                      libvirt_conn_define_domain_xml, 1);
     // Network creation/lookup
+#if HAVE_TYPE_VIRNETWORKPTR
     rb_define_method(c_connect, "lookup_network_by_name",
                      libvirt_conn_lookup_network_by_name, 1);
     rb_define_method(c_connect, "lookup_network_by_uuid",
@@ -1481,7 +1512,9 @@ void Init__libvirt() {
                      libvirt_conn_create_network_xml, 1);
     rb_define_method(c_connect, "define_network_xml",
                      libvirt_conn_define_network_xml, 1);
+#endif
     // Storage pool creation/lookup
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     rb_define_method(c_connect, "lookup_storage_pool_by_name",
                      libvirt_conn_lookup_pool_by_name, 1);
     rb_define_method(c_connect, "lookup_storage_pool_by_uuid",
@@ -1490,6 +1523,7 @@ void Init__libvirt() {
                      libvirt_conn_create_pool_xml, 2);
     rb_define_method(c_connect, "define_storage_pool_xml",
                      libvirt_conn_define_pool_xml, 2);
+#endif
 
     /*
      * Class Libvirt::Connect::Nodeinfo
@@ -1557,6 +1591,7 @@ void Init__libvirt() {
     /*
      * Class Libvirt::Network
      */
+#if HAVE_TYPE_VIRNETWORKPTR
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
     rb_define_attr(c_network, "connection", 1, 0);
     rb_define_method(c_network, "undefine", libvirt_netw_undefine, 0);
@@ -1568,6 +1603,7 @@ void Init__libvirt() {
     rb_define_method(c_network, "bridge_name", libvirt_netw_bridge_name, 0);
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
+#endif
 
     init_storage();
 

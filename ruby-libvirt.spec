@@ -13,7 +13,8 @@ Source0:        http://libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
-BuildRequires:  libvirt-devel >= 0.4.1
+BuildRequires:  libvirt-devel >= 0.1.8
+BuildRequires:  xen-devel
 Requires:       ruby(abi) = 1.8
 Provides:       ruby(libvirt) = %{version}
 
@@ -36,7 +37,9 @@ install -p -m0644 lib/libvirt.rb %{buildroot}%{ruby_sitelib}
 install -p -m0755 ext/libvirt/_libvirt.so %{buildroot}%{ruby_sitearch}
  
 %check
+%if 0%{?fedora:%fedora} >= 5 || 0%{?rhel:%rhel} > 5
 rake test
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT

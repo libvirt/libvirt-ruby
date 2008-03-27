@@ -6,7 +6,19 @@ require 'libvirt'
 
 class TestConnect < Test::Unit::TestCase
 
-    TEST_CAPS = "<capabilities>\n\n  <host>\n    <cpu>\n      <arch>i686</arch>\n      <features>\n        <pae/>\n        <nonpae/>\n      </features>\n    </cpu>\n    <topology>\n      <cells num='2'>\n        <cell id='0'>\n          <cpus num='8'>\n            <cpu id='0'>\n            <cpu id='2'>\n            <cpu id='4'>\n            <cpu id='6'>\n            <cpu id='8'>\n            <cpu id='10'>\n            <cpu id='12'>\n            <cpu id='14'>\n          </cpus>\n        </cell>\n        <cell id='1'>\n          <cpus num='8'>\n            <cpu id='1'>\n            <cpu id='3'>\n            <cpu id='5'>\n            <cpu id='7'>\n            <cpu id='9'>\n            <cpu id='11'>\n            <cpu id='13'>\n            <cpu id='15'>\n          </cpus>\n        </cell>\n      </cells>\n    </topology>\n  </host>\n\n  <guest>\n    <os_type>linux</os_type>\n    <arch name='i686'>\n      <wordsize>32</wordsize>\n      <domain type='test'>\n      </domain>\n    </arch>\n    <features>\n      <pae/>\n      <nonpae/>\n    </features>\n  </guest>\n\n</capabilities>\n"
+    LIBVIRT_VERSION = Libvirt::version("Xen")[0]
+
+    TEST_CAPS_OLD = "<capabilities>\n  <host>\n    <cpu>\n      <arch>i686</arch>\n      <features>\n        <pae/>\n        <nonpae/>\n      </features>\n    </cpu>\n  </host>\n\n  <guest>\n    <os_type>linux</os_type>\n    <arch name=\"i686\">\n      <wordsize>32</wordsize>\n      <domain type=\"test\"/>\n    </arch>\n    <features>\n      <pae/>\n      <nonpae/>\n    </features>\n  </guest>\n</capabilities>\n"
+
+    TEST_CAPS_0_40_1 = "<capabilities>\n\n  <host>\n    <cpu>\n      <arch>i686</arch>\n      <features>\n        <pae/>\n        <nonpae/>\n      </features>\n    </cpu>\n    <topology>\n      <cells num='2'>\n        <cell id='0'>\n          <cpus num='8'>\n            <cpu id='0'>\n            <cpu id='2'>\n            <cpu id='4'>\n            <cpu id='6'>\n            <cpu id='8'>\n            <cpu id='10'>\n            <cpu id='12'>\n            <cpu id='14'>\n          </cpus>\n        </cell>\n        <cell id='1'>\n          <cpus num='8'>\n            <cpu id='1'>\n            <cpu id='3'>\n            <cpu id='5'>\n            <cpu id='7'>\n            <cpu id='9'>\n            <cpu id='11'>\n            <cpu id='13'>\n            <cpu id='15'>\n          </cpus>\n        </cell>\n      </cells>\n    </topology>\n  </host>\n\n  <guest>\n    <os_type>linux</os_type>\n    <arch name='i686'>\n      <wordsize>32</wordsize>\n      <domain type='test'>\n      </domain>\n    </arch>\n    <features>\n      <pae/>\n      <nonpae/>\n    </features>\n  </guest>\n\n</capabilities>\n"
+
+    if LIBVIRT_VERSION.major >= 0 &&
+            LIBVIRT_VERSION.minor >= 4 &&
+            LIBVIRT_VERSION.release >= 1
+        TEST_CAPS = TEST_CAPS_0_40_1
+    else
+        TEST_CAPS = TEST_CAPS_OLD
+    end
 
     UUID = "004b96e1-2d78-c30f-5aa5-f03c87d21e69"
 
