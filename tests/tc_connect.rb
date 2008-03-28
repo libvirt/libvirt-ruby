@@ -103,6 +103,12 @@ class TestConnect < Test::Unit::TestCase
         assert_equal(2097152, info.memory)
         assert_equal(2, info.nr_virt_cpu)
         assert_equal(Libvirt::Domain::RUNNING, info.state)
+
+        dom.memory = info.memory/2
+        dom.vcpus = 1
+        info = dom.info
+        assert_equal(2097152/2, info.memory)
+        assert_equal(1, info.nr_virt_cpu)
     end
 
     def test_network

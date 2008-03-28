@@ -1,6 +1,7 @@
 ????-??-?? 0.0.4
   * Bindings for the libvirt storage API (requires libvirt 0.4.1)
   * Suppress some bindings if the underlying libvirt doesn't support it
+  * Bindings for virDomainSetMemory and virDomainSetVcpus (Vadim Zaliva)
 
 2007-12-06 0.0.2
   * Add virNodeGetInfo binding

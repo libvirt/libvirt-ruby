@@ -734,6 +734,19 @@ VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
 }
 
 /*
+ * Call +virDomainSetMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemory]
+ */
+VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
+    virDomainPtr dom = domain_get(s);
+    int r;
+
+    r = virDomainSetMemory(dom, NUM2ULONG(memory));
+    _E(r == -1, conn(s), "virDomainSetMemory");
+
+    return ULONG2NUM(memory);
+}
+
+/*
  * Call +virDomainGetMaxVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxVcpus]
  */
 VALUE libvirt_dom_max_vcpus(VALUE s) {
@@ -745,6 +758,21 @@ VALUE libvirt_dom_max_vcpus(VALUE s) {
 
     return INT2NUM(vcpus);
 }
+
+
+/*
+ * Call +virDomainSetVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpus]
+ */
+VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
+    virDomainPtr dom = domain_get(s);
+    int r;
+
+    r = virDomainSetVcpus(dom, NUM2UINT(nvcpus));
+    _E(r == -1, conn(s), "virDomainSetVcpus");
+
+    return r;
+}
+
 
 /*
  * Call +virDomainGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
@@ -1573,7 +1601,9 @@ void Init__libvirt() {
     rb_define_method(c_domain, "os_type", libvirt_dom_os_type, 0);
     rb_define_method(c_domain, "max_memory", libvirt_dom_max_memory, 0);
     rb_define_method(c_domain, "max_memory=", libvirt_dom_max_memory_set, 1);
+    rb_define_method(c_domain, "memory=", libvirt_dom_memory_set, 1);
     rb_define_method(c_domain, "max_vcpus", libvirt_dom_max_vcpus, 0);
+    rb_define_method(c_domain, "vcpus=", libvirt_dom_vcpus_set, 1);
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, 0);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);
