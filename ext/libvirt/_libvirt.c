@@ -781,6 +781,36 @@ VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
     return r;
 }
 
+/*
+ * Call +virDomainPinVcpu+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
+ */
+VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
+    virDomainPtr dom = domain_get(s);
+    int r, i, len, maplen;
+    unsigned char *cpumap;
+    virNodeInfo nodeinfo;
+    virConnectPtr c = conn(s);
+
+    r = virNodeGetInfo(c, &nodeinfo);
+    _E(r < 0, c, "virNodeGetInfo");
+
+    maplen = VIR_CPU_MAPLEN(nodeinfo.cpus);
+    cpumap = ALLOC_N(unsigned char, maplen);
+    MEMZERO(cpumap, unsigned char, maplen);
+
+    len = RARRAY(cpulist)->len;
+    for(i = 0; i < len; i++) {
+        VALUE e = rb_ary_entry(cpulist, i);
+        VIR_USE_CPU(cpumap, NUM2UINT(e));
+    }
+
+    r = virDomainPinVcpu(dom, NUM2UINT(vcpu), cpumap, maplen);
+    free(cpumap);
+    _E(r < 0, c, "virDomainPinVcpu");
+
+    return r;
+}
+
 
 /*
  * Call +virDomainGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
@@ -1616,6 +1646,7 @@ void Init__libvirt() {
     rb_define_method(c_domain, "memory=", libvirt_dom_memory_set, 1);
     rb_define_method(c_domain, "max_vcpus", libvirt_dom_max_vcpus, 0);
     rb_define_method(c_domain, "vcpus=", libvirt_dom_vcpus_set, 1);
+    rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, 2);
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, 0);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);

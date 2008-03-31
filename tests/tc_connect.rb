@@ -109,6 +109,10 @@ class TestConnect < Test::Unit::TestCase
         info = dom.info
         assert_equal(2097152/2, info.memory)
         assert_equal(1, info.nr_virt_cpu)
+
+        # pin_vcpu is not implemented in the test driver
+        # enable this once it becomes available
+        # dom.pin_vcpu(0,[0])
     end
 
     def test_network
