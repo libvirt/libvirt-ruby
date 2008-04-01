@@ -13,7 +13,7 @@ Source0:        http://libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
-BuildRequires:  libvirt-devel >= 0.1.8
+BuildRequires:  libvirt-devel >= 0.4.0
 BuildRequires:  xen-devel
 Requires:       ruby(abi) = 1.8
 Provides:       ruby(libvirt) = %{version}
