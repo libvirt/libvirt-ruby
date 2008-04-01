@@ -14,7 +14,6 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
 BuildRequires:  libvirt-devel >= 0.4.0
-BuildRequires:  xen-devel
 Requires:       ruby(abi) = 1.8
 Provides:       ruby(libvirt) = %{version}
 
@@ -53,11 +52,14 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Apr  1 2008 David Lutterkort <dlutter@redhat.com> - 0.0.4-1
+- New version
+
 * Thu Mar  6 2008 David Lutterkort <dlutter@redhat.com> - 0.0.3-1
 - Updated for libvirt 0.4.1
 
 * Wed Jan  2 2008 David Lutterkort <dlutter@redhat.com> - 0.0.2-3
-- Make _libvirt.so stripable by changing permissions to +x
+- Make _libvirt.so strippable by changing permissions to +x
 
 * Wed Dec 19 2007 David Lutterkort <dlutter@redhat.com> - 0.0.2-2
 - Replace use of RPM_BUILD_ROOT by buildroot macro
