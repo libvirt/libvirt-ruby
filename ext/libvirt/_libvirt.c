@@ -52,7 +52,7 @@ static VALUE c_storage_vol_info;
     do {                                                                \
         int r;                                                          \
         r = vir##kind##Free((vir##kind##Ptr) p);                        \
-        if (r < 0)                                                    \
+        if (r < 0)                                                      \
             rb_raise(rb_eSystemCallError, # kind " free failed");       \
     } while(0);
 
@@ -61,11 +61,11 @@ static VALUE c_storage_vol_info;
         vir##kind##Ptr ptr;                                             \
         Data_Get_Struct(v, vir##kind, ptr);                             \
         if (!ptr)                                                       \
-            rb_raise(rb_eArgError, "Connection has been closed");       \
+            rb_raise(rb_eArgError, #kind " has been freed");            \
         return ptr;                                                     \
     } while (0);
 
-static VALUE generic_new(VALUE klass, void *ptr, VALUE conn, 
+static VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
                          RUBY_DATA_FUNC free_func) {
     VALUE result;
     result = Data_Wrap_Struct(klass, NULL, free_func, ptr);
@@ -263,6 +263,21 @@ static void vir_error(virConnectPtr conn, const char *fn) {
             free((void *) str);                                         \
         return result;                                                  \
     } while(0)
+
+/* Generate a call to vir##KIND##Free and return Qnil. Set the the embedded
+ * vir##KIND##Ptr to NULL. If that pointer is already NULL, do nothing.
+ */
+#define gen_call_free(kind, s)                                          \
+    do {                                                                \
+        vir##kind##Ptr ptr;                                             \
+        Data_Get_Struct(s, vir##kind, ptr);                             \
+        if (ptr != NULL) {                                              \
+            int r = vir##kind##Free(ptr);                               \
+            _E(r < 0, conn(s), "vir" #kind "Free");                     \
+            DATA_PTR(s) = NULL;                                         \
+        }                                                               \
+        return Qnil;                                                    \
+    } while (0)
 
 /*
  * Module Libvirt
@@ -926,6 +941,13 @@ VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
 }
 
 /*
+ * Call +virDomainFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFree]
+ */
+VALUE libvirt_dom_free(VALUE s) {
+    gen_call_free(Domain, s);
+}
+
+/*
  * Class Libvirt::Network
  */
 
@@ -1068,6 +1090,13 @@ VALUE libvirt_netw_autostart(VALUE s){
 VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
     gen_call_void(virNetworkSetAutostart, conn(s),
                   network_get(s), RTEST(autostart) ? 1 : 0);
+}
+
+/*
+ * Call +virNetworkFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkFree]
+ */
+VALUE libvirt_netw_free(VALUE s) {
+    gen_call_free(Network, s);
 }
 #endif
 
@@ -1302,6 +1331,13 @@ VALUE libvirt_pool_list_volumes(VALUE s) {
     free(names);
     return result;
 }
+
+/*
+ * Call +virStoragePoolFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolFree]
+ */
+VALUE libvirt_pool_free(VALUE s) {
+    gen_call_free(StoragePool, s);
+}
 #endif
 
 /*
@@ -1420,6 +1456,13 @@ VALUE libvirt_vol_path(VALUE v) {
     gen_call_string(virStorageVolGetPath, conn(v), 1,
                     vol_get(v));
 }
+
+/*
+ * Call +virStorageVolFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolFree]
+ */
+VALUE libvirt_vol_free(VALUE s) {
+    gen_call_free(StorageVol, s);
+}
 #endif
 
 static void init_storage(void) {
@@ -1433,7 +1476,7 @@ static void init_storage(void) {
     rb_define_attr(c_storage_pool_info, "capacity", 1, 0);
     rb_define_attr(c_storage_pool_info, "allocation", 1, 0);
     rb_define_attr(c_storage_pool_info, "available", 1, 0);
- 
+
     c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool", 
                                            rb_cObject);
 #define DEF_POOLCONST(name)                                        \
@@ -1478,6 +1521,7 @@ static void init_storage(void) {
                      libvirt_pool_lookup_vol_by_key, 1);
     rb_define_method(c_storage_pool, "lookup_volume_by_path",
                      libvirt_pool_lookup_vol_by_path, 1);
+    rb_define_method(c_storage_pool, "free", libvirt_pool_free, 0);
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR
@@ -1509,6 +1553,7 @@ static void init_storage(void) {
     rb_define_method(c_storage_vol, "info", libvirt_vol_info, 0);
     rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, 1);
     rb_define_method(c_storage_vol, "path", libvirt_vol_path, 0);
+    rb_define_method(c_storage_vol, "free", libvirt_vol_free, 0);
 #endif
 }
 
@@ -1652,6 +1697,7 @@ void Init__libvirt() {
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
+    rb_define_method(c_domain, "free", libvirt_dom_free, 0);
 
     /*
      * Class Libvirt::Domain::Info
@@ -1678,6 +1724,7 @@ void Init__libvirt() {
     rb_define_method(c_network, "bridge_name", libvirt_netw_bridge_name, 0);
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
+    rb_define_method(c_network, "free", libvirt_netw_free, 0);
 #endif
 
     init_storage();

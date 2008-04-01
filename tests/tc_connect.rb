@@ -113,6 +113,11 @@ class TestConnect < Test::Unit::TestCase
         # pin_vcpu is not implemented in the test driver
         # enable this once it becomes available
         # dom.pin_vcpu(0,[0])
+
+        dom.free()
+        assert_raise ArgumentError do
+            dom.name
+        end
     end
 
     def test_network
@@ -136,6 +141,10 @@ class TestConnect < Test::Unit::TestCase
 
         assert_equal(2, c.num_of_networks)
         assert_equal(["default", "local"], c.list_networks)
+
+        netw.free
+        assert_raise ArgumentError do
+            netw.name
+        end
     end
 end
-
