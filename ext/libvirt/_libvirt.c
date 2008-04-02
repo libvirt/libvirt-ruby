@@ -609,7 +609,14 @@ VALUE libvirt_dom_shutdown(VALUE s) {
 /*
  * Call +virDomainReboot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReboot]
  */
-VALUE libvirt_dom_reboot(VALUE s, VALUE flags) {
+VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virDomainReboot, conn(s), 
                   domain_get(s), NUM2UINT(flags));
 }
@@ -649,7 +656,14 @@ VALUE libvirt_dom_save(VALUE s, VALUE to) {
 /*
  * Call +virDomainCoreDump+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
  */
-VALUE libvirt_dom_core_dump(VALUE s, VALUE to, VALUE flags) {
+VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE s) {
+    VALUE to, flags;
+
+    rb_scan_args(argc, argv, "11", &to, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virDomainCoreDump, conn(s),
                   domain_get(s), StringValueCStr(to), NUM2UINT(flags));
 }
@@ -830,7 +844,14 @@ VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
 /*
  * Call +virDomainGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
  */
-VALUE libvirt_dom_xml_desc(VALUE s, VALUE flags) {
+VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_string(virDomainGetXMLDesc, conn(s), 1,
                     domain_get(s), 0);
 }
@@ -875,10 +896,16 @@ VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
 /*
  * Call +virDomainCreateLinux+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateLinux]
  */
-VALUE libvirt_conn_create_linux(VALUE c, VALUE xml, VALUE flags) {
+VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
     virDomainPtr dom;
     virConnectPtr conn = connect_get(c);
     char *xmlDesc;
+    VALUE flags, xml;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
 
     xmlDesc = StringValueCStr(xml);
 
@@ -1058,9 +1085,16 @@ VALUE libvirt_netw_uuid(VALUE s) {
 /*
  * Call +virNetworkGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
  */
-VALUE libvirt_netw_xml_desc(VALUE s, VALUE flags) {
+VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_string(virNetworkGetXMLDesc, conn(s), 1,
-                    network_get(s), 0);
+                    network_get(s), NUM2UINT(flags));
 }
 
 /*
@@ -1146,10 +1180,16 @@ VALUE libvirt_vol_get_pool(VALUE v) {
 /*
  * Call +virStoragePoolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreateXML]
  */
-VALUE libvirt_conn_create_pool_xml(VALUE c, VALUE xml, VALUE flags) {
+VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
     virStoragePoolPtr pool;
     virConnectPtr conn = connect_get(c);
     char *xmlDesc;
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
 
     xmlDesc = StringValueCStr(xml);
 
@@ -1162,9 +1202,15 @@ VALUE libvirt_conn_create_pool_xml(VALUE c, VALUE xml, VALUE flags) {
 /*
  * Call +virStoragePoolDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDefineXML]
  */
-VALUE libvirt_conn_define_pool_xml(VALUE c, VALUE xml, VALUE flags) {
+VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
     virStoragePoolPtr pool;
     virConnectPtr conn = connect_get(c);
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
 
     pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(pool == NULL, conn, "virStoragePoolDefineXML");
@@ -1175,7 +1221,14 @@ VALUE libvirt_conn_define_pool_xml(VALUE c, VALUE xml, VALUE flags) {
 /*
  * Call +virStoragePoolBuild+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolBuild]
  */
-VALUE libvirt_pool_build(VALUE p, VALUE flags) {
+VALUE libvirt_pool_build(int argc, VALUE *argv, VALUE p) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virStoragePoolBuild, conn(p),
                   pool_get(p), NUM2UINT(flags));
 }
@@ -1191,7 +1244,14 @@ VALUE libvirt_pool_undefine(VALUE p) {
 /*
  * Call +virStoragePoolCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreate]
  */
-VALUE libvirt_pool_create(VALUE p, VALUE flags) {
+VALUE libvirt_pool_create(int argc, VALUE *argv, VALUE p) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virStoragePoolCreate, conn(p),
                   pool_get(p), NUM2UINT(flags));
 }
@@ -1207,7 +1267,14 @@ VALUE libvirt_pool_destroy(VALUE p) {
 /*
  * Call +virStoragePoolDelete+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDelete]
  */
-VALUE libvirt_pool_delete(VALUE p, VALUE flags) {
+VALUE libvirt_pool_delete(int argc, VALUE *argv, VALUE p) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virStoragePoolDelete, conn(p),
                   pool_get(p), NUM2UINT(flags));
 }
@@ -1215,7 +1282,14 @@ VALUE libvirt_pool_delete(VALUE p, VALUE flags) {
 /*
  * Call +virStoragePoolRefresh+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolRefresh]
  */
-VALUE libvirt_pool_refresh(VALUE p, VALUE flags) {
+VALUE libvirt_pool_refresh(int argc, VALUE *argv, VALUE p) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virStoragePoolRefresh, conn(p),
                   pool_get(p), NUM2UINT(flags));
 }
@@ -1268,7 +1342,14 @@ VALUE libvirt_pool_info(VALUE s) {
 /*
  * Call +virStoragePoolGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetXMLDesc]
  */
-VALUE libvirt_pool_xml_desc(VALUE s, VALUE flags) {
+VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_string(virStoragePoolGetXMLDesc, conn(s), 1,
                     pool_get(s), NUM2UINT(flags));
 }
@@ -1401,10 +1482,16 @@ VALUE libvirt_vol_key(VALUE v) {
 /*
  * Call +virStorageVolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
  */
-VALUE libvirt_vol_create_xml(VALUE p, VALUE xml, VALUE flags) {
+VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
     virStorageVolPtr vol;
     virConnectPtr c = conn(p);
     char *xmlDesc;
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
 
     xmlDesc = StringValueCStr(xml);
 
@@ -1417,7 +1504,14 @@ VALUE libvirt_vol_create_xml(VALUE p, VALUE xml, VALUE flags) {
 /*
  * Call +virStorageVolDelete+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolDelete]
  */
-VALUE libvirt_vol_delete(VALUE v, VALUE flags) {
+VALUE libvirt_vol_delete(int argc, VALUE *argv, VALUE v) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_void(virStorageVolDelete, conn(v),
                   vol_get(v), NUM2UINT(flags));
 }
@@ -1444,7 +1538,14 @@ VALUE libvirt_vol_info(VALUE v) {
 /*
  * Call +virStorageVolGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetXMLDesc]
  */
-VALUE libvirt_vol_xml_desc(VALUE v, VALUE flags) {
+VALUE libvirt_vol_xml_desc(int argc, VALUE *argv, VALUE v) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
     gen_call_string(virStorageVolGetXMLDesc, conn(v), 1,
                     vol_get(v), NUM2UINT(flags));
 }
@@ -1495,17 +1596,17 @@ static void init_storage(void) {
     DEF_POOLCONST(DELETE_ZEROED);
 #undef DEF_POOLCONST
     /* Creating/destroying pools */
-    rb_define_method(c_storage_pool, "build", libvirt_pool_build, 1);
+    rb_define_method(c_storage_pool, "build", libvirt_pool_build, -1);
     rb_define_method(c_storage_pool, "undefine", libvirt_pool_undefine, 0);
-    rb_define_method(c_storage_pool, "create", libvirt_pool_create, 1);
+    rb_define_method(c_storage_pool, "create", libvirt_pool_create, -1);
     rb_define_method(c_storage_pool, "destroy", libvirt_pool_destroy, 0);
-    rb_define_method(c_storage_pool, "delete", libvirt_pool_delete, 1);
-    rb_define_method(c_storage_pool, "refresh", libvirt_pool_refresh, 1);
+    rb_define_method(c_storage_pool, "delete", libvirt_pool_delete, -1);
+    rb_define_method(c_storage_pool, "refresh", libvirt_pool_refresh, -1);
     /* StoragePool information */
     rb_define_method(c_storage_pool, "name", libvirt_pool_name, 0);
     rb_define_method(c_storage_pool, "uuid", libvirt_pool_uuid, 0);
     rb_define_method(c_storage_pool, "info", libvirt_pool_info, 0);
-    rb_define_method(c_storage_pool, "xml_desc", libvirt_pool_xml_desc, 1);
+    rb_define_method(c_storage_pool, "xml_desc", libvirt_pool_xml_desc, -1);
     rb_define_method(c_storage_pool, "autostart", libvirt_pool_autostart, 0);
     rb_define_method(c_storage_pool, "autostart=",
                      libvirt_pool_autostart_set, 1);
@@ -1522,6 +1623,7 @@ static void init_storage(void) {
     rb_define_method(c_storage_pool, "lookup_volume_by_path",
                      libvirt_pool_lookup_vol_by_path, 1);
     rb_define_method(c_storage_pool, "free", libvirt_pool_free, 0);
+    rb_define_method(c_storage_pool, "create_vol_xml", libvirt_pool_vol_create_xml, -1);
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR
@@ -1549,9 +1651,9 @@ static void init_storage(void) {
     rb_define_method(c_storage_vol, "pool", libvirt_vol_get_pool, 0);
     rb_define_method(c_storage_vol, "name", libvirt_vol_name, 0);
     rb_define_method(c_storage_vol, "key", libvirt_vol_key, 0);
-    rb_define_method(c_storage_vol, "delete", libvirt_vol_delete, 1);
+    rb_define_method(c_storage_vol, "delete", libvirt_vol_delete, -1);
     rb_define_method(c_storage_vol, "info", libvirt_vol_info, 0);
-    rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, 1);
+    rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, -1);
     rb_define_method(c_storage_vol, "path", libvirt_vol_path, 0);
     rb_define_method(c_storage_vol, "free", libvirt_vol_free, 0);
 #endif
@@ -1610,7 +1712,7 @@ void Init__libvirt() {
 #endif
     // Domain creation/lookup
     rb_define_method(c_connect, "create_domain_linux",
-                     libvirt_conn_create_linux, 2);
+                     libvirt_conn_create_linux, -1);
     rb_define_method(c_connect, "lookup_domain_by_name",
                      libvirt_conn_lookup_domain_by_name, 1);
     rb_define_method(c_connect, "lookup_domain_by_id",
@@ -1637,9 +1739,9 @@ void Init__libvirt() {
     rb_define_method(c_connect, "lookup_storage_pool_by_uuid",
                      libvirt_conn_lookup_pool_by_uuid, 1);
     rb_define_method(c_connect, "create_storage_pool_xml",
-                     libvirt_conn_create_pool_xml, 2);
+                     libvirt_conn_create_pool_xml, -1);
     rb_define_method(c_connect, "define_storage_pool_xml",
-                     libvirt_conn_define_pool_xml, 2);
+                     libvirt_conn_define_pool_xml, -1);
 #endif
 
     /*
@@ -1674,13 +1776,13 @@ void Init__libvirt() {
     rb_define_method(c_domain, "migrate", libvirt_dom_migrate, 5);
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
-    rb_define_method(c_domain, "reboot", libvirt_dom_reboot, 1);
+    rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
     rb_define_method(c_domain, "destroy", libvirt_dom_destroy, 0);
     rb_define_method(c_domain, "suspend", libvirt_dom_suspend, 0);
     rb_define_method(c_domain, "resume", libvirt_dom_resume, 0);
     rb_define_method(c_domain, "save", libvirt_dom_save, 1);
     rb_define_singleton_method(c_domain, "restore", libvirt_dom_s_restore, 2);
-    rb_define_method(c_domain, "core_dump", libvirt_dom_core_dump, 2);
+    rb_define_method(c_domain, "core_dump", libvirt_dom_core_dump, -1);
     rb_define_method(c_domain, "info", libvirt_dom_info, 0);
     rb_define_method(c_domain, "name", libvirt_dom_name, 0);
     rb_define_method(c_domain, "id", libvirt_dom_id, 0);
@@ -1692,7 +1794,7 @@ void Init__libvirt() {
     rb_define_method(c_domain, "max_vcpus", libvirt_dom_max_vcpus, 0);
     rb_define_method(c_domain, "vcpus=", libvirt_dom_vcpus_set, 1);
     rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, 2);
-    rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, 0);
+    rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
@@ -1720,7 +1822,7 @@ void Init__libvirt() {
     rb_define_method(c_network, "destroy", libvirt_netw_destroy, 0);
     rb_define_method(c_network, "name", libvirt_netw_name, 0);
     rb_define_method(c_network, "uuid", libvirt_netw_uuid, 0);
-    rb_define_method(c_network, "xml_desc", libvirt_netw_xml_desc, 1);
+    rb_define_method(c_network, "xml_desc", libvirt_netw_xml_desc, -1);
     rb_define_method(c_network, "bridge_name", libvirt_netw_bridge_name, 0);
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
