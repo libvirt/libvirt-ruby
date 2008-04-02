@@ -6,7 +6,7 @@ require 'libvirt'
 
 class TestConnect < Test::Unit::TestCase
 
-    LIBVIRT_VERSION = Libvirt::version("Xen")[0]
+    LIBVIRT_VERSION = Libvirt::version("Test")[0]
 
     TEST_CAPS_OLD = "<capabilities>\n  <host>\n    <cpu>\n      <arch>i686</arch>\n      <features>\n        <pae/>\n        <nonpae/>\n      </features>\n    </cpu>\n  </host>\n\n  <guest>\n    <os_type>linux</os_type>\n    <arch name=\"i686\">\n      <wordsize>32</wordsize>\n      <domain type=\"test\"/>\n    </arch>\n    <features>\n      <pae/>\n      <nonpae/>\n    </features>\n  </guest>\n</capabilities>\n"
 
