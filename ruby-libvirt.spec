@@ -52,6 +52,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Apr  2 2008 David Lutterkort <dlutter@redhat.com> - 0.0.5-1
+- Remove explicit xen-devel dependency
+
 * Tue Apr  1 2008 David Lutterkort <dlutter@redhat.com> - 0.0.4-1
 - New version
 

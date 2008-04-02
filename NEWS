@@ -1,4 +1,4 @@
-????-??-?? 0.0.5
+2008-04-02 0.0.5
   * Explicit free methods for various objects (based on a patch by
     Vadim Zaliva)
   * Make the FLAGS argument for various calls optional, and default it
