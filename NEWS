@@ -3,6 +3,8 @@
     Vadim Zaliva)
   * Make the FLAGS argument for various calls optional, and default it
     to 0. (Chris Lalancette)
+  * More finegrained exceptions on errors, containing libvirt error message
+    (Mohammed Morsi)
 
 2008-04-01 0.0.4
   * Bindings for the libvirt storage API (requires libvirt 0.4.1)

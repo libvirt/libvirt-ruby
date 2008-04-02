@@ -22,6 +22,7 @@
 
 #include <ruby.h>
 #include <libvirt/libvirt.h>
+#include <libvirt/virterror.h>
 #include "extconf.h"
 
 static VALUE m_libvirt;
@@ -41,6 +42,13 @@ static VALUE c_storage_pool_info;
 static VALUE c_storage_vol;
 static VALUE c_storage_vol_info;
 #endif
+
+
+// define additional errors here
+static VALUE e_Error;                   // Error - generic error
+static VALUE e_ConnectionError;         // ConnectionError - error durring connection establishment
+static VALUE e_DefinitionError;         // DefinitionError - error during data definition
+static VALUE e_RetrieveError;           // RetrievalError - error during data retrieval
 
 /*
  * Internal helpers
@@ -73,6 +81,39 @@ static VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
     return result;
 }
 
+/* Error handling */
+#define _E(cond, excep) \
+    do { if (cond) vir_error(excep); } while(0)
+
+NORETURN(static void vir_error(VALUE exception));
+
+static void vir_error(VALUE exception) {
+    rb_exc_raise(exception);
+}
+
+static VALUE create_error(VALUE error, char* method, char* msg,
+                          virConnectPtr conn) {
+    VALUE ruby_errinfo;
+    int result;
+    virError err;
+
+    ruby_errinfo = rb_exc_new2(error, msg);
+    rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
+
+    if (conn == NULL)
+        result = virCopyLastError(&err);
+    else
+        result = virConnCopyLastError(conn, &err);
+
+    if (result >= 0)
+        rb_iv_set(ruby_errinfo, "@libvirt_message", rb_str_new2(err.message));
+
+    virResetError(&err);
+
+    return ruby_errinfo;
+};
+
+
 /* Connections */
 static void connect_close(void *p) {
     int r;
@@ -80,8 +121,8 @@ static void connect_close(void *p) {
     if (!p)
         return;
     r = virConnectClose((virConnectPtr) p);
-    if (r < 0)
-        rb_raise(rb_eSystemCallError, "Connection close failed");
+    _E(r < 0, create_error(rb_eSystemCallError, "connect_close",
+                           "Connection close failed", p));
 }
 
 static VALUE connect_new(virConnectPtr p) {
@@ -169,16 +210,6 @@ static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
 }
 #endif
 
-/* Error handling */
-#define _E(cond, conn, fn) \
-    do { if (cond) vir_error(conn, fn); } while(0)
-
-NORETURN(static void vir_error(virConnectPtr conn, const char *fn));
-
-static void vir_error(virConnectPtr conn, const char *fn) {
-    rb_raise(rb_eSystemCallError, "libvir call %s failed", fn);
-}
-
 /*
  * Code generating macros.
  *
@@ -197,7 +228,7 @@ static void vir_error(virConnectPtr conn, const char *fn) {
         virConnectPtr conn = connect_get(c);                            \
                                                                         \
         result = virConnectNumOf##objs(conn);                           \
-        _E(result < 0, conn, "virConnectNumOf" # objs);               \
+        _E(result < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));                \
                                                                         \
         return INT2NUM(result);                                         \
     } while(0)
@@ -216,13 +247,13 @@ static void vir_error(virConnectPtr conn, const char *fn) {
         VALUE result;                                                   \
                                                                         \
         num = virConnectNumOf##objs(conn);                              \
-        _E(num < 0, conn, "virConnectNumOf" # objs);                  \
+        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));   \
                                                                         \
         names = ALLOC_N(char *, num);                                   \
         r = virConnectList##objs(conn, names, num);                     \
         if (r < 0) {                                                    \
             free(names);                                                \
-            _E(r < 0, conn, "virConnectList" # objs);                   \
+            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, "", conn));  \
         }                                                               \
                                                                         \
         result = rb_ary_new2(num);                                      \
@@ -238,11 +269,11 @@ static void vir_error(virConnectPtr conn, const char *fn) {
  * indicates error and 0 success. The Ruby function will return Qnil on
  * success and throw an exception on error.
  */
-#define gen_call_void(func, conn, args...)                               \
+#define gen_call_void(func, conn, args...)                              \
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        _E(_r_##func < 0, conn, #func);                               \
+        _E(_r_##func < 0, create_error(e_Error, #func, "", conn));      \
         return Qnil;                                                    \
     } while(0)
 
@@ -256,7 +287,7 @@ static void vir_error(virConnectPtr conn, const char *fn) {
         VALUE result;                                                   \
                                                                         \
         str = func(args);                                               \
-        _E(str == NULL, conn, # func);                                  \
+        _E(str == NULL, create_error(e_Error, # func, "", conn));       \
                                                                         \
         result = rb_str_new2(str);                                      \
         if (dealloc)                                                    \
@@ -273,7 +304,7 @@ static void vir_error(virConnectPtr conn, const char *fn) {
         Data_Get_Struct(s, vir##kind, ptr);                             \
         if (ptr != NULL) {                                              \
             int r = vir##kind##Free(ptr);                               \
-            _E(r < 0, conn(s), "vir" #kind "Free");                     \
+            _E(r < 0, create_error(e_Error, "vir" #kind "Free", "", conn(s))); \
             DATA_PTR(s) = NULL;                                         \
         }                                                               \
         return Qnil;                                                    \
@@ -331,7 +362,7 @@ VALUE libvirt_open(VALUE m, VALUE url) {
     }
     virConnectPtr ptr = virConnectOpen(str);
     if (!ptr)
-        rb_raise(rb_eArgError, "Failed to open %s", str);
+        rb_raise(e_ConnectionError, "Failed to open %s", str);
     return connect_new(ptr);
 }
 
@@ -351,8 +382,8 @@ VALUE libvirt_open_read_only(VALUE m, VALUE url) {
             rb_raise(rb_eTypeError, "expected string");
     }
     virConnectPtr ptr = virConnectOpenReadOnly(str);
-    _E(!ptr, NULL, "virConnectOpenReadOnly");
-
+    if (!ptr)
+        rb_raise(e_ConnectionError, "Failed to open %s readonly", str);
     return connect_new(ptr);
 }
 
@@ -411,7 +442,7 @@ VALUE libvirt_conn_version(VALUE s) {
     virConnectPtr conn = connect_get(s);
 
     r = virConnectGetVersion(conn, &v);
-    _E(r < 0, conn, "virConnectGetVersion");
+    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion", "", conn));
 
     return ULONG2NUM(v);
 }
@@ -444,7 +475,7 @@ VALUE libvirt_conn_max_vcpus(VALUE s, VALUE type) {
     virConnectPtr conn = connect_get(s);
 
     result = virConnectGetMaxVcpus(conn, StringValueCStr(type));
-    _E(result < 0, conn, "virConnectGetMaxVcpus");
+    _E(result < 0, create_error(e_RetrieveError, "virConnectGetMaxVcpus", "", conn));
 
     return INT2NUM(result);
 }
@@ -460,7 +491,7 @@ VALUE libvirt_conn_node_get_info(VALUE s){
     VALUE modelstr;
 
     r = virNodeGetInfo(conn, &nodeinfo);
-    _E(r < 0, conn, "virNodeGetInfo");
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn));
 
     modelstr = rb_str_new2(nodeinfo.model);
 
@@ -501,13 +532,13 @@ VALUE libvirt_conn_list_domains(VALUE s) {
     VALUE result;
 
     num = virConnectNumOfDomains(conn);
-    _E(num < 0, conn, "virConnectNumOfDomains");
+    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", "", conn));
 
     ids = ALLOC_N(int, num);
     r = virConnectListDomains(conn, ids, num);
     if (r < 0) {
         free(ids);
-        _E(r < 0, conn, "virConnectListDomains");
+        _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", "", conn));
     }
 
     result = rb_ary_new2(num);
@@ -689,7 +720,7 @@ VALUE libvirt_dom_info(VALUE s) {
     VALUE result;
 
     r = virDomainGetInfo(dom, &info);
-    _E(r < 0, conn(s), "virDomainGetInfo");
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo", "", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_info);
     rb_iv_set(result, "@state", CHR2FIX(info.state));
@@ -717,7 +748,7 @@ VALUE libvirt_dom_id(VALUE s) {
     unsigned int id;
 
     id = virDomainGetID(dom);
-    _E(id < 0, conn(s), "virDomainGetID");
+    _E(id < 0, create_error(e_RetrieveError, "virDomainGetID", "", conn(s)));
 
     return UINT2NUM(id);
 }
@@ -731,7 +762,7 @@ VALUE libvirt_dom_uuid(VALUE s) {
     int r;
 
     r = virDomainGetUUIDString(dom, uuid);
-    _E(r < 0, conn(s), "virDomainGetUUIDString");
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetUUIDString", "", conn(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -752,7 +783,7 @@ VALUE libvirt_dom_max_memory(VALUE s) {
     unsigned long max_memory;
 
     max_memory = virDomainGetMaxMemory(dom);
-    _E(max_memory == 0, conn(s), "virDomainGetMaxMemory");
+    _E(max_memory == 0, create_error(e_RetrieveError, "virDomainGetMaxMemory", "", conn(s)));
 
     return ULONG2NUM(max_memory);
 }
@@ -765,7 +796,7 @@ VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     int r;
 
     r = virDomainSetMaxMemory(dom, NUM2ULONG(max_memory));
-    _E(r < 0, conn(s), "virDomainSetMaxMemory");
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMaxMemory", "", conn(s)));
 
     return ULONG2NUM(max_memory);
 }
@@ -778,7 +809,7 @@ VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
     int r;
 
     r = virDomainSetMemory(dom, NUM2ULONG(memory));
-    _E(r < 0, conn(s), "virDomainSetMemory");
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory", "", conn(s)));
 
     return ULONG2NUM(memory);
 }
@@ -791,7 +822,7 @@ VALUE libvirt_dom_max_vcpus(VALUE s) {
     int vcpus;
 
     vcpus = virDomainGetMaxVcpus(dom);
-    _E(vcpus < 0, conn(s), "virDomainGetMaxVcpus");
+    _E(vcpus < 0, create_error(e_RetrieveError, "virDomainGetMaxVcpus", "", conn(s)));
 
     return INT2NUM(vcpus);
 }
@@ -805,7 +836,7 @@ VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
     int r;
 
     r = virDomainSetVcpus(dom, NUM2UINT(nvcpus));
-    _E(r < 0, conn(s), "virDomainSetVcpus");
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetVcpus", "", conn(s)));
 
     return r;
 }
@@ -821,7 +852,7 @@ VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
     virConnectPtr c = conn(s);
 
     r = virNodeGetInfo(c, &nodeinfo);
-    _E(r < 0, c, "virNodeGetInfo");
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", c));
 
     maplen = VIR_CPU_MAPLEN(nodeinfo.cpus);
     cpumap = ALLOC_N(unsigned char, maplen);
@@ -835,7 +866,7 @@ VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
 
     r = virDomainPinVcpu(dom, NUM2UINT(vcpu), cpumap, maplen);
     free(cpumap);
-    _E(r < 0, c, "virDomainPinVcpu");
+    _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", "", c));
 
     return r;
 }
@@ -880,7 +911,7 @@ VALUE libvirt_dom_autostart(VALUE s){
     int r, autostart;
 
     r = virDomainGetAutostart(dom, &autostart);
-    _E(r < 0, conn(s), "virDomainAutostart");
+    _E(r < 0, create_error(e_RetrieveError, "virDomainAutostart", "", conn(s)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -910,7 +941,7 @@ VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
     xmlDesc = StringValueCStr(xml);
 
     dom = virDomainCreateLinux(conn, xmlDesc, NUM2UINT(flags));
-    _E(dom == NULL, conn, "virDomainCreateLinux");
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", "", conn));
 
     return domain_new(dom, c);
 }
@@ -923,7 +954,7 @@ VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByName(conn, StringValueCStr(name));
-    _E(dom == NULL, conn, "virDomainLookupByName");
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName", "", conn));
 
     return domain_new(dom, c);
 }
@@ -936,7 +967,7 @@ VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByID(conn, NUM2INT(id));
-    _E(dom == NULL, conn, "virDomainLookupByID");
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID", "", conn));
 
     return domain_new(dom, c);
 }
@@ -949,7 +980,7 @@ VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(dom == NULL, conn, "virDomainLookupByUUID");
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID", "", conn));
 
     return domain_new(dom, c);
 }
@@ -962,7 +993,7 @@ VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainDefineXML(conn, StringValueCStr(xml));
-    _E(dom == NULL, conn, "virDomainDefineXML");
+    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML", "", conn));
 
     return domain_new(dom, c);
 }
@@ -987,7 +1018,7 @@ VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     netw = virNetworkLookupByName(conn, StringValueCStr(name));
-    _E(netw == NULL, conn, "virNetworkLookupByName");
+    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName", "", conn));
 
     return network_new(netw, c);
 }
@@ -1000,7 +1031,7 @@ VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     netw = virNetworkLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(netw == NULL, conn, "virNetworkLookupByUUID");
+    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID", "", conn));
 
     return network_new(netw, c);
 }
@@ -1016,7 +1047,7 @@ VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml) {
     xmlDesc = StringValueCStr(xml);
 
     netw = virNetworkCreateXML(conn, xmlDesc);
-    _E(netw == NULL, conn, "virNetworkCreateXML");
+    _E(netw == NULL, create_error(e_Error, "virNetworkCreateXML", "", conn));
 
     return network_new(netw, c);
 }
@@ -1029,7 +1060,7 @@ VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
     virConnectPtr conn = connect_get(c);
 
     netw = virNetworkDefineXML(conn, StringValueCStr(xml));
-    _E(netw == NULL, conn, "virNetworkDefineXML");
+    _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML", "", conn));
 
     return network_new(netw, c);
 }
@@ -1077,7 +1108,7 @@ VALUE libvirt_netw_uuid(VALUE s) {
     int r;
 
     r = virNetworkGetUUIDString(netw, uuid);
-    _E(r < 0, conn(s), "virNetworkGetUUIDString");
+    _E(r < 0, create_error(e_RetrieveError, "virNetworkGetUUIDString", "", conn(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -1113,7 +1144,7 @@ VALUE libvirt_netw_autostart(VALUE s){
     int r, autostart;
 
     r = virNetworkGetAutostart(netw, &autostart);
-    _E(r < 0, conn(s), "virNetworkAutostart");
+    _E(r < 0, create_error(e_RetrieveError, "virNetworkAutostart", "", conn(s)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -1147,7 +1178,7 @@ VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     pool = virStoragePoolLookupByName(conn, StringValueCStr(name));
-    _E(pool == NULL, conn, "virStoragePoolLookupByName");
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByName", "", conn));
 
     return pool_new(pool, c);
 }
@@ -1160,7 +1191,7 @@ VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     pool = virStoragePoolLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(pool == NULL, conn, "virStoragePoolLookupByUUID");
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByUUID", "", conn));
 
     return pool_new(pool, c);
 }
@@ -1172,7 +1203,7 @@ VALUE libvirt_vol_get_pool(VALUE v) {
     virStoragePoolPtr pool;
 
     pool = virStoragePoolLookupByVolume(vol_get(v));
-    _E(pool == NULL, conn(v), "virStoragePoolLookupByVolume");
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByVolume", "", conn(v)));
 
     return pool_new(pool, conn_attr(v));
 }
@@ -1194,7 +1225,7 @@ VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
     xmlDesc = StringValueCStr(xml);
 
     pool = virStoragePoolCreateXML(conn, xmlDesc, NUM2UINT(flags));
-    _E(pool == NULL, conn, "virStoragePoolCreateXML");
+    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", "", conn));
 
     return pool_new(pool, c);
 }
@@ -1213,7 +1244,7 @@ VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
         flags = INT2FIX(0);
 
     pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(pool == NULL, conn, "virStoragePoolDefineXML");
+    _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML", "", conn));
 
     return pool_new(pool, c);
 }
@@ -1301,7 +1332,7 @@ VALUE libvirt_pool_name(VALUE s) {
     const char *name;
 
     name = virStoragePoolGetName(pool_get(s));
-    _E(name == NULL, conn(s), "virStoragePoolGetName");
+    _E(name == NULL, create_error(e_RetrieveError, "virStoragePoolGetName", "", conn(s)));
 
     return rb_str_new2(name);
 }
@@ -1314,7 +1345,7 @@ VALUE libvirt_pool_uuid(VALUE s) {
     int r;
 
     r = virStoragePoolGetUUIDString(pool_get(s), uuid);
-    _E(r < 0, conn(s), "virStoragePoolGetUUIDString");
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetUUIDString", "", conn(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -1328,7 +1359,7 @@ VALUE libvirt_pool_info(VALUE s) {
     VALUE result;
 
     r = virStoragePoolGetInfo(pool_get(s), &info);
-    _E(r < 0, conn(s), "virStoragePoolGetInfo");
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetInfo", "", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_storage_pool_info);
     rb_iv_set(result, "@state", INT2FIX(info.state));
@@ -1361,7 +1392,7 @@ VALUE libvirt_pool_autostart(VALUE s){
     int r, autostart;
 
     r = virStoragePoolGetAutostart(pool_get(s), &autostart);
-    _E(r < 0, conn(s), "virStoragePoolGetAutostart");
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetAutostart", "", conn(s)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -1379,7 +1410,7 @@ VALUE libvirt_pool_autostart_set(VALUE s, VALUE autostart) {
  */
 VALUE libvirt_pool_num_of_volumes(VALUE s) {
     int n = virStoragePoolNumOfVolumes(pool_get(s));
-    _E(n < 0, conn(s), "virStoragePoolNumOfVolumes");
+    _E(n < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes", "", conn(s)));
 
     return INT2FIX(n);
 }
@@ -1394,13 +1425,13 @@ VALUE libvirt_pool_list_volumes(VALUE s) {
     VALUE result;
 
     num = virStoragePoolNumOfVolumes(pool);
-    _E(num < 0, conn(s), "virStoragePoolNumOfVolumes");
+    _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes", "", conn(s)));
 
     names = ALLOC_N(char *, num);
     r = virStoragePoolListVolumes(pool, names, num);
     if (r < 0) {
         free(names);
-        _E(r < 0, conn(s), "virStoragePoolListVolumes");
+        _E(r < 0, create_error(e_RetrieveError, "virStoragePoolListVolumes", "", conn(s)));
     }
 
     result = rb_ary_new2(num);
@@ -1432,7 +1463,7 @@ VALUE libvirt_pool_lookup_vol_by_name(VALUE p, VALUE name) {
     virStorageVolPtr vol;
 
     vol = virStorageVolLookupByName(pool_get(p), StringValueCStr(name));
-    _E(vol == NULL, conn(p), "virStorageVolLookupByName");
+    _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByName", "", conn(p)));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -1445,7 +1476,7 @@ VALUE libvirt_pool_lookup_vol_by_key(VALUE p, VALUE key) {
 
     // FIXME: Why does this take a connection, not a pool ?
     vol = virStorageVolLookupByKey(conn(p), StringValueCStr(key));
-    _E(vol == NULL, conn(p), "virStorageVolLookupByKey");
+    _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByKey", "", conn(p)));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -1458,7 +1489,7 @@ VALUE libvirt_pool_lookup_vol_by_path(VALUE p, VALUE path) {
 
     // FIXME: Why does this take a connection, not a pool ?
     vol = virStorageVolLookupByPath(conn(p), StringValueCStr(path));
-    _E(vol == NULL, conn(p), "virStorageVolLookupByPath");
+    _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByPath", "", conn(p)));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -1496,7 +1527,7 @@ VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
     xmlDesc = StringValueCStr(xml);
 
     vol = virStorageVolCreateXML(pool_get(p), xmlDesc, NUM2UINT(flags));
-    _E(vol == NULL, c, "virNetworkCreateXML");
+    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXML", "", c));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -1525,7 +1556,7 @@ VALUE libvirt_vol_info(VALUE v) {
     VALUE result;
 
     r = virStorageVolGetInfo(vol_get(v), &info);
-    _E(r < 0, conn(v), "virStorageVolGetInfo");
+    _E(r < 0, create_error(e_RetrieveError, "virStorageVolGetInfo", "", conn(v)));
 
     result = rb_class_new_instance(0, NULL, c_storage_vol_info);
     rb_iv_set(result, "@type", INT2NUM(info.type));
@@ -1665,6 +1696,23 @@ void Init__libvirt() {
     m_libvirt = rb_define_module("Libvirt");
     c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
                                               rb_cObject);
+
+
+    /*
+     * Libvirt Errors
+     */
+    e_Error =           rb_define_class_under(m_libvirt, "Error", 
+                                               rb_eStandardError);
+    e_ConnectionError = rb_define_class_under(m_libvirt, "ConnectionError", 
+                                                e_Error);
+    e_DefinitionError = rb_define_class_under(m_libvirt, "DefinitionError", 
+                                                e_Error);
+    e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError", 
+                                                e_Error);
+
+    // create 'libvirt_function_name' and 'vir_connect_ptr' attributes on e_Error class
+    rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
+    rb_define_attr(e_Error, "libvirt_message", 1, 0);
 
     /*
      * Class Libvirt::Connect
