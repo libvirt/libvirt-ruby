@@ -83,7 +83,7 @@ PKG_FILES = FileList[
 ]
 
 DIST_FILES = FileList[
-  "pkg/*.rpm",  "pkg/*.gem",  "pkg/*.zip", "pkg/*.tgz"
+  "pkg/*.src.rpm",  "pkg/*.gem",  "pkg/*.zip", "pkg/*.tgz"
 ]
 
 SPEC = Gem::Specification.new do |s|
