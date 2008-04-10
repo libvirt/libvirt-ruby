@@ -626,7 +626,16 @@ VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
  */
 VALUE libvirt_dom_migrate(VALUE s, VALUE dconn, VALUE flags,
                            VALUE dname, VALUE uri, VALUE bandwidth) {
-    rb_raise(rb_eNotImpError, "c_dom_migrate");
+    virDomainPtr ddom = NULL;
+
+    ddom = virDomainMigrate(domain_get(s), conn(dconn), NUM2UINT(flags),
+                            StringValueCStr(dname), StringValueCStr(uri),
+                            NUM2UINT(bandwidth));
+
+    _E(ddom == NULL,
+       create_error(e_Error, "virDomainMigrate", "", conn(dconn)));
+
+    return domain_new(ddom, dconn);
 }
 
 /*
