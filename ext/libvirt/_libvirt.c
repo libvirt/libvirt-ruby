@@ -105,10 +105,10 @@ static VALUE create_error(VALUE error, char* method, char* msg,
     else
         result = virConnCopyLastError(conn, &err);
 
-    if (result >= 0)
+    if (result > 0) {
         rb_iv_set(ruby_errinfo, "@libvirt_message", rb_str_new2(err.message));
-
-    virResetError(&err);
+        virResetError(&err);
+    }
 
     return ruby_errinfo;
 };
