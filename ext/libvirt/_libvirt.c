@@ -94,20 +94,18 @@ static void vir_error(VALUE exception) {
 static VALUE create_error(VALUE error, char* method, char* msg,
                           virConnectPtr conn) {
     VALUE ruby_errinfo;
-    int result;
-    virError err;
+    virErrorPtr err;
 
     ruby_errinfo = rb_exc_new2(error, msg);
     rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
 
     if (conn == NULL)
-        result = virCopyLastError(&err);
+        err = virGetLastError();
     else
-        result = virConnCopyLastError(conn, &err);
+        err = virConnGetLastError(conn);
 
-    if (result > 0) {
-        rb_iv_set(ruby_errinfo, "@libvirt_message", rb_str_new2(err.message));
-        virResetError(&err);
+    if (err != NULL && err->message != NULL) {
+        rb_iv_set(ruby_errinfo, "@libvirt_message", rb_str_new2(err->message));
     }
 
     return ruby_errinfo;
