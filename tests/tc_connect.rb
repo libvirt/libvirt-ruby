@@ -120,6 +120,20 @@ class TestConnect < Test::Unit::TestCase
         end
     end
 
+    def test_error
+        c = connect_default;
+        raised = false;
+        begin
+            c.lookup_domain_by_id(42)
+        rescue Libvirt::RetrieveError => e
+            raised = true
+            assert(e.message.size > 0)
+            assert_equal("virDomainLookupByID", e.libvirt_function_name)
+            assert_not_nil e.libvirt_message
+        end
+        assert(raised)
+    end
+
     def test_network
         c = connect_default;
 

@@ -91,12 +91,22 @@ static void vir_error(VALUE exception) {
     rb_exc_raise(exception);
 }
 
-static VALUE create_error(VALUE error, char* method, char* msg,
+static VALUE create_error(VALUE error, const char* method, const char* msg,
                           virConnectPtr conn) {
     VALUE ruby_errinfo;
     virErrorPtr err;
 
-    ruby_errinfo = rb_exc_new2(error, msg);
+    if (msg == NULL || strlen(msg) == 0) {
+        char *defmsg;
+        size_t len;
+        len = snprintf(NULL, 0, "Call to function %s failed", method) + 1;
+        defmsg = ALLOC_N(char, len);
+        snprintf(defmsg, len, "Call to function %s failed", method);
+        ruby_errinfo = rb_exc_new2(error, defmsg);
+        free(defmsg);
+    } else {
+        ruby_errinfo = rb_exc_new2(error, msg);
+    }
     rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
 
     if (conn == NULL)
