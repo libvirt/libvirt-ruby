@@ -1,5 +1,7 @@
-????-??-?? 0.0.7
+2008-04-15 0.0.7
   * Binding for virDomainMigrate
+  * Fix crash caused by using virResetError
+  * More sensible message included in exceptions
 
 2008-04-02 0.0.6
   * Fix test failure exposed by the Fedora builders
