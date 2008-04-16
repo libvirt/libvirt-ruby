@@ -27,11 +27,10 @@ LIBVIRT_SRC=LIBVIRT_MODULE.gsub(/.so$/, ".c")
 # Additional files for clean/clobber
 #
 
-CLEAN.include "**/*~"
+CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE,
+                "ext/**/depend" ]
 
-CLOBBER.include [ "config.save",
-                  "ext/**/*.o", LIBVIRT_MODULE,
-                  "ext/**/depend", "ext/**/mkmf.log", 
+CLOBBER.include [ "config.save", "ext/**/mkmf.log",
                   MAKEFILE ]
 
 #
