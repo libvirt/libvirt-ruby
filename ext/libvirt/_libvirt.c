@@ -256,7 +256,11 @@ static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
                                                                         \
         num = virConnectNumOf##objs(conn);                              \
         _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));   \
-                                                                        \
+        if (num == 0) {                                                 \
+            /* if num is 0, don't call virConnectList* function */      \
+            result = rb_ary_new2(num);                                  \
+            return result;                                              \
+        }                                                               \
         names = ALLOC_N(char *, num);                                   \
         r = virConnectList##objs(conn, names, num);                     \
         if (r < 0) {                                                    \
@@ -541,6 +545,10 @@ VALUE libvirt_conn_list_domains(VALUE s) {
 
     num = virConnectNumOfDomains(conn);
     _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", "", conn));
+    if (num == 0) {
+        result = rb_ary_new2(num);
+        return result;
+    }
 
     ids = ALLOC_N(int, num);
     r = virConnectListDomains(conn, ids, num);
@@ -1443,6 +1451,10 @@ VALUE libvirt_pool_list_volumes(VALUE s) {
 
     num = virStoragePoolNumOfVolumes(pool);
     _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes", "", conn(s)));
+    if (num == 0) {
+        result = rb_ary_new2(num);
+        return result;
+    }
 
     names = ALLOC_N(char *, num);
     r = virStoragePoolListVolumes(pool, names, num);
