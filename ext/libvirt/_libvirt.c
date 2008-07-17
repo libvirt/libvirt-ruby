@@ -208,11 +208,11 @@ static VALUE pool_new(virStoragePoolPtr n, VALUE conn) {
 static void vol_free(void *d) {
     generic_free(StorageVol, d);
 }
- 
+
 static virStorageVolPtr vol_get(VALUE s) {
     generic_get(StorageVol, s);
 }
- 
+
 static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
     return generic_new(c_storage_vol, n, conn, vol_free);
 }
@@ -673,7 +673,7 @@ VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    gen_call_void(virDomainReboot, conn(s), 
+    gen_call_void(virDomainReboot, conn(s),
                   domain_get(s), NUM2UINT(flags));
 }
 
@@ -1638,7 +1638,7 @@ static void init_storage(void) {
     rb_define_attr(c_storage_pool_info, "allocation", 1, 0);
     rb_define_attr(c_storage_pool_info, "available", 1, 0);
 
-    c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool", 
+    c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool",
                                            rb_cObject);
 #define DEF_POOLCONST(name)                                        \
     rb_define_const(c_storage_pool, #name, INT2NUM(VIR_STORAGE_POOL_##name))
@@ -1730,13 +1730,13 @@ void Init__libvirt() {
     /*
      * Libvirt Errors
      */
-    e_Error =           rb_define_class_under(m_libvirt, "Error", 
+    e_Error =           rb_define_class_under(m_libvirt, "Error",
                                                rb_eStandardError);
-    e_ConnectionError = rb_define_class_under(m_libvirt, "ConnectionError", 
+    e_ConnectionError = rb_define_class_under(m_libvirt, "ConnectionError",
                                                 e_Error);
-    e_DefinitionError = rb_define_class_under(m_libvirt, "DefinitionError", 
+    e_DefinitionError = rb_define_class_under(m_libvirt, "DefinitionError",
                                                 e_Error);
-    e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError", 
+    e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError",
                                                 e_Error);
 
     // create 'libvirt_function_name' and 'vir_connect_ptr' attributes on e_Error class
@@ -1849,6 +1849,9 @@ void Init__libvirt() {
     DEF_DOMSTATE(SHUTOFF);
     DEF_DOMSTATE(CRASHED);
 #undef DEF_DOMSTATE
+
+    /* virDomainMigrateFlags */
+    rb_define_const(c_domain, "MIGRATE_LIVE", INT2NUM(VIR_MIGRATE_LIVE));
 
     rb_define_method(c_domain, "migrate", libvirt_dom_migrate, 5);
     rb_define_attr(c_domain, "connection", 1, 0);
