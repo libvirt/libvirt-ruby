@@ -637,16 +637,51 @@ VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
 }
 #endif
 
+static char *get_string_or_nil(VALUE arg)
+{
+    if (TYPE(arg) == T_NIL)
+        return NULL;
+    else if (TYPE(arg) == T_STRING)
+        return StringValueCStr(arg);
+    else
+        rb_raise(rb_eTypeError, "wrong argument type (expected String or nil)");    return NULL;
+}
+
 /*
  * Class Libvirt::Domain
  */
-VALUE libvirt_dom_migrate(VALUE s, VALUE dconn, VALUE flags,
-                           VALUE dname, VALUE uri, VALUE bandwidth) {
+VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
     virDomainPtr ddom = NULL;
+    VALUE dconn;
+    unsigned long flags;
+    const char *dname;
+    const char *uri;
+    unsigned long bandwidth;
 
-    ddom = virDomainMigrate(domain_get(s), conn(dconn), NUM2UINT(flags),
-                            StringValueCStr(dname), StringValueCStr(uri),
-                            NUM2UINT(bandwidth));
+    if (argc < 2 || argc > 5) {
+        rb_raise(rb_eArgError, "Must provide between 2 and 5 arguments");
+    }
+
+    dconn = argv[0];
+    flags = NUM2UINT(argv[1]);
+    dname = NULL;
+    uri = NULL;
+    bandwidth = 0;
+
+    switch(argc) {
+    case 5:
+        Check_Type(argv[4], T_FIXNUM);
+        bandwidth = NUM2UINT(argv[4]);
+        /* fallthrough */
+    case 4:
+        uri = get_string_or_nil(argv[3]);
+        /* fallthrough */
+    case 3:
+        dname = get_string_or_nil(argv[2]);
+    }
+
+    ddom = virDomainMigrate(domain_get(s), conn(dconn), flags,
+                            dname, uri, bandwidth);
 
     _E(ddom == NULL,
        create_error(e_Error, "virDomainMigrate", "", conn(dconn)));
@@ -1853,7 +1888,7 @@ void Init__libvirt() {
     /* virDomainMigrateFlags */
     rb_define_const(c_domain, "MIGRATE_LIVE", INT2NUM(VIR_MIGRATE_LIVE));
 
-    rb_define_method(c_domain, "migrate", libvirt_dom_migrate, 5);
+    rb_define_method(c_domain, "migrate", libvirt_dom_migrate, -1);
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
