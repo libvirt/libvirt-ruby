@@ -651,37 +651,22 @@ static char *get_string_or_nil(VALUE arg)
  * Class Libvirt::Domain
  */
 VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
+    VALUE dconn, flags, dname_val, uri_val, bandwidth;
     virDomainPtr ddom = NULL;
-    VALUE dconn;
-    unsigned long flags;
     const char *dname;
     const char *uri;
-    unsigned long bandwidth;
 
-    if (argc < 2 || argc > 5) {
-        rb_raise(rb_eArgError, "Must provide between 2 and 5 arguments");
-    }
+    rb_scan_args(argc, argv, "23", &dconn, &flags, &dname_val, &uri_val,
+                 &bandwidth);
 
-    dconn = argv[0];
-    flags = NUM2UINT(argv[1]);
-    dname = NULL;
-    uri = NULL;
-    bandwidth = 0;
+    dname = get_string_or_nil(dname_val);
+    uri = get_string_or_nil(uri_val);
 
-    switch(argc) {
-    case 5:
-        Check_Type(argv[4], T_FIXNUM);
-        bandwidth = NUM2UINT(argv[4]);
-        /* fallthrough */
-    case 4:
-        uri = get_string_or_nil(argv[3]);
-        /* fallthrough */
-    case 3:
-        dname = get_string_or_nil(argv[2]);
-    }
+    if (NIL_P(bandwidth))
+        bandwidth = INT2FIX(0);
 
-    ddom = virDomainMigrate(domain_get(s), conn(dconn), flags,
-                            dname, uri, bandwidth);
+    ddom = virDomainMigrate(domain_get(s), conn(dconn), NUM2UINT(flags),
+                            dname, uri, NUM2UINT(bandwidth));
 
     _E(ddom == NULL,
        create_error(e_Error, "virDomainMigrate", "", conn(dconn)));
