@@ -1295,6 +1295,25 @@ VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
 }
 
 /*
+ * Call +virConnectFindStoragePoolSources+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
+ */
+VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv, VALUE c) {
+    virConnectPtr conn = connect_get(c);
+    VALUE type, srcSpec_val, flags;
+    const char *srcSpec;
+
+    rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
+
+    srcSpec = get_string_or_nil(srcSpec_val);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_string(virConnectFindStoragePoolSources, conn, 1, conn,
+                    StringValueCStr(type), srcSpec, NUM2UINT(flags));
+}
+
+/*
  * Call +virStoragePoolBuild+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolBuild]
  */
 VALUE libvirt_pool_build(int argc, VALUE *argv, VALUE p) {
@@ -1839,6 +1858,8 @@ void Init__libvirt() {
                      libvirt_conn_create_pool_xml, -1);
     rb_define_method(c_connect, "define_storage_pool_xml",
                      libvirt_conn_define_pool_xml, -1);
+    rb_define_method(c_connect, "discover_storage_pool_sources",
+                     libvirt_conn_find_storage_pool_sources, -1);
 #endif
 
     /*
