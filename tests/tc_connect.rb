@@ -20,7 +20,9 @@ class TestConnect < Test::Unit::TestCase
         TEST_CAPS = TEST_CAPS_OLD
     end
 
-    UUID = "004b96e1-2d78-c30f-5aa5-f03c87d21e69"
+    UUID = "4dea22b3-1d52-d8f3-2516-782e98ab3fa0"
+
+    NETWORK_UUID = "004b96e1-2d78-c30f-5aa5-f03c87d21e69"
 
     NETWORK_XML = "<network>
   <name>local</name>
@@ -35,15 +37,20 @@ class TestConnect < Test::Unit::TestCase
 </network>
 "
 
-    def connect_default
-        c = Libvirt::open("test:///default")
+    def test_url
+        "test://" + File::join(File::expand_path(File::dirname(__FILE__)),
+                               "node.xml")
+    end
+
+    def connect
+        c = Libvirt::open(test_url)
         assert_not_nil(c)
         assert(! c.closed?)
         return c
     end
 
     def test_open
-        c = connect_default
+        c = connect
         assert_nothing_raised {
             c.close
         }
@@ -55,33 +62,38 @@ class TestConnect < Test::Unit::TestCase
     end
 
     def test_node_info
-        ni = connect_default.node_get_info
-        assert_equal(2, ni.nodes)
-        assert_equal(16, ni.cpus)
+        ni = connect.node_get_info
+        assert_equal(4, ni.nodes)
+        assert_equal(50, ni.cpus)
         assert_equal(2, ni.threads)
-        assert_equal(2, ni.sockets)
-        assert_equal(1400, ni.mhz)
-        assert_equal(2, ni.cores)
-        assert_equal("i686", ni.model)
+        assert_equal(4, ni.sockets)
+        assert_equal(6000, ni.mhz)
+        assert_equal(4, ni.cores)
+        assert_equal("i986", ni.model)
     end
 
     def test_misc
-        c = connect_default
+        c = connect
         assert_equal("Test", c.type)
         assert_equal(2, c.version)
         hostname=`hostname`.chomp
+
+        assert_nothing_raised {
+            c.lookup_network_by_name("default").create
+        }
+
         assert_equal(hostname, c.hostname)
-        assert_equal("test:///default", c.uri)
+        assert_equal(test_url, c.uri)
         assert_equal(32, c.max_vcpus("bogus"))
         assert(c.capabilities.size > 0)
-        assert_equal(1, c.num_of_domains)
-        assert_equal([1], c.list_domains)
+        assert_equal(2, c.num_of_domains)
+        assert_equal([1, 2], c.list_domains)
         assert_equal(0, c.num_of_defined_domains)
         assert_equal([], c.list_defined_domains)
         assert_equal(1, c.num_of_networks)
         assert_equal(["default"], c.list_networks)
-        assert_equal(0, c.num_of_defined_networks)
-        assert_equal([], c.list_defined_networks)
+        assert_equal(1, c.num_of_defined_networks)
+        assert_equal(["private"], c.list_defined_networks)
 
         v = Libvirt::version("Test")
         assert_equal("libvirt", v[0].type)
@@ -89,14 +101,14 @@ class TestConnect < Test::Unit::TestCase
     end
 
     def test_domain
-        c = connect_default;
+        c = connect
 
         dom = c.lookup_domain_by_id(1)
-        assert_equal("test", dom.name)
+        assert_equal("fv0", dom.name)
         assert_equal("linux", dom.os_type)
         assert_equal(UUID, dom.uuid)
         assert_equal(UUID, c.lookup_domain_by_uuid(UUID).uuid)
-        assert_equal(UUID, c.lookup_domain_by_name("test").uuid)
+        assert_equal(UUID, c.lookup_domain_by_name("fv0").uuid)
 
         info = dom.info
         assert_equal(8388608, info.max_mem)
@@ -121,8 +133,8 @@ class TestConnect < Test::Unit::TestCase
     end
 
     def test_error
-        c = connect_default;
-        raised = false;
+        c = connect
+        raised = false
         begin
             c.lookup_domain_by_id(42)
         rescue Libvirt::RetrieveError => e
@@ -135,14 +147,15 @@ class TestConnect < Test::Unit::TestCase
     end
 
     def test_network
-        c = connect_default;
+        c = connect
 
         netw = c.lookup_network_by_name("default")
         assert_equal("default", netw.name)
-        assert_equal("default", netw.bridge_name)
-        assert_equal(UUID, netw.uuid)
-        assert_equal(UUID, c.lookup_network_by_uuid(UUID).uuid)
-        assert_equal(UUID, c.lookup_network_by_name("default").uuid)
+        assert_equal("brdefault", netw.bridge_name)
+        uuid = NETWORK_UUID
+        assert_equal(uuid, netw.uuid)
+        assert_equal(uuid, c.lookup_network_by_uuid(uuid).uuid)
+        assert_equal(uuid, c.lookup_network_by_name("default").uuid)
         assert_equal(false, netw.autostart)
         netw.autostart = true
         assert_equal(true, netw.autostart)
@@ -150,11 +163,12 @@ class TestConnect < Test::Unit::TestCase
         assert_equal(false, netw.autostart)
 
         netw = c.define_network_xml(NETWORK_XML)
-        assert_equal(NETWORK_XML, netw.xml_desc(nil))
+        assert(netw.xml_desc.size > 0)
         assert_equal(c, netw.connection)
 
-        assert_equal(2, c.num_of_networks)
-        assert_equal(["default", "local"], c.list_networks)
+        netw.create
+        assert_equal(1, c.num_of_networks)
+        assert_equal(["local"], c.list_networks)
 
         netw.free
         assert_raise ArgumentError do
