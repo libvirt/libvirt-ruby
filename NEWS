@@ -1,3 +1,9 @@
+2008-11-18 0.1.0
+  * Add binding for virConnectFindStoragePoolSources (clalance)
+  * Fix dom_migrate (clalance)
+  * Add the MIGRATE_LIVE (enum virDomainMigrateFlags) flag
+  * Slight improvements of the unit tests
+
 2008-04-15 0.0.7
   * Binding for virDomainMigrate
   * Fix crash caused by using virResetError

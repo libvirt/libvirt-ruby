@@ -34,7 +34,7 @@ install -d -m0755 %{buildroot}%{ruby_sitelib}
 install -d -m0755 %{buildroot}%{ruby_sitearch}
 install -p -m0644 lib/libvirt.rb %{buildroot}%{ruby_sitelib}
 install -p -m0755 ext/libvirt/_libvirt.so %{buildroot}%{ruby_sitearch}
- 
+
 %check
 %if 0%{?fedora:%fedora} >= 5 || 0%{?rhel:%rhel} > 5
 rake test
@@ -52,6 +52,12 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Nov 18 2008 David Lutterkort <lutter@redhat.com> - 0.1.0-1
+- Remove no-capabilities-test.patch, since it's upstream now
+
+* Tue Apr 15 2008 David Lutterkort <dlutter@redhat.com> - 0.0.7-2
+- Added no-capabilities-test.patch to suppress a fragile test
+
 * Tue Apr 15 2008 David Lutterkort <dlutter@redhat.com> - 0.0.7-1
 - New version
 
@@ -79,4 +85,3 @@ rm -rf $RPM_BUILD_ROOT
 
 * Mon Nov 19 2007 David Lutterkort <dlutter@redhat.com> - 0.0.1-1
 - Initial specfile
-
