@@ -970,6 +970,22 @@ VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
 }
 
 /*
+ * Call +virDomainAttachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAttachDevice]
+ */
+VALUE libvirt_dom_attach_device(VALUE s, VALUE xml) {
+    gen_call_void(virDomainAttachDevice, conn(s),
+                  domain_get(s), StringValueCStr(xml));
+}
+
+/*
+ * Call +virDomainDetachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
+ */
+VALUE libvirt_dom_detach_device(VALUE s, VALUE xml) {
+    gen_call_void(virDomainDetachDevice, conn(s),
+                  domain_get(s), StringValueCStr(xml));
+}
+
+/*
  * Call +virDomainCreateLinux+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateLinux]
  */
 VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
@@ -1921,6 +1937,8 @@ void Init__libvirt() {
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
     rb_define_method(c_domain, "free", libvirt_dom_free, 0);
+    rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, 1);
+    rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, 1);
 
     /*
      * Class Libvirt::Domain::Info
