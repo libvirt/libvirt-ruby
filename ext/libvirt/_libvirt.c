@@ -29,6 +29,7 @@ static VALUE m_libvirt;
 static VALUE c_connect;
 static VALUE c_domain;
 static VALUE c_domain_info;
+static VALUE c_domain_ifinfo;
 #if HAVE_TYPE_VIRNETWORKPTR
 static VALUE c_network;
 #endif
@@ -775,6 +776,37 @@ VALUE libvirt_dom_info(VALUE s) {
     rb_iv_set(result, "@cpu_time", ULL2NUM(info.cpuTime));
     return result;
 }
+
+/*
+ * call-seq:
+ *   domain.info -> Libvirt::Domain::IfInfo
+ *
+ * Call +virDomainInterfaceStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
+ */
+VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
+    virDomainPtr dom = domain_get(s);
+    char *ifname = get_string_or_nil(sif);
+    virDomainInterfaceStatsStruct ifinfo;
+    int r;
+    VALUE result;
+
+    if(ifname){
+      r = virDomainInterfaceStats(dom, ifname, &ifinfo, sizeof(virDomainInterfaceStatsStruct));
+      _E(r < 0, create_error(e_RetrieveError, "virDomainInterfaceStats", "", conn(s)));
+
+      result = rb_class_new_instance(0, NULL, c_domain_ifinfo);
+      rb_iv_set(result, "@rx_bytes", LL2NUM(ifinfo.rx_bytes));
+      rb_iv_set(result, "@rx_packets", LL2NUM(ifinfo.rx_packets));
+      rb_iv_set(result, "@rx_errs", LL2NUM(ifinfo.rx_errs));
+      rb_iv_set(result, "@rx_drop", LL2NUM(ifinfo.rx_drop));
+      rb_iv_set(result, "@tx_bytes", LL2NUM(ifinfo.tx_bytes));
+      rb_iv_set(result, "@tx_packets", LL2NUM(ifinfo.tx_packets));
+      rb_iv_set(result, "@tx_errs", LL2NUM(ifinfo.tx_errs));
+      rb_iv_set(result, "@tx_drop", LL2NUM(ifinfo.tx_drop));
+    }
+    return result;
+}
+
 
 
 /*
@@ -1921,6 +1953,7 @@ void Init__libvirt() {
     rb_define_singleton_method(c_domain, "restore", libvirt_dom_s_restore, 2);
     rb_define_method(c_domain, "core_dump", libvirt_dom_core_dump, -1);
     rb_define_method(c_domain, "info", libvirt_dom_info, 0);
+    rb_define_method(c_domain, "ifinfo", libvirt_dom_if_stats, 1);
     rb_define_method(c_domain, "name", libvirt_dom_name, 0);
     rb_define_method(c_domain, "id", libvirt_dom_id, 0);
     rb_define_method(c_domain, "uuid", libvirt_dom_uuid, 0);
@@ -1949,6 +1982,20 @@ void Init__libvirt() {
     rb_define_attr(c_domain_info, "memory", 1, 0);
     rb_define_attr(c_domain_info, "nr_virt_cpu", 1, 0);
     rb_define_attr(c_domain_info, "cpu_time", 1, 0);
+
+    /*
+     * Class Libvirt::Domain::InterfaceInfo
+     */
+    c_domain_ifinfo = rb_define_class_under(c_domain, "InterfaceInfo", rb_cObject);
+    rb_define_attr(c_domain_ifinfo, "rx_bytes", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "rx_packets", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "rx_errs", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "rx_drop", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "tx_bytes", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "tx_packets", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "tx_errs", 1, 0);
+    rb_define_attr(c_domain_ifinfo, "tx_drop", 1, 0);
+
 
     /*
      * Class Libvirt::Network
