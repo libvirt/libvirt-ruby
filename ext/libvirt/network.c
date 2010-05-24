@@ -266,6 +266,30 @@ static VALUE libvirt_netw_free(VALUE s) {
     gen_call_free(Network, s);
 }
 
+#if HAVE_VIRNETWORKISACTIVE
+/*
+ * call-seq:
+ *   net.active? -> [true|false]
+ *
+ * Call +virNetworkIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsActive]
+ */
+static VALUE libvirt_netw_active_p(VALUE s) {
+    gen_call_truefalse(virNetworkIsActive, conn(s), network_get(s));
+}
+#endif
+
+#if HAVE_VIRNETWORKISPERSISTENT
+/*
+ * call-seq:
+ *   net.persistent? -> [true|false]
+ *
+ * Call +virNetworkIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsPersistent]
+ */
+static VALUE libvirt_netw_persistent_p(VALUE s) {
+    gen_call_truefalse(virNetworkIsPersistent, conn(s), network_get(s));
+}
+#endif
+
 #endif
 
 /*
@@ -301,7 +325,14 @@ void init_network()
     rb_define_method(c_network, "xml_desc", libvirt_netw_xml_desc, -1);
     rb_define_method(c_network, "bridge_name", libvirt_netw_bridge_name, 0);
     rb_define_method(c_network, "autostart", libvirt_netw_autostart, 0);
+    rb_define_method(c_network, "autostart?", libvirt_netw_autostart, 0);
     rb_define_method(c_network, "autostart=", libvirt_netw_autostart_set, 1);
     rb_define_method(c_network, "free", libvirt_netw_free, 0);
+#if HAVE_VIRNETWORKISACTIVE
+    rb_define_method(c_network, "active?", libvirt_netw_active_p, 0);
+#endif
+#if HAVE_VIRNETWORKISPERSISTENT
+    rb_define_method(c_network, "persistent?", libvirt_netw_persistent_p, 0);
+#endif
 #endif
 }
