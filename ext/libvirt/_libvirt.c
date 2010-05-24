@@ -31,6 +31,7 @@
 #include "nodedevice.h"
 #include "secret.h"
 #include "nwfilter.h"
+#include "interface.h"
 
 static VALUE c_domain;
 static VALUE c_domain_info;
@@ -772,6 +773,7 @@ void Init__libvirt() {
     init_nodedevice();
     init_secret();
     init_nwfilter();
+    init_interface();
 
     r = virInitialize();
     if (r < 0)

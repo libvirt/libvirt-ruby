@@ -21,6 +21,7 @@ libvirt_types = [ 'virNetworkPtr',
                   'virStorageVolPtr',
                   'virSecretPtr',
                   'virNWFilterPtr',
+                  'virInterfacePtr',
                 ]
 
 libvirt_funcs = [ 'virStorageVolWipe',
@@ -33,6 +34,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNetworkIsPersistent',
                   'virNodeDeviceCreateXML',
                   'virNodeDeviceDestroy',
+                  'virInterfaceIsActive',
                 ]
 
 have_libvirt_types(libvirt_types)
