@@ -713,6 +713,7 @@ void init_storage(void) {
     rb_define_method(c_storage_pool, "info", libvirt_pool_info, 0);
     rb_define_method(c_storage_pool, "xml_desc", libvirt_pool_xml_desc, -1);
     rb_define_method(c_storage_pool, "autostart", libvirt_pool_autostart, 0);
+    rb_define_method(c_storage_pool, "autostart?", libvirt_pool_autostart, 0);
     rb_define_method(c_storage_pool, "autostart=",
                      libvirt_pool_autostart_set, 1);
     /* List/lookup storage volumes within a pool */
