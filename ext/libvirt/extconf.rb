@@ -20,6 +20,7 @@ libvirt_types = [ 'virNetworkPtr',
                   'virStoragePoolPtr',
                   'virStorageVolPtr',
                   'virSecretPtr',
+                  'virNWFilterPtr',
                 ]
 
 libvirt_funcs = [ 'virStorageVolWipe',
