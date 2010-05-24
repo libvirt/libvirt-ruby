@@ -21,7 +21,8 @@ EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"
 LIBVIRT_MODULE="ext/libvirt/_libvirt.so"
 SPEC_FILE="ruby-libvirt.spec"
-LIBVIRT_SRC=LIBVIRT_MODULE.gsub(/.so$/, ".c")
+LIBVIRT_SRC=Dir.glob("ext/libvirt/*.c")
+LIBVIRT_SRC << MAKEFILE
 
 #
 # Additional files for clean/clobber
@@ -46,7 +47,7 @@ file MAKEFILE => EXT_CONF do |t|
          end
     end
 end
-file LIBVIRT_MODULE => [ MAKEFILE, LIBVIRT_SRC ] do |t|
+file LIBVIRT_MODULE => LIBVIRT_SRC do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
          unless sh "make"
              $stderr.puts "make failed"
