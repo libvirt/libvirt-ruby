@@ -552,6 +552,53 @@ static VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
 
 /*
  * call-seq:
+ *   pool.vol_create_xml_from -> Libvirt::StorageVol
+ *
+ * Call +virStorageVolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
+ */
+static VALUE libvirt_pool_vol_create_xml_from(int argc, VALUE *argv, VALUE p) {
+    virStorageVolPtr vol;
+    virConnectPtr c = conn(p);
+    VALUE xml, flags, cloneval;
+
+    rb_scan_args(argc, argv, "21", &xml, &cloneval, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    vol = virStorageVolCreateXMLFrom(pool_get(p), StringValueCStr(xml),
+                                     vol_get(cloneval), NUM2UINT(flags));
+    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXMLFrom", "", c));
+
+    return vol_new(vol, conn_attr(p));
+}
+
+#if HAVE_VIRSTORAGEPOOLISACTIVE
+/*
+ * call-seq:
+ *   pool.active? -> [true|false]
+ *
+ * Call +virStoragePoolIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsActive]
+ */
+static VALUE libvirt_pool_active_p(VALUE p) {
+    gen_call_truefalse(virStoragePoolIsActive, conn(p), network_get(p));
+}
+#endif
+
+#if HAVE_VIRSTORAGEPOOLISPERSISTENT
+/*
+ * call-seq:
+ *   pool.persistent? -> [true|false]
+ *
+ * Call +virStoragePoolIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsPersistent]
+ */
+static VALUE libvirt_pool_persistent_p(VALUE p) {
+    gen_call_truefalse(virStoragePoolIsPersistent, conn(p), network_get(p));
+}
+#endif
+
+/*
+ * call-seq:
  *   vol.delete -> nil
  *
  * Call +virStorageVolDelete+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolDelete]
@@ -731,6 +778,15 @@ void init_storage(void) {
     rb_define_method(c_storage_pool, "free", libvirt_pool_free, 0);
     rb_define_method(c_storage_pool, "create_vol_xml",
                      libvirt_pool_vol_create_xml, -1);
+    rb_define_method(c_storage_pool, "create_vol_xml_from",
+                     libvirt_pool_vol_create_xml_from, -1);
+#if HAVE_VIRSTORAGEPOOLISACTIVE
+    rb_define_method(c_storage_pool, "active?", libvirt_pool_active_p, 0);
+#endif
+#if HAVE_VIRSTORAGEPOOLISPERSISTENT
+    rb_define_method(c_storage_pool, "persistent?",
+                     libvirt_pool_persistent_p, 0);
+#endif
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR
