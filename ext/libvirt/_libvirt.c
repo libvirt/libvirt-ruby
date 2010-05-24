@@ -1,7 +1,7 @@
 /*
  * libvirt.c: Ruby bindings for libvirt
  *
- * Copyright (C) 2007 Red Hat Inc.
+ * Copyright (C) 2007,2010 Red Hat Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
 #include "extconf.h"
+#include "common.h"
 
-static VALUE m_libvirt;
 static VALUE c_connect;
 static VALUE c_domain;
 static VALUE c_domain_info;
@@ -44,84 +44,23 @@ static VALUE c_storage_vol;
 static VALUE c_storage_vol_info;
 #endif
 
+VALUE m_libvirt;
 
 // define additional errors here
-static VALUE e_Error;                   // Error - generic error
 static VALUE e_ConnectionError;         // ConnectionError - error durring connection establishment
-static VALUE e_DefinitionError;         // DefinitionError - error during data definition
-static VALUE e_RetrieveError;           // RetrievalError - error during data retrieval
+VALUE e_DefinitionError;
+VALUE e_RetrieveError;
+VALUE e_Error;
 
 /*
  * Internal helpers
  */
-
-/* Macros to ease some of the boilerplate */
-
-#define generic_free(kind, p)                                           \
-    do {                                                                \
-        int r;                                                          \
-        r = vir##kind##Free((vir##kind##Ptr) p);                        \
-        if (r < 0)                                                      \
-            rb_raise(rb_eSystemCallError, # kind " free failed");       \
-    } while(0);
-
-#define generic_get(kind, v)                                            \
-    do {                                                                \
-        vir##kind##Ptr ptr;                                             \
-        Data_Get_Struct(v, vir##kind, ptr);                             \
-        if (!ptr)                                                       \
-            rb_raise(rb_eArgError, #kind " has been freed");            \
-        return ptr;                                                     \
-    } while (0);
-
-static VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
-                         RUBY_DATA_FUNC free_func) {
-    VALUE result;
-    result = Data_Wrap_Struct(klass, NULL, free_func, ptr);
-    rb_iv_set(result, "@connection", conn);
-    return result;
-}
-
-/* Error handling */
-#define _E(cond, excep) \
-    do { if (cond) vir_error(excep); } while(0)
 
 NORETURN(static void vir_error(VALUE exception));
 
 static void vir_error(VALUE exception) {
     rb_exc_raise(exception);
 }
-
-static VALUE create_error(VALUE error, const char* method, const char* msg,
-                          virConnectPtr conn) {
-    VALUE ruby_errinfo;
-    virErrorPtr err;
-
-    if (msg == NULL || strlen(msg) == 0) {
-        char *defmsg;
-        size_t len;
-        len = snprintf(NULL, 0, "Call to function %s failed", method) + 1;
-        defmsg = ALLOC_N(char, len);
-        snprintf(defmsg, len, "Call to function %s failed", method);
-        ruby_errinfo = rb_exc_new2(error, defmsg);
-        free(defmsg);
-    } else {
-        ruby_errinfo = rb_exc_new2(error, msg);
-    }
-    rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
-
-    if (conn == NULL)
-        err = virGetLastError();
-    else
-        err = virConnGetLastError(conn);
-
-    if (err != NULL && err->message != NULL) {
-        rb_iv_set(ruby_errinfo, "@libvirt_message", rb_str_new2(err->message));
-    }
-
-    return ruby_errinfo;
-};
-
 
 /* Connections */
 static void connect_close(void *p) {
@@ -218,110 +157,6 @@ static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
     return generic_new(c_storage_vol, n, conn, vol_free);
 }
 #endif
-
-/*
- * Code generating macros.
- *
- * We only generate function bodies, not the whole function
- * declaration.
- */
-
-/*
- * Generate a call to a virConnectNumOf... function. C is the Ruby VALUE
- * holding the connection and OBJS is a token indicating what objects to
- * get the number of, e.g. 'Domains'
- */
-#define gen_conn_num_of(c, objs)                                        \
-    do {                                                                \
-        int result;                                                     \
-        virConnectPtr conn = connect_get(c);                            \
-                                                                        \
-        result = virConnectNumOf##objs(conn);                           \
-        _E(result < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));                \
-                                                                        \
-        return INT2NUM(result);                                         \
-    } while(0)
-
-/*
- * Generate a call to a virConnectList... function. S is the Ruby VALUE
- * holding the connection and OBJS is a token indicating what objects to
- * get the number of, e.g. 'Domains' The list function must return an array
- * of strings, which is returned as a Ruby array
- */
-#define gen_conn_list_names(s, objs)                                    \
-    do {                                                                \
-        int i, r, num;                                                  \
-        char **names;                                                   \
-        virConnectPtr conn = connect_get(s);                            \
-        VALUE result;                                                   \
-                                                                        \
-        num = virConnectNumOf##objs(conn);                              \
-        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));   \
-        if (num == 0) {                                                 \
-            /* if num is 0, don't call virConnectList* function */      \
-            result = rb_ary_new2(num);                                  \
-            return result;                                              \
-        }                                                               \
-        names = ALLOC_N(char *, num);                                   \
-        r = virConnectList##objs(conn, names, num);                     \
-        if (r < 0) {                                                    \
-            free(names);                                                \
-            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, "", conn));  \
-        }                                                               \
-                                                                        \
-        result = rb_ary_new2(num);                                      \
-        for (i=0; i<num; i++) {                                         \
-            rb_ary_push(result, rb_str_new2(names[i]));                 \
-            free(names[i]);                                             \
-        }                                                               \
-        free(names);                                                    \
-        return result;                                                  \
-    } while(0)
-
-/* Generate a call to a function FUNC which returns an int error, where -1
- * indicates error and 0 success. The Ruby function will return Qnil on
- * success and throw an exception on error.
- */
-#define gen_call_void(func, conn, args...)                              \
-    do {                                                                \
-        int _r_##func;                                                  \
-        _r_##func = func(args);                                         \
-        _E(_r_##func < 0, create_error(e_Error, #func, "", conn));      \
-        return Qnil;                                                    \
-    } while(0)
-
-/* Generate a call to a function FUNC which returns a string. The Ruby
- * function will return the string on success and throw an exception on
- * error. The string returned by FUNC is freed if dealloc is true.
- */
-#define gen_call_string(func, conn, dealloc, args...)                   \
-    do {                                                                \
-        const char *str;                                                \
-        VALUE result;                                                   \
-                                                                        \
-        str = func(args);                                               \
-        _E(str == NULL, create_error(e_Error, # func, "", conn));       \
-                                                                        \
-        result = rb_str_new2(str);                                      \
-        if (dealloc)                                                    \
-            free((void *) str);                                         \
-        return result;                                                  \
-    } while(0)
-
-/* Generate a call to vir##KIND##Free and return Qnil. Set the the embedded
- * vir##KIND##Ptr to NULL. If that pointer is already NULL, do nothing.
- */
-#define gen_call_free(kind, s)                                          \
-    do {                                                                \
-        vir##kind##Ptr ptr;                                             \
-        Data_Get_Struct(s, vir##kind, ptr);                             \
-        if (ptr != NULL) {                                              \
-            int r = vir##kind##Free(ptr);                               \
-            _E(r < 0, create_error(e_Error, "vir" #kind "Free", "", conn(s))); \
-            DATA_PTR(s) = NULL;                                         \
-        }                                                               \
-        return Qnil;                                                    \
-    } while (0)
 
 /*
  * Module Libvirt
@@ -637,16 +472,6 @@ VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
     gen_conn_num_of(s, DefinedStoragePools);
 }
 #endif
-
-static char *get_string_or_nil(VALUE arg)
-{
-    if (TYPE(arg) == T_NIL)
-        return NULL;
-    else if (TYPE(arg) == T_STRING)
-        return StringValueCStr(arg);
-    else
-        rb_raise(rb_eTypeError, "wrong argument type (expected String or nil)");    return NULL;
-}
 
 /*
  * Class Libvirt::Domain
