@@ -20,7 +20,7 @@ libvirt_types = [ 'virNetworkPtr',
                   'virStoragePoolPtr',
                   'virStorageVolPtr' ]
 
-libvirt_funcs = [ ]
+libvirt_funcs = [ 'virStorageVolWipe', ]
 
 have_libvirt_types(libvirt_types)
 have_libvirt_funcs(libvirt_funcs)

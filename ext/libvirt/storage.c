@@ -570,6 +570,24 @@ static VALUE libvirt_vol_delete(int argc, VALUE *argv, VALUE v) {
 #if HAVE_VIRSTORAGEVOLWIPE
 /*
  * call-seq:
+ *   vol.wipe -> nil
+ *
+ * Call +virStorageVolWipe+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolWipe]
+ */
+static VALUE libvirt_vol_wipe(int argc, VALUE *argv, VALUE v) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virStorageVolWipe, conn(v), vol_get(v), NUM2UINT(flags));
+}
+#endif
+
+/*
+ * call-seq:
  *   vol.info -> Libvirt::StorageVolInfo
  *
  * Call +virStorageVolGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetInfo]
@@ -737,6 +755,9 @@ void init_storage(void) {
     rb_define_method(c_storage_vol, "name", libvirt_vol_name, 0);
     rb_define_method(c_storage_vol, "key", libvirt_vol_key, 0);
     rb_define_method(c_storage_vol, "delete", libvirt_vol_delete, -1);
+#if HAVE_VIRSTORAGEVOLWIPE
+    rb_define_method(c_storage_vol, "wipe", libvirt_vol_wipe, -1);
+#endif
     rb_define_method(c_storage_vol, "info", libvirt_vol_info, 0);
     rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, -1);
     rb_define_method(c_storage_vol, "path", libvirt_vol_path, 0);
