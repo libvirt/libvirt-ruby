@@ -29,6 +29,7 @@
 #include "connect.h"
 #include "network.h"
 #include "nodedevice.h"
+#include "secret.h"
 
 static VALUE c_domain;
 static VALUE c_domain_info;
@@ -768,6 +769,7 @@ void Init__libvirt() {
     init_storage();
     init_network();
     init_nodedevice();
+    init_secret();
 
     r = virInitialize();
     if (r < 0)

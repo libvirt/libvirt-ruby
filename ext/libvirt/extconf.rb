@@ -18,7 +18,9 @@ end
 
 libvirt_types = [ 'virNetworkPtr',
                   'virStoragePoolPtr',
-                  'virStorageVolPtr' ]
+                  'virStorageVolPtr',
+                  'virSecretPtr',
+                ]
 
 libvirt_funcs = [ 'virStorageVolWipe',
                   'virStoragePoolIsActive',
