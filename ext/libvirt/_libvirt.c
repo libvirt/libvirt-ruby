@@ -26,8 +26,8 @@
 #include "extconf.h"
 #include "common.h"
 #include "storage.h"
+#include "connect.h"
 
-static VALUE c_connect;
 static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
@@ -35,7 +35,6 @@ static VALUE c_domain_ifinfo;
 static VALUE c_network;
 #endif
 static VALUE c_libvirt_version;
-static VALUE c_node_info;
 
 VALUE m_libvirt;
 
@@ -53,44 +52,6 @@ NORETURN(static void vir_error(VALUE exception));
 
 static void vir_error(VALUE exception) {
     rb_exc_raise(exception);
-}
-
-/* Connections */
-static void connect_close(void *p) {
-    int r;
-
-    if (!p)
-        return;
-    r = virConnectClose((virConnectPtr) p);
-    _E(r < 0, create_error(rb_eSystemCallError, "connect_close",
-                           "Connection close failed", p));
-}
-
-static VALUE connect_new(virConnectPtr p) {
-    return Data_Wrap_Struct(c_connect, NULL, connect_close, p);
-}
-
-static virConnectPtr connect_get(VALUE s) {
-    generic_get(Connect, s);
-}
-
-static VALUE conn_attr(VALUE s) {
-    if (rb_obj_is_instance_of(s, c_connect) != Qtrue) {
-        s = rb_iv_get(s, "@connection");
-    }
-    if (rb_obj_is_instance_of(s, c_connect) != Qtrue) {
-        rb_raise(rb_eArgError, "Expected Connection object");
-    }
-    return s;
-}
-
-static virConnectPtr conn(VALUE s) {
-    s = conn_attr(s);
-    virConnectPtr conn;
-    Data_Get_Struct(s, virConnect, conn);
-    if (!conn)
-        rb_raise(rb_eArgError, "Connection has been closed");
-    return conn;
 }
 
 /* Domains */
@@ -196,135 +157,6 @@ VALUE libvirt_open_read_only(VALUE m, VALUE url) {
     if (!ptr)
         rb_raise(e_ConnectionError, "Failed to open %s readonly", str);
     return connect_new(ptr);
-}
-
-/*
- * Class Libvirt::Connect
- */
-
-/*
- * call-seq:
- *   conn.close
- *
- * Close the connection
- */
-VALUE libvirt_conn_close(VALUE s) {
-    virConnectPtr conn;
-    Data_Get_Struct(s, virConnect, conn);
-    if (conn) {
-        connect_close(conn);
-        DATA_PTR(s) = NULL;
-    }
-    return Qnil;
-}
-
-/*
- * call-seq:
- *   conn.closed?
- *
- * Return +true+ if the connection is closed, +false+ if it is open
- */
-VALUE libvirt_conn_closed_p(VALUE s) {
-    virConnectPtr conn;
-    Data_Get_Struct(s, virConnect, conn);
-    return (conn==NULL) ? Qtrue : Qfalse;
-}
-
-/*
- * call-seq:
- *   conn.type -> string
- *
- * Call +virConnectGetType+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetType]
- */
-VALUE libvirt_conn_type(VALUE s) {
-    gen_call_string(virConnectGetType, connect_get(s), 0,
-                    connect_get(s));
-}
-
-/*
- * call-seq:
- *   conn.version -> fixnum
- *
- * Call +virConnectGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetVersion]
- */
-VALUE libvirt_conn_version(VALUE s) {
-    int r;
-    unsigned long v;
-    virConnectPtr conn = connect_get(s);
-
-    r = virConnectGetVersion(conn, &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion", "", conn));
-
-    return ULONG2NUM(v);
-}
-
-/*
- * call-seq:
- *   conn.hostname -> string
- *
- * Call +virConnectGetHostname+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetHostname]
- */
-VALUE libvirt_conn_hostname(VALUE s) {
-    gen_call_string(virConnectGetHostname, connect_get(s), 1,
-                    connect_get(s));
-}
-
-/*
- * Call +virConnectGetURI+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetURI]
- */
-VALUE libvirt_conn_uri(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_string(virConnectGetURI, conn, 1,
-                    conn);
-}
-
-/*
- * Call +virConnectGetMaxVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetMaxVcpus]
- */
-VALUE libvirt_conn_max_vcpus(VALUE s, VALUE type) {
-    int result;
-    virConnectPtr conn = connect_get(s);
-
-    result = virConnectGetMaxVcpus(conn, StringValueCStr(type));
-    _E(result < 0, create_error(e_RetrieveError, "virConnectGetMaxVcpus", "", conn));
-
-    return INT2NUM(result);
-}
-
-/*
- * Call +virNodeInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetInfo]
- */
-VALUE libvirt_conn_node_get_info(VALUE s){
-    int r;
-    virConnectPtr conn = connect_get(s);
-    virNodeInfo nodeinfo;
-    VALUE result;
-    VALUE modelstr;
-
-    r = virNodeGetInfo(conn, &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn));
-
-    modelstr = rb_str_new2(nodeinfo.model);
-
-    result = rb_class_new_instance(0, NULL, c_node_info);
-    rb_iv_set(result, "@model", modelstr);
-    rb_iv_set(result, "@memory", ULONG2NUM(nodeinfo.memory));
-    rb_iv_set(result, "@cpus", UINT2NUM(nodeinfo.cpus));
-    rb_iv_set(result, "@mhz", UINT2NUM(nodeinfo.mhz));
-    rb_iv_set(result, "@nodes", UINT2NUM(nodeinfo.nodes));
-    rb_iv_set(result, "@sockets", UINT2NUM(nodeinfo.sockets));
-    rb_iv_set(result, "@cores", UINT2NUM(nodeinfo.cores));
-    rb_iv_set(result, "@threads", UINT2NUM(nodeinfo.threads));
-    return result;
-}
-
-/*
- * Call +virConnectGetCapabilities+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
- */
-VALUE libvirt_conn_capabilities(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_string(virConnectGetCapabilities, conn, 1,
-                    conn);
 }
 
 /*
@@ -1044,25 +876,11 @@ void Init__libvirt() {
     rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
     rb_define_attr(e_Error, "libvirt_message", 1, 0);
 
-    /*
-     * Class Libvirt::Connect
-     */
-    c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
-
     rb_define_module_function(m_libvirt, "version", libvirt_version, 1);
 	rb_define_module_function(m_libvirt, "open", libvirt_open, 1);
 	rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, 1);
 
-    rb_define_method(c_connect, "close", libvirt_conn_close, 0);
-    rb_define_method(c_connect, "closed?", libvirt_conn_closed_p, 0);
-    rb_define_method(c_connect, "type", libvirt_conn_type, 0);
-    rb_define_method(c_connect, "version", libvirt_conn_version, 0);
-    rb_define_method(c_connect, "hostname", libvirt_conn_hostname, 0);
-    rb_define_method(c_connect, "uri", libvirt_conn_uri, 0);
-    rb_define_method(c_connect, "max_vcpus", libvirt_conn_max_vcpus, 1);
-    rb_define_method(c_connect, "node_get_info", libvirt_conn_node_get_info, 0);
-    rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
     rb_define_method(c_connect, "num_of_domains", libvirt_conn_num_of_domains, 0);
     rb_define_method(c_connect, "list_domains", libvirt_conn_list_domains, 0);
     rb_define_method(c_connect, "num_of_defined_domains",
@@ -1100,19 +918,6 @@ void Init__libvirt() {
     rb_define_method(c_connect, "define_network_xml",
                      libvirt_conn_define_network_xml, 1);
 #endif
-    /*
-     * Class Libvirt::Connect::Nodeinfo
-     */
-    c_node_info = rb_define_class_under(c_connect, "Nodeinfo", rb_cObject);
-    rb_define_attr(c_node_info, "model", 1, 0);
-    rb_define_attr(c_node_info, "memory", 1, 0);
-    rb_define_attr(c_node_info, "cpus", 1, 0);
-    rb_define_attr(c_node_info, "mhz", 1, 0);
-    rb_define_attr(c_node_info, "nodes", 1, 0);
-    rb_define_attr(c_node_info, "sockets", 1, 0);
-    rb_define_attr(c_node_info, "cores", 1, 0);
-    rb_define_attr(c_node_info, "threads", 1, 0);
-
     /*
      * Class Libvirt::Domain
      */
@@ -1205,6 +1010,7 @@ void Init__libvirt() {
     rb_define_method(c_network, "free", libvirt_netw_free, 0);
 #endif
 
+    init_connect();
     init_storage();
 
     r = virInitialize();
