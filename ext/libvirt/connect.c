@@ -25,6 +25,7 @@
 #include "common.h"
 
 VALUE c_connect;
+static VALUE c_node_security_model;
 static VALUE c_node_info;
 
 static void connect_close(void *p) {
@@ -121,6 +122,26 @@ static VALUE libvirt_conn_version(VALUE s) {
     return ULONG2NUM(v);
 }
 
+#if HAVE_VIRCONNECTGETLIBVERSION
+/*
+ * call-seq:
+ *   conn.libversion -> fixnum
+ *
+ * Call +virConnectGetLibVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetLibVersion]
+ */
+static VALUE libvirt_conn_libversion(VALUE s) {
+    int r;
+    unsigned long v;
+    virConnectPtr conn = connect_get(s);
+
+    r = virConnectGetLibVersion(conn, &v);
+    _E(r < 0, create_error(e_RetrieveError, "virConnectGetLibVersion",
+                           "", conn));
+
+    return ULONG2NUM(v);
+}
+#endif
+
 /*
  * call-seq:
  *   conn.hostname -> string
@@ -193,6 +214,111 @@ static VALUE libvirt_conn_node_get_info(VALUE s) {
 
 /*
  * call-seq:
+ *   conn.node_free_memory -> fixnum
+ *
+ * Call +virNodeGetFreeMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetFreeMemory]
+ */
+static VALUE libvirt_conn_node_free_memory(VALUE s) {
+    virConnectPtr conn = connect_get(s);
+    unsigned long long freemem;
+
+    freemem = virNodeGetFreeMemory(conn);
+    _E(freemem == 0, create_error(e_RetrieveError, "virNodeGetFreeMemory",
+                                  "", conn));
+
+    return ULL2NUM(freemem);
+}
+
+/*
+ * call-seq:
+ *   conn.node_cells_free_memory -> list
+ *
+ * Call +virNodeGetCellsFreeMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetCellsFreeMemory]
+ */
+static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s) {
+    int r;
+    virConnectPtr conn = connect_get(s);
+    VALUE cells;
+    VALUE startCell, maxCells;
+    unsigned long long *freeMems;
+    virNodeInfo nodeinfo;
+    int i;
+
+    rb_scan_args(argc, argv, "02", &startCell, &maxCells);
+
+    if (NIL_P(startCell))
+        startCell = INT2FIX(0);
+    if (NIL_P(maxCells)) {
+        r = virNodeGetInfo(conn, &nodeinfo);
+        _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn));
+        freeMems = ALLOC_N(unsigned long long, nodeinfo.nodes);
+        maxCells = INT2FIX(nodeinfo.nodes);
+    }
+    else
+        freeMems = ALLOC_N(unsigned long long, NUM2UINT(maxCells));
+
+    r = virNodeGetCellsFreeMemory(conn, freeMems, NUM2INT(startCell),
+                                  NUM2INT(maxCells));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetCellsFreeMemory", "", conn));
+
+    cells = rb_ary_new2(r);
+    for (i = 0; i < r; i++)
+        rb_ary_push(cells, ULL2NUM(freeMems[i]));
+    free(freeMems);
+
+    return cells;
+}
+
+/*
+ * call-seq:
+ *   conn.node_get_security_model -> Libvirt::Connect::NodeSecurityModel
+ *
+ * Call +virNodeGetSecurityInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetSecurityInfo]
+ */
+static VALUE libvirt_conn_node_get_security_model(VALUE s) {
+    virSecurityModel secmodel;
+    virConnectPtr conn = connect_get(s);
+    int r;
+    VALUE result;
+
+    r = virNodeGetSecurityModel(conn, &secmodel);
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel", "", conn));
+
+    result = rb_class_new_instance(0, NULL, c_node_security_model);
+    rb_iv_set(result, "@model", rb_str_new2(secmodel.model));
+    rb_iv_set(result, "@doi", rb_str_new2(secmodel.doi));
+
+    return result;
+}
+
+#if HAVE_VIRCONNECTISENCRYPTED
+/*
+ * call-seq:
+ *   conn.encrypted?
+ *
+ * Return +true+ if the connection is encrypted, +false+ if it is not
+ */
+static VALUE libvirt_conn_encrypted_p(VALUE s) {
+    virConnectPtr conn = connect_get(s);
+    gen_call_truefalse(virConnectIsEncrypted, conn, conn);
+}
+#endif
+
+#if HAVE_VIRCONNECTISSECURE
+/*
+ * call-seq:
+ *   conn.secure?
+ *
+ * Return +true+ if the connection is secure, +false+ if it is not
+ */
+static VALUE libvirt_conn_secure_p(VALUE s) {
+    virConnectPtr conn = connect_get(s);
+    gen_call_truefalse(virConnectIsSecure, conn, conn);
+}
+#endif
+
+/*
+ * call-seq:
  *   conn.capabilities -> string
  *
  * Call +virConnectGetCapabilities+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
@@ -223,13 +349,50 @@ void init_connect()
     rb_define_attr(c_node_info, "cores", 1, 0);
     rb_define_attr(c_node_info, "threads", 1, 0);
 
+    /*
+     * Class Libvirt::Connect::NodeSecurityModel
+     */
+    c_node_security_model = rb_define_class_under(c_connect,
+                                                  "NodeSecurityModel",
+                                                  rb_cObject);
+    rb_define_attr(c_node_security_model, "model", 1, 0);
+    rb_define_attr(c_node_security_model, "doi", 1, 0);
+
     rb_define_method(c_connect, "close", libvirt_conn_close, 0);
     rb_define_method(c_connect, "closed?", libvirt_conn_closed_p, 0);
     rb_define_method(c_connect, "type", libvirt_conn_type, 0);
     rb_define_method(c_connect, "version", libvirt_conn_version, 0);
+#if HAVE_VIRCONNECTGETLIBVERSION
+    rb_define_method(c_connect, "libversion", libvirt_conn_libversion, 0);
+#endif
     rb_define_method(c_connect, "hostname", libvirt_conn_hostname, 0);
     rb_define_method(c_connect, "uri", libvirt_conn_uri, 0);
     rb_define_method(c_connect, "max_vcpus", libvirt_conn_max_vcpus, -1);
     rb_define_method(c_connect, "node_get_info", libvirt_conn_node_get_info, 0);
+    rb_define_method(c_connect, "node_free_memory",
+                     libvirt_conn_node_free_memory, 0);
+    rb_define_method(c_connect, "node_cells_free_memory",
+                     libvirt_conn_node_cells_free_memory, -1);
+    rb_define_method(c_connect, "node_get_security_model",
+                     libvirt_conn_node_get_security_model, 0);
+#if HAVE_VIRCONNECTISENCRYPTED
+    rb_define_method(c_connect, "encrypted?", libvirt_conn_encrypted_p, 0);
+#endif
+#if HAVE_VIRCONNECTISSECURE
+    rb_define_method(c_connect, "secure?", libvirt_conn_secure_p, 0);
+#endif
     rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
+
+    /* FIXME: implement these */
+    //rb_define_method(c_connect, "domain_event_register",
+    //                 libvirt_conn_domain_event_register", -1);
+    //rb_define_method(c_connect, "Domain_event_deregister",
+    //                 libvirt_conn_domain_event_deregister, -1);
+    //rb_define_method(c_connect, "domain_event_register_any",
+    //                 libvirt_conn_domain_event_register_any, -1);
+    //rb_define_method(c_connect, "domain_event_deregister_any",
+    //                 libvirt_conn_domain_event_deregister_any, -1);
+    //rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1);
+    //rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1);
+    //rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1);
 }

@@ -23,6 +23,9 @@ libvirt_types = [ 'virNetworkPtr',
 libvirt_funcs = [ 'virStorageVolWipe',
                   'virStoragePoolIsActive',
                   'virStoragePoolIsPersistent',
+                  'virConnectGetLibVersion',
+                  'virConnectIsEncrypted',
+                  'virConnectIsSecure',
                 ]
 
 have_libvirt_types(libvirt_types)
