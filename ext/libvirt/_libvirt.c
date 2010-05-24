@@ -546,7 +546,7 @@ VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
     char *ifname = get_string_or_nil(sif);
     virDomainInterfaceStatsStruct ifinfo;
     int r;
-    VALUE result;
+    VALUE result = Qnil;
 
     if(ifname){
       r = virDomainInterfaceStats(dom, ifname, &ifinfo, sizeof(virDomainInterfaceStatsStruct));
