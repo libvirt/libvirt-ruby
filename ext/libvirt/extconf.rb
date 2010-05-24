@@ -28,6 +28,8 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectIsSecure',
                   'virNetworkIsActive',
                   'virNetworkIsPersistent',
+                  'virNodeDeviceCreateXML',
+                  'virNodeDeviceDestroy',
                 ]
 
 have_libvirt_types(libvirt_types)

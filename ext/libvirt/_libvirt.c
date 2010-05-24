@@ -28,6 +28,7 @@
 #include "storage.h"
 #include "connect.h"
 #include "network.h"
+#include "nodedevice.h"
 
 static VALUE c_domain;
 static VALUE c_domain_info;
@@ -766,6 +767,7 @@ void Init__libvirt() {
     init_connect();
     init_storage();
     init_network();
+    init_nodedevice();
 
     r = virInitialize();
     if (r < 0)
