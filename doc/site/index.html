@@ -25,14 +25,12 @@
    conn = Libvirt::open("qemu:///system")
    puts conn.capabilities
    
-   File::open("domain.xml") do |f| 
-     conn.createDomainLinux(f.readlines, nil)
-   end
+   conn.create_domain_linux(File.read("domain.xml"))
 
-   dom = conn.lookupDomainByName("mydomain")
+   dom = conn.lookup_domain_by_name("mydomain")
    dom.suspend
    dom.resume
-   puts dom.xmlDesc
+   puts dom.xml_desc
           </pre>
           <h4 id="developers">Developers</h4>
           <p>The sources are available with mercurial. To clone, run</p>
