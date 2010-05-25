@@ -22,6 +22,10 @@ libvirt_types = [ 'virNetworkPtr',
                   'virSecretPtr',
                   'virNWFilterPtr',
                   'virInterfacePtr',
+                  'virDomainBlockInfoPtr',
+                  'virDomainMemoryStatPtr',
+                  'virDomainSnapshotPtr',
+                  'virDomainJobInfoPtr',
                 ]
 
 libvirt_funcs = [ 'virStorageVolWipe',
@@ -35,6 +39,13 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeDeviceCreateXML',
                   'virNodeDeviceDestroy',
                   'virInterfaceIsActive',
+                  'virDomainMigrateToURI',
+                  'virDomainMigrateSetMaxDowntime',
+                  'virDomainManagedSave',
+                  'virDomainIsActive',
+                  'virDomainIsPersistent',
+                  'virConnectDomainXMLFromNative',
+                  'virConnectDomainXMLToNative',
                 ]
 
 have_libvirt_types(libvirt_types)

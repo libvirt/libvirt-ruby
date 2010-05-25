@@ -28,6 +28,20 @@
 VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
+static VALUE c_domain_security_label;
+static VALUE c_domain_block_stats;
+#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
+static VALUE c_domain_block_info;
+#endif
+#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
+static VALUE c_domain_memory_stats;
+#endif
+#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
+static VALUE c_domain_snapshot;
+#endif
+#if HAVE_TYPE_VIRDOMAINJOBINFOPTR
+static VALUE c_domain_job_info;
+#endif
 
 static void domain_free(void *d) {
     generic_free(Domain, d);
@@ -190,6 +204,66 @@ static VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
     return domain_new(dom, c);
 }
 
+#if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
+/*
+ * call-seq:
+ *   conn.domain_xml_from_native -> string
+ *
+ * Call +virConnectDomainXMLFromNative+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLFromNative]
+ */
+static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv, VALUE s) {
+    VALUE nativeFormat, xml, flags;
+    char *ret;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    ret = virConnectDomainXMLFromNative(conn(s), StringValueCStr(nativeFormat),
+                                        StringValueCStr(xml), NUM2UINT(flags));
+    _E(ret == NULL,
+       create_error(e_Error, "virConnectDomainXMLFromNative", "", conn(s)));
+
+    result = rb_str_new2(ret);
+
+    free(ret);
+
+    return result;
+}
+#endif
+
+#if HAVE_VIRCONNECTDOMAINXMLTONATIVE
+/*
+ * call-seq:
+ *   conn.domain_xml_to_native -> string
+ *
+ * Call +virConnectDomainXMLToNative+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLToNative]
+ */
+static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s) {
+    VALUE nativeFormat, xml, flags;
+    char *ret;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    ret = virConnectDomainXMLToNative(conn(s), StringValueCStr(nativeFormat),
+                                      StringValueCStr(xml), NUM2UINT(flags));
+    _E(ret == NULL,
+       create_error(e_Error, "virConnectDomainXMLToNative", "", conn(s)));
+
+    result = rb_str_new2(ret);
+
+    free(ret);
+
+    return result;
+}
+#endif
+
 /*
  * call-seq:
  *   dom.migrate -> Libvirt::Domain
@@ -217,6 +291,61 @@ static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
 
     return domain_new(ddom, dconn);
 }
+
+#if HAVE_VIRDOMAINMIGRATETOURI
+/*
+ * call-seq:
+ *   dom.migrate_to_uri -> nil
+ *
+ * Call +virDomainMigrateToURI+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI]
+ */
+static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
+    VALUE flags, dname_val, bandwidth, duri_val;
+    int ret;
+
+    rb_scan_args(argc, argv, "13", &duri_val, &flags, &dname_val, &bandwidth);
+
+    if (NIL_P(bandwidth))
+        bandwidth = INT2FIX(0);
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    ret = virDomainMigrateToURI(domain_get(s), StringValueCStr(duri_val),
+                                NUM2ULONG(flags), get_string_or_nil(dname_val),
+                                NUM2ULONG(bandwidth));
+
+    _E(ret < 0,
+       create_error(e_Error, "virDomainMigrateToURI", "", conn(s)));
+
+    return Qnil;
+}
+#endif
+
+#if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
+/*
+ * call-seq:
+ *   dom.migrate_set_max_downtime -> nil
+ *
+ * Call +virDomainMigrateSetMaxDowntime+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
+ */
+static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv, VALUE s) {
+    VALUE downtime, flags;
+    int ret;
+
+    rb_scan_args(argc, argv, "11", &downtime, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    ret = virDomainMigrateSetMaxDowntime(domain_get(s), NUM2ULL(downtime),
+                                         NUM2UINT(flags));
+
+    _E(ret < 0,
+       create_error(e_Error, "virDomainMigrateSetMaxDowntime", "", conn(s)));
+
+    return Qnil;
+}
+#endif
 
 /*
  * call-seq:
@@ -285,6 +414,62 @@ static VALUE libvirt_dom_save(VALUE s, VALUE to) {
     gen_call_void(virDomainSave, conn(s), domain_get(s), StringValueCStr(to));
 }
 
+#if HAVE_VIRDOMAINMANAGEDSAVE
+/*
+ * call-seq:
+ *   dom.managed_save -> nil
+ *
+ * Call +virDomainManagedSave+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainManagedSave]
+ */
+static VALUE libvirt_dom_managed_save(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virDomainManagedSave, conn(s), domain_get(s),
+                  NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   dom.has_managed_save -> [true|false]
+ *
+ * Call +virDomainHasManagedSaveImage+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasManagedSaveImage]
+ */
+static VALUE libvirt_dom_has_managed_save(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_truefalse(virDomainHasManagedSaveImage, conn(s), domain_get(s),
+                       NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   dom.managed_save_remove -> nil
+ *
+ * Call +virDomainManagedSaveRemove+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainManagedSaveRemove]
+ */
+static VALUE libvirt_dom_managed_save_remove(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virDomainManagedSaveRemove, conn(s), domain_get(s),
+                  NUM2UINT(flags));
+}
+#endif
+
 /*
  * call-seq:
  *   dom.core_dump -> nil
@@ -335,9 +520,213 @@ static VALUE libvirt_dom_info(VALUE s) {
     rb_iv_set(result, "@memory", ULONG2NUM(info.memory));
     rb_iv_set(result, "@nr_virt_cpu", INT2FIX((int) info.nrVirtCpu));
     rb_iv_set(result, "@cpu_time", ULL2NUM(info.cpuTime));
+    return result;
+}
+
+/*
+ * call-seq:
+ *   domain.security_label -> Libvirt::Domain::SecurityLabel
+ *
+ * Call +virDomainGetSecurityLabel+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabel]
+ */
+static VALUE libvirt_dom_security_label(VALUE s) {
+    virDomainPtr dom = domain_get(s);
+    virSecurityLabel seclabel;
+    int r;
+    VALUE result;
+
+    r = virDomainGetSecurityLabel(dom, &seclabel);
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetSecurityLabel", "", conn(s)));
+
+    result = rb_class_new_instance(0, NULL, c_domain_security_label);
+    rb_iv_set(result, "@label", rb_str_new2(seclabel.label));
+    rb_iv_set(result, "@enforcing", INT2NUM(seclabel.enforcing));
 
     return result;
 }
+
+/*
+ * call-seq:
+ *   domain.block_stats -> Libvirt::Domain::BlockStats
+ *
+ * Call +virDomainBlockStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStats]
+ */
+static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
+    virDomainPtr dom = domain_get(s);
+    virDomainBlockStatsStruct stats;
+    int r;
+    VALUE result;
+
+    r = virDomainBlockStats(dom, StringValueCStr(path), &stats, sizeof(stats));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockStats", "", conn(s)));
+
+    result = rb_class_new_instance(0, NULL, c_domain_block_stats);
+    rb_iv_set(result, "@rd_req", LL2NUM(stats.rd_req));
+    rb_iv_set(result, "@rd_bytes", LL2NUM(stats.rd_bytes));
+    rb_iv_set(result, "@wr_req", LL2NUM(stats.wr_req));
+    rb_iv_set(result, "@wr_bytes", LL2NUM(stats.wr_bytes));
+    rb_iv_set(result, "@errs", LL2NUM(stats.errs));
+
+    return result;
+}
+
+#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
+/*
+ * call-seq:
+ *   domain.memory_stats -> Libvirt::Domain::MemoryStats
+ *
+ * Call +virDomainMemoryStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryStats]
+ */
+static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
+    virDomainPtr dom = domain_get(s);
+    virDomainMemoryStatStruct stats[6];
+    int r;
+    VALUE result;
+    VALUE flags;
+    VALUE tmp;
+    int i;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    r = virDomainMemoryStats(dom, stats, 6, NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats", "", conn(s)));
+
+    result = rb_ary_new2(r);
+    for (i=0; i<r; i++) {
+        tmp = rb_class_new_instance(0, NULL, c_domain_memory_stats);
+        rb_iv_set(tmp, "@tag", INT2NUM(stats[i].tag));
+        rb_iv_set(tmp, "@val", ULL2NUM(stats[i].val));
+
+        rb_ary_push(result, tmp);
+    }                                           \
+
+    return result;
+}
+#endif
+
+#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
+/*
+ * call-seq:
+ *   domain.block_info -> Libvirt::Domain::BlockInfo
+ *
+ * Call +virDomainGetBlockInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockInfo]
+ */
+static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
+    virDomainPtr dom = domain_get(s);
+    virDomainBlockInfo info;
+    int r;
+    VALUE result;
+    VALUE flags;
+    VALUE path;
+
+    rb_scan_args(argc, argv, "11", &path, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    r = virDomainGetBlockInfo(dom, StringValueCStr(path), &info, NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlockInfo", "", conn(s)));
+
+    result = rb_class_new_instance(0, NULL, c_domain_block_info);
+    rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
+    rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
+    rb_iv_set(result, "@physical", ULL2NUM(info.physical));
+
+    return result;
+}
+#endif
+
+/*
+ * call-seq:
+ *   domain.block_peek -> string
+ *
+ * Call +virDomainBlockPeek+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockPeek]
+ */
+static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
+    virDomainPtr dom = domain_get(s);
+    VALUE path, offset, size, flags;
+    char *buffer;
+    int r;
+    VALUE ret;
+
+    rb_scan_args(argc, argv, "31", &path, &offset, &size, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    buffer = ALLOC_N(char, size);
+
+    r = virDomainBlockPeek(dom, StringValueCStr(path),
+                           NUM2ULL(offset), NUM2UINT(size), buffer,
+                           NUM2UINT(flags));
+
+    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockPeek", "", conn(s)));
+
+    ret = rb_str_new((char *)buffer, size);
+
+    free(buffer);
+
+    return ret;
+}
+
+/*
+ * call-seq:
+ *   domain.memory_peek -> string
+ *
+ * Call +virDomainMemoryPeek+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryPeek]
+ */
+static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
+    virDomainPtr dom = domain_get(s);
+    VALUE start, size, flags;
+    char *buffer;
+    int r;
+    VALUE ret;
+
+    rb_scan_args(argc, argv, "21", &start, &size, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    buffer = ALLOC_N(char, size);
+
+    r = virDomainMemoryPeek(dom, NUM2ULL(start), NUM2UINT(size), buffer,
+                           NUM2UINT(flags));
+
+    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryPeek", "", conn(s)));
+
+    ret = rb_str_new((char *)buffer, size);
+
+    free(buffer);
+
+    return ret;
+}
+
+#if HAVE_VIRDOMAINISACTIVE
+/*
+ * call-seq:
+ *   domain.active? -> [true|false]
+ *
+ * Call +virDomainIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsActive]
+ */
+static VALUE libvirt_dom_active_p(VALUE d) {
+    gen_call_truefalse(virDomainIsActive, conn(d), domain_get(d));
+}
+#endif
+
+#if HAVE_VIRDOMAINISPERSISTENT
+/*
+ * call-seq:
+ *   domain.persistent? -> [true|false]
+ *
+ * Call +virDomainIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsPersistent]
+ */
+static VALUE libvirt_dom_persistent_p(VALUE d) {
+    gen_call_truefalse(virDomainIsPersistent, conn(d), domain_get(d));
+}
+#endif
 
 /*
  * call-seq:
@@ -752,7 +1141,7 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
                                          NUM2UINT(flags));
     _E(dom == NULL, create_error(e_RetrieveError, "virDomainSnapshotLookupByName", "", conn(d)));
 
-    return domain_snaphost_new(snap, d);
+    return domain_snapshot_new(snap, d);
 }
 
 /*
@@ -763,7 +1152,6 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_dom_has_current_snapshot_p(int argc, VALUE *argv, VALUE d) {
     VALUE flags;
-    int r;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -903,7 +1291,7 @@ static VALUE libvirt_dom_job_info(VALUE d) {
  * Call +virDomainAbortJob+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAbortJob]
  */
 static VALUE libvirt_dom_abort_job(VALUE d) {
-    gen_call_void(virDomainAbortJob, conn(s), domain_get(d));
+    gen_call_void(virDomainAbortJob, conn(d), domain_get(d));
 }
 
 #endif
@@ -931,6 +1319,46 @@ void init_domain()
 #ifdef VIR_MIGRATE_LIVE
     rb_define_const(c_domain, "MIGRATE_LIVE", INT2NUM(VIR_MIGRATE_LIVE));
 #endif
+#ifdef VIR_MIGRATE_PEER2PEER
+    rb_define_const(c_domain, "MIGRATE_PEER2PEER",
+                    INT2NUM(VIR_MIGRATE_PEER2PEER));
+#endif
+#ifdef VIR_MIGRATE_TUNNELLED
+    rb_define_const(c_domain, "MIGRATE_TUNNELLED",
+                    INT2NUM(VIR_MIGRATE_TUNNELLED));
+#endif
+#ifdef VIR_MIGRATE_PERSIST_DEST
+    rb_define_const(c_domain, "MIGRATE_PERSIST_DEST",
+                    INT2NUM(VIR_MIGRATE_PERSIST_DEST));
+#endif
+#ifdef VIR_MIGRATE_UNDEFINE_SOURCE
+    rb_define_const(c_domain, "MIGRATE_UNDEFINE_SOURCE",
+                    INT2NUM(VIR_MIGRATE_UNDEFINE_SOURCE));
+#endif
+#ifdef VIR_MIGRATE_PAUSED
+    rb_define_const(c_domain, "MIGRATE_PAUSED", INT2NUM(VIR_MIGRATE_PAUSED));
+#endif
+#ifdef VIR_MIGRATE_NON_SHARED_DISK
+    rb_define_const(c_domain, "MIGRATE_NON_SHARED_DISK",
+                    INT2NUM(VIR_MIGRATE_NON_SHARED_DISK));
+#endif
+#ifdef VIR_MIGRATE_NON_SHARED_INC
+    rb_define_const(c_domain, "MIGRATE_NON_SHARED_INC",
+                    INT2NUM(VIR_MIGRATE_NON_SHARED_INC));
+#endif
+    /* DomainGetXMLDesc flags */
+    rb_define_const(c_domain, "DOMAIN_XML_SECURE",
+                    INT2NUM(VIR_DOMAIN_XML_SECURE));
+    rb_define_const(c_domain, "DOMAIN_XML_INACTIVE",
+                    INT2NUM(VIR_DOMAIN_XML_INACTIVE));
+#ifdef VIR_DOMAIN_XML_UPDATE_CPU
+    rb_define_const(c_domain, "DOMAIN_XML_UPDATE_CPU",
+                    INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
+#endif
+    rb_define_const(c_domain, "MEMORY_VIRTUAL", INT2NUM(VIR_MEMORY_VIRTUAL));
+#ifdef VIR_MEMORY_PHYSICAL
+    rb_define_const(c_domain, "MEMORY_PHYSICAL", INT2NUM(VIR_MEMORY_PHYSICAL));
+#endif
 
     // Domain creation/lookup
     rb_define_method(c_connect, "num_of_domains",
@@ -951,7 +1379,24 @@ void init_domain()
     rb_define_method(c_connect, "define_domain_xml",
                      libvirt_conn_define_domain_xml, 1);
 
+#if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
+    rb_define_method(c_connect, "domain_xml_from_native",
+                     libvirt_conn_domain_xml_from_native, -1);
+#endif
+#if HAVE_VIRCONNECTDOMAINXMLTONATIVE
+    rb_define_method(c_connect, "domain_xml_to_native",
+                     libvirt_conn_domain_xml_to_native, -1);
+#endif
+
     rb_define_method(c_domain, "migrate", libvirt_dom_migrate, -1);
+#if HAVE_VIRDOMAINMIGRATETOURI
+    rb_define_method(c_domain, "migrate_to_uri",
+                     libvirt_dom_migrate_to_uri, -1);
+#endif
+#if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
+    rb_define_method(c_domain, "migrate_set_max_downtime",
+                     libvirt_dom_migrate_set_max_downtime, -1);
+#endif
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
@@ -977,10 +1422,68 @@ void init_domain()
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
+    rb_define_method(c_domain, "autostart?", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
     rb_define_method(c_domain, "free", libvirt_dom_free, 0);
+    /* FIXME: we should probably allow a "flags" parameter to
+     * {attach,detach}_device, and then call
+     * virDomain{Attach,Detach}DeviceFlags, where appropriate
+     *
+     * We should also make the VIR_DOMAIN_DEVICE_MODIFY_* flags consts
+     */
     rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, 1);
     rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, 1);
+    /* FIXME: implement this */
+    // rb_define_method(c_domain, "update_device", libvirt_dom_update_device, -1);
+    /* FIXME: we should probably do scheduler parameters as hashes.  That is
+     * virDomainGetSchedulerParameters should return a hash with all of the
+     * parameters, and virDomainSetSchedulerParameters should take a hash
+     * of parameters in
+     */
+    //rb_define_method(c_domain, "get_scheduler_params", libvirt_dom_get_scheduler_params, 0);
+    //rb_define_method(c_domain, "set_scheduler_params", libvirt_dom_set_scheduler_params, 0)
+#if HAVE_VIRDOMAINMANAGEDSAVE
+    rb_define_method(c_domain, "managed_save", libvirt_dom_managed_save, -1);
+    rb_define_method(c_domain, "has_managed_save?",
+                     libvirt_dom_has_managed_save, -1);
+    rb_define_method(c_domain, "managed_save_remove",
+                     libvirt_dom_managed_save_remove, -1);
+#endif
+    rb_define_method(c_domain, "security_label",
+                     libvirt_dom_security_label, 0);
+    rb_define_method(c_domain, "block_stats", libvirt_dom_block_stats, 1);
+#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
+    rb_define_method(c_domain, "memory_stats", libvirt_dom_memory_stats, -1);
+#endif
+    rb_define_method(c_domain, "block_peek", libvirt_dom_block_peek, -1);
+#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
+    rb_define_method(c_domain, "blockinfo", libvirt_dom_block_info, -1);
+#endif
+    rb_define_method(c_domain, "memory_peek", libvirt_dom_memory_peek, -1);
+    /* FIXME: implement these */
+    //rb_define_method(c_domain, "get_vcpus", libvirt_dom_get_vcpus, 0);
+#if HAVE_VIRDOMAINISACTIVE
+    rb_define_method(c_domain, "active?", libvirt_dom_active_p, 0);
+#endif
+#if HAVE_VIRDOMAINISPERSISTENT
+    rb_define_method(c_domain, "persistent?", libvirt_dom_persistent_p, 0);
+#endif
+#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
+    rb_define_method(c_domain, "snapshot_create_xml",
+                     libvirt_dom_snapshot_create_xml, -1);
+    rb_define_method(c_domain, "num_of_snapshots",
+                     libvirt_dom_num_of_snapshots, -1);
+    rb_define_method(c_domain, "list_snapshots",
+                     libvirt_dom_list_snapshots, -1);
+    rb_define_method(c_domain, "lookup_snapshot_by_name",
+                     libvirt_dom_lookup_snapshot_by_name, -1);
+    rb_define_method(c_domain, "has_current_snapshot?",
+                     libvirt_dom_has_current_snapshot_p, -1);
+    rb_define_method(c_domain, "revert_to_snapshot",
+                     libvirt_dom_revert_to_snapshot, -1);
+    rb_define_method(c_domain, "current_snapshot",
+                     libvirt_dom_current_snapshot, -1);
+#endif
 
     /*
      * Class Libvirt::Domain::Info
@@ -1005,4 +1508,91 @@ void init_domain()
     rb_define_attr(c_domain_ifinfo, "tx_packets", 1, 0);
     rb_define_attr(c_domain_ifinfo, "tx_errs", 1, 0);
     rb_define_attr(c_domain_ifinfo, "tx_drop", 1, 0);
+
+    /*
+     * Class Libvirt::Domain::SecurityLabel
+     */
+    c_domain_security_label = rb_define_class_under(c_domain, "SecurityLabel",
+                                                    rb_cObject);
+    rb_define_attr(c_domain_security_label, "label", 1, 0);
+    rb_define_attr(c_domain_security_label, "enforcing", 1, 0);
+
+    /*
+     * Class Libvirt::Domain::BlockStats
+     */
+    c_domain_block_stats = rb_define_class_under(c_domain, "BlockStats",
+                                                 rb_cObject);
+    rb_define_attr(c_domain_block_stats, "rd_req", 1, 0);
+    rb_define_attr(c_domain_block_stats, "rd_bytes", 1, 0);
+    rb_define_attr(c_domain_block_stats, "wr_req", 1, 0);
+    rb_define_attr(c_domain_block_stats, "wr_bytes", 1, 0);
+    rb_define_attr(c_domain_block_stats, "errs", 1, 0);
+
+#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
+    /*
+     * Class Libvirt::Domain::MemoryStats
+     */
+    c_domain_memory_stats = rb_define_class_under(c_domain, "MemoryStats",
+                                                  rb_cObject);
+    rb_define_attr(c_domain_memory_stats, "tag", 1, 0);
+    rb_define_attr(c_domain_memory_stats, "value", 1, 0);
+#endif
+
+#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
+    /*
+     * Class Libvirt::Domain::BlockInfo
+     */
+    c_domain_block_info = rb_define_class_under(c_domain, "BlockInfo",
+                                                rb_cObject);
+    rb_define_attr(c_domain_block_info, "capacity", 1, 0);
+    rb_define_attr(c_domain_block_info, "allocation", 1, 0);
+    rb_define_attr(c_domain_block_info, "physical", 1, 0);
+#endif
+
+#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
+    /*
+     * Class Libvirt::Domain::Snapshot
+     */
+    c_domain_snapshot = rb_define_class_under(c_domain, "Snapshot", rb_cObject);
+    rb_define_const(c_domain_snapshot, "DELETE_CHILDREN",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN));
+    rb_define_method(c_domain_snapshot, "xml_desc",
+                     libvirt_dom_snapshot_xml_desc, -1);
+    rb_define_method(c_domain_snapshot, "delete",
+                     libvirt_dom_snapshot_delete, -1);
+    rb_define_method(c_domain_snapshot, "free", libvirt_dom_snapshot_free, 0);
+#endif
+
+#if HAVE_TYPE_VIRDOMAINJOBINFOPTR
+    /*
+     * Class Libvirt::Domain::JobInfo
+     */
+    c_domain_job_info = rb_define_class_under(c_domain, "JobInfo", rb_cObject);
+    rb_define_const(c_domain_job_info, "NONE", INT2NUM(VIR_DOMAIN_JOB_NONE));
+    rb_define_const(c_domain_job_info, "BOUNDED",
+                    INT2NUM(VIR_DOMAIN_JOB_BOUNDED));
+    rb_define_const(c_domain_job_info, "UNBOUNDED",
+                    INT2NUM(VIR_DOMAIN_JOB_UNBOUNDED));
+    rb_define_const(c_domain_job_info, "COMPLETED",
+                    INT2NUM(VIR_DOMAIN_JOB_COMPLETED));
+    rb_define_const(c_domain_job_info, "FAILED",
+                    INT2NUM(VIR_DOMAIN_JOB_FAILED));
+    rb_define_const(c_domain_job_info, "CANCELLED",
+                    INT2NUM(VIR_DOMAIN_JOB_CANCELLED));
+    rb_define_attr(c_domain_job_info, "type", 1, 0);
+    rb_define_attr(c_domain_job_info, "time_elapsed", 1, 0);
+    rb_define_attr(c_domain_job_info, "time_remaining", 1, 0);
+    rb_define_attr(c_domain_job_info, "data_total", 1, 0);
+    rb_define_attr(c_domain_job_info, "data_processed", 1, 0);
+    rb_define_attr(c_domain_job_info, "data_remaining", 1, 0);
+    rb_define_attr(c_domain_job_info, "mem_total", 1, 0);
+    rb_define_attr(c_domain_job_info, "mem_processed", 1, 0);
+    rb_define_attr(c_domain_job_info, "mem_remaining", 1, 0);
+    rb_define_attr(c_domain_job_info, "file_total", 1, 0);
+    rb_define_attr(c_domain_job_info, "file_processed", 1, 0);
+    rb_define_attr(c_domain_job_info, "file_remaining", 1, 0);
+
+    rb_define_method(c_domain, "job_info", libvirt_dom_job_info, 0);
+    rb_define_method(c_domain, "abort_job", libvirt_dom_abort_job, 0);
+#endif
 }
