@@ -89,18 +89,20 @@ VALUE libvirt_version(VALUE m, VALUE t) {
  * +virConnectOpen+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
  * to open a connection to a URL.  Returns a new Libvirt::Connect object.
  */
-VALUE libvirt_open(VALUE m, VALUE url) {
-    char *str = NULL;
+VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
+    VALUE uri;
+    char *uri_c;
+    virConnectPtr conn;
 
-    if (url) {
-        str = StringValueCStr(url);
-        if (!str)
-            rb_raise(rb_eTypeError, "expected string");
-    }
-    virConnectPtr ptr = virConnectOpen(str);
-    if (!ptr)
-        rb_raise(e_ConnectionError, "Failed to open %s", str);
-    return connect_new(ptr);
+    rb_scan_args(argc, argv, "01", &uri);
+
+    uri_c = get_string_or_nil(uri);
+    conn = virConnectOpen(uri_c);
+
+    if (conn == NULL)
+        rb_raise(e_ConnectionError, "Failed to open connection to '%s'", uri_c);
+
+    return connect_new(conn);
 }
 
 /*
@@ -154,7 +156,7 @@ void Init__libvirt() {
     rb_define_attr(e_Error, "libvirt_message", 1, 0);
 
     rb_define_module_function(m_libvirt, "version", libvirt_version, 1);
-	rb_define_module_function(m_libvirt, "open", libvirt_open, 1);
+	rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
 	rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, 1);
     // FIXME: implement this
