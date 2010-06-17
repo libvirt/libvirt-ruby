@@ -192,7 +192,6 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
  * Call +virConnectFindStoragePoolSources+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
  */
 static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv, VALUE c) {
-    virConnectPtr conn = connect_get(c);
     VALUE type, srcSpec_val, flags;
 
     rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
@@ -200,9 +199,9 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv, VALUE
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    gen_call_string(virConnectFindStoragePoolSources, conn, 1, conn,
-                    StringValueCStr(type), get_string_or_nil(srcSpec_val),
-                    NUM2UINT(flags));
+    gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
+                    connect_get(c), StringValueCStr(type),
+                    get_string_or_nil(srcSpec_val), NUM2UINT(flags));
 }
 
 /*
@@ -581,7 +580,7 @@ static VALUE libvirt_pool_vol_create_xml_from(int argc, VALUE *argv, VALUE p) {
  * Call +virStoragePoolIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsActive]
  */
 static VALUE libvirt_pool_active_p(VALUE p) {
-    gen_call_truefalse(virStoragePoolIsActive, conn(p), network_get(p));
+    gen_call_truefalse(virStoragePoolIsActive, conn(p), pool_get(p));
 }
 #endif
 
@@ -593,7 +592,7 @@ static VALUE libvirt_pool_active_p(VALUE p) {
  * Call +virStoragePoolIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsPersistent]
  */
 static VALUE libvirt_pool_persistent_p(VALUE p) {
-    gen_call_truefalse(virStoragePoolIsPersistent, conn(p), network_get(p));
+    gen_call_truefalse(virStoragePoolIsPersistent, conn(p), pool_get(p));
 }
 #endif
 

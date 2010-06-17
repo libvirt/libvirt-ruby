@@ -495,8 +495,8 @@ static VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
  */
 static VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
-    virConnectPtr conn = connect_get(c);
-    gen_call_void(virDomainRestore, conn, conn, StringValueCStr(from));
+    gen_call_void(virDomainRestore, conn(c), connect_get(c),
+                  StringValueCStr(from));
 }
 
 /*
@@ -1224,7 +1224,7 @@ static VALUE libvirt_dom_snapshot_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    gen_call_string(virDomainSnapshotGetXMLDesc, NULL, 1,
+    gen_call_string(virDomainSnapshotGetXMLDesc, conn(s), 1,
                     domain_snapshot_get(s), NUM2UINT(flags));
 }
 
@@ -1242,7 +1242,7 @@ static VALUE libvirt_dom_snapshot_delete(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    gen_call_void(virDomainSnapshotDelete, NULL,
+    gen_call_void(virDomainSnapshotDelete, conn(s),
                     domain_snapshot_get(s), NUM2UINT(flags));
 }
 

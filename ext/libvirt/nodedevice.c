@@ -154,7 +154,7 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) 
  * Call +virNodeDeviceGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetName]
  */
 static VALUE libvirt_nodedevice_name(VALUE c) {
-    gen_call_string(virNodeDeviceGetName, connect_get(c), 0, nodedevice_get(c));
+    gen_call_string(virNodeDeviceGetName, conn(c), 0, nodedevice_get(c));
 }
 
 /*

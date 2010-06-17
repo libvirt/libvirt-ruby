@@ -102,7 +102,7 @@ static VALUE libvirt_conn_closed_p(VALUE s) {
  * Call +virConnectGetType+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetType]
  */
 static VALUE libvirt_conn_type(VALUE s) {
-    gen_call_string(virConnectGetType, connect_get(s), 0, connect_get(s));
+    gen_call_string(virConnectGetType, conn(s), 0, connect_get(s));
 }
 
 /*
@@ -149,8 +149,7 @@ static VALUE libvirt_conn_libversion(VALUE s) {
  * Call +virConnectGetHostname+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetHostname]
  */
 static VALUE libvirt_conn_hostname(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_string(virConnectGetHostname, conn, 1, conn);
+    gen_call_string(virConnectGetHostname, conn(s), 1, connect_get(s));
 }
 
 /*
@@ -160,8 +159,7 @@ static VALUE libvirt_conn_hostname(VALUE s) {
  * Call +virConnectGetURI+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetURI]
  */
 static VALUE libvirt_conn_uri(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_string(virConnectGetURI, conn, 1, conn);
+    gen_call_string(virConnectGetURI, conn(s), 1, connect_get(s));
 }
 
 /*
@@ -299,8 +297,7 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s) {
  * Return +true+ if the connection is encrypted, +false+ if it is not
  */
 static VALUE libvirt_conn_encrypted_p(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_truefalse(virConnectIsEncrypted, conn, conn);
+    gen_call_truefalse(virConnectIsEncrypted, conn(s), connect_get(s));
 }
 #endif
 
@@ -312,8 +309,7 @@ static VALUE libvirt_conn_encrypted_p(VALUE s) {
  * Return +true+ if the connection is secure, +false+ if it is not
  */
 static VALUE libvirt_conn_secure_p(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_truefalse(virConnectIsSecure, conn, conn);
+    gen_call_truefalse(virConnectIsSecure, conn(s), connect_get(s));
 }
 #endif
 
@@ -324,9 +320,7 @@ static VALUE libvirt_conn_secure_p(VALUE s) {
  * Call +virConnectGetCapabilities+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
  */
 static VALUE libvirt_conn_capabilities(VALUE s) {
-    virConnectPtr conn = connect_get(s);
-    gen_call_string(virConnectGetCapabilities, conn, 1,
-                    conn);
+    gen_call_string(virConnectGetCapabilities, conn(s), 1, connect_get(s));
 }
 
 /*

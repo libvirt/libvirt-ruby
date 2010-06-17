@@ -157,8 +157,7 @@ static VALUE libvirt_secret_usagetype(VALUE s) {
  * Call +virSecretGetUsageID+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageID]
  */
 static VALUE libvirt_secret_usageid(VALUE s) {
-    gen_call_string(virSecretGetUsageID, conn(s), 0,
-                    secret_get(s));
+    gen_call_string(virSecretGetUsageID, conn(s), 0, secret_get(s));
 }
 
 /*
@@ -175,8 +174,8 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    gen_call_string(virSecretGetXMLDesc, conn(s), 1,
-                    secret_get(s), NUM2UINT(flags));
+    gen_call_string(virSecretGetXMLDesc, conn(s), 1, secret_get(s),
+                    NUM2UINT(flags));
 }
 
 /*
