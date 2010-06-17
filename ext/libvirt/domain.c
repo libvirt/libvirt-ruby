@@ -777,11 +777,17 @@ static VALUE libvirt_dom_name(VALUE s) {
 static VALUE libvirt_dom_id(VALUE s) {
     virDomainPtr dom = domain_get(s);
     unsigned int id;
+    int out;
 
     id = virDomainGetID(dom);
     _E(id < 0, create_error(e_RetrieveError, "virDomainGetID", "", conn(s)));
 
-    return UINT2NUM(id);
+    /* we need to cast the unsigned int id to a signed int out to handle the
+     * -1 case
+     */
+    out = id;
+
+    return INT2NUM(out);
 }
 
 /*
