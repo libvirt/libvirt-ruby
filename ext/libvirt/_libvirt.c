@@ -59,25 +59,26 @@ static void vir_error(VALUE exception) {
  * to get the version of libvirt and of the hypervisor TYPE. Returns an
  * array with two entries of type Libvirt::Version.
  */
-VALUE libvirt_version(VALUE m, VALUE t) {
+VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
     unsigned long libVer;
-    const char *type = NULL;
+    VALUE type;
     unsigned long typeVer;
     int r;
-    VALUE result, argv[2];
+    VALUE result, rargv[2];
 
-    type = StringValueCStr(t);
-    r = virGetVersion(&libVer, type, &typeVer);
-    if (r < 0)
-        rb_raise(rb_eArgError, "Failed to get version for %s", type);
+    rb_scan_args(argc, argv, "01", &type);
+
+    r = virGetVersion(&libVer, get_string_or_nil(type), &typeVer);
+    _E(r < 0, create_error(rb_eArgError, "virGetVersion",
+                           "Failed to get version", NULL));
 
     result = rb_ary_new2(2);
-    argv[0] = rb_str_new2("libvirt");
-    argv[1] = ULONG2NUM(libVer);
-    rb_ary_push(result, rb_class_new_instance(2, argv, c_libvirt_version));
-    argv[0] = t;
-    argv[1] = ULONG2NUM(typeVer);
-    rb_ary_push(result, rb_class_new_instance(2, argv, c_libvirt_version));
+    rargv[0] = rb_str_new2("libvirt");
+    rargv[1] = ULONG2NUM(libVer);
+    rb_ary_push(result, rb_class_new_instance(2, rargv, c_libvirt_version));
+    rargv[0] = type;
+    rargv[1] = ULONG2NUM(typeVer);
+    rb_ary_push(result, rb_class_new_instance(2, rargv, c_libvirt_version));
     return result;
 }
 
@@ -155,7 +156,7 @@ void Init__libvirt() {
     rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
     rb_define_attr(e_Error, "libvirt_message", 1, 0);
 
-    rb_define_module_function(m_libvirt, "version", libvirt_version, 1);
+    rb_define_module_function(m_libvirt, "version", libvirt_version, -1);
 	rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
 	rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, 1);
