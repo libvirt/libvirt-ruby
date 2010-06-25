@@ -35,11 +35,6 @@ install -d -m0755 %{buildroot}%{ruby_sitearch}
 install -p -m0644 lib/libvirt.rb %{buildroot}%{ruby_sitelib}
 install -p -m0755 ext/libvirt/_libvirt.so %{buildroot}%{ruby_sitearch}
 
-%check
-%if 0%{?fedora:%fedora} >= 5 || 0%{?rhel:%rhel} > 5
-rake test
-%endif
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -52,6 +47,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Jun 25 2010 Chris Lalancette <clalance@redhat.com> - 0.2.0-1
+- Updated bindings to have many of the new libvirt methods implemented
+- Bumped package version to 0.2.0
+
 * Tue Nov 18 2008 David Lutterkort <lutter@redhat.com> - 0.1.0-1
 - Remove no-capabilities-test.patch, since it's upstream now
 
