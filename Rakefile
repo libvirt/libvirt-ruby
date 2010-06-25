@@ -1,7 +1,7 @@
 # -*- ruby -*-
 # Rakefile: build ruby libvirt bindings
 #
-# Copyright (C) 2007 Red Hat, Inc.
+# Copyright (C) 2007,2010 Red Hat, Inc.
 #
 # Distributed under the GNU Lesser General Public License v2.1 or later.
 # See COPYING for details
@@ -15,7 +15,7 @@ require 'rake/testtask'
 require 'rake/gempackagetask'
 
 PKG_NAME='ruby-libvirt'
-PKG_VERSION='0.1.0'
+PKG_VERSION='0.2.0'
 
 EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"
@@ -93,9 +93,10 @@ SPEC = Gem::Specification.new do |s|
     s.homepage = "http://libvirt.org/ruby/"
     s.summary = "Ruby bindings for LIBVIRT"
     s.files = PKG_FILES
-    s.autorequire = "libvirt"
     s.required_ruby_version = '>= 1.8.1'
     s.extensions = "ext/libvirt/extconf.rb"
+    s.author = "David Lutterkort, Chris Lalancette"
+    s.rubyforge_project = "None"
     s.description = <<EOF
 Provides bindings for libvirt.
 EOF
