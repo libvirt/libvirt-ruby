@@ -34,7 +34,7 @@ static void connect_close(void *p) {
     if (!p)
         return;
     r = virConnectClose((virConnectPtr) p);
-    _E(r < 0, create_error(rb_eSystemCallError, "connect_close",
+    _E(r < 0, create_error(rb_eSystemCallError, "virConnectClose",
                            "Connection close failed", p));
 }
 
