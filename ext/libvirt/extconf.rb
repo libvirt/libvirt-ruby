@@ -20,7 +20,10 @@ libvirt_types = [ 'virNetworkPtr',
                   'virStoragePoolPtr',
                   'virStorageVolPtr' ]
 
+libvirt_funcs = [ ]
+
 have_libvirt_types(libvirt_types)
+have_libvirt_funcs(libvirt_funcs)
 
 create_header
 create_makefile(extension_name)
