@@ -44,19 +44,11 @@ VALUE e_DefinitionError;
 VALUE e_RetrieveError;
 VALUE e_Error;
 
-/*
- * Internal helpers
- */
-
 NORETURN(static void vir_error(VALUE exception));
 
 static void vir_error(VALUE exception) {
     rb_exc_raise(exception);
 }
-
-/*
- * Module Libvirt
- */
 
 /*
  * call-seq:
@@ -66,7 +58,6 @@ static void vir_error(VALUE exception) {
  * +virGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
  * to get the version of libvirt and of the hypervisor TYPE. Returns an
  * array with two entries of type Libvirt::Version.
- *
  */
 VALUE libvirt_version(VALUE m, VALUE t) {
     unsigned long libVer;
@@ -94,7 +85,9 @@ VALUE libvirt_version(VALUE m, VALUE t) {
  * call-seq:
  *   Libvirt::open(url) -> Libvirt::Connect
  *
- * Open a connection to URL with virConnectOpen[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
+ * Call
+ * +virConnectOpen+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
+ * to open a connection to a URL.  Returns a new Libvirt::Connect object.
  */
 VALUE libvirt_open(VALUE m, VALUE url) {
     char *str = NULL;
@@ -114,8 +107,10 @@ VALUE libvirt_open(VALUE m, VALUE url) {
  * call-seq:
  *   Libvirt::openReadOnly(url) -> Libvirt::Connect
  *
- * Open a read-only connection to URL with
- * virConnectOpenReadOnly[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
+ * Call
+ * +virConnectOpenReadOnly+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
+ * to open a read-only connection to a URL.  Returns a new Libvirt::Connect
+ * object.
  */
 VALUE libvirt_open_read_only(VALUE m, VALUE url) {
     char *str = NULL;
@@ -146,13 +141,13 @@ void Init__libvirt() {
      * Libvirt Errors
      */
     e_Error =           rb_define_class_under(m_libvirt, "Error",
-                                               rb_eStandardError);
+                                              rb_eStandardError);
     e_ConnectionError = rb_define_class_under(m_libvirt, "ConnectionError",
-                                                e_Error);
+                                              e_Error);
     e_DefinitionError = rb_define_class_under(m_libvirt, "DefinitionError",
-                                                e_Error);
+                                              e_Error);
     e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError",
-                                                e_Error);
+                                              e_Error);
 
     // create 'libvirt_function_name' and 'vir_connect_ptr' attributes on e_Error class
     rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
