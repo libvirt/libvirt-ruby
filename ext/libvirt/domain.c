@@ -741,9 +741,11 @@ static VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
     int r;
     VALUE result = Qnil;
 
-    if(ifname){
-        r = virDomainInterfaceStats(dom, ifname, &ifinfo, sizeof(virDomainInterfaceStatsStruct));
-        _E(r < 0, create_error(e_RetrieveError, "virDomainInterfaceStats", "", conn(s)));
+    if (ifname) {
+        r = virDomainInterfaceStats(dom, ifname, &ifinfo,
+                                    sizeof(virDomainInterfaceStatsStruct));
+        _E(r < 0, create_error(e_RetrieveError, "virDomainInterfaceStats", "",
+                               conn(s)));
 
         result = rb_class_new_instance(0, NULL, c_domain_ifinfo);
         rb_iv_set(result, "@rx_bytes", LL2NUM(ifinfo.rx_bytes));
