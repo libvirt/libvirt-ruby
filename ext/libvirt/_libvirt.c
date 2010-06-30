@@ -44,12 +44,6 @@ VALUE e_DefinitionError;
 VALUE e_RetrieveError;
 VALUE e_Error;
 
-NORETURN(static void vir_error(VALUE exception));
-
-static void vir_error(VALUE exception) {
-    rb_exc_raise(exception);
-}
-
 /*
  * call-seq:
  *   Libvirt::version(type) -> [ libvirt_version, type_version ]
