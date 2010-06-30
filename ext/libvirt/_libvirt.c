@@ -76,6 +76,27 @@ VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
     return result;
 }
 
+static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
+{
+    VALUE uri;
+    char *uri_c;
+    virConnectPtr conn;
+
+    rb_scan_args(argc, argv, "01", &uri);
+
+    uri_c = get_string_or_nil(uri);
+
+    if (readonly)
+        conn = virConnectOpenReadOnly(uri_c);
+    else
+        conn = virConnectOpen(uri_c);
+
+    if (conn == NULL)
+        rb_raise(e_ConnectionError, "Failed to open%sconnection to '%s'", readonly ? " readonly " : " ", uri_c);
+
+    return connect_new(conn);
+}
+
 /*
  * call-seq:
  *   Libvirt::open(url) -> Libvirt::Connect
@@ -85,19 +106,7 @@ VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
  * to open a connection to a URL.  Returns a new Libvirt::Connect object.
  */
 VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
-    VALUE uri;
-    char *uri_c;
-    virConnectPtr conn;
-
-    rb_scan_args(argc, argv, "01", &uri);
-
-    uri_c = get_string_or_nil(uri);
-    conn = virConnectOpen(uri_c);
-
-    if (conn == NULL)
-        rb_raise(e_ConnectionError, "Failed to open connection to '%s'", uri_c);
-
-    return connect_new(conn);
+    return internal_open(argc, argv, m, 0);
 }
 
 /*
@@ -109,18 +118,8 @@ VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
  * to open a read-only connection to a URL.  Returns a new Libvirt::Connect
  * object.
  */
-VALUE libvirt_open_read_only(VALUE m, VALUE url) {
-    char *str = NULL;
-
-    if (url) {
-        str = StringValueCStr(url);
-        if (!str)
-            rb_raise(rb_eTypeError, "expected string");
-    }
-    virConnectPtr ptr = virConnectOpenReadOnly(str);
-    if (!ptr)
-        rb_raise(e_ConnectionError, "Failed to open %s readonly", str);
-    return connect_new(ptr);
+VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
+    return internal_open(argc, argv, m, 1);
 }
 
 /*
@@ -153,7 +152,7 @@ void Init__libvirt() {
     rb_define_module_function(m_libvirt, "version", libvirt_version, -1);
 	rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
 	rb_define_module_function(m_libvirt, "open_read_only",
-                              libvirt_open_read_only, 1);
+                              libvirt_open_read_only, -1);
     // FIXME: implement this
     //rb_define_module_function(m_libvirt, "open_auth", libvirt_open_auth, -1);
 
