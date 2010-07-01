@@ -98,12 +98,9 @@ static VALUE libvirt_conn_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid) {
  *
  * Call +virNWFilterDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterDefineXML]
  */
-static VALUE libvirt_conn_define_nwfilter_xml(int argc, VALUE *argv, VALUE c) {
+static VALUE libvirt_conn_define_nwfilter_xml(VALUE c, VALUE xml) {
     virNWFilterPtr nwfilter;
     virConnectPtr conn = connect_get(c);
-    VALUE xml;
-
-    rb_scan_args(argc, argv, "1", &xml);
 
     nwfilter = virNWFilterDefineXML(conn, StringValueCStr(xml));
     _E(nwfilter == NULL, create_error(e_DefinitionError, "virNWFilterDefineXML", "", conn));
@@ -197,7 +194,7 @@ void init_nwfilter()
     rb_define_method(c_connect, "lookup_nwfilter_by_uuid",
                      libvirt_conn_lookup_nwfilter_by_uuid, 1);
     rb_define_method(c_connect, "define_nwfilter_xml",
-                     libvirt_conn_define_nwfilter_xml, -1);
+                     libvirt_conn_define_nwfilter_xml, 1);
 
     /* NWFilter object methods */
     rb_define_method(c_nwfilter, "undefine", libvirt_nwfilter_undefine, 0);
