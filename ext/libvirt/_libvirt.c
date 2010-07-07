@@ -92,7 +92,8 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
         conn = virConnectOpen(uri_c);
 
     if (conn == NULL)
-        rb_raise(e_ConnectionError, "Failed to open%sconnection to '%s'", readonly ? " readonly " : " ", uri_c);
+        rb_raise(e_ConnectionError, "Failed to open%sconnection to '%s'",
+                 readonly ? " readonly " : " ", uri_c);
 
     return connect_new(conn);
 }
@@ -169,12 +170,3 @@ void Init__libvirt() {
     if (r < 0)
         rb_raise(rb_eSystemCallError, "virInitialize failed");
 }
-
-/*
- * Local variables:
- *  indent-tabs-mode: nil
- *  c-indent-level: 4
- *  c-basic-offset: 4
- *  tab-width: 4
- * End:
- */
