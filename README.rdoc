@@ -5,6 +5,8 @@ The module Libvirt provides bindings to libvirt[http://libvirt.org]
 The various *Ptr types in Libvirt map loosely to the following Ruby classes:
 
 [virConnectPtr] Libvirt::Connect
+[virNodeInfoPtr] Libvirt::Connect::Nodeinfo
+[virSecurityModelPtr] Libvirt::Connect::NodeSecurityModel
 [virDomainPtr]  Libvirt::Domain
 [virDomainInfoPtr]  Libvirt::Domain::Info
 [virDomainInterfaceStatsPtr] Libvirt::Domain::InterfaceInfo
@@ -13,6 +15,7 @@ The various *Ptr types in Libvirt map loosely to the following Ruby classes:
 [virDomainMemoryStatPtr] Libvirt::Domain::MemoryStats
 [virDomainBlockInfoPtr] Libvirt::Domain::BlockInfo
 [virDomainSnapshotPtr] Libvirt::Domain::Snapshot
+[virDomainJobInfoPtr] Libvirt::Domain::JobInfo
 [virNetworkPtr] Libvirt::Network
 [virNWFilterPtr] Libvirt::NWFilter
 [virNodeDevicePtr] Libvirt::NodeDevice
@@ -20,6 +23,5 @@ The various *Ptr types in Libvirt map loosely to the following Ruby classes:
 [virStoragePoolInfoPtr] Libvirt::StoragePoolInfo
 [virStorageVolPtr] Libvirt::StorageVol
 [virStorageVolInfoPtr] Libvirt::StorageVolInfo
-[virNodeInfoPtr] Libvirt::Nodeinfo
 [virSecretPtr] Libvirt::Secret
 [virInterfacePtr] Libvirt::Interface

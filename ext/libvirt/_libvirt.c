@@ -111,7 +111,7 @@ VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
 
 /*
  * call-seq:
- *   Libvirt::openReadOnly(url) -> Libvirt::Connect
+ *   Libvirt::open_read_only(url) -> Libvirt::Connect
  *
  * Call
  * +virConnectOpenReadOnly+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
