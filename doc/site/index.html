@@ -24,7 +24,7 @@
 
    conn = Libvirt::open("qemu:///system")
    puts conn.capabilities
-   
+
    conn.create_domain_linux(File.read("domain.xml"))
 
    dom = conn.lookup_domain_by_name("mydomain")
@@ -33,12 +33,10 @@
    puts dom.xml_desc
           </pre>
           <h4 id="developers">Developers</h4>
-          <p>The sources are available with mercurial. To clone, run</p>
-          <pre>hg clone http://libvirt.org/hg/ruby-libvirt/</pre>
-          <p>For more information about Mercurial see the <a href="http://www.selenic.com/mercurial/wiki/">Mercurial website</a>
-          and <a href="http://virt-manager.et.redhat.com/scmrepo.html">these instructions</a>.</p>
+          <p>The sources are available from git. To clone, run</p>
+          <pre>git clone git://libvirt.org/ruby-libvirt.git</pre>
 
-          <p>Please use the <a href="https://www.redhat.com/mailman/listinfo/libvir-list/">libvir mailing list</a> for questions,
+          <p>Please use the <a href="https://www.redhat.com/mailman/listinfo/libvir-list/">libvirt mailing list</a> for questions,
           comments and patches.
           </p>
         </div>
@@ -52,22 +50,11 @@
             <li>
               <a href="index.html">Home</a>
             </li>
-            <!--
-            <li>
-              <a href="news.html">Releases</a>
-            </li>
-            -->
-            <li>
-              <a href="#intro">Introduction</a>
-            </li>
             <li>
               <a href="download/">Download</a>
             </li>
             <li>
-              <a href="#developers">Developers</a>
-            </li>
-            <li>
-              <a href="api/index.html">Documentation</a>
+              <a href="api/index.html">API Documentation</a>
             </li>
           </ul>
         </div>
