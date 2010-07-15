@@ -49,7 +49,8 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
     if (err != NULL) {
         rb_iv_set(ruby_errinfo, "@libvirt_code", INT2FIX(err->code));
         if (err->message != NULL)
-            rb_iv_set(ruby_errinfo, "@libvirt_message", rb_str_new2(err->message));
+            rb_iv_set(ruby_errinfo, "@libvirt_message",
+                      rb_str_new2(err->message));
     }
 
     return ruby_errinfo;

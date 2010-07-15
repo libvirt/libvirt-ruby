@@ -284,7 +284,8 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s) {
     VALUE result;
 
     r = virNodeGetSecurityModel(conn, &secmodel);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel", "", conn));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel", "",
+                           conn));
 
     result = rb_class_new_instance(0, NULL, c_node_security_model);
     rb_iv_set(result, "@model", rb_str_new2(secmodel.model));

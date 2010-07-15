@@ -91,7 +91,8 @@ static VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     netw = virNetworkLookupByName(conn, StringValueCStr(name));
-    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName", "", conn));
+    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName",
+                                  "", conn));
 
     return network_new(netw, c);
 }
@@ -107,7 +108,8 @@ static VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     netw = virNetworkLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID", "", conn));
+    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID",
+                                  "", conn));
 
     return network_new(netw, c);
 }
@@ -139,7 +141,8 @@ static VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
     virConnectPtr conn = connect_get(c);
 
     netw = virNetworkDefineXML(conn, StringValueCStr(xml));
-    _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML", "", conn));
+    _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML",
+                                  "", conn));
 
     return network_new(netw, c);
 }
@@ -196,7 +199,8 @@ static VALUE libvirt_netw_uuid(VALUE s) {
     int r;
 
     r = virNetworkGetUUIDString(netw, uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virNetworkGetUUIDString", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virNetworkGetUUIDString", "",
+                           conn(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -240,7 +244,8 @@ static VALUE libvirt_netw_autostart(VALUE s){
     int r, autostart;
 
     r = virNetworkGetAutostart(netw, &autostart);
-    _E(r < 0, create_error(e_RetrieveError, "virNetworkAutostart", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virNetworkAutostart", "",
+                           conn(s)));
 
     return autostart ? Qtrue : Qfalse;
 }

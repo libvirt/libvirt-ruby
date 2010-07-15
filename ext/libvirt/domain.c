@@ -77,7 +77,8 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     VALUE result;
 
     num = virConnectNumOfDomains(conn);
-    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", "", conn));
+    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", "",
+                             conn));
     if (num == 0) {
         result = rb_ary_new2(num);
         return result;
@@ -87,7 +88,8 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     r = virConnectListDomains(conn, ids, num);
     if (r < 0) {
         free(ids);
-        _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", "", conn));
+        _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", "",
+                               conn));
     }
 
     result = rb_ary_new2(num);
@@ -151,7 +153,8 @@ static VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByName(conn, StringValueCStr(name));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName", "", conn));
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName", "",
+                                 conn));
 
     return domain_new(dom, c);
 }
@@ -167,7 +170,8 @@ static VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByID(conn, NUM2INT(id));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID", "", conn));
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID", "",
+                                 conn));
 
     return domain_new(dom, c);
 }
@@ -183,7 +187,8 @@ static VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID", "", conn));
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID", "",
+                                 conn));
 
     return domain_new(dom, c);
 }
@@ -199,7 +204,8 @@ static VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainDefineXML(conn, StringValueCStr(xml));
-    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML", "", conn));
+    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML", "",
+                                 conn));
 
     return domain_new(dom, c);
 }
@@ -536,7 +542,8 @@ static VALUE libvirt_dom_security_label(VALUE s) {
     VALUE result;
 
     r = virDomainGetSecurityLabel(dom, &seclabel);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetSecurityLabel", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetSecurityLabel", "",
+                           conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_security_label);
     rb_iv_set(result, "@label", rb_str_new2(seclabel.label));
@@ -558,7 +565,8 @@ static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
     VALUE result;
 
     r = virDomainBlockStats(dom, StringValueCStr(path), &stats, sizeof(stats));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockStats", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockStats", "",
+                           conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_block_stats);
     rb_iv_set(result, "@rd_req", LL2NUM(stats.rd_req));
@@ -592,7 +600,8 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
         flags = INT2FIX(0);
 
     r = virDomainMemoryStats(dom, stats, 6, NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats", "",
+                           conn(s)));
 
     result = rb_ary_new2(r);
     for (i=0; i<r; i++) {
@@ -627,8 +636,10 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    r = virDomainGetBlockInfo(dom, StringValueCStr(path), &info, NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlockInfo", "", conn(s)));
+    r = virDomainGetBlockInfo(dom, StringValueCStr(path), &info,
+                              NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlockInfo", "",
+                           conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_block_info);
     rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
@@ -812,7 +823,8 @@ static VALUE libvirt_dom_uuid(VALUE s) {
     int r;
 
     r = virDomainGetUUIDString(dom, uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetUUIDString", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetUUIDString", "",
+                           conn(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -838,7 +850,8 @@ static VALUE libvirt_dom_max_memory(VALUE s) {
     unsigned long max_memory;
 
     max_memory = virDomainGetMaxMemory(dom);
-    _E(max_memory == 0, create_error(e_RetrieveError, "virDomainGetMaxMemory", "", conn(s)));
+    _E(max_memory == 0, create_error(e_RetrieveError, "virDomainGetMaxMemory",
+                                     "", conn(s)));
 
     return ULONG2NUM(max_memory);
 }
@@ -854,7 +867,8 @@ static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     int r;
 
     r = virDomainSetMaxMemory(dom, NUM2ULONG(max_memory));
-    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMaxMemory", "", conn(s)));
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMaxMemory", "",
+                           conn(s)));
 
     return ULONG2NUM(max_memory);
 }
@@ -870,7 +884,8 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
     int r;
 
     r = virDomainSetMemory(dom, NUM2ULONG(memory));
-    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory", "", conn(s)));
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory", "",
+                           conn(s)));
 
     return ULONG2NUM(memory);
 }
@@ -886,7 +901,8 @@ static VALUE libvirt_dom_max_vcpus(VALUE s) {
     int vcpus;
 
     vcpus = virDomainGetMaxVcpus(dom);
-    _E(vcpus < 0, create_error(e_RetrieveError, "virDomainGetMaxVcpus", "", conn(s)));
+    _E(vcpus < 0, create_error(e_RetrieveError, "virDomainGetMaxVcpus", "",
+                               conn(s)));
 
     return INT2NUM(vcpus);
 }
@@ -1066,7 +1082,8 @@ static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d) {
     ret = virDomainSnapshotCreateXML(domain_get(d), StringValueCStr(xmlDesc),
                                      NUM2UINT(flags));
 
-    _E(ret == NULL, create_error(e_Error, "virDomainSnapshotCreateXML", "", conn(d)));
+    _E(ret == NULL, create_error(e_Error, "virDomainSnapshotCreateXML", "",
+                                 conn(d)));
 
     return domain_snapshot_new(ret, d);
 }
@@ -1088,7 +1105,8 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
         flags = INT2FIX(0);
 
     result = virDomainSnapshotNum(dom, NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "", conn(d)));
+    _E(result < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "",
+                                conn(d)));
                                                                         \
     return INT2NUM(result);                                             \
 }
@@ -1113,7 +1131,8 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
         flags = INT2FIX(0);
 
     num = virDomainSnapshotNum(dom, 0);
-    _E(num < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "", conn(d)));
+    _E(num < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "",
+                             conn(d)));
     if (num == 0) {
         /* if num is 0, don't call virDomainSnapshotListNames function */
         result = rb_ary_new2(num);
@@ -1156,7 +1175,8 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
 
     snap = virDomainSnapshotLookupByName(dom, StringValueCStr(name),
                                          NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainSnapshotLookupByName", "", conn(d)));
+    _E(dom == NULL, create_error(e_RetrieveError,
+                                 "virDomainSnapshotLookupByName", "", conn(d)));
 
     return domain_snapshot_new(snap, d);
 }
@@ -1195,7 +1215,8 @@ static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d) {
         flags = INT2FIX(0);
 
     r = virDomainRevertToSnapshot(domain_snapshot_get(snap), NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainRevertToSnapshot", "", conn(d)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainRevertToSnapshot", "",
+                           conn(d)));
 
     return Qnil;
 }
@@ -1216,7 +1237,8 @@ static VALUE libvirt_dom_current_snapshot(int argc, VALUE *argv, VALUE d) {
         flags = INT2FIX(0);
 
     snap = virDomainSnapshotCurrent(domain_get(d), NUM2UINT(flags));
-    _E(snap == NULL, create_error(e_RetrieveError, "virDomainSnapshotCurrent", "", conn(d)));
+    _E(snap == NULL, create_error(e_RetrieveError, "virDomainSnapshotCurrent",
+                                  "", conn(d)));
 
     return domain_snapshot_new(snap, d);
 }
@@ -1282,7 +1304,8 @@ static VALUE libvirt_dom_job_info(VALUE d) {
     VALUE result;
 
     r = virDomainGetJobInfo(domain_get(d), &info);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetJobInfo", "", conn(d)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetJobInfo", "",
+                           conn(d)));
 
     result = rb_class_new_instance(0, NULL, c_domain_job_info);
     rb_iv_set(result, "@type", INT2NUM(info.type));

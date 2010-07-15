@@ -91,7 +91,8 @@ static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     iface = virInterfaceLookupByName(conn, StringValueCStr(name));
-    _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName", "", conn));
+    _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName",
+                                   "", conn));
 
     return interface_new(iface, c);
 }
@@ -107,7 +108,8 @@ static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac) {
     virConnectPtr conn = connect_get(c);
 
     iface = virInterfaceLookupByMACString(conn, StringValueCStr(mac));
-    _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByMACString", "", conn));
+    _E(iface == NULL, create_error(e_RetrieveError,
+                                   "virInterfaceLookupByMACString", "", conn));
 
     return interface_new(iface, c);
 }
@@ -129,7 +131,8 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
         flags = INT2FIX(0);
 
     iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML", "", conn));
+    _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
+                                   "", conn));
 
     return interface_new(iface, c);
 }
