@@ -53,7 +53,7 @@ VALUE e_Error;
  * to get the version of libvirt and of the hypervisor TYPE. Returns an
  * array with two entries of type Libvirt::Version.
  */
-VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
     unsigned long libVer;
     VALUE type;
     unsigned long typeVer;
@@ -106,7 +106,7 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
  * +virConnectOpen+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
  * to open a connection to a URL.  Returns a new Libvirt::Connect object.
  */
-VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
     return internal_open(argc, argv, m, 0);
 }
 
@@ -119,7 +119,7 @@ VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
  * to open a read-only connection to a URL.  Returns a new Libvirt::Connect
  * object.
  */
-VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
     return internal_open(argc, argv, m, 1);
 }
 
