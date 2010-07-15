@@ -294,7 +294,7 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s) {
  * call-seq:
  *   conn.encrypted?
  *
- * Return +true+ if the connection is encrypted, +false+ if it is not
+ * Call +virConnectIsEncrypted+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectIsEncrypted]
  */
 static VALUE libvirt_conn_encrypted_p(VALUE s) {
     gen_call_truefalse(virConnectIsEncrypted, conn(s), connect_get(s));
@@ -306,7 +306,7 @@ static VALUE libvirt_conn_encrypted_p(VALUE s) {
  * call-seq:
  *   conn.secure?
  *
- * Return +true+ if the connection is secure, +false+ if it is not
+ * Call +virConnectIsEncrypted+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectIsEncrypted]
  */
 static VALUE libvirt_conn_secure_p(VALUE s) {
     gen_call_truefalse(virConnectIsSecure, conn(s), connect_get(s));
