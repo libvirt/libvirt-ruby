@@ -94,7 +94,8 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
     r = virNodeListDevices(conn, capstr, names, num, NUM2UINT(flags));
     if (r < 0) {
         free(names);
-        _E(r < 0, create_error(e_RetrieveError, "virNodeListDevices", "", conn));
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices",
+                                  "", conn));
     }
 
     result = rb_ary_new2(num);
@@ -217,7 +218,8 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c) {
     r = virNodeDeviceListCaps(nodedev, names, num);
     if (r < 0) {
         free(names);
-        _E(r < 0, create_error(e_RetrieveError, "virNodeDeviceListCaps", "", conn));
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeDeviceListCaps",
+                                  "", conn));
     }
 
     result = rb_ary_new2(num);

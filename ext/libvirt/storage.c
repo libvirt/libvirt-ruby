@@ -421,7 +421,8 @@ static VALUE libvirt_pool_list_volumes(VALUE s) {
     r = virStoragePoolListVolumes(pool, names, num);
     if (r < 0) {
         free(names);
-        _E(r < 0, create_error(e_RetrieveError, "virStoragePoolListVolumes", "", conn(s)));
+        rb_exc_raise(create_error(e_RetrieveError, "virStoragePoolListVolumes",
+                                  "", conn(s)));
     }
 
     result = rb_ary_new2(num);

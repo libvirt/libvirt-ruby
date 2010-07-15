@@ -663,7 +663,11 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
                            NUM2ULL(offset), NUM2UINT(size), buffer,
                            NUM2UINT(flags));
 
-    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockPeek", "", conn(s)));
+    if (r < 0) {
+        free(buffer);
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainBlockPeek", "",
+                                  conn(s)));
+    }
 
     ret = rb_str_new((char *)buffer, size);
 
@@ -695,7 +699,11 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
     r = virDomainMemoryPeek(dom, NUM2ULL(start), NUM2UINT(size), buffer,
                            NUM2UINT(flags));
 
-    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryPeek", "", conn(s)));
+    if (r < 0) {
+        free(buffer);
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainMemoryPeek", "",
+                                  conn(s)));
+    }
 
     ret = rb_str_new((char *)buffer, size);
 
@@ -1117,7 +1125,8 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
                                    NUM2UINT(flags));
     if (r < 0) {
         free(names);
-        _E(r < 0, create_error(e_RetrieveError, "virDomainSnapshotListNames", "", conn(d)));
+        rb_raise_exc(create_error(e_RetrieveError, "virDomainSnapshotListNames",
+                                  "", conn(d)));
     }
 
     result = rb_ary_new2(num);

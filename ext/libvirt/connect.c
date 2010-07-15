@@ -257,7 +257,11 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s)
 
     r = virNodeGetCellsFreeMemory(conn, freeMems, NUM2INT(startCell),
                                   NUM2INT(maxCells));
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetCellsFreeMemory", "", conn));
+    if (r < 0) {
+        free(freeMems);
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
+                                  "", conn));
+    }
 
     cells = rb_ary_new2(r);
     for (i = 0; i < r; i++)
