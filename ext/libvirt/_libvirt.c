@@ -121,6 +121,200 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
     return internal_open(argc, argv, m, 1);
 }
 
+static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
+                                         unsigned int ncred, void *cbdata)
+{
+    VALUE auth;
+    VALUE cb;
+    VALUE usercb;
+    VALUE credlist;
+    VALUE newcred;
+    VALUE thisentry;
+    VALUE result;
+    int i;
+
+    auth = (VALUE)cbdata;
+
+    cb = rb_ary_entry(auth, 1);
+    usercb = rb_ary_entry(auth, 2);
+
+    credlist = rb_ary_new();
+    for (i = 0; i < ncred; i++) {
+        newcred = rb_hash_new();
+
+        rb_hash_aset(newcred, rb_str_new2("type"), INT2FIX(cred[i].type));
+        rb_hash_aset(newcred, rb_str_new2("prompt"),
+                     rb_str_new2(cred[i].prompt));
+        if (cred[i].challenge)
+            rb_hash_aset(newcred, rb_str_new2("challenge"),
+                         rb_str_new2(cred[i].challenge));
+        else
+            rb_hash_aset(newcred, rb_str_new2("challenge"), Qnil);
+        if (cred[i].defresult)
+            rb_hash_aset(newcred, rb_str_new2("defresult"),
+                         rb_str_new2(cred[i].defresult));
+        else
+            rb_hash_aset(newcred, rb_str_new2("defresult"), Qnil);
+        rb_hash_aset(newcred, rb_str_new2("result"), Qnil);
+
+        /* now store this new hash object into the credlist */
+        rb_ary_store(credlist, i, newcred);
+    }
+
+    /* call out to the ruby object */
+    rb_funcall(rb_class_of(cb), rb_to_id(cb), 2, credlist, usercb);
+
+    /* OK, the ruby callout was successful.  Pull the data out of the ruby
+     * array and store it back into the C structures
+     */
+    for (i = 0; i < ncred; i++) {
+        thisentry = rb_ary_entry(credlist, i);
+        result = rb_hash_aref(thisentry, rb_str_new2("result"));
+        if (NIL_P(result)) {
+            cred[i].result = NULL;
+            cred[i].resultlen = 0;
+        }
+        else {
+            cred[i].result = StringValueCStr(result);
+            cred[i].resultlen = strlen(cred[i].result);
+        }
+    }
+
+    return 0;
+}
+
+static VALUE rb_fix2int_wrap(VALUE arg) {
+    return FIX2INT(arg);
+}
+
+/*
+ * call-seq:
+ *   Libvirt::open_auth(url=nil, auth=nil, flags=0) -> Libvirt::Connect
+ *
+ * Call
+ * +virConnectOpenAuth+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenAuth]
+ * to open a connection to a URL, with a possible authentication callback.
+ * If an authentication callback is desired, then the auth parameter should
+ * be a 3 element array.  The first element is an array that specifies
+ * which credentials the callback is willing to support; the full list is
+ * available at http://libvirt.org/html/libvirt-libvirt.html#virConnectCredentialType.
+ * The second element of the array is a callback to be registered with libvirt;
+ * when additional credentials are required, this callback will be called to
+ * collect them.  This callback must take 2 parameters: the first is an array
+ * of hashes that represent the credential structures libvirt needs to continue,
+ * and the second is any additional user data that was passed in.  Each of the
+ * credential hashes contains 5 elements:
+ *
+ * type - the type of credential to be examined
+ * prompt - a suggested prompt to show to the user
+ * challenge - any additional challenge information
+ * defresult - a default result to use if credentials could not be obtained
+ * result - an element to store the result of collecting credentials.  This
+ *          should be a string.
+ *
+ * The third and final argument to open_auth is a flags parameter that controls
+ * how to open a connection.  The only options currently are 0 for a read/write
+ * connection and Libvirt::CONNECT_RO for a read-only connection.
+ */
+static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
+{
+    VALUE uri;
+    VALUE cb;
+    VALUE flags;
+    char *uri_c;
+    virConnectPtr conn;
+    virConnectAuthPtr auth;
+    VALUE creds;
+    int i;
+    int auth_alloc;
+    VALUE tmp;
+    int exception;
+
+    rb_scan_args(argc, argv, "03", &uri, &cb, &flags);
+
+    /* handle the optional URI */
+    uri_c = get_string_or_nil(uri);
+
+    /* handle the optional auth */
+    if (!NIL_P(cb)) {
+        if (RARRAY(cb)->len != 3) {
+            rb_raise(rb_eArgError, "wrong number of credential arguments (%d for 3)",
+                     RARRAY(cb)->len);
+            return Qnil;
+        }
+
+        /* the first array element has to be an array itself, which contains
+         * the flags that the callback is willing to support */
+        creds = rb_ary_entry(cb, 0);
+
+        Check_Type(creds, T_ARRAY);
+        /* note that we don't check for array length here, since an array of
+         * 0 length, while useless, is valid
+         */
+
+        auth = ALLOC(virConnectAuth);
+        auth_alloc = 1;
+
+        auth->ncredtype = RARRAY(creds)->len;
+        auth->credtype = NULL;
+        if (auth->ncredtype > 0) {
+            /* we don't use ALLOC_N here because that can throw an exception,
+             * and leak the auth pointer.  Instead we use normal malloc
+             * (which has a slightly higher chance of returning NULL), and
+             * then properly cleanup if it fails
+             */
+            auth->credtype = malloc(sizeof(int) * auth->ncredtype);
+            if (auth->credtype == NULL) {
+                xfree(auth);
+                rb_memerror();
+            }
+            for (i = 0; i < auth->ncredtype; i++) {
+                /* FIXME: if rb_ary_entry fails here, we'll leak auth->credtype
+                 * and auth
+                 */
+                tmp = rb_ary_entry(creds, i);
+                auth->credtype[i] = rb_protect(rb_fix2int_wrap, tmp,
+                                               &exception);
+                if (exception) {
+                    free(auth->credtype);
+                    xfree(auth);
+                    rb_jump_tag(exception);
+                }
+            }
+        }
+
+        auth->cb = libvirt_auth_callback_wrapper;
+
+        /* we pass the entire array in the cbdata so that
+         * libvirt_auth_callback_wrapper can unmarshal it and have both the
+         * data the user supplied (which would have been in element 2), as well
+         * as the ruby callback function that we want to call to (which would
+         * have been in element 1).
+         */
+        auth->cbdata = (void *)cb;
+    }
+    else {
+        auth = virConnectAuthPtrDefault;
+        auth_alloc = 0;
+    }
+
+    /* handle the optional flags */
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    conn = virConnectOpenAuth(uri_c, auth, NUM2INT(flags));
+
+    if (auth_alloc) {
+        free(auth->credtype);
+        xfree(auth);
+    }
+
+    if (conn == NULL)
+        rb_raise(e_ConnectionError, "Failed to open connection to '%s'", uri_c);
+
+    return connect_new(conn);
+}
+
 /*
  * Module Libvirt
  */
@@ -131,6 +325,17 @@ void Init__libvirt() {
     c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
                                               rb_cObject);
 
+    rb_define_const(m_libvirt, "CONNECT_RO", INT2NUM(VIR_CONNECT_RO));
+
+    rb_define_const(m_libvirt, "CRED_USERNAME", INT2NUM(VIR_CRED_USERNAME));
+    rb_define_const(m_libvirt, "CRED_AUTHNAME", INT2NUM(VIR_CRED_AUTHNAME));
+    rb_define_const(m_libvirt, "CRED_LANGUAGE", INT2NUM(VIR_CRED_LANGUAGE));
+    rb_define_const(m_libvirt, "CRED_CNONCE", INT2NUM(VIR_CRED_CNONCE));
+    rb_define_const(m_libvirt, "CRED_PASSPHRASE", INT2NUM(VIR_CRED_PASSPHRASE));
+    rb_define_const(m_libvirt, "CRED_ECHOPROMPT", INT2NUM(VIR_CRED_ECHOPROMPT));
+    rb_define_const(m_libvirt, "CRED_NOECHOPROMPT", INT2NUM(VIR_CRED_NOECHOPROMPT));
+    rb_define_const(m_libvirt, "CRED_REALM", INT2NUM(VIR_CRED_REALM));
+    rb_define_const(m_libvirt, "CRED_EXTERNAL", INT2NUM(VIR_CRED_EXTERNAL));
 
     /*
      * Libvirt Errors
@@ -152,8 +357,7 @@ void Init__libvirt() {
 	rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
 	rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, -1);
-    // FIXME: implement this
-    //rb_define_module_function(m_libvirt, "open_auth", libvirt_open_auth, -1);
+    rb_define_module_function(m_libvirt, "open_auth", libvirt_open_auth, -1);
 
     init_connect();
     init_storage();
