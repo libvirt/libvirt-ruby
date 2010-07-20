@@ -1426,6 +1426,184 @@ static VALUE libvirt_dom_abort_job(VALUE d) {
 #endif
 
 /*
+ * call-seq:
+ *   dom.scheduler_type -> [type, #params]
+ *
+ * Call +virDomainGetSchedulerType+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerType]
+ * to retrieve the scheduler type used on this domain.
+ */
+static VALUE libvirt_dom_scheduler_type(VALUE d) {
+    int nparams;
+    char *type;
+    VALUE result;
+
+    type = virDomainGetSchedulerType(domain_get(d), &nparams);
+
+    _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
+                                  "", conn(d)));
+
+    result = rb_ary_new();
+
+    rb_ary_store(result, 0, rb_str_new2(type));
+    rb_ary_store(result, 1, INT2FIX(nparams));
+
+    free(type);
+
+    return result;
+}
+
+/*
+ * call-seq:
+ *   dom.scheduler_parameters -> Hash
+ *
+ * Call +virDomainGetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerParameters]
+ * to retrieve all of the scheduler parameters for this domain.  The keys and
+ * values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
+    int nparams;
+    char *type;
+    virSchedParameterPtr params;
+    VALUE result;
+    virDomainPtr dom;
+    int r;
+    int i;
+    VALUE val;
+
+    dom = domain_get(d);
+
+    type = virDomainGetSchedulerType(dom, &nparams);
+
+    _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
+                                  "", conn(d)));
+
+    free(type);
+
+    params = ALLOC_N(virSchedParameter, nparams);
+
+    r = virDomainGetSchedulerParameters(dom, params, &nparams);
+    if (r < 0) {
+        free(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainGetSchedulerParameters",
+                                  "", conn(d)));
+    }
+
+    /* just to shut the compiler up */
+    val = Qnil;
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        switch(params[i].type) {
+        case VIR_DOMAIN_SCHED_FIELD_INT:
+            val = INT2FIX(params[i].value.i);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_UINT:
+            val = UINT2NUM(params[i].value.ui);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_LLONG:
+            val = LL2NUM(params[i].value.l);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_ULLONG:
+            val = ULL2NUM(params[i].value.ul);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_DOUBLE:
+            val = rb_float_new(params[i].value.d);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_BOOLEAN:
+            val = (params[i].value.b == 0) ? Qfalse : Qtrue;
+            break;
+        default:
+            free(params);
+            rb_raise(rb_eArgError, "Invalid parameter type");
+        }
+
+        rb_hash_aset(result, rb_str_new2(params[i].field), val);
+    }
+
+    free(params);
+
+    return result;
+}
+
+/*
+ * call-seq:
+ *   dom.scheduler_parameters = Hash
+ *
+ * Call +virDomainSetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
+ * to set the scheduler parameters for this domain.  The keys and values in
+ * the input hash are hypervisor specific.
+ */
+static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
+    int nparams;
+    char *type;
+    virSchedParameterPtr params;
+    virDomainPtr dom;
+    int r;
+    int i;
+    VALUE val;
+
+    dom = domain_get(d);
+
+    type = virDomainGetSchedulerType(dom, &nparams);
+
+    _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
+                                  "", conn(d)));
+
+    free(type);
+
+    params = ALLOC_N(virSchedParameter, nparams);
+
+    r = virDomainGetSchedulerParameters(dom, params, &nparams);
+    if (r < 0) {
+        free(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainGetSchedulerParameters",
+                                  "", conn(d)));
+    }
+
+    for (i = 0; i < nparams; i++) {
+        val = rb_hash_aref(input, rb_str_new2(params[i].field));
+
+        switch(params[i].type) {
+        case VIR_DOMAIN_SCHED_FIELD_INT:
+            params[i].value.i = NUM2INT(val);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_UINT:
+            params[i].value.ui = NUM2UINT(val);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_LLONG:
+            params[i].value.l = NUM2LL(val);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_ULLONG:
+            params[i].value.ul = NUM2ULL(val);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_DOUBLE:
+            params[i].value.d = NUM2DBL(val);
+            break;
+        case VIR_DOMAIN_SCHED_FIELD_BOOLEAN:
+            params[i].value.b = (val == Qtrue) ? 1 : 0;
+            break;
+        default:
+            free(params);
+            rb_raise(rb_eArgError, "Invalid parameter type");
+        }
+    }
+
+    r = virDomainSetSchedulerParameters(dom, params, nparams);
+    if (r < 0) {
+        free(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainSetSchedulerParameters",
+                                  "", conn(d)));
+    }
+
+    free(params);
+
+    return Qnil;
+}
+
+/*
  * Class Libvirt::Domain
  */
 void init_domain()
@@ -1559,13 +1737,12 @@ void init_domain()
     rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, 1);
     /* FIXME: implement this */
     // rb_define_method(c_domain, "update_device", libvirt_dom_update_device, -1);
-    /* FIXME: we should probably do scheduler parameters as hashes.  That is
-     * virDomainGetSchedulerParameters should return a hash with all of the
-     * parameters, and virDomainSetSchedulerParameters should take a hash
-     * of parameters in
-     */
-    //rb_define_method(c_domain, "get_scheduler_params", libvirt_dom_get_scheduler_params, 0);
-    //rb_define_method(c_domain, "set_scheduler_params", libvirt_dom_set_scheduler_params, 0)
+    rb_define_method(c_domain, "scheduler_type", libvirt_dom_scheduler_type, 0);
+    rb_define_method(c_domain, "scheduler_parameters",
+                     libvirt_dom_scheduler_parameters, 0);
+    rb_define_method(c_domain, "scheduler_parameters=",
+                     libvirt_dom_scheduler_parameters_set, 1);
+
 #if HAVE_VIRDOMAINMANAGEDSAVE
     rb_define_method(c_domain, "managed_save", libvirt_dom_managed_save, -1);
     rb_define_method(c_domain, "has_managed_save?",

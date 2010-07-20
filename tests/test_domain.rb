@@ -119,6 +119,15 @@ blockpeek = newdom.block_peek('/var/lib/libvirt/images/ruby-libvirt-test.dsk',
                               0, 512, 0)
 # 2010-06-30: memory_peek is broken on RHEL-6 libvirt; fixed in upstream
 #mempeek = newdom.memory_peek(0, 512, Libvirt::Domain::MEMORY_VIRTUAL)
+type = newdom.scheduler_type
+params = newdom.scheduler_parameters
+puts "New Domain Scheduler:"
+puts " Type:          #{type[0]}"
+puts " Number Params: #{type[1]}"
+puts " Params:"
+params.each_pair do |k,v|
+  puts "  #{k}: #{v}"
+end
 
 
 defined = conn.list_defined_domains
