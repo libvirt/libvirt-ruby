@@ -724,24 +724,34 @@ void init_storage(void) {
 
     c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool",
                                            rb_cObject);
-#define DEF_POOLCONST(name)                                        \
-    rb_define_const(c_storage_pool, #name, INT2NUM(VIR_STORAGE_POOL_##name))
+
     /* virStoragePoolState */
-    DEF_POOLCONST(INACTIVE);
-    DEF_POOLCONST(BUILDING);
-    DEF_POOLCONST(RUNNING);
-    DEF_POOLCONST(DEGRADED);
+    rb_define_const(c_storage_pool, "INACTIVE",
+                    INT2NUM(VIR_STORAGE_POOL_INACTIVE));
+    rb_define_const(c_storage_pool, "BUILDING",
+                    INT2NUM(VIR_STORAGE_POOL_BUILDING));
+    rb_define_const(c_storage_pool, "RUNNING",
+                    INT2NUM(VIR_STORAGE_POOL_RUNNING));
+    rb_define_const(c_storage_pool, "DEGRADED",
+                    INT2NUM(VIR_STORAGE_POOL_DEGRADED));
 #ifdef VIR_STORAGE_POOL_INACCESSIBLE
-    DEF_POOLCONST(INACCESSIBLE);
+    rb_define_const(c_storage_pool, "INACCESSIBLE",
+                    INT2NUM(VIR_STORAGE_POOL_INACCESSIBLE));
 #endif
+
     /* virStoragePoolBuildFlags */
-    DEF_POOLCONST(BUILD_NEW);
-    DEF_POOLCONST(BUILD_REPAIR);
-    DEF_POOLCONST(BUILD_RESIZE);
+    rb_define_const(c_storage_pool, "BUILD_NEW",
+                    INT2NUM(VIR_STORAGE_POOL_BUILD_NEW));
+    rb_define_const(c_storage_pool, "BUILD_REPAIR",
+                    INT2NUM(VIR_STORAGE_POOL_BUILD_REPAIR));
+    rb_define_const(c_storage_pool, "BUILD_RESIZE",
+                    INT2NUM(VIR_STORAGE_POOL_BUILD_RESIZE));
+
     /* virStoragePoolDeleteFlags */
-    DEF_POOLCONST(DELETE_NORMAL);
-    DEF_POOLCONST(DELETE_ZEROED);
-#undef DEF_POOLCONST
+    rb_define_const(c_storage_pool, "DELETE_NORMAL",
+                    INT2NUM(VIR_STORAGE_POOL_DELETE_NORMAL));
+    rb_define_const(c_storage_pool, "DELETE_ZEROED",
+                    INT2NUM(VIR_STORAGE_POOL_DELETE_ZEROED));
 
     /* StoragePool lookup/creation methods */
     rb_define_method(c_connect, "num_of_storage_pools",
@@ -819,15 +829,16 @@ void init_storage(void) {
 
     c_storage_vol = rb_define_class_under(m_libvirt, "StorageVol",
                                           rb_cObject);
-#define DEF_VOLCONST(name)                                        \
-    rb_define_const(c_storage_vol, #name, INT2NUM(VIR_STORAGE_VOL_##name))
+
     /* virStorageVolType */
-    DEF_VOLCONST(FILE);
-    DEF_VOLCONST(BLOCK);
+    rb_define_const(c_storage_vol, "FILE", INT2NUM(VIR_STORAGE_VOL_FILE));
+    rb_define_const(c_storage_vol, "BLOCK", INT2NUM(VIR_STORAGE_VOL_BLOCK));
+
     /* virStorageVolDeleteFlags */
-    DEF_VOLCONST(DELETE_NORMAL);
-    DEF_VOLCONST(DELETE_ZEROED);
-#undef DEF_VOLCONST
+    rb_define_const(c_storage_vol, "DELETE_NORMAL",
+                    INT2NUM(VIR_STORAGE_VOL_DELETE_NORMAL));
+    rb_define_const(c_storage_vol, "DELETE_ZEROED",
+                    INT2NUM(VIR_STORAGE_VOL_DELETE_ZEROED));
 
     rb_define_method(c_storage_vol, "pool", libvirt_vol_get_pool, 0);
     rb_define_method(c_storage_vol, "name", libvirt_vol_name, 0);
