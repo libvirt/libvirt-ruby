@@ -70,7 +70,8 @@ virConnectPtr conn(VALUE s) {
  * call-seq:
  *   conn.close -> nil
  *
- * Close the connection
+ * Call +virConnectClose+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectClose]
+ * to close the connection.
  */
 static VALUE libvirt_conn_close(VALUE s) {
     virConnectPtr conn;
@@ -86,7 +87,7 @@ static VALUE libvirt_conn_close(VALUE s) {
  * call-seq:
  *   conn.closed? -> [True|False]
  *
- * Return +true+ if the connection is closed, +false+ if it is open
+ * Return +true+ if the connection is closed, +false+ if it is open.
  */
 static VALUE libvirt_conn_closed_p(VALUE s) {
     virConnectPtr conn;
@@ -100,6 +101,7 @@ static VALUE libvirt_conn_closed_p(VALUE s) {
  *   conn.type -> string
  *
  * Call +virConnectGetType+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetType]
+ * to retrieve the type of hypervisor for this connection.
  */
 static VALUE libvirt_conn_type(VALUE s) {
     gen_call_string(virConnectGetType, conn(s), 0, connect_get(s));
@@ -110,6 +112,7 @@ static VALUE libvirt_conn_type(VALUE s) {
  *   conn.version -> fixnum
  *
  * Call +virConnectGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetVersion]
+ * to retrieve the version of the hypervisor for this connection.
  */
 static VALUE libvirt_conn_version(VALUE s) {
     int r;
@@ -128,6 +131,7 @@ static VALUE libvirt_conn_version(VALUE s) {
  *   conn.libversion -> fixnum
  *
  * Call +virConnectGetLibVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetLibVersion]
+ * to retrieve the version of the libvirt library for this connection.
  */
 static VALUE libvirt_conn_libversion(VALUE s) {
     int r;
@@ -147,6 +151,7 @@ static VALUE libvirt_conn_libversion(VALUE s) {
  *   conn.hostname -> string
  *
  * Call +virConnectGetHostname+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetHostname]
+ * to retrieve the hostname of the hypervisor for this connection.
  */
 static VALUE libvirt_conn_hostname(VALUE s) {
     gen_call_string(virConnectGetHostname, conn(s), 1, connect_get(s));
@@ -157,6 +162,7 @@ static VALUE libvirt_conn_hostname(VALUE s) {
  *   conn.uri -> string
  *
  * Call +virConnectGetURI+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetURI]
+ * to retrieve the canonical URI for this connection.
  */
 static VALUE libvirt_conn_uri(VALUE s) {
     gen_call_string(virConnectGetURI, conn(s), 1, connect_get(s));
@@ -164,9 +170,11 @@ static VALUE libvirt_conn_uri(VALUE s) {
 
 /*
  * call-seq:
- *   conn.max_vcpus -> fixnum
+ *   conn.max_vcpus(type=nil) -> fixnum
  *
  * Call +virConnectGetMaxVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetMaxVcpus]
+ * to retrieve the maximum number of virtual cpus supported by the hypervisor
+ * for this connection.
  */
 static VALUE libvirt_conn_max_vcpus(int argc, VALUE *argv, VALUE s) {
     int result;
@@ -187,6 +195,7 @@ static VALUE libvirt_conn_max_vcpus(int argc, VALUE *argv, VALUE s) {
  *   conn.node_get_info -> Libvirt::Connect::Nodeinfo
  *
  * Call +virNodeGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetInfo]
+ * to retrieve information about the node for this connection.
  */
 static VALUE libvirt_conn_node_get_info(VALUE s) {
     int r;
@@ -215,6 +224,8 @@ static VALUE libvirt_conn_node_get_info(VALUE s) {
  *   conn.node_free_memory -> fixnum
  *
  * Call +virNodeGetFreeMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetFreeMemory]
+ * to retrieve the amount of free memory available on the host for this
+ * connection.
  */
 static VALUE libvirt_conn_node_free_memory(VALUE s) {
     virConnectPtr conn = connect_get(s);
@@ -229,9 +240,11 @@ static VALUE libvirt_conn_node_free_memory(VALUE s) {
 
 /*
  * call-seq:
- *   conn.node_cells_free_memory -> list
+ *   conn.node_cells_free_memory(startCell=0, maxCells=#nodeCells) -> list
  *
  * Call +virNodeGetCellsFreeMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetCellsFreeMemory]
+ * to retrieve the amount of free memory in each NUMA cell on the host for
+ * this connection.
  */
 static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s) {
     int r;
@@ -275,7 +288,8 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   conn.node_get_security_model -> Libvirt::Connect::NodeSecurityModel
  *
- * Call +virNodeGetSecurityInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetSecurityInfo]
+ * Call +virNodeGetSecurityModel+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetSecurityModel]
+ * to retrieve the security model in use on the host for this connection.
  */
 static VALUE libvirt_conn_node_get_security_model(VALUE s) {
     virSecurityModel secmodel;
@@ -297,9 +311,10 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s) {
 #if HAVE_VIRCONNECTISENCRYPTED
 /*
  * call-seq:
- *   conn.encrypted?
+ *   conn.encrypted? -> [True|False]
  *
  * Call +virConnectIsEncrypted+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectIsEncrypted]
+ * to determine if the connection is encrypted.
  */
 static VALUE libvirt_conn_encrypted_p(VALUE s) {
     gen_call_truefalse(virConnectIsEncrypted, conn(s), connect_get(s));
@@ -309,9 +324,10 @@ static VALUE libvirt_conn_encrypted_p(VALUE s) {
 #if HAVE_VIRCONNECTISSECURE
 /*
  * call-seq:
- *   conn.secure?
+ *   conn.secure? -> [True|False]
  *
- * Call +virConnectIsEncrypted+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectIsEncrypted]
+ * Call +virConnectIsSecure+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectIsSecure]
+ * to determine if the connection is secure.
  */
 static VALUE libvirt_conn_secure_p(VALUE s) {
     gen_call_truefalse(virConnectIsSecure, conn(s), connect_get(s));
@@ -323,6 +339,7 @@ static VALUE libvirt_conn_secure_p(VALUE s) {
  *   conn.capabilities -> string
  *
  * Call +virConnectGetCapabilities+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
+ * to retrieve the capabilities XML for this connection.
  */
 static VALUE libvirt_conn_capabilities(VALUE s) {
     gen_call_string(virConnectGetCapabilities, conn(s), 1, connect_get(s));
@@ -394,4 +411,5 @@ void init_connect()
     //rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1);
     //rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1);
     //rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1);
+    //rb_define_method(c_connect, "ref", libvirt_conn_ref, 0);
 }
