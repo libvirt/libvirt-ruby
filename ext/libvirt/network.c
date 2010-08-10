@@ -268,7 +268,7 @@ static VALUE libvirt_netw_autostart(VALUE s){
 
 /*
  * call-seq:
- *   net.autostart_set -> nil
+ *   net.autostart = [true|false]
  *
  * Call +virNetworkSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
  * to set this network to be autostarted when libvirtd starts.
