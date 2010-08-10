@@ -44,6 +44,7 @@ static VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn) {
  *   conn.num_of_nodedevices -> fixnum
  *
  * Call +virNodeNumOfDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeNumOfDevices]
+ * to retrieve the number of node devices on this connection.
  */
 static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
     int result;
@@ -67,6 +68,7 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
  *   conn.list_nodedevices -> list
  *
  * Call +virNodeListDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeListDevices]
+ * to retrieve a list of node device names on this connection.
  */
 static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
     int i, r, num;
@@ -109,9 +111,10 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
 
 /*
  * call-seq:
- *   conn.lookup_nodedevice_by_name -> Libvirt::NodeDevice
+ *   conn.lookup_nodedevice_by_name(name) -> Libvirt::NodeDevice
  *
  * Call +virNodeDeviceLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceLookupByName]
+ * to retrieve a nodedevice object by name.
  */
 static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name) {
     virNodeDevicePtr nodedev;
@@ -128,9 +131,10 @@ static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name) {
 #if HAVE_VIRNODEDEVICECREATEXML
 /*
  * call-seq:
- *   conn.create_nodedevice_xml -> Libvirt::NodeDevice
+ *   conn.create_nodedevice_xml(xml, flags=0) -> Libvirt::NodeDevice
  *
  * Call +virNodeDeviceCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceCreateXML]
+ * to create a new node device from xml.
  */
 static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) {
     virNodeDevicePtr nodedev;
@@ -156,6 +160,7 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) 
  *   nodedevice.name -> string
  *
  * Call +virNodeDeviceGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetName]
+ * to retrieve the name of the node device.
  */
 static VALUE libvirt_nodedevice_name(VALUE c) {
     gen_call_string(virNodeDeviceGetName, conn(c), 0, nodedevice_get(c));
@@ -166,6 +171,7 @@ static VALUE libvirt_nodedevice_name(VALUE c) {
  *   nodedevice.parent -> string
  *
  * Call +virNodeDeviceGetParent+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetParent]
+ * to retrieve the parent of the node device.
  */
 static VALUE libvirt_nodedevice_parent(VALUE c) {
     /* unfortunately we can't use gen_call_string() here because
@@ -187,6 +193,7 @@ static VALUE libvirt_nodedevice_parent(VALUE c) {
  *   nodedevice.num_of_caps -> fixnum
  *
  * Call +virNodeDeviceNumOfCaps+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceNumOfCaps]
+ * to retrieve the number of capabilities of the node device.
  */
 static VALUE libvirt_nodedevice_num_of_caps(VALUE c) {
     int result;
@@ -203,6 +210,7 @@ static VALUE libvirt_nodedevice_num_of_caps(VALUE c) {
  *   nodedevice.list_caps -> list
  *
  * Call +virNodeDeviceListCaps+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceListCaps]
+ * to retrieve a list of capabilities of the node device.
  */
 static VALUE libvirt_nodedevice_list_caps(VALUE c) {
     int i, r, num;
@@ -238,9 +246,10 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c) {
 
 /*
  * call-seq:
- *   nodedevice.xml_desc -> string
+ *   nodedevice.xml_desc(flags=0) -> string
  *
  * Call +virNodeDeviceGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetXMLDesc]
+ * to retrieve the XML for the node device.
  */
 static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s) {
     VALUE flags;
@@ -259,6 +268,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s) {
  *   nodedevice.detach -> nil
  *
  * Call +virNodeDeviceDettach+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDettach]
+ * to detach the node device from the node.
  */
 static VALUE libvirt_nodedevice_detach(VALUE s) {
     gen_call_void(virNodeDeviceDettach, conn(s), nodedevice_get(s));
@@ -269,6 +279,7 @@ static VALUE libvirt_nodedevice_detach(VALUE s) {
  *   nodedevice.reattach -> nil
  *
  * Call +virNodeDeviceReAttach+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceReAttach]
+ * to reattach the node device to the node.
  */
 static VALUE libvirt_nodedevice_reattach(VALUE s) {
     gen_call_void(virNodeDeviceReAttach, conn(s), nodedevice_get(s));
@@ -279,6 +290,7 @@ static VALUE libvirt_nodedevice_reattach(VALUE s) {
  *   nodedevice.reset -> nil
  *
  * Call +virNodeDeviceReset+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceReset]
+ * to reset the node device.
  */
 static VALUE libvirt_nodedevice_reset(VALUE s) {
     gen_call_void(virNodeDeviceReset, conn(s), nodedevice_get(s));
@@ -290,6 +302,7 @@ static VALUE libvirt_nodedevice_reset(VALUE s) {
  *   nodedevice.destroy -> nil
  *
  * Call +virNodeDeviceDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDestroy]
+ * to shutdown the node device.
  */
 static VALUE libvirt_nodedevice_destroy(VALUE s) {
     gen_call_void(virNodeDeviceDestroy, conn(s), nodedevice_get(s));
@@ -301,6 +314,8 @@ static VALUE libvirt_nodedevice_destroy(VALUE s) {
  *   nodedevice.free -> nil
  *
  * Call +virNodeDeviceFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceFree]
+ * to free the node device object.  After this call the node device object is
+ * no longer valid.
  */
 static VALUE libvirt_nodedevice_free(VALUE s) {
     gen_call_free(NodeDevice, s);
