@@ -45,6 +45,7 @@ static VALUE secret_new(virSecretPtr s, VALUE conn) {
  *   conn.num_of_secrets -> fixnum
  *
  * Call +virConnectNumOfSecrets+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfSecrets]
+ * to retrieve the number of secrets on this connection.
  */
 static VALUE libvirt_conn_num_of_secrets(VALUE s) {
     gen_conn_num_of(s, Secrets);
@@ -55,6 +56,7 @@ static VALUE libvirt_conn_num_of_secrets(VALUE s) {
  *   conn.list_secrets -> list
  *
  * Call +virConnectListSecrets+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListSecrets]
+ * to retrieve a list of secret UUIDs on this connection.
  */
 static VALUE libvirt_conn_list_secrets(VALUE s) {
     gen_conn_list_names(s, Secrets);
@@ -62,9 +64,10 @@ static VALUE libvirt_conn_list_secrets(VALUE s) {
 
 /*
  * call-seq:
- *   conn.lookup_secret_by_uuid -> Libvirt::Secret
+ *   conn.lookup_secret_by_uuid(uuid) -> Libvirt::Secret
  *
  * Call +virSecretLookupByUUID+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretLookupByUUID]
+ * to retrieve a network object from uuid.
  */
 static VALUE libvirt_conn_lookup_secret_by_uuid(VALUE c, VALUE uuid) {
     virSecretPtr secret;
@@ -79,9 +82,10 @@ static VALUE libvirt_conn_lookup_secret_by_uuid(VALUE c, VALUE uuid) {
 
 /*
  * call-seq:
- *   conn.lookup_secret_by_usage -> Libvirt::Secret
+ *   conn.lookup_secret_by_usage(usagetype, usageID) -> Libvirt::Secret
  *
  * Call +virSecretLookupByUsage+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretLookupByUsage]
+ * to retrieve a secret by usagetype.
  */
 static VALUE libvirt_conn_lookup_secret_by_usage(int argc, VALUE *argv, VALUE c) {
     virSecretPtr secret;
@@ -99,9 +103,10 @@ static VALUE libvirt_conn_lookup_secret_by_usage(int argc, VALUE *argv, VALUE c)
 
 /*
  * call-seq:
- *   conn.define_secret_xml -> Libvirt::Secret
+ *   conn.define_secret_xml(xml, flags=0) -> Libvirt::Secret
  *
  * Call +virSecretDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretDefineXML]
+ * to define a new secret from xml.
  */
 static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c) {
     virSecretPtr secret;
@@ -125,6 +130,7 @@ static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c) {
  *   secret.uuid -> string
  *
  * Call +virSecretGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUUIDString]
+ * to retrieve the UUID for this secret.
  */
 static VALUE libvirt_secret_uuid(VALUE s) {
     virSecretPtr secret = secret_get(s);
@@ -143,6 +149,7 @@ static VALUE libvirt_secret_uuid(VALUE s) {
  *   secret.usagetype -> fixnum
  *
  * Call +virSecretGetUsageType+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageType]
+ * to retrieve the usagetype for this secret.
  */
 static VALUE libvirt_secret_usagetype(VALUE s) {
     virSecretPtr secret = secret_get(s);
@@ -160,6 +167,7 @@ static VALUE libvirt_secret_usagetype(VALUE s) {
  *   secret.usageid -> string
  *
  * Call +virSecretGetUsageID+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageID]
+ * to retrieve the usageid for this secret.
  */
 static VALUE libvirt_secret_usageid(VALUE s) {
     gen_call_string(virSecretGetUsageID, conn(s), 0, secret_get(s));
@@ -167,9 +175,10 @@ static VALUE libvirt_secret_usageid(VALUE s) {
 
 /*
  * call-seq:
- *   secret.xml_desc -> string
+ *   secret.xml_desc(flags=0) -> string
  *
  * Call +virSecretGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetXMLDesc]
+ * to retrieve the XML for this secret.
  */
 static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s) {
     VALUE flags;
@@ -185,9 +194,10 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   secret.set_value -> nil
+ *   secret.set_value(value, flags=0) -> nil
  *
  * Call +virSecretSetValue+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
+ * to set a new value in this secret.
  */
 static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
     virSecretPtr secret = secret_get(s);
@@ -212,9 +222,10 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   secret.get_value -> string
+ *   secret.get_value(flags=0) -> string
  *
  * Call +virSecretGetValue+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetValue]
+ * to retrieve the value from this secret.
  */
 static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
     virSecretPtr secret = secret_get(s);
@@ -240,6 +251,7 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
  *   secret.undefine -> nil
  *
  * Call +virSecretUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretUndefine]
+ * to undefine this secret.
  */
 static VALUE libvirt_secret_undefine(VALUE s) {
     gen_call_void(virSecretUndefine, conn(s), secret_get(s));
@@ -250,6 +262,7 @@ static VALUE libvirt_secret_undefine(VALUE s) {
  *   secret.free -> nil
  *
  * Call +virSecretFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretFree]
+ * to free this secret.  After this call the secret object is no longer valid.
  */
 static VALUE libvirt_secret_free(VALUE s) {
     gen_call_free(Secret, s);
