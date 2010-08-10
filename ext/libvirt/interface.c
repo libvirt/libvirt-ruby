@@ -45,6 +45,7 @@ static VALUE interface_new(virInterfacePtr i, VALUE conn) {
  *   conn.num_of_interfaces -> fixnum
  *
  * Call +virConnectNumOfInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfInterfaces]
+ * to retrieve the number of active interfaces on this connection.
  */
 static VALUE libvirt_conn_num_of_interfaces(VALUE s) {
     gen_conn_num_of(s, Interfaces);
@@ -55,6 +56,7 @@ static VALUE libvirt_conn_num_of_interfaces(VALUE s) {
  *   conn.list_interfaces -> list
  *
  * Call +virConnectListInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListInterfaces]
+ * to retrieve a list of active interface names on this connection.
  */
 static VALUE libvirt_conn_list_interfaces(VALUE s) {
     gen_conn_list_names(s, Interfaces);
@@ -65,6 +67,7 @@ static VALUE libvirt_conn_list_interfaces(VALUE s) {
  *   conn.num_of_defined_interfaces -> fixnum
  *
  * Call +virConnectNumOfDefinedInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedInterfaces]
+ * to retrieve the number of inactive interfaces on this connection.
  */
 static VALUE libvirt_conn_num_of_defined_interfaces(VALUE s) {
     gen_conn_num_of(s, DefinedInterfaces);
@@ -75,6 +78,7 @@ static VALUE libvirt_conn_num_of_defined_interfaces(VALUE s) {
  *   conn.list_defined_interfaces -> list
  *
  * Call +virConnectListDefinedInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedInterfaces]
+ * to retrieve a list of inactive interface names on this connection.
  */
 static VALUE libvirt_conn_list_defined_interfaces(VALUE s) {
     gen_conn_list_names(s, DefinedInterfaces);
@@ -82,9 +86,10 @@ static VALUE libvirt_conn_list_defined_interfaces(VALUE s) {
 
 /*
  * call-seq:
- *   conn.lookup_interface_by_name -> Libvirt::Interface
+ *   conn.lookup_interface_by_name(name) -> Libvirt::Interface
  *
  * Call +virInterfaceLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceLookupByName]
+ * to retrieve an interface object by name.
  */
 static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name) {
     virInterfacePtr iface;
@@ -99,9 +104,10 @@ static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name) {
 
 /*
  * call-seq:
- *   conn.lookup_interface_by_mac -> Libvirt::Interface
+ *   conn.lookup_interface_by_mac(mac) -> Libvirt::Interface
  *
  * Call +virInterfaceLookupByMACString+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceLookupByMACString]
+ * to retrieve an interface object by MAC address.
  */
 static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac) {
     virInterfacePtr iface;
@@ -116,9 +122,10 @@ static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac) {
 
 /*
  * call-seq:
- *   conn.define_interface_xml -> Libvirt::Interface
+ *   conn.define_interface_xml(xml, flags=0) -> Libvirt::Interface
  *
  * Call +virInterfaceDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDefineXML]
+ * to define a new interface from xml.
  */
 static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
     virInterfacePtr iface;
@@ -142,6 +149,7 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
  *   interface.undefine -> nil
  *
  * Call +virInterfaceUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceUndefine]
+ * to undefine this interface.
  */
 static VALUE libvirt_interface_undefine(VALUE s) {
     gen_call_void(virInterfaceUndefine, conn(s), interface_get(s));
@@ -152,6 +160,7 @@ static VALUE libvirt_interface_undefine(VALUE s) {
  *   interface.create -> nil
  *
  * Call +virInterfaceCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceCreate]
+ * to start this interface.
  */
 static VALUE libvirt_interface_create(VALUE s) {
     gen_call_void(virInterfaceCreate, conn(s), interface_get(s), 0);
@@ -162,6 +171,7 @@ static VALUE libvirt_interface_create(VALUE s) {
  *   interface.destroy -> nil
  *
  * Call +virInterfaceDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDestroy]
+ * to shutdown this interface.
  */
 static VALUE libvirt_interface_destroy(VALUE s) {
     gen_call_void(virInterfaceDestroy, conn(s), interface_get(s), 0);
@@ -173,6 +183,7 @@ static VALUE libvirt_interface_destroy(VALUE s) {
  *   interface.active? -> [true|false]
  *
  * Call +virInterfaceIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceIsActive]
+ * to determine if this interface is currently active.
  */
 static VALUE libvirt_interface_active_p(VALUE p) {
     gen_call_truefalse(virInterfaceIsActive, conn(p), interface_get(p));
@@ -184,6 +195,7 @@ static VALUE libvirt_interface_active_p(VALUE p) {
  *   interface.name -> string
  *
  * Call +virInterfaceGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
+ * to retrieve the name of this interface.
  */
 static VALUE libvirt_interface_name(VALUE s) {
     gen_call_string(virInterfaceGetName, conn(s), 0, interface_get(s));
@@ -194,6 +206,7 @@ static VALUE libvirt_interface_name(VALUE s) {
  *   interface.mac -> string
  *
  * Call +virInterfaceGetMACString+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
+ * to retrieve the MAC address of this interface.
  */
 static VALUE libvirt_interface_mac(VALUE s) {
     gen_call_string(virInterfaceGetMACString, conn(s), 0, interface_get(s));
@@ -204,6 +217,7 @@ static VALUE libvirt_interface_mac(VALUE s) {
  *   interface.xml_desc -> string
  *
  * Call +virInterfaceGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
+ * to retrieve the XML of this interface.
  */
 static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s) {
     VALUE flags;
