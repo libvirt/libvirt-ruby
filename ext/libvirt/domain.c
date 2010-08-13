@@ -1223,7 +1223,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
                                    NUM2UINT(flags));
     if (r < 0) {
         free(names);
-        rb_raise_exc(create_error(e_RetrieveError, "virDomainSnapshotListNames",
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotListNames",
                                   "", conn(d)));
     }
 
@@ -1673,7 +1673,7 @@ void init_domain()
     rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
 #endif
 
-    // Domain creation/lookup
+    /* Domain creation/lookup */
     rb_define_method(c_connect, "num_of_domains",
                      libvirt_conn_num_of_domains, 0);
     rb_define_method(c_connect, "list_domains", libvirt_conn_list_domains, 0);
@@ -1747,7 +1747,7 @@ void init_domain()
     rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, 1);
     rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, 1);
     /* FIXME: implement this */
-    // rb_define_method(c_domain, "update_device", libvirt_dom_update_device, -1);
+    /* rb_define_method(c_domain, "update_device", libvirt_dom_update_device, -1); */
     rb_define_method(c_domain, "scheduler_type", libvirt_dom_scheduler_type, 0);
     rb_define_method(c_domain, "scheduler_parameters",
                      libvirt_dom_scheduler_parameters, 0);

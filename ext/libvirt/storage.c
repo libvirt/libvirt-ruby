@@ -524,7 +524,7 @@ static VALUE libvirt_pool_lookup_vol_by_name(VALUE p, VALUE name) {
 static VALUE libvirt_pool_lookup_vol_by_key(VALUE p, VALUE key) {
     virStorageVolPtr vol;
 
-    // FIXME: Why does this take a connection, not a pool ?
+    /* FIXME: Why does this take a connection, not a pool? */
     vol = virStorageVolLookupByKey(conn(p), StringValueCStr(key));
     _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByKey",
                                  "", conn(p)));

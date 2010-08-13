@@ -400,16 +400,19 @@ void init_connect()
     rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
 
     /* FIXME: implement these */
-    //rb_define_method(c_connect, "domain_event_register",
-    //                 libvirt_conn_domain_event_register", -1);
-    //rb_define_method(c_connect, "Domain_event_deregister",
-    //                 libvirt_conn_domain_event_deregister, -1);
-    //rb_define_method(c_connect, "domain_event_register_any",
-    //                 libvirt_conn_domain_event_register_any, -1);
-    //rb_define_method(c_connect, "domain_event_deregister_any",
-    //                 libvirt_conn_domain_event_deregister_any, -1);
-    //rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1);
-    //rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1);
-    //rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1);
-    //rb_define_method(c_connect, "ref", libvirt_conn_ref, 0);
+    /*rb_define_method(c_connect, "domain_event_register",
+                       libvirt_conn_domain_event_register", -1);
+    */
+    /*rb_define_method(c_connect, "Domain_event_deregister",
+                       libvirt_conn_domain_event_deregister, -1);
+    */
+    /* rb_define_method(c_connect, "domain_event_register_any",
+                        libvirt_conn_domain_event_register_any, -1);
+    */
+    /*rb_define_method(c_connect, "domain_event_deregister_any",
+                       libvirt_conn_domain_event_deregister_any, -1);
+    */
+    /*rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1); */
+    /*rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1); */
+    /*rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1); */
 }

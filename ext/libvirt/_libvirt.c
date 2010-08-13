@@ -38,8 +38,8 @@ static VALUE c_libvirt_version;
 
 VALUE m_libvirt;
 
-// define additional errors here
-static VALUE e_ConnectionError;         // ConnectionError - error durring connection establishment
+/* define additional errors here */
+static VALUE e_ConnectionError;         /* ConnectionError - error during connection establishment */
 VALUE e_DefinitionError;
 VALUE e_RetrieveError;
 VALUE e_Error;
@@ -349,7 +349,6 @@ void Init__libvirt() {
     e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError",
                                               e_Error);
 
-    // create 'libvirt_function_name' and 'vir_connect_ptr' attributes on e_Error class
     rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
     rb_define_attr(e_Error, "libvirt_message", 1, 0);
 
