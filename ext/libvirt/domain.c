@@ -1848,6 +1848,21 @@ void init_domain()
                                                   rb_cObject);
     rb_define_attr(c_domain_memory_stats, "tag", 1, 0);
     rb_define_attr(c_domain_memory_stats, "value", 1, 0);
+
+    rb_define_const(c_domain_memory_stats, "SWAP_IN",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_SWAP_IN));
+    rb_define_const(c_domain_memory_stats, "SWAP_OUT",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_SWAP_OUT));
+    rb_define_const(c_domain_memory_stats, "MAJOR_FAULT",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_MAJOR_FAULT));
+    rb_define_const(c_domain_memory_stats, "MINOR_FAULT",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_MINOR_FAULT));
+    rb_define_const(c_domain_memory_stats, "UNUSED",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_UNUSED));
+    rb_define_const(c_domain_memory_stats, "AVAILABLE",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_AVAILABLE));
+    rb_define_const(c_domain_memory_stats, "NR",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_NR));
 #endif
 
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
