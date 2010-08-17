@@ -90,7 +90,7 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     ids = ALLOC_N(int, num);
     r = virConnectListDomains(conn, ids, num);
     if (r < 0) {
-        free(ids);
+        xfree(ids);
         _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", "",
                                conn));
     }
@@ -99,7 +99,7 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     for (i=0; i<num; i++) {
         rb_ary_push(result, INT2NUM(ids[i]));
     }
-    free(ids);
+    xfree(ids);
     return result;
 }
 
@@ -739,14 +739,14 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
                            NUM2UINT(flags));
 
     if (r < 0) {
-        free(buffer);
+        xfree(buffer);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainBlockPeek", "",
                                   conn(s)));
     }
 
     ret = rb_str_new((char *)buffer, size);
 
-    free(buffer);
+    xfree(buffer);
 
     return ret;
 }
@@ -778,14 +778,14 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
                             NUM2UINT(flags));
 
     if (r < 0) {
-        free(buffer);
+        xfree(buffer);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainMemoryPeek", "",
                                   conn(s)));
     }
 
     ret = rb_str_new((char *)buffer, size);
 
-    free(buffer);
+    xfree(buffer);
 
     return ret;
 }
@@ -1130,7 +1130,7 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
     }
 
     r = virDomainPinVcpu(dom, NUM2UINT(vcpu), cpumap, maplen);
-    free(cpumap);
+    xfree(cpumap);
     _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", "", c));
 
     return Qnil;
@@ -1359,7 +1359,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
     r = virDomainSnapshotListNames(domain_get(d), names, num,
                                    NUM2UINT(flags));
     if (r < 0) {
-        free(names);
+        xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotListNames",
                                   "", conn(d)));
     }
@@ -1369,7 +1369,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
         rb_ary_push(result, rb_str_new2(names[i]));
         free(names[i]);
     }
-    free(names);
+    xfree(names);
     return result;
 }
 
@@ -1584,7 +1584,7 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
     rb_ary_store(result, 0, rb_str_new2(type));
     rb_ary_store(result, 1, INT2FIX(nparams));
 
-    free(type);
+    xfree(type);
 
     return result;
 }
@@ -1614,13 +1614,13 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
                                   "", conn(d)));
 
-    free(type);
+    xfree(type);
 
     params = ALLOC_N(virSchedParameter, nparams);
 
     r = virDomainGetSchedulerParameters(dom, params, &nparams);
     if (r < 0) {
-        free(params);
+        xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
                                   "virDomainGetSchedulerParameters",
                                   "", conn(d)));
@@ -1651,14 +1651,14 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
             val = (params[i].value.b == 0) ? Qfalse : Qtrue;
             break;
         default:
-            free(params);
+            xfree(params);
             rb_raise(rb_eArgError, "Invalid parameter type");
         }
 
         rb_hash_aset(result, rb_str_new2(params[i].field), val);
     }
 
-    free(params);
+    xfree(params);
 
     return result;
 }
@@ -1687,13 +1687,13 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
                                   "", conn(d)));
 
-    free(type);
+    xfree(type);
 
     params = ALLOC_N(virSchedParameter, nparams);
 
     r = virDomainGetSchedulerParameters(dom, params, &nparams);
     if (r < 0) {
-        free(params);
+        xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
                                   "virDomainGetSchedulerParameters",
                                   "", conn(d)));
@@ -1722,20 +1722,20 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
             params[i].value.b = (val == Qtrue) ? 1 : 0;
             break;
         default:
-            free(params);
+            xfree(params);
             rb_raise(rb_eArgError, "Invalid parameter type");
         }
     }
 
     r = virDomainSetSchedulerParameters(dom, params, nparams);
     if (r < 0) {
-        free(params);
+        xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
                                   "virDomainSetSchedulerParameters",
                                   "", conn(d)));
     }
 
-    free(params);
+    xfree(params);
 
     return Qnil;
 }

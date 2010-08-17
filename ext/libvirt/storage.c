@@ -455,7 +455,7 @@ static VALUE libvirt_pool_list_volumes(VALUE s) {
     names = ALLOC_N(char *, num);
     r = virStoragePoolListVolumes(pool, names, num);
     if (r < 0) {
-        free(names);
+        xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virStoragePoolListVolumes",
                                   "", conn(s)));
     }
@@ -465,7 +465,7 @@ static VALUE libvirt_pool_list_volumes(VALUE s) {
         rb_ary_push(result, rb_str_new2(names[i]));
         free(names[i]);
     }
-    free(names);
+    xfree(names);
     return result;
 }
 

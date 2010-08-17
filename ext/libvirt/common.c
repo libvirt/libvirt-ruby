@@ -35,7 +35,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         defmsg = ALLOC_N(char, len);
         snprintf(defmsg, len, "Call to function %s failed", method);
         ruby_errinfo = rb_exc_new2(error, defmsg);
-        free(defmsg);
+        xfree(defmsg);
     } else {
         ruby_errinfo = rb_exc_new2(error, msg);
     }

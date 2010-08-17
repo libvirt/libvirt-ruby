@@ -46,7 +46,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
                                                                         \
         result = rb_str_new2(str);                                      \
         if (dealloc)                                                    \
-            free((void *) str);                                         \
+            xfree((void *) str);                                         \
         return result;                                                  \
     } while(0)
 
@@ -116,16 +116,16 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         names = ALLOC_N(char *, num);                                   \
         r = virConnectList##objs(conn, names, num);                     \
         if (r < 0) {                                                    \
-            free(names);                                                \
+            xfree(names);                                                \
             _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, "", conn));  \
         }                                                               \
                                                                         \
         result = rb_ary_new2(num);                                      \
         for (i=0; i<num; i++) {                                         \
             rb_ary_push(result, rb_str_new2(names[i]));                 \
-            free(names[i]);                                             \
+            xfree(names[i]);                                             \
         }                                                               \
-        free(names);                                                    \
+        xfree(names);                                                    \
         return result;                                                  \
     } while(0)
 
