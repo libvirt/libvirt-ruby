@@ -400,19 +400,77 @@ void init_connect()
     rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
 
     /* FIXME: implement these */
-    /*rb_define_method(c_connect, "domain_event_register",
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_ADDED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED_ADDED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_UPDATED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED_UPDATED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED", INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED_REMOVED", INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED_REMOVED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED", INT2NUM(VIR_DOMAIN_EVENT_STARTED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_BOOTED", INT2NUM(VIR_DOMAIN_EVENT_STARTED_BOOTED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_STARTED_MIGRATED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_RESTORED", INT2NUM(VIR_DOMAIN_EVENT_STARTED_RESTORED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT", INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_PAUSED", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_PAUSED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_MIGRATED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_WATCHDOG", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_WATCHDOG)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED", INT2NUM(VIR_DOMAIN_EVENT_RESUMED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_UNPAUSED", INT2NUM(VIR_DOMAIN_EVENT_RESUMED_UNPAUSED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_RESUMED_MIGRATED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SHUTDOWN", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SHUTDOWN)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_DESTROYED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_DESTROYED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_CRASHED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_CRASHED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_MIGRATED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SAVED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SAVED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FAILED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FAILED)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_NONE", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_NONE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_PAUSE", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_PAUSE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_RESET", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_RESET)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_POWEROFF", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_POWEROFF)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_SHUTDOWN", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_SHUTDOWN)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_DEBUG", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_DEBUG)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_NONE", INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_NONE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_PAUSE", INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_PAUSE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_REPORT", INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_REPORT)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_CONNECT", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_CONNECT)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_INITIALIZE", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_INITIALIZE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_DISCONNECT", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_DISCONNECT)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_LIFECYCLE", INT2NUM(VIR_DOMAIN_EVENT_ID_LIFECYCLE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_REBOOT", INT2NUM(VIR_DOMAIN_EVENT_ID_REBOOT)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_RTC_CHANGE", INT2NUM(VIR_DOMAIN_EVENT_ID_RTC_CHANGE)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_WATCHDOG", INT2NUM(VIR_DOMAIN_EVENT_ID_WATCHDOG)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR", INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_GRAPHICS", INT2NUM(VIR_DOMAIN_EVENT_ID_GRAPHICS)); */
+    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR_REASON", INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON)); */
+    /* rb_define_const(c_connect, "EVENT_HANDLE_READABLE", INT2NUM(VIR_EVENT_HANDLE_READABLE)); */
+    /* rb_define_const(c_connect, "EVENT_HANDLE_WRITABLE", INT2NUM(VIR_EVENT_HANDLE_WRITABLE)); */
+    /* rb_define_const(c_connect, "EVENT_HANDLE_ERROR", INT2NUM(VIR_EVENT_HANDLE_ERROR)); */
+    /* rb_define_const(c_connect, "EVENT_HANDLE_HANGUP", INT2NUM(VIR_EVENT_HANDLE_HANGUP)); */
+    /* rb_define_method(c_connect, "domain_event_register",
                        libvirt_conn_domain_event_register", -1);
     */
-    /*rb_define_method(c_connect, "Domain_event_deregister",
+    /* rb_define_method(c_connect, "domain_event_register",
+                       libvirt_conn_domain_event_register", -1);
+    */
+    /* rb_define_method(c_connect, "Domain_event_deregister",
                        libvirt_conn_domain_event_deregister, -1);
     */
     /* rb_define_method(c_connect, "domain_event_register_any",
                         libvirt_conn_domain_event_register_any, -1);
     */
-    /*rb_define_method(c_connect, "domain_event_deregister_any",
+    /* rb_define_method(c_connect, "domain_event_deregister_any",
                        libvirt_conn_domain_event_deregister_any, -1);
     */
-    /*rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1); */
-    /*rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1); */
-    /*rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1); */
+    /* rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1); */
+    /* rb_define_const(c_connect, "CPU_COMPARE_ERROR", INT2NUM(VIR_CPU_COMPARE_ERROR)); */
+    /* rb_define_const(c_connect, "CPU_COMPARE_INCOMPATIBLE", INT2NUM(VIR_CPU_COMPARE_INCOMPATIBLE)); */
+    /* rb_define_const(c_connect, "CPU_COMPARE_IDENTICAL", INT2NUM(VIR_CPU_COMPARE_IDENTICAL)); */
+    /* rb_define_const(c_connect, "CPU_COMPARE_SUPERSET", INT2NUM(VIR_CPU_COMPARE_SUPERSET)); */
+    /* rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1); */
+    /* rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1); */
 }
