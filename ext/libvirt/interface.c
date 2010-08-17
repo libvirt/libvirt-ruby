@@ -231,6 +231,16 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s) {
                     NUM2UINT(flags));
 }
 
+/*
+ * call-seq:
+ *   interface.free -> nil
+ *
+ * Call +virInterfaceFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceFree]
+ * to free this interface.  The object will no longer be valid after this call.
+ */
+static VALUE libvirt_interface_free(VALUE s) {
+    gen_call_free(Interface, s);
+}
 #endif
 
 /*
@@ -269,6 +279,7 @@ void init_interface()
     rb_define_method(c_interface, "undefine", libvirt_interface_undefine, 0);
     rb_define_method(c_interface, "create", libvirt_interface_create, -1);
     rb_define_method(c_interface, "destroy", libvirt_interface_destroy, -1);
+    rb_define_method(c_interface, "free", libvirt_interface_free, 0);
 #if HAVE_VIRINTERFACEISACTIVE
     rb_define_method(c_interface, "active?", libvirt_interface_active_p, 0);
 #endif
