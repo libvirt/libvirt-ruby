@@ -1662,6 +1662,17 @@ void init_domain()
     rb_define_const(c_domain, "MEMORY_PHYSICAL", INT2NUM(VIR_MEMORY_PHYSICAL));
 #endif
 
+#ifdef VIR_DOMAIN_START_PAUSED
+    rb_define_const(c_domain, "START_PAUSED", INT2NUM(VIR_DOMAIN_START_PAUSED));
+#endif
+
+#ifdef VIR_DUMP_CRASH
+    rb_define_const(c_domain, "DUMP_CRASH", INT2NUM(VIR_DUMP_CRASH));
+#endif
+#ifdef VIR_DUMP_LIVE
+    rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
+#endif
+
     // Domain creation/lookup
     rb_define_method(c_connect, "num_of_domains",
                      libvirt_conn_num_of_domains, 0);
