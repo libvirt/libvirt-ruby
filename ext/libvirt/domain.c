@@ -150,6 +150,29 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
 
 /*
  * call-seq:
+ *   dom.create_xml(xml, flags=0) -> Libvirt::Domain
+ *
+ * Call +virDomainCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateXML]
+ * to start a transient domain from the given XML.
+ */
+static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+    VALUE flags, xml;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    dom = virDomainCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", "", conn));
+
+    return domain_new(dom, c);
+}
+
+/*
+ * call-seq:
  *   conn.lookup_domain_by_name(name) -> Libvirt::Domain
  *
  * Call +virDomainLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByName]
@@ -1683,6 +1706,8 @@ void init_domain()
                      libvirt_conn_list_defined_domains, 0);
     rb_define_method(c_connect, "create_domain_linux",
                      libvirt_conn_create_linux, -1);
+    rb_define_method(c_connect, "create_domain_xml",
+                     libvirt_conn_create_xml, -1);
     rb_define_method(c_connect, "lookup_domain_by_name",
                      libvirt_conn_lookup_domain_by_name, 1);
     rb_define_method(c_connect, "lookup_domain_by_id",
