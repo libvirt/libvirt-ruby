@@ -751,7 +751,7 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
     buffer = ALLOC_N(char, size);
 
     r = virDomainMemoryPeek(dom, NUM2ULL(start), NUM2UINT(size), buffer,
-                           NUM2UINT(flags));
+                            NUM2UINT(flags));
 
     if (r < 0) {
         free(buffer);
@@ -1361,7 +1361,7 @@ static VALUE libvirt_dom_snapshot_delete(int argc, VALUE *argv, VALUE s) {
         flags = INT2FIX(0);
 
     gen_call_void(virDomainSnapshotDelete, conn(s),
-                    domain_snapshot_get(s), NUM2UINT(flags));
+                  domain_snapshot_get(s), NUM2UINT(flags));
 }
 
 /*
