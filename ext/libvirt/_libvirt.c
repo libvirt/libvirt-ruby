@@ -43,6 +43,7 @@ static VALUE e_ConnectionError;         /* ConnectionError - error during connec
 VALUE e_DefinitionError;
 VALUE e_RetrieveError;
 VALUE e_Error;
+VALUE e_NoSupportError;
 
 /*
  * call-seq:
@@ -347,6 +348,8 @@ void Init__libvirt() {
     e_DefinitionError = rb_define_class_under(m_libvirt, "DefinitionError",
                                               e_Error);
     e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError",
+                                              e_Error);
+    e_NoSupportError =  rb_define_class_under(m_libvirt, "NoSupportError",
                                               e_Error);
 
     rb_define_attr(e_Error, "libvirt_function_name", 1, 0);

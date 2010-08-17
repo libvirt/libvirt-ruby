@@ -147,6 +147,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
 extern VALUE e_RetrieveError;
 extern VALUE e_Error;
 extern VALUE e_DefinitionError;
+extern VALUE e_NoSupportError;
 
 extern VALUE m_libvirt;
 

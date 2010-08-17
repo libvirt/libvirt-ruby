@@ -1228,27 +1228,85 @@ static VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
 
 /*
  * call-seq:
- *   dom.attach_device(device_xml) -> nil
+ *   dom.attach_device(device_xml, flags=0) -> nil
  *
  * Call +virDomainAttachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAttachDevice]
  * to attach the device described by the device_xml to the domain.
  */
-static VALUE libvirt_dom_attach_device(VALUE s, VALUE xml) {
+static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
+    VALUE xml;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+#if HAVE_VIRDOMAINATTACHDEVICEFLAGS
+    gen_call_void(virDomainAttachDeviceFlags, conn(s), domain_get(s),
+                  StringValueCStr(xml), FIX2UINT(flags));
+#else
+    if (FIX2UINT(flags) != 0) {
+        rb_exc_raise(create_error(e_NoSupportError, "virDomainAttachDevice",
+                                  "Non-zero flags not supported",
+                                  conn(s));
+    }
     gen_call_void(virDomainAttachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
+#endif
 }
 
 /*
  * call-seq:
- *   dom.detach_device(device_xml) -> nil
+ *   dom.detach_device(device_xml, flags=0) -> nil
  *
  * Call +virDomainDetachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
  * to detach the device described the device_xml from the domain.
  */
-static VALUE libvirt_dom_detach_device(VALUE s, VALUE xml) {
+static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
+    VALUE xml;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+#if HAVE_VIRDOMAINDETACHDEVICEFLAGS
+    gen_call_void(virDomainDetachDeviceFlags, conn(s), domain_get(s),
+                  StringValueCStr(xml), FIX2UINT(flags));
+#else
+    if (FIX2UINT(flags) != 0) {
+        rb_exc_raise(create_error(e_NoSupportError, "virDomainDettachDevice",
+                                  "Non-zero flags not supported",
+                                  conn(s));
+    }
     gen_call_void(virDomainDetachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
+#endif
 }
+
+#if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
+/*
+ * call-seq:
+ *   dom.update_device(device_xml, flags=0) -> nil
+ *
+ * Call +virDomainUpdateDeviceFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUpdateDeviceFlags]
+ * to update the device described the device_xml from the domain.
+ */
+static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE s) {
+    VALUE xml;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virDomainUpdateDeviceFlags, conn(s), domain_get(s),
+                  StringValueCStr(xml), FIX2UINT(flags));
+}
+#endif
 
 /*
  * call-seq:
@@ -1880,16 +1938,19 @@ void init_domain()
     rb_define_method(c_domain, "autostart?", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
     rb_define_method(c_domain, "free", libvirt_dom_free, 0);
-    /* FIXME: we should probably allow a "flags" parameter to
-     * {attach,detach}_device, and then call
-     * virDomain{Attach,Detach}DeviceFlags, where appropriate
-     *
-     * We should also make the VIR_DOMAIN_DEVICE_MODIFY_* flags consts
-     */
-    rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, 1);
-    rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, 1);
-    /* FIXME: implement this */
-    /* rb_define_method(c_domain, "update_device", libvirt_dom_update_device, -1); */
+
+    rb_define_const(c_domain, "DEVICE_MODIFY_CURRENT",
+                    INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CURRENT));
+    rb_define_const(c_domain, "DEVICE_MODIFY_LIVE",
+                    INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_LIVE));
+    rb_define_const(c_domain, "DEVICE_MODIFY_CONFIG",
+                    INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CONFIG));
+    rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, -1);
+    rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, -1);
+#if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
+    rb_define_method(c_domain, "update_device", libvirt_dom_update_device, -1);
+#endif
+
     rb_define_method(c_domain, "scheduler_type", libvirt_dom_scheduler_type, 0);
     rb_define_method(c_domain, "scheduler_parameters",
                      libvirt_dom_scheduler_parameters, 0);
