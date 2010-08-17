@@ -46,6 +46,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainIsPersistent',
                   'virConnectDomainXMLFromNative',
                   'virConnectDomainXMLToNative',
+                  'virDomainCreateWithFlags',
                 ]
 
 have_libvirt_types(libvirt_types)

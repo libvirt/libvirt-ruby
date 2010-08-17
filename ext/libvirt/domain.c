@@ -1178,6 +1178,25 @@ static VALUE libvirt_dom_create(VALUE s) {
     gen_call_void(virDomainCreate, conn(s), domain_get(s));
 }
 
+#if HAVE_VIRDOMAINCREATEWITHFLAGS
+/*
+ * call-seq:
+ *   dom.create_flags(flags=0) -> nil
+ *
+ * Call +virDomainCreateWithFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateWithFlags]
+ * to start an already defined domain.
+ */
+static VALUE libvirt_dom_create_flags(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virDomainCreateWithFlags, conn(s), domain_get(s), flags);
+}
+#endif
+
 /*
  * call-seq:
  *   dom.autostart -> [true|false]
@@ -1854,6 +1873,9 @@ void init_domain()
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
     rb_define_method(c_domain, "create", libvirt_dom_create, 0);
+#if HAVE_VIRDOMAINCREATEWITHFLAGS
+    rb_define_method(c_domain, "create_flags", libvirt_dom_create_flags, 0);
+#endif
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart?", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
