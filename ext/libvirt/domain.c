@@ -42,6 +42,7 @@ static VALUE c_domain_snapshot;
 #if HAVE_TYPE_VIRDOMAINJOBINFOPTR
 static VALUE c_domain_job_info;
 #endif
+static VALUE c_domain_vcpuinfo;
 
 static void domain_free(void *d) {
     generic_free(Domain, d);
@@ -787,6 +788,100 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
     free(buffer);
 
     return ret;
+}
+
+static VALUE rb_ary_new_wrap(VALUE arg) {
+    return rb_ary_new();
+}
+
+/* call-seq:
+ *   domain.get_vcpus -> [ Libvirt::Domain::VCPUInfo ]
+ *
+ * Call +virDomainGetVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpus]
+ * to retrieve detailed information about the state of a domain's virtual CPUs.
+ */
+static VALUE libvirt_dom_get_vcpus(VALUE s) {
+    virDomainPtr dom = domain_get(s);
+    virNodeInfo nodeinfo;
+    virDomainInfo dominfo;
+    virVcpuInfoPtr cpuinfo;
+    unsigned char *cpumap;
+    int cpumaplen;
+    int r, i, j;
+    VALUE vcpuinfo;
+    VALUE p2vcpumap;
+    VALUE val;
+    VALUE result;
+    int exception;
+
+    r = virNodeGetInfo(conn(s), &nodeinfo);
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn(s)));
+
+    r = virDomainGetInfo(dom, &dominfo);
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo", "", conn(s)));
+
+    cpuinfo = ALLOC_N(virVcpuInfo, dominfo.nrVirtCpu);
+
+    cpumaplen = VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo));
+
+    /* we use malloc instead of ruby_xmalloc here to avoid a memory leak
+     * if ruby_xmalloc raises an exception
+     */
+    cpumap = malloc(dominfo.nrVirtCpu * cpumaplen);
+    if (cpumap == NULL) {
+        xfree(cpuinfo);
+        rb_memerror();
+    }
+
+    r = virDomainGetVcpus(dom, cpuinfo, dominfo.nrVirtCpu, cpumap, cpumaplen);
+    if (r < 0) {
+        xfree(cpuinfo);
+        free(cpumap);
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainGetVcpus", "",
+                                  conn(s)));
+    }
+
+    result = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
+    if (exception) {
+        xfree(cpuinfo);
+        free(cpumap);
+        rb_jump_tag(exception);
+    }
+
+    for (i = 0; i < dominfo.nrVirtCpu; i++) {
+        vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
+        /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+
+        rb_iv_set(vcpuinfo, "@number", UINT2NUM(cpuinfo[i].number));
+        rb_iv_set(vcpuinfo, "@state", INT2NUM(cpuinfo[i].state));
+        rb_iv_set(vcpuinfo, "@cpuTime", ULL2NUM(cpuinfo[i].cpuTime));
+        rb_iv_set(vcpuinfo, "@cpu", INT2NUM(cpuinfo[i].cpu));
+        /* FIXME: if any of these fail, we'll leak cpuinfo and cpumap */
+
+        p2vcpumap = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
+
+        for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++) {
+            val = (VIR_CPU_USABLE(cpumap, cpumaplen, i, j)) ? Qtrue : Qfalse;
+            rb_ary_store(p2vcpumap, j, val);
+            /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+        }
+
+        rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
+        /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+
+        rb_ary_store(result, i, vcpuinfo);
+        /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+    }
+
+    free(cpumap);
+    xfree(cpuinfo);
+
+    return result;
 }
 
 #if HAVE_VIRDOMAINISACTIVE
@@ -1797,8 +1892,7 @@ void init_domain()
     rb_define_method(c_domain, "blockinfo", libvirt_dom_block_info, -1);
 #endif
     rb_define_method(c_domain, "memory_peek", libvirt_dom_memory_peek, -1);
-    /* FIXME: implement these */
-    //rb_define_method(c_domain, "get_vcpus", libvirt_dom_get_vcpus, 0);
+    rb_define_method(c_domain, "get_vcpus", libvirt_dom_get_vcpus, 0);
 #if HAVE_VIRDOMAINISACTIVE
     rb_define_method(c_domain, "active?", libvirt_dom_active_p, 0);
 #endif
@@ -1914,6 +2008,19 @@ void init_domain()
                      libvirt_dom_snapshot_delete, -1);
     rb_define_method(c_domain_snapshot, "free", libvirt_dom_snapshot_free, 0);
 #endif
+
+    /*
+     * Class Libvirt::Domain::VCPUInfo
+     */
+    c_domain_vcpuinfo = rb_define_class_under(c_domain, "VCPUInfo", rb_cObject);
+    rb_define_const(c_domain_vcpuinfo, "OFFLINE", VIR_VCPU_OFFLINE);
+    rb_define_const(c_domain_vcpuinfo, "RUNNING", VIR_VCPU_RUNNING);
+    rb_define_const(c_domain_vcpuinfo, "BLOCKED", VIR_VCPU_BLOCKED);
+    rb_define_attr(c_domain_vcpuinfo, "number", 1, 0);
+    rb_define_attr(c_domain_vcpuinfo, "state", 1, 0);
+    rb_define_attr(c_domain_vcpuinfo, "cpuTime", 1, 0);
+    rb_define_attr(c_domain_vcpuinfo, "cpu", 1, 0);
+    rb_define_attr(c_domain_vcpuinfo, "cpumap", 1, 0);
 
 #if HAVE_TYPE_VIRDOMAINJOBINFOPTR
     /*
