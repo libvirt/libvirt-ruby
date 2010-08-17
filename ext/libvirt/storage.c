@@ -563,6 +563,7 @@ static VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
     return vol_new(vol, conn_attr(p));
 }
 
+#if HAVE_VIRSTORAGEVOLCREATEXMLFROM
 /*
  * call-seq:
  *   pool.vol_create_xml_from -> Libvirt::StorageVol
@@ -585,6 +586,7 @@ static VALUE libvirt_pool_vol_create_xml_from(int argc, VALUE *argv, VALUE p) {
 
     return vol_new(vol, conn_attr(p));
 }
+#endif
 
 #if HAVE_VIRSTORAGEPOOLISACTIVE
 /*
@@ -792,8 +794,10 @@ void init_storage(void) {
     rb_define_method(c_storage_pool, "free", libvirt_pool_free, 0);
     rb_define_method(c_storage_pool, "create_vol_xml",
                      libvirt_pool_vol_create_xml, -1);
+#if HAVE_VIRSTORAGEVOLCREATEXMLFROM
     rb_define_method(c_storage_pool, "create_vol_xml_from",
                      libvirt_pool_vol_create_xml_from, -1);
+#endif
 #if HAVE_VIRSTORAGEPOOLISACTIVE
     rb_define_method(c_storage_pool, "active?", libvirt_pool_active_p, 0);
 #endif
