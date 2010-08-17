@@ -37,8 +37,6 @@ CLOBBER.include [ "config.save", "ext/**/mkmf.log", "ext/**/extconf.h",
 #
 # Build locally
 #
-# FIXME: We can't get rid of install.rb yet, since there's no way
-# to pass config options to extconf.rb
 file MAKEFILE => EXT_CONF do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
          unless sh "ruby #{File::basename(EXT_CONF)}"
