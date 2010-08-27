@@ -46,12 +46,11 @@ VALUE e_Error;
 
 /*
  * call-seq:
- *   Libvirt::version(type) -> [ libvirt_version, type_version ]
+ *   Libvirt::version(type=nil) -> [ libvirt_version, type_version ]
  *
  * Call
  * +virGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
- * to get the version of libvirt and of the hypervisor TYPE. Returns an
- * array with two entries of type Libvirt::Version.
+ * to get the version of libvirt and of the hypervisor TYPE.
  */
 static VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
     unsigned long libVer;
@@ -100,11 +99,11 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
 
 /*
  * call-seq:
- *   Libvirt::open(url) -> Libvirt::Connect
+ *   Libvirt::open(uri=nil) -> Libvirt::Connect
  *
  * Call
  * +virConnectOpen+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
- * to open a connection to a URL.  Returns a new Libvirt::Connect object.
+ * to open a connection to a URL.
  */
 static VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
     return internal_open(argc, argv, m, 0);
@@ -112,12 +111,11 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
 
 /*
  * call-seq:
- *   Libvirt::open_read_only(url) -> Libvirt::Connect
+ *   Libvirt::open_read_only(uri=nil) -> Libvirt::Connect
  *
  * Call
  * +virConnectOpenReadOnly+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
- * to open a read-only connection to a URL.  Returns a new Libvirt::Connect
- * object.
+ * to open a read-only connection to a URL.
  */
 static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
     return internal_open(argc, argv, m, 1);
