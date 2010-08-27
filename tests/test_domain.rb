@@ -29,7 +29,6 @@ new_dom_xml = <<EOF
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
   <devices>
-    <emulator>/usr/libexec/qemu-kvm</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw'/>
       <source file='/var/lib/libvirt/images/ruby-libvirt-test.dsk'/>
