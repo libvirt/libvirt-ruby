@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="http://libvirt.org/main.css" />
+    <link rel="stylesheet" type="text/css" href="ruby-libvirt.css" />
+    <link rel="SHORTCUT ICON" href="http://libvirt.org/32favicon.png" />
+    <title>ruby-libvirt: News</title>
+    <meta name="description" content="ruby, libvirt, virtualization, virtualization API" />
+  </head>
+  <body>
+    <div id="header">
+      <div id="rubyHeaderLogo"></div>
+      <div id="headerSearch">
+        <form action="search.php" enctype="application/x-www-form-urlencoded" method="get"><div>
+            <input id="query" name="query" type="text" size="12" value="" />
+            <input id="submit" name="submit" type="submit" value="Search" />
+          </div></form>
+      </div>
+    </div>
+    <div id="body">
+      <div id="menu">
+        <ul class="l0">
+	  <li>
+            <div>
+	      <a title="Front page of the ruby-libvirt website" class="inactive" href="index.html">Home</a>
+            </div>
+          </li>
+	  <li>
+            <div>
+	      <span class="active">News</span>
+            </div>
+          </li>
+	  <li>
+            <div>
+              <a title="Get the latest source releases, binary builds and get access to the source repository" class="inactive" href="downloads.html">Downloads</a>
+            </div>
+          </li>
+	  <li>
+            <div>
+              <a title="API documentation for application developers" class="inactive" href="api/index.html">API Documentation</a>
+            </div>
+          </li>
+	  <li>
+            <div>
+              <a title="How and where to report bugs, request features, and otherwise get in touch with the developers" class="inactive" href="contact.html">Contact</a>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a title="Miscellaneous links of interest related to libvirt" class="inactive" href="relatedlinks.html">Related Links</a>
+            </div>
+          </li>
+	</ul>
+      </div>
+      <div id="content">
+	<h1>Releases</h1>
+	<h3>0.2.0: July 1 2010</h3>
+	<p>- Updated Storage class, implementing pool.active?, pool.persistent?,
+	  pool.vol_create_xml_from.</p>
+	<p>- Updated Connect class, implementing conn.node_free_memory,
+	  conn.node_cells_free_memory, conn.node_get_security_model, conn.encrypted?,
+	  conn.libversion, and conn.secure?</p>
+	<p>- Updated Network class, implementing network.active? and network.persistent?</p>
+	<p>- Update Domain class, implementing conn.domain_xml_from_native,
+	  conn.domain_xml_to_native, dom.migrate_to_uri, dom.migrate_set_max_downtime,
+	  dom.managed_save, dom.has_managed_save?, dom.managed_save_remove,
+	  dom.security_label, dom.block_stats, dom.memory_stats, dom.blockinfo,
+	  dom.block_peek, dom.memory_peek, dom.active?, dom.persistent?,
+	  dom.snapshot_create_xml, dom.num_of_snapshots, dom.list_snapshots,
+	  dom.lookup_snapshot_by_name, dom.has_current_snapshot?,
+	  dom.revert_to_snapshot, dom.current_snapshot, snapshot.xml_desc,
+	  snapshot.delete, dom.job_info, and dom.abort_job.</p>
+	<p>- Implementation of the NodeDevice class.</p>
+	<p>- Implementation of the Secret class.</p>
+	<p>- Implementation of the NWFilter class.</p>
+	<p>- Implementation of the Interface class.</p>
+	<p>- Conversion of the development tree to git.</p>
+	<p>- New maintainer (Chris Lalancette).  David Lutterkort has agreed to transfer maintainership
+	  since he is not actively involved in their development anymore.</p>
+	<h3>0.1.0: November 18 2008</h3>
+	<p>- Short-circuit calls to list functions for empty lists.
+	  As an optimizaton (and workaround for a bug in 0.4.3), do not call
+	  virConnectList* functions if the coresponding virConnectNumOf* call
+	  returned 0. Return an empty list instead.</p>
+	<p>- Add the MIGRATE_LIVE (enum virDomainMigrateFlags)
+	flag.</p>
+	<p>- Fix dom_migrate: (1) allow passing nil for dname and uri,
+	  (2) make all but the first two parameters optional.</p>
+	<p>- Add the binding for virConnectFindStoragePoolSources.</p>
+	<h3>0.0.7: April 15 2008</h3>
+	<p>Add the binding for virDomainMigrate.</p>
+	<h3>0.0.6: April 2 2008</h3>
+	<p>- Fix a test failure from 0.0.5</p>
+	<h3>0.0.5: April 2 2008</h3>
+	<p>- Add free methods to the various objects.
+	  It is sometimes necessary to free a virXXX object explicitly instead of
+	  waiting for the garbage collector to come and do it. This adds explicit
+	  free methods that call the underlying virXXXFree functions
+	  to do that.</p>
+	<p>- More finegrained exceptions.
+	  Errors from libvirt are now translated in not just one but four different
+	  kinds of exceptions, and the error message from libvirt's virError
+	  structure is returned.</p>
+	<h3>0.0.4: April 1 2008</h3>
+	<p>- Bindings for storage API in libvirt 0.4.1</p>
+	<p>- Bindings for virDomainSetMemory and virDomainSetVcpus</p>
+	<p>- Binding for virDomainPinVcpu</p>
+	<h3>0.0.2: December 6 2007</h3>
+	<p>- Add the virNodeGetInfo call</p>
+	<p>- Convert Ruby API from StudlyCaps to _ separation.
+	  Using one_two_three instead of oneTwoThree is the standard Ruby way.</p>
+	<h3>0.0.1: November 19 2007</h3>
+	<p>- Initial release</p>
+      </div>
+    </div>
+    <div>
+      <p id="sponsor">Ruby Logo is Copyright (c) 2006, Yukihiro
+      Matsumoto.  Licensed under the terms of the Creative
+      Commons Attribution-ShareAlike 2.5 agreement.</p>
+    </div>
+  </body>
+</html>

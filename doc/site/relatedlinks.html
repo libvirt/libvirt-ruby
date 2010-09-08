@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="http://libvirt.org/main.css" />
     <link rel="stylesheet" type="text/css" href="ruby-libvirt.css" />
     <link rel="SHORTCUT ICON" href="http://libvirt.org/32favicon.png" />
-    <title>Ruby bindings for libvirt</title>
+    <title>ruby-libvirt: News</title>
     <meta name="description" content="ruby, libvirt, virtualization, virtualization API" />
   </head>
   <body>
@@ -24,7 +24,7 @@
         <ul class="l0">
 	  <li>
             <div>
-              <span class="active">Home</span>
+	      <a title="Front page of the ruby-libvirt website" class="inactive" href="index.html">Home</a>
             </div>
           </li>
 	  <li>
@@ -49,37 +49,19 @@
           </li>
           <li>
             <div>
-              <a title="Miscellaneous links of interest related to libvirt" class="inactive" href="relatedlinks.html">Related Links</a>
+	      <span class="active">Related Links</span>
             </div>
           </li>
 	</ul>
       </div>
       <div id="content">
-        <h3>What is <span class="style1">ruby-libvirt</span>?</h3>
-
-        <p>ruby-libvirt provides <a href="">Ruby</a> bindings for
-          libvirt. With them you can use libvirt directly from your Ruby
-          programs:</p>
-        <pre>
-require 'libvirt'
-
-conn = Libvirt::open("qemu:///system")
-puts conn.capabilities
-
-conn.create_domain_linux(File.read("domain.xml"))
-
-dom = conn.lookup_domain_by_name("mydomain")
-dom.suspend
-dom.resume
-puts dom.xml_desc
-        </pre>
-        <h4 id="developers">Developers</h4>
-        <p>The sources are available from git. To clone, run</p>
-        <pre>git clone git://libvirt.org/ruby-libvirt.git</pre>
-
-        <p>Please use the <a href="https://www.redhat.com/mailman/listinfo/libvir-list/">libvirt mailing list</a> for questions,
-          comments and patches.
-        </p>
+        <h1>Related links</h1>
+        <p> This page contains some links of interest having to do
+        with ruby and libvirt</p>
+	<ul>
+	  <li><a href="http://libvirt.org">Libvirt</a></li>
+	  <li><a href="http://ruby-lang.org">Ruby</a></li>
+	</ul>
       </div>
     </div>
     <div>

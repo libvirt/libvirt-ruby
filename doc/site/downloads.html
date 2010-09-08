@@ -24,7 +24,7 @@
         <ul class="l0">
 	  <li>
             <div>
-              <span class="active">Home</span>
+	      <a title="Front page of the ruby-libvirt website" class="inactive" href="index.html">Home</a>
             </div>
           </li>
 	  <li>
@@ -34,7 +34,7 @@
           </li>
 	  <li>
             <div>
-              <a title="Get the latest source releases, binary builds and get access to the source repository" class="inactive" href="downloads.html">Downloads</a>
+	      <span class="active">Downloads</span>
             </div>
           </li>
 	  <li>
@@ -55,31 +55,36 @@
 	</ul>
       </div>
       <div id="content">
-        <h3>What is <span class="style1">ruby-libvirt</span>?</h3>
-
-        <p>ruby-libvirt provides <a href="">Ruby</a> bindings for
-          libvirt. With them you can use libvirt directly from your Ruby
-          programs:</p>
+	<h1>Downloads</h1>
+	<p>The latest version of the ruby-libvirt bindings can be
+	downloaded
+	from:</p>
+	<ul><li><a href="http://libvirt.org/ruby/download">libvirt.org
+	HTTP server</a></li></ul>
+        <h2>GIT source repository</h2>
+        <p>Ruby-libvirt code source is maintained in a <a href="http://git-scm.com/">git</a> repository available on
+      <a href="http://libvirt.org/git/">libvirt.org</a>:
+    </p>
         <pre>
-require 'libvirt'
 
-conn = Libvirt::open("qemu:///system")
-puts conn.capabilities
+git clone git://libvirt.org/ruby-libvirt.git
+	</pre>
+        <p>
+	  It can also be browsed at
+	</p>
+        <pre>
 
-conn.create_domain_linux(File.read("domain.xml"))
-
-dom = conn.lookup_domain_by_name("mydomain")
-dom.suspend
-dom.resume
-puts dom.xml_desc
-        </pre>
-        <h4 id="developers">Developers</h4>
-        <p>The sources are available from git. To clone, run</p>
-        <pre>git clone git://libvirt.org/ruby-libvirt.git</pre>
-
-        <p>Please use the <a href="https://www.redhat.com/mailman/listinfo/libvir-list/">libvirt mailing list</a> for questions,
-          comments and patches.
-        </p>
+<a href="http://libvirt.org/git/?p=ruby-libvirt.git;a=summary">http://libvirt.org/git/?p=ruby-libvirt.git;a=summary</a>
+	</pre>
+	<h2>Compilation</h2>
+	<p>In order to compile ruby-libvirt, you will need to have the
+	development libraries for both ruby and libvirt installed.
+	These are typically called something like ruby-devel and
+	libvirt-devel.  Once those are installed, the library can be
+	compiled using rake:
+	<p><code>$ tar -zxvf ruby-libvirt-xxx.tar.gz</code></p>
+	<p><code>$ cd ruby-libvirt-xxx</code></p>
+	<p><code>$ rake build</code></p>
       </div>
     </div>
     <div>
