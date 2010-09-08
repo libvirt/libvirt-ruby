@@ -25,6 +25,7 @@
 #include "connect.h"
 #include "extconf.h"
 
+#if HAVE_TYPE_VIRNODEDEVICEPTR
 static VALUE c_nodedevice;
 
 static void nodedevice_free(void *s) {
@@ -320,12 +321,14 @@ static VALUE libvirt_nodedevice_destroy(VALUE s) {
 static VALUE libvirt_nodedevice_free(VALUE s) {
     gen_call_free(NodeDevice, s);
 }
+#endif
 
 /*
  * Class Libvirt::NodeDevice
  */
 void init_nodedevice()
 {
+#if HAVE_TYPE_VIRNODEDEVICEPTR
     c_nodedevice = rb_define_class_under(m_libvirt, "NodeDevice", rb_cObject);
     rb_define_method(c_connect, "num_of_nodedevices",
                      libvirt_conn_num_of_nodedevices, -1);
@@ -352,4 +355,5 @@ void init_nodedevice()
     rb_define_method(c_nodedevice, "destroy", libvirt_nodedevice_destroy, 0);
 #endif
     rb_define_method(c_nodedevice, "free", libvirt_nodedevice_free, 0);
+#endif
 }

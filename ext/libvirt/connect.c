@@ -284,6 +284,7 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s)
     return cells;
 }
 
+#if HAVE_VIRNODEGETSECURITYMODEL
 /*
  * call-seq:
  *   conn.node_get_security_model -> Libvirt::Connect::NodeSecurityModel
@@ -307,6 +308,7 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s) {
 
     return result;
 }
+#endif
 
 #if HAVE_VIRCONNECTISENCRYPTED
 /*
@@ -389,8 +391,10 @@ void init_connect()
                      libvirt_conn_node_free_memory, 0);
     rb_define_method(c_connect, "node_cells_free_memory",
                      libvirt_conn_node_cells_free_memory, -1);
+#if HAVE_VIRNODEGETSECURITYMODEL
     rb_define_method(c_connect, "node_get_security_model",
                      libvirt_conn_node_get_security_model, 0);
+#endif
 #if HAVE_VIRCONNECTISENCRYPTED
     rb_define_method(c_connect, "encrypted?", libvirt_conn_encrypted_p, 0);
 #endif

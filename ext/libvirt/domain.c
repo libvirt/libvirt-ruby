@@ -149,6 +149,7 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
     return domain_new(dom, c);
 }
 
+#if HAVE_VIRDOMAINCREATEXML
 /*
  * call-seq:
  *   dom.create_xml(xml, flags=0) -> Libvirt::Domain
@@ -171,6 +172,7 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c) {
 
     return domain_new(dom, c);
 }
+#endif
 
 /*
  * call-seq:
@@ -586,6 +588,7 @@ static VALUE libvirt_dom_info(VALUE s) {
     return result;
 }
 
+#if HAVE_VIRDOMAINGETSECURITYLABEL
 /*
  * call-seq:
  *   domain.security_label -> Libvirt::Domain::SecurityLabel
@@ -609,6 +612,7 @@ static VALUE libvirt_dom_security_label(VALUE s) {
 
     return result;
 }
+#endif
 
 /*
  * call-seq:
@@ -1249,7 +1253,7 @@ static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
     if (FIX2UINT(flags) != 0) {
         rb_exc_raise(create_error(e_NoSupportError, "virDomainAttachDevice",
                                   "Non-zero flags not supported",
-                                  conn(s));
+                                  conn(s)));
     }
     gen_call_void(virDomainAttachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
@@ -1279,7 +1283,7 @@ static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
     if (FIX2UINT(flags) != 0) {
         rb_exc_raise(create_error(e_NoSupportError, "virDomainDettachDevice",
                                   "Non-zero flags not supported",
-                                  conn(s));
+                                  conn(s)));
     }
     gen_call_void(virDomainDetachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
@@ -1878,8 +1882,10 @@ void init_domain()
                      libvirt_conn_list_defined_domains, 0);
     rb_define_method(c_connect, "create_domain_linux",
                      libvirt_conn_create_linux, -1);
+#if HAVE_VIRDOMAINCREATEXML
     rb_define_method(c_connect, "create_domain_xml",
                      libvirt_conn_create_xml, -1);
+#endif
     rb_define_method(c_connect, "lookup_domain_by_name",
                      libvirt_conn_lookup_domain_by_name, 1);
     rb_define_method(c_connect, "lookup_domain_by_id",
@@ -1939,12 +1945,18 @@ void init_domain()
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
     rb_define_method(c_domain, "free", libvirt_dom_free, 0);
 
+#ifdef VIR_DOMAIN_DEVICE_MODIFY_CURRENT
     rb_define_const(c_domain, "DEVICE_MODIFY_CURRENT",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CURRENT));
+#endif
+#ifdef VIR_DOMAIN_DEVICE_MODIFY_LIVE
     rb_define_const(c_domain, "DEVICE_MODIFY_LIVE",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_LIVE));
+#endif
+#ifdef VIR_DOMAIN_DEVICE_MODIFY_CONFIG
     rb_define_const(c_domain, "DEVICE_MODIFY_CONFIG",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CONFIG));
+#endif
     rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, -1);
     rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, -1);
 #if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
@@ -1964,8 +1976,10 @@ void init_domain()
     rb_define_method(c_domain, "managed_save_remove",
                      libvirt_dom_managed_save_remove, -1);
 #endif
+#if HAVE_VIRDOMAINGETSECURITYLABEL
     rb_define_method(c_domain, "security_label",
                      libvirt_dom_security_label, 0);
+#endif
     rb_define_method(c_domain, "block_stats", libvirt_dom_block_stats, 1);
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
     rb_define_method(c_domain, "memory_stats", libvirt_dom_memory_stats, -1);

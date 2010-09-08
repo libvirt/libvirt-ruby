@@ -26,6 +26,7 @@ libvirt_types = [ 'virNetworkPtr',
                   'virDomainMemoryStatPtr',
                   'virDomainSnapshotPtr',
                   'virDomainJobInfoPtr',
+                  'virNodeDevicePtr',
                 ]
 
 libvirt_funcs = [ 'virStorageVolWipe',
@@ -50,6 +51,9 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainAttachDeviceFlags',
                   'virDomainDetachDeviceFlags',
                   'virDomainUpdateDeviceFlags',
+                  'virNodeGetSecurityModel',
+                  'virDomainCreateXML',
+                  'virDomainGetSecurityLabel',
                 ]
 
 have_libvirt_types(libvirt_types)
