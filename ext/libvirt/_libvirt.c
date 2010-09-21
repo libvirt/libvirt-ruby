@@ -242,6 +242,8 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
 
     /* handle the optional auth */
     if (!NIL_P(cb)) {
+        Check_Type(cb, T_ARRAY);
+
         if (RARRAY(cb)->len != 3) {
             rb_raise(rb_eArgError, "wrong number of credential arguments (%d for 3)",
                      RARRAY(cb)->len);
