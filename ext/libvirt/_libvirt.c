@@ -45,6 +45,10 @@ VALUE e_RetrieveError;
 VALUE e_Error;
 VALUE e_NoSupportError;
 
+/* custom error function to suppress libvirt printing to stderr */
+static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err){
+}
+
 /*
  * call-seq:
  *   Libvirt::version(type=nil) -> [ libvirt_version, type_version ]
@@ -369,6 +373,8 @@ void Init__libvirt() {
     init_nwfilter();
     init_interface();
     init_domain();
+
+    virSetErrorFunc(NULL, rubyLibvirtErrorFunc);
 
     r = virInitialize();
     if (r < 0)
