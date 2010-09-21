@@ -97,7 +97,7 @@ static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name) {
 
     iface = virInterfaceLookupByName(conn, StringValueCStr(name));
     _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName",
-                                   "", conn));
+                                   conn));
 
     return interface_new(iface, c);
 }
@@ -115,7 +115,7 @@ static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac) {
 
     iface = virInterfaceLookupByMACString(conn, StringValueCStr(mac));
     _E(iface == NULL, create_error(e_RetrieveError,
-                                   "virInterfaceLookupByMACString", "", conn));
+                                   "virInterfaceLookupByMACString", conn));
 
     return interface_new(iface, c);
 }
@@ -139,7 +139,7 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
 
     iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
-                                   "", conn));
+                                   conn));
 
     return interface_new(iface, c);
 }

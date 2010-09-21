@@ -22,8 +22,7 @@ VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
             rb_raise(rb_eSystemCallError, # kind " free failed");       \
     } while(0);
 
-VALUE create_error(VALUE error, const char* method, const char* msg,
-                   virConnectPtr conn);
+VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
 
 /*
  * Code generating macros.
@@ -42,11 +41,11 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         VALUE result;                                                   \
                                                                         \
         str = func(args);                                               \
-        _E(str == NULL, create_error(e_Error, # func, "", conn));       \
+        _E(str == NULL, create_error(e_Error, # func, conn));           \
                                                                         \
         result = rb_str_new2(str);                                      \
         if (dealloc)                                                    \
-            xfree((void *) str);                                         \
+            xfree((void *) str);                                        \
         return result;                                                  \
     } while(0)
 
@@ -59,7 +58,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         Data_Get_Struct(s, vir##kind, ptr);                             \
         if (ptr != NULL) {                                              \
             int r = vir##kind##Free(ptr);                               \
-            _E(r < 0, create_error(e_Error, "vir" #kind "Free", "", conn(s))); \
+            _E(r < 0, create_error(e_Error, "vir" #kind "Free", conn(s))); \
             DATA_PTR(s) = NULL;                                         \
         }                                                               \
         return Qnil;                                                    \
@@ -73,7 +72,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        _E(_r_##func < 0, create_error(e_Error, #func, "", conn));      \
+        _E(_r_##func < 0, create_error(e_Error, #func, conn));          \
         return Qnil;                                                    \
     } while(0)
 
@@ -88,7 +87,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         virConnectPtr conn = connect_get(c);                            \
                                                                         \
         result = virConnectNumOf##objs(conn);                           \
-        _E(result < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));                \
+        _E(result < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));                \
                                                                         \
         return INT2NUM(result);                                         \
     } while(0)
@@ -107,7 +106,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         VALUE result;                                                   \
                                                                         \
         num = virConnectNumOf##objs(conn);                              \
-        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, "", conn));   \
+        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));   \
         if (num == 0) {                                                 \
             /* if num is 0, don't call virConnectList* function */      \
             result = rb_ary_new2(num);                                  \
@@ -117,7 +116,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
         r = virConnectList##objs(conn, names, num);                     \
         if (r < 0) {                                                    \
             xfree(names);                                                \
-            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, "", conn));  \
+            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, conn));  \
         }                                                               \
                                                                         \
         result = rb_ary_new2(num);                                      \
@@ -136,7 +135,7 @@ VALUE create_error(VALUE error, const char* method, const char* msg,
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        _E(_r_##func < 0, create_error(e_Error, #func, "", conn));      \
+        _E(_r_##func < 0, create_error(e_Error, #func, conn));          \
         return _r_##func ? Qtrue : Qfalse;                              \
     } while(0)
 

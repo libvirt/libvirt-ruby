@@ -110,8 +110,8 @@ static VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     pool = virStoragePoolLookupByName(conn, StringValueCStr(name));
-    _E(pool == NULL, create_error(e_RetrieveError,
-                                  "virStoragePoolLookupByName", "", conn));
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByName",
+                                  conn));
 
     return pool_new(pool, c);
 }
@@ -128,8 +128,8 @@ static VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     pool = virStoragePoolLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(pool == NULL, create_error(e_RetrieveError,
-                                  "virStoragePoolLookupByUUID", "", conn));
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByUUID",
+                                  conn));
 
     return pool_new(pool, c);
 }
@@ -146,7 +146,7 @@ static VALUE libvirt_vol_get_pool(VALUE v) {
 
     pool = virStoragePoolLookupByVolume(vol_get(v));
     _E(pool == NULL, create_error(e_RetrieveError,
-                                  "virStoragePoolLookupByVolume", "", conn(v)));
+                                  "virStoragePoolLookupByVolume", conn(v)));
 
     return pool_new(pool, conn_attr(v));
 }
@@ -169,8 +169,7 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
         flags = INT2FIX(0);
 
     pool = virStoragePoolCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", "",
-                                  conn));
+    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", conn));
 
     return pool_new(pool, c);
 }
@@ -194,7 +193,7 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
 
     pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
-                                  "", conn));
+                                  conn));
 
     return pool_new(pool, c);
 }
@@ -337,7 +336,7 @@ static VALUE libvirt_pool_uuid(VALUE s) {
     int r;
 
     r = virStoragePoolGetUUIDString(pool_get(s), uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetUUIDString", "",
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetUUIDString",
                            conn(s)));
 
     return rb_str_new2((char *) uuid);
@@ -356,8 +355,7 @@ static VALUE libvirt_pool_info(VALUE s) {
     VALUE result;
 
     r = virStoragePoolGetInfo(pool_get(s), &info);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetInfo", "",
-                           conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetInfo", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_storage_pool_info);
     rb_iv_set(result, "@state", INT2FIX(info.state));
@@ -398,7 +396,7 @@ static VALUE libvirt_pool_autostart(VALUE s){
     int r, autostart;
 
     r = virStoragePoolGetAutostart(pool_get(s), &autostart);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetAutostart", "",
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetAutostart",
                            conn(s)));
 
     return autostart ? Qtrue : Qfalse;
@@ -429,7 +427,7 @@ static VALUE libvirt_pool_autostart_set(VALUE s, VALUE autostart) {
  */
 static VALUE libvirt_pool_num_of_volumes(VALUE s) {
     int n = virStoragePoolNumOfVolumes(pool_get(s));
-    _E(n < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes", "",
+    _E(n < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
                            conn(s)));
 
     return INT2FIX(n);
@@ -449,7 +447,7 @@ static VALUE libvirt_pool_list_volumes(VALUE s) {
     VALUE result;
 
     num = virStoragePoolNumOfVolumes(pool);
-    _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes", "",
+    _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
                              conn(s)));
     if (num == 0) {
         result = rb_ary_new2(num);
@@ -461,7 +459,7 @@ static VALUE libvirt_pool_list_volumes(VALUE s) {
     if (r < 0) {
         xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virStoragePoolListVolumes",
-                                  "", conn(s)));
+                                  conn(s)));
     }
 
     result = rb_ary_new2(num);
@@ -513,7 +511,7 @@ static VALUE libvirt_pool_lookup_vol_by_name(VALUE p, VALUE name) {
 
     vol = virStorageVolLookupByName(pool_get(p), StringValueCStr(name));
     _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByName",
-                                 "", conn(p)));
+                                 conn(p)));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -531,7 +529,7 @@ static VALUE libvirt_pool_lookup_vol_by_key(VALUE p, VALUE key) {
     /* FIXME: Why does this take a connection, not a pool? */
     vol = virStorageVolLookupByKey(conn(p), StringValueCStr(key));
     _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByKey",
-                                 "", conn(p)));
+                                 conn(p)));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -549,7 +547,7 @@ static VALUE libvirt_pool_lookup_vol_by_path(VALUE p, VALUE path) {
     /* FIXME: Why does this take a connection, not a pool? */
     vol = virStorageVolLookupByPath(conn(p), StringValueCStr(path));
     _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByPath",
-                                 "", conn(p)));
+                                 conn(p)));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -595,7 +593,7 @@ static VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
 
     vol = virStorageVolCreateXML(pool_get(p), StringValueCStr(xml),
                                  NUM2UINT(flags));
-    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXML", "", c));
+    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXML", c));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -621,7 +619,7 @@ static VALUE libvirt_pool_vol_create_xml_from(int argc, VALUE *argv, VALUE p) {
 
     vol = virStorageVolCreateXMLFrom(pool_get(p), StringValueCStr(xml),
                                      vol_get(cloneval), NUM2UINT(flags));
-    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXMLFrom", "", c));
+    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXMLFrom", c));
 
     return vol_new(vol, conn_attr(p));
 }
@@ -704,8 +702,7 @@ static VALUE libvirt_vol_info(VALUE v) {
     VALUE result;
 
     r = virStorageVolGetInfo(vol_get(v), &info);
-    _E(r < 0, create_error(e_RetrieveError, "virStorageVolGetInfo", "",
-                           conn(v)));
+    _E(r < 0, create_error(e_RetrieveError, "virStorageVolGetInfo", conn(v)));
 
     result = rb_class_new_instance(0, NULL, c_storage_vol_info);
     rb_iv_set(result, "@type", INT2NUM(info.type));

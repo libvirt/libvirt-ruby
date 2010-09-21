@@ -34,8 +34,7 @@ static void connect_close(void *p) {
     if (!p)
         return;
     r = virConnectClose((virConnectPtr) p);
-    _E(r < 0, create_error(rb_eSystemCallError, "virConnectClose",
-                           "Connection close failed", p));
+    _E(r < 0, create_error(rb_eSystemCallError, "virConnectClose", p));
 }
 
 VALUE connect_new(virConnectPtr p) {
@@ -120,7 +119,7 @@ static VALUE libvirt_conn_version(VALUE s) {
     virConnectPtr conn = connect_get(s);
 
     r = virConnectGetVersion(conn, &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion", "", conn));
+    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion", conn));
 
     return ULONG2NUM(v);
 }
@@ -139,8 +138,7 @@ static VALUE libvirt_conn_libversion(VALUE s) {
     virConnectPtr conn = connect_get(s);
 
     r = virConnectGetLibVersion(conn, &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetLibVersion",
-                           "", conn));
+    _E(r < 0, create_error(e_RetrieveError, "virConnectGetLibVersion", conn));
 
     return ULONG2NUM(v);
 }
@@ -185,7 +183,7 @@ static VALUE libvirt_conn_max_vcpus(int argc, VALUE *argv, VALUE s) {
 
     result = virConnectGetMaxVcpus(conn, get_string_or_nil(type));
     _E(result < 0, create_error(e_RetrieveError, "virConnectGetMaxVcpus",
-                                "", conn));
+                                conn));
 
     return INT2NUM(result);
 }
@@ -204,7 +202,7 @@ static VALUE libvirt_conn_node_get_info(VALUE s) {
     VALUE result;
 
     r = virNodeGetInfo(conn, &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn));
 
     result = rb_class_new_instance(0, NULL, c_node_info);
     rb_iv_set(result, "@model", rb_str_new2(nodeinfo.model));
@@ -232,8 +230,9 @@ static VALUE libvirt_conn_node_free_memory(VALUE s) {
     unsigned long long freemem;
 
     freemem = virNodeGetFreeMemory(conn);
+
     _E(freemem == 0, create_error(e_RetrieveError, "virNodeGetFreeMemory",
-                                  "", conn));
+                                  conn));
 
     return ULL2NUM(freemem);
 }
@@ -261,7 +260,7 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s)
         startCell = INT2FIX(0);
     if (NIL_P(maxCells)) {
         r = virNodeGetInfo(conn, &nodeinfo);
-        _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn));
+        _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn));
         freeMems = ALLOC_N(unsigned long long, nodeinfo.nodes);
         maxCells = INT2FIX(nodeinfo.nodes);
     }
@@ -273,7 +272,7 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s)
     if (r < 0) {
         xfree(freeMems);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
-                                  "", conn));
+                                  conn));
     }
 
     cells = rb_ary_new2(r);
@@ -299,8 +298,7 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s) {
     VALUE result;
 
     r = virNodeGetSecurityModel(conn, &secmodel);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel", "",
-                           conn));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel", conn));
 
     result = rb_class_new_instance(0, NULL, c_node_security_model);
     rb_iv_set(result, "@model", rb_str_new2(secmodel.model));

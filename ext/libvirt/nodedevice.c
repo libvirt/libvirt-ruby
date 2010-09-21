@@ -58,8 +58,7 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
         flags = INT2FIX(0);
 
     result = virNodeNumOfDevices(conn, get_string_or_nil(cap), NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", "",
-                                conn));
+    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
 
     return INT2NUM(result);
 }
@@ -90,7 +89,7 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
     capstr = get_string_or_nil(cap);
 
     num = virNodeNumOfDevices(conn, capstr, 0);
-    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", "", conn));
+    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
     if (num == 0) {
         /* if num is 0, don't call virNodeListDevices function */
         result = rb_ary_new2(num);
@@ -100,8 +99,7 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
     r = virNodeListDevices(conn, capstr, names, num, flags);
     if (r < 0) {
         xfree(names);
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices",
-                                  "", conn));
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices", conn));
     }
 
     result = rb_ary_new2(num);
@@ -126,7 +124,7 @@ static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name) {
 
     nodedev = virNodeDeviceLookupByName(conn, StringValueCStr(name));
     _E(nodedev == NULL, create_error(e_RetrieveError,
-                                     "virNodeDeviceLookupByName", "", conn));
+                                     "virNodeDeviceLookupByName", conn));
 
     return nodedevice_new(nodedev, c);
 
@@ -152,8 +150,7 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) 
 
     nodedev = virNodeDeviceCreateXML(conn, StringValueCStr(xml),
                                      NUM2UINT(flags));
-    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML", "",
-                                     conn));
+    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML", conn));
 
     return nodedevice_new(nodedev, c);
 }
@@ -203,7 +200,7 @@ static VALUE libvirt_nodedevice_num_of_caps(VALUE c) {
     int result;
 
     result = virNodeDeviceNumOfCaps(nodedevice_get(c));
-    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", "",
+    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices",
                                 connect_get(c)));
 
     return INT2NUM(result);
@@ -224,8 +221,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c) {
     char **names;
 
     num = virNodeDeviceNumOfCaps(nodedev);
-    _E(num < 0, create_error(e_RetrieveError, "virNodeDeviceNumOfCaps", "",
-                             conn));
+    _E(num < 0, create_error(e_RetrieveError, "virNodeDeviceNumOfCaps", conn));
     if (num == 0) {
         /* if num is 0, don't call virNodeDeviceListCaps function */
         result = rb_ary_new2(num);
@@ -236,7 +232,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c) {
     if (r < 0) {
         xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeDeviceListCaps",
-                                  "", conn));
+                                  conn));
     }
 
     result = rb_ary_new2(num);

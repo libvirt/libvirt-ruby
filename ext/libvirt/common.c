@@ -23,28 +23,34 @@
 #include <libvirt/virterror.h>
 
 /* Error handling */
-VALUE create_error(VALUE error, const char* method, const char* msg,
-                   virConnectPtr conn) {
+VALUE create_error(VALUE error, const char* method, virConnectPtr conn) {
     VALUE ruby_errinfo;
     virErrorPtr err;
-
-    if (msg == NULL || strlen(msg) == 0) {
-        char *defmsg;
-        size_t len;
-        len = snprintf(NULL, 0, "Call to function %s failed", method) + 1;
-        defmsg = ALLOC_N(char, len);
-        snprintf(defmsg, len, "Call to function %s failed", method);
-        ruby_errinfo = rb_exc_new2(error, defmsg);
-        xfree(defmsg);
-    } else {
-        ruby_errinfo = rb_exc_new2(error, msg);
-    }
-    rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
+    char *msg;
+    int rc;
 
     if (conn == NULL)
         err = virGetLastError();
     else
         err = virConnGetLastError(conn);
+
+    if (err != NULL && err->message != NULL)
+        rc = asprintf(&msg, "Call to %s failed: %s", method, err->message);
+    else
+        rc = asprintf(&msg, "Call to %s failed", method);
+
+    if (rc < 0) {
+        /* there's not a whole lot we can do here; try to raise an
+         * out-of-memory message */
+        rb_memerror();
+    }
+
+    /* FIXME: if rb_exc_new2 fails, we will leak msg */
+    ruby_errinfo = rb_exc_new2(error, msg);
+
+    free(msg);
+
+    rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
 
     if (err != NULL) {
         rb_iv_set(ruby_errinfo, "@libvirt_code", INT2FIX(err->code));

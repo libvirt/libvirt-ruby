@@ -80,8 +80,7 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     VALUE result;
 
     num = virConnectNumOfDomains(conn);
-    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", "",
-                             conn));
+    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", conn));
     if (num == 0) {
         result = rb_ary_new2(num);
         return result;
@@ -91,8 +90,7 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     r = virConnectListDomains(conn, ids, num);
     if (r < 0) {
         xfree(ids);
-        _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", "",
-                               conn));
+        _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", conn));
     }
 
     result = rb_ary_new2(num);
@@ -144,7 +142,7 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
         flags = INT2FIX(0);
 
     dom = virDomainCreateLinux(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", "", conn));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", conn));
 
     return domain_new(dom, c);
 }
@@ -168,7 +166,7 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c) {
         flags = INT2FIX(0);
 
     dom = virDomainCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", "", conn));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", conn));
 
     return domain_new(dom, c);
 }
@@ -186,7 +184,7 @@ static VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByName(conn, StringValueCStr(name));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName", "",
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName",
                                  conn));
 
     return domain_new(dom, c);
@@ -204,7 +202,7 @@ static VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByID(conn, NUM2INT(id));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID", "",
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID",
                                  conn));
 
     return domain_new(dom, c);
@@ -222,7 +220,7 @@ static VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID", "",
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID",
                                  conn));
 
     return domain_new(dom, c);
@@ -240,7 +238,7 @@ static VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
     virConnectPtr conn = connect_get(c);
 
     dom = virDomainDefineXML(conn, StringValueCStr(xml));
-    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML", "",
+    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML",
                                  conn));
 
     return domain_new(dom, c);
@@ -266,8 +264,8 @@ static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv, VALUE s)
 
     ret = virConnectDomainXMLFromNative(conn(s), StringValueCStr(nativeFormat),
                                         StringValueCStr(xml), NUM2UINT(flags));
-    _E(ret == NULL,
-       create_error(e_Error, "virConnectDomainXMLFromNative", "", conn(s)));
+    _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLFromNative",
+                                 conn(s)));
 
     result = rb_str_new2(ret);
 
@@ -297,8 +295,8 @@ static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s) {
 
     ret = virConnectDomainXMLToNative(conn(s), StringValueCStr(nativeFormat),
                                       StringValueCStr(xml), NUM2UINT(flags));
-    _E(ret == NULL,
-       create_error(e_Error, "virConnectDomainXMLToNative", "", conn(s)));
+    _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLToNative",
+                                 conn(s)));
 
     result = rb_str_new2(ret);
 
@@ -332,8 +330,7 @@ static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
                             get_string_or_nil(dname_val),
                             get_string_or_nil(uri_val), NUM2ULONG(bandwidth));
 
-    _E(ddom == NULL,
-       create_error(e_Error, "virDomainMigrate", "", conn(s)));
+    _E(ddom == NULL, create_error(e_Error, "virDomainMigrate", conn(s)));
 
     return domain_new(ddom, dconn);
 }
@@ -362,8 +359,7 @@ static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
                                 NUM2ULONG(flags), get_string_or_nil(dname_val),
                                 NUM2ULONG(bandwidth));
 
-    _E(ret < 0,
-       create_error(e_Error, "virDomainMigrateToURI", "", conn(s)));
+    _E(ret < 0, create_error(e_Error, "virDomainMigrateToURI", conn(s)));
 
     return Qnil;
 }
@@ -389,8 +385,8 @@ static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv, VALUE s
     ret = virDomainMigrateSetMaxDowntime(domain_get(s), NUM2ULL(downtime),
                                          NUM2UINT(flags));
 
-    _E(ret < 0,
-       create_error(e_Error, "virDomainMigrateSetMaxDowntime", "", conn(s)));
+    _E(ret < 0, create_error(e_Error, "virDomainMigrateSetMaxDowntime",
+                             conn(s)));
 
     return Qnil;
 }
@@ -590,7 +586,7 @@ static VALUE libvirt_dom_info(VALUE s) {
     VALUE result;
 
     r = virDomainGetInfo(dom, &info);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_info);
     rb_iv_set(result, "@state", CHR2FIX(info.state));
@@ -616,7 +612,7 @@ static VALUE libvirt_dom_security_label(VALUE s) {
     VALUE result;
 
     r = virDomainGetSecurityLabel(dom, &seclabel);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetSecurityLabel", "",
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetSecurityLabel",
                            conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_security_label);
@@ -641,8 +637,7 @@ static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
     VALUE result;
 
     r = virDomainBlockStats(dom, StringValueCStr(path), &stats, sizeof(stats));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockStats", "",
-                           conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockStats", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_block_stats);
     rb_iv_set(result, "@rd_req", LL2NUM(stats.rd_req));
@@ -677,8 +672,7 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
         flags = INT2FIX(0);
 
     r = virDomainMemoryStats(dom, stats, 6, NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats", "",
-                           conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats", conn(s)));
 
     result = rb_ary_new2(r);
     for (i=0; i<r; i++) {
@@ -716,8 +710,7 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
 
     r = virDomainGetBlockInfo(dom, StringValueCStr(path), &info,
                               NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlockInfo", "",
-                           conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlockInfo", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_domain_block_info);
     rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
@@ -764,7 +757,7 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
 
     if (r < 0) {
         xfree(buffer);
-        rb_exc_raise(create_error(e_RetrieveError, "virDomainBlockPeek", "",
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainBlockPeek",
                                   conn(s)));
     }
 
@@ -808,7 +801,7 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
 
     if (r < 0) {
         xfree(buffer);
-        rb_exc_raise(create_error(e_RetrieveError, "virDomainMemoryPeek", "",
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainMemoryPeek",
                                   conn(s)));
     }
 
@@ -844,10 +837,10 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
     int exception;
 
     r = virNodeGetInfo(conn(s), &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn(s)));
 
     r = virDomainGetInfo(dom, &dominfo);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo", conn(s)));
 
     cpuinfo = ALLOC_N(virVcpuInfo, dominfo.nrVirtCpu);
 
@@ -866,7 +859,7 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
     if (r < 0) {
         xfree(cpuinfo);
         free(cpumap);
-        rb_exc_raise(create_error(e_RetrieveError, "virDomainGetVcpus", "",
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainGetVcpus",
                                   conn(s)));
     }
 
@@ -956,7 +949,7 @@ static VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
     if (ifname) {
         r = virDomainInterfaceStats(dom, ifname, &ifinfo,
                                     sizeof(virDomainInterfaceStatsStruct));
-        _E(r < 0, create_error(e_RetrieveError, "virDomainInterfaceStats", "",
+        _E(r < 0, create_error(e_RetrieveError, "virDomainInterfaceStats",
                                conn(s)));
 
         result = rb_class_new_instance(0, NULL, c_domain_ifinfo);
@@ -997,7 +990,7 @@ static VALUE libvirt_dom_id(VALUE s) {
     int out;
 
     id = virDomainGetID(dom);
-    _E(id < 0, create_error(e_RetrieveError, "virDomainGetID", "", conn(s)));
+    _E(id < 0, create_error(e_RetrieveError, "virDomainGetID", conn(s)));
 
     /* we need to cast the unsigned int id to a signed int out to handle the
      * -1 case
@@ -1020,8 +1013,7 @@ static VALUE libvirt_dom_uuid(VALUE s) {
     int r;
 
     r = virDomainGetUUIDString(dom, uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetUUIDString", "",
-                           conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetUUIDString", conn(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -1053,7 +1045,7 @@ static VALUE libvirt_dom_max_memory(VALUE s) {
 
     max_memory = virDomainGetMaxMemory(dom);
     _E(max_memory == 0, create_error(e_RetrieveError, "virDomainGetMaxMemory",
-                                     "", conn(s)));
+                                     conn(s)));
 
     return ULONG2NUM(max_memory);
 }
@@ -1071,7 +1063,7 @@ static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     int r;
 
     r = virDomainSetMaxMemory(dom, NUM2ULONG(max_memory));
-    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMaxMemory", "",
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMaxMemory",
                            conn(s)));
 
     return ULONG2NUM(max_memory);
@@ -1091,8 +1083,7 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
     int r;
 
     r = virDomainSetMemory(dom, NUM2ULONG(memory));
-    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory", "",
-                           conn(s)));
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory", conn(s)));
 
     return ULONG2NUM(memory);
 }
@@ -1109,7 +1100,7 @@ static VALUE libvirt_dom_max_vcpus(VALUE s) {
     int vcpus;
 
     vcpus = virDomainGetMaxVcpus(dom);
-    _E(vcpus < 0, create_error(e_RetrieveError, "virDomainGetMaxVcpus", "",
+    _E(vcpus < 0, create_error(e_RetrieveError, "virDomainGetMaxVcpus",
                                conn(s)));
 
     return INT2NUM(vcpus);
@@ -1150,7 +1141,7 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
     Check_Type(cpulist, T_ARRAY);
 
     r = virNodeGetInfo(c, &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", c));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", c));
 
     maplen = VIR_CPU_MAPLEN(nodeinfo.cpus);
     cpumap = ALLOC_N(unsigned char, maplen);
@@ -1164,7 +1155,7 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
 
     r = virDomainPinVcpu(dom, vcpunum, cpumap, maplen);
     xfree(cpumap);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", "", c));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", c));
 
     return Qnil;
 }
@@ -1236,7 +1227,7 @@ static VALUE libvirt_dom_autostart(VALUE s){
     int r, autostart;
 
     r = virDomainGetAutostart(dom, &autostart);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainAutostart", "", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainAutostart", conn(s)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -1277,11 +1268,8 @@ static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
     gen_call_void(virDomainAttachDeviceFlags, conn(s), domain_get(s),
                   StringValueCStr(xml), FIX2UINT(flags));
 #else
-    if (FIX2UINT(flags) != 0) {
-        rb_exc_raise(create_error(e_NoSupportError, "virDomainAttachDevice",
-                                  "Non-zero flags not supported",
-                                  conn(s)));
-    }
+    if (FIX2UINT(flags) != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
     gen_call_void(virDomainAttachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
 #endif
@@ -1307,11 +1295,8 @@ static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
     gen_call_void(virDomainDetachDeviceFlags, conn(s), domain_get(s),
                   StringValueCStr(xml), FIX2UINT(flags));
 #else
-    if (FIX2UINT(flags) != 0) {
-        rb_exc_raise(create_error(e_NoSupportError, "virDomainDettachDevice",
-                                  "Non-zero flags not supported",
-                                  conn(s)));
-    }
+    if (FIX2UINT(flags) != 0)
+        rb_raise(create_error(e_NoSupportError, "Non-zero flags not supported");
     gen_call_void(virDomainDetachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
 #endif
@@ -1385,7 +1370,7 @@ static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d) {
     ret = virDomainSnapshotCreateXML(domain_get(d), StringValueCStr(xmlDesc),
                                      NUM2UINT(flags));
 
-    _E(ret == NULL, create_error(e_Error, "virDomainSnapshotCreateXML", "",
+    _E(ret == NULL, create_error(e_Error, "virDomainSnapshotCreateXML",
                                  conn(d)));
 
     return domain_snapshot_new(ret, d);
@@ -1409,10 +1394,10 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
         flags = INT2FIX(0);
 
     result = virDomainSnapshotNum(dom, NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "",
+    _E(result < 0, create_error(e_RetrieveError, "virDomainSnapshotNum",
                                 conn(d)));
-                                                                        \
-    return INT2NUM(result);                                             \
+
+    return INT2NUM(result);
 }
 
 /*
@@ -1439,8 +1424,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
         flags = NUM2UINT(flags_val);
 
     num = virDomainSnapshotNum(dom, 0);
-    _E(num < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "",
-                             conn(d)));
+    _E(num < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", conn(d)));
     if (num == 0) {
         /* if num is 0, don't call virDomainSnapshotListNames function */
         result = rb_ary_new2(num);
@@ -1452,7 +1436,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
     if (r < 0) {
         xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotListNames",
-                                  "", conn(d)));
+                                  conn(d)));
     }
 
     result = rb_ary_new2(num);
@@ -1484,7 +1468,7 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
     snap = virDomainSnapshotLookupByName(dom, StringValueCStr(name),
                                          NUM2UINT(flags));
     _E(dom == NULL, create_error(e_RetrieveError,
-                                 "virDomainSnapshotLookupByName", "", conn(d)));
+                                 "virDomainSnapshotLookupByName", conn(d)));
 
     return domain_snapshot_new(snap, d);
 }
@@ -1525,7 +1509,7 @@ static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d) {
         flags = INT2FIX(0);
 
     r = virDomainRevertToSnapshot(domain_snapshot_get(snap), NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainRevertToSnapshot", "",
+    _E(r < 0, create_error(e_RetrieveError, "virDomainRevertToSnapshot",
                            conn(d)));
 
     return Qnil;
@@ -1549,7 +1533,7 @@ static VALUE libvirt_dom_current_snapshot(int argc, VALUE *argv, VALUE d) {
 
     snap = virDomainSnapshotCurrent(domain_get(d), NUM2UINT(flags));
     _E(snap == NULL, create_error(e_RetrieveError, "virDomainSnapshotCurrent",
-                                  "", conn(d)));
+                                  conn(d)));
 
     return domain_snapshot_new(snap, d);
 }
@@ -1620,8 +1604,7 @@ static VALUE libvirt_dom_job_info(VALUE d) {
     VALUE result;
 
     r = virDomainGetJobInfo(domain_get(d), &info);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetJobInfo", "",
-                           conn(d)));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetJobInfo", conn(d)));
 
     result = rb_class_new_instance(0, NULL, c_domain_job_info);
     rb_iv_set(result, "@type", INT2NUM(info.type));
@@ -1668,7 +1651,7 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
     type = virDomainGetSchedulerType(domain_get(d), &nparams);
 
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
-                                  "", conn(d)));
+                                  conn(d)));
 
     result = rb_ary_new();
 
@@ -1703,7 +1686,7 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
     type = virDomainGetSchedulerType(dom, &nparams);
 
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
-                                  "", conn(d)));
+                                  conn(d)));
 
     xfree(type);
 
@@ -1713,8 +1696,7 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
     if (r < 0) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetSchedulerParameters",
-                                  "", conn(d)));
+                                  "virDomainGetSchedulerParameters", conn(d)));
     }
 
     /* just to shut the compiler up */
@@ -1778,7 +1760,7 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     type = virDomainGetSchedulerType(dom, &nparams);
 
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
-                                  "", conn(d)));
+                                  conn(d)));
 
     xfree(type);
 
@@ -1788,8 +1770,7 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     if (r < 0) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetSchedulerParameters",
-                                  "", conn(d)));
+                                  "virDomainGetSchedulerParameters", conn(d)));
     }
 
     for (i = 0; i < nparams; i++) {
@@ -1824,8 +1805,7 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     if (r < 0) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainSetSchedulerParameters",
-                                  "", conn(d)));
+                                  "virDomainSetSchedulerParameters", conn(d)));
     }
 
     xfree(params);

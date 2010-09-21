@@ -75,7 +75,7 @@ static VALUE libvirt_conn_lookup_nwfilter_by_name(VALUE c, VALUE name) {
 
     nwfilter = virNWFilterLookupByName(conn, StringValueCStr(name));
     _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByName", "", conn));
+                                      "virNWFilterLookupByName", conn));
 
     return nwfilter_new(nwfilter, c);
 }
@@ -93,8 +93,7 @@ static VALUE libvirt_conn_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid) {
 
     nwfilter = virNWFilterLookupByUUIDString(conn, StringValueCStr(uuid));
     _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByUUIDString", "",
-                                      conn));
+                                      "virNWFilterLookupByUUIDString", conn));
 
     return nwfilter_new(nwfilter, c);
 }
@@ -111,8 +110,8 @@ static VALUE libvirt_conn_define_nwfilter_xml(VALUE c, VALUE xml) {
     virConnectPtr conn = connect_get(c);
 
     nwfilter = virNWFilterDefineXML(conn, StringValueCStr(xml));
-    _E(nwfilter == NULL, create_error(e_DefinitionError,
-                                      "virNWFilterDefineXML", "", conn));
+    _E(nwfilter == NULL, create_error(e_DefinitionError, "virNWFilterDefineXML",
+                                      conn));
 
     return nwfilter_new(nwfilter, c);
 }
@@ -152,7 +151,7 @@ static VALUE libvirt_nwfilter_uuid(VALUE s) {
     char uuid[VIR_UUID_STRING_BUFLEN];
 
     r = virNWFilterGetUUIDString(nwfilter, uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virNWFilterGetUUIDString", "",
+    _E(r < 0, create_error(e_RetrieveError, "virNWFilterGetUUIDString",
                            conn(s)));
 
     return rb_str_new2((char *)uuid);

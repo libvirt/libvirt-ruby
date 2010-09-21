@@ -67,8 +67,7 @@ static VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
     rb_scan_args(argc, argv, "01", &type);
 
     r = virGetVersion(&libVer, get_string_or_nil(type), &typeVer);
-    _E(r < 0, create_error(rb_eArgError, "virGetVersion",
-                           "Failed to get version", NULL));
+    _E(r < 0, create_error(rb_eArgError, "virGetVersion", NULL));
 
     result = rb_ary_new2(2);
     rargv[0] = rb_str_new2("libvirt");
@@ -95,9 +94,9 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
     else
         conn = virConnectOpen(uri_c);
 
-    if (conn == NULL)
-        rb_raise(e_ConnectionError, "Failed to open%sconnection to '%s'",
-                 readonly ? " readonly " : " ", uri_c);
+    _E(conn == NULL, create_error(e_ConnectionError,
+                                  readonly ? "virConnectOpenReadOnly" : "virConnectOpen",
+                                  NULL));
 
     return connect_new(conn);
 }
@@ -320,8 +319,8 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         xfree(auth);
     }
 
-    if (conn == NULL)
-        rb_raise(e_ConnectionError, "Failed to open connection to '%s'", uri_c);
+    _E(conn == NULL, create_error(e_ConnectionError, "virConnectOpenAuth",
+                                  NULL));
 
     return connect_new(conn);
 }
