@@ -188,8 +188,8 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
     return 0;
 }
 
-static VALUE rb_fix2int_wrap(VALUE arg) {
-    return FIX2INT(arg);
+static VALUE rb_num2int_wrap(VALUE arg) {
+    return NUM2INT(arg);
 }
 
 /*
@@ -233,7 +233,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     int i;
     int auth_alloc;
     VALUE tmp;
-    int exception;
+    int exception = 0;
 
     rb_scan_args(argc, argv, "03", &uri, &cb, &flags);
 
@@ -280,7 +280,8 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
                  * and auth
                  */
                 tmp = rb_ary_entry(creds, i);
-                auth->credtype[i] = rb_protect(rb_fix2int_wrap, tmp,
+
+                auth->credtype[i] = rb_protect(rb_num2int_wrap, tmp,
                                                &exception);
                 if (exception) {
                     free(auth->credtype);
