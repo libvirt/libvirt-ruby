@@ -127,7 +127,7 @@ static VALUE libvirt_conn_list_defined_domains(VALUE s) {
 
 /*
  * call-seq:
- *   dom.create_linux(xml, flags=0) -> Libvirt::Domain
+ *   conn.create_domain_linux(xml, flags=0) -> Libvirt::Domain
  *
  * Call +virDomainCreateLinux+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateLinux]
  * to start a transient domain from the given XML.  Deprecated; use
@@ -152,7 +152,7 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
 #if HAVE_VIRDOMAINCREATEXML
 /*
  * call-seq:
- *   dom.create_xml(xml, flags=0) -> Libvirt::Domain
+ *   conn.create_domain_xml(xml, flags=0) -> Libvirt::Domain
  *
  * Call +virDomainCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateXML]
  * to start a transient domain from the given XML.
@@ -495,7 +495,7 @@ static VALUE libvirt_dom_managed_save(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   dom.has_managed_save(flags=0) -> [True|False]
+ *   dom.has_managed_save?(flags=0) -> [True|False]
  *
  * Call +virDomainHasManagedSaveImage+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasManagedSaveImage]
  * to determine if a particular domain has a managed save image.
