@@ -1818,33 +1818,33 @@ void init_domain()
     rb_define_const(c_domain, "CRASHED", INT2NUM(VIR_DOMAIN_CRASHED));
 
     /* virDomainMigrateFlags */
-#ifdef VIR_MIGRATE_LIVE
+#if HAVE_CONST_VIR_MIGRATE_LIVE
     rb_define_const(c_domain, "MIGRATE_LIVE", INT2NUM(VIR_MIGRATE_LIVE));
 #endif
-#ifdef VIR_MIGRATE_PEER2PEER
+#if HAVE_CONST_VIR_MIGRATE_PEER2PEER
     rb_define_const(c_domain, "MIGRATE_PEER2PEER",
                     INT2NUM(VIR_MIGRATE_PEER2PEER));
 #endif
-#ifdef VIR_MIGRATE_TUNNELLED
+#if HAVE_CONST_VIR_MIGRATE_TUNNELLED
     rb_define_const(c_domain, "MIGRATE_TUNNELLED",
                     INT2NUM(VIR_MIGRATE_TUNNELLED));
 #endif
-#ifdef VIR_MIGRATE_PERSIST_DEST
+#if HAVE_CONST_VIR_MIGRATE_PERSIST_DEST
     rb_define_const(c_domain, "MIGRATE_PERSIST_DEST",
                     INT2NUM(VIR_MIGRATE_PERSIST_DEST));
 #endif
-#ifdef VIR_MIGRATE_UNDEFINE_SOURCE
+#if HAVE_CONST_VIR_MIGRATE_UNDEFINE_SOURCE
     rb_define_const(c_domain, "MIGRATE_UNDEFINE_SOURCE",
                     INT2NUM(VIR_MIGRATE_UNDEFINE_SOURCE));
 #endif
-#ifdef VIR_MIGRATE_PAUSED
+#if HAVE_CONST_VIR_MIGRATE_PAUSED
     rb_define_const(c_domain, "MIGRATE_PAUSED", INT2NUM(VIR_MIGRATE_PAUSED));
 #endif
-#ifdef VIR_MIGRATE_NON_SHARED_DISK
+#if HAVE_CONST_VIR_MIGRATE_NON_SHARED_DISK
     rb_define_const(c_domain, "MIGRATE_NON_SHARED_DISK",
                     INT2NUM(VIR_MIGRATE_NON_SHARED_DISK));
 #endif
-#ifdef VIR_MIGRATE_NON_SHARED_INC
+#if HAVE_CONST_VIR_MIGRATE_NON_SHARED_INC
     rb_define_const(c_domain, "MIGRATE_NON_SHARED_INC",
                     INT2NUM(VIR_MIGRATE_NON_SHARED_INC));
 #endif
@@ -1852,23 +1852,23 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_XML_SECURE));
     rb_define_const(c_domain, "DOMAIN_XML_INACTIVE",
                     INT2NUM(VIR_DOMAIN_XML_INACTIVE));
-#ifdef VIR_DOMAIN_XML_UPDATE_CPU
+#if HAVE_CONST_VIR_DOMAIN_XML_UPDATE_CPU
     rb_define_const(c_domain, "DOMAIN_XML_UPDATE_CPU",
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
 #endif
     rb_define_const(c_domain, "MEMORY_VIRTUAL", INT2NUM(VIR_MEMORY_VIRTUAL));
-#ifdef VIR_MEMORY_PHYSICAL
+#if HAVE_CONST_VIR_MEMORY_PHYSICAL
     rb_define_const(c_domain, "MEMORY_PHYSICAL", INT2NUM(VIR_MEMORY_PHYSICAL));
 #endif
 
-#ifdef VIR_DOMAIN_START_PAUSED
+#if HAVE_CONST_VIR_DOMAIN_START_PAUSED
     rb_define_const(c_domain, "START_PAUSED", INT2NUM(VIR_DOMAIN_START_PAUSED));
 #endif
 
-#ifdef VIR_DUMP_CRASH
+#if HAVE_CONST_VIR_DUMP_CRASH
     rb_define_const(c_domain, "DUMP_CRASH", INT2NUM(VIR_DUMP_CRASH));
 #endif
-#ifdef VIR_DUMP_LIVE
+#if HAVE_CONST_VIR_DUMP_LIVE
     rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
 #endif
 
@@ -1945,15 +1945,15 @@ void init_domain()
     rb_define_method(c_domain, "autostart=", libvirt_dom_autostart_set, 1);
     rb_define_method(c_domain, "free", libvirt_dom_free, 0);
 
-#ifdef VIR_DOMAIN_DEVICE_MODIFY_CURRENT
+#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_CURRENT
     rb_define_const(c_domain, "DEVICE_MODIFY_CURRENT",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CURRENT));
 #endif
-#ifdef VIR_DOMAIN_DEVICE_MODIFY_LIVE
+#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_LIVE
     rb_define_const(c_domain, "DEVICE_MODIFY_LIVE",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_LIVE));
 #endif
-#ifdef VIR_DOMAIN_DEVICE_MODIFY_CONFIG
+#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_CONFIG
     rb_define_const(c_domain, "DEVICE_MODIFY_CONFIG",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CONFIG));
 #endif

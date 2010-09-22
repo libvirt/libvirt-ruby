@@ -250,7 +250,7 @@ void init_interface()
 {
 #if HAVE_TYPE_VIRINTERFACEPTR
     c_interface = rb_define_class_under(m_libvirt, "Interface", rb_cObject);
-#ifdef VIR_INTERFACE_XML_INACTIVE
+#if HAVE_CONST_VIR_INTERFACE_XML_INACTIVE
     rb_define_const(c_interface, "XML_INACTIVE",
                     INT2NUM(VIR_INTERFACE_XML_INACTIVE));
 #endif

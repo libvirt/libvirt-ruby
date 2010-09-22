@@ -778,7 +778,7 @@ void init_storage(void) {
                     INT2NUM(VIR_STORAGE_POOL_RUNNING));
     rb_define_const(c_storage_pool, "DEGRADED",
                     INT2NUM(VIR_STORAGE_POOL_DEGRADED));
-#ifdef VIR_STORAGE_POOL_INACCESSIBLE
+#if HAVE_CONST_VIR_STORAGE_POOL_INACCESSIBLE
     rb_define_const(c_storage_pool, "INACCESSIBLE",
                     INT2NUM(VIR_STORAGE_POOL_INACCESSIBLE));
 #endif
