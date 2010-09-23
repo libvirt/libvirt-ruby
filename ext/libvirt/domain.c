@@ -578,7 +578,7 @@ static VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
 
 /*
  * call-seq:
- *   domain.info -> Libvirt::Domain::Info
+ *   dom.info -> Libvirt::Domain::Info
  *
  * Call +virDomainGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
  * to retrieve domain information.
@@ -604,7 +604,7 @@ static VALUE libvirt_dom_info(VALUE s) {
 #if HAVE_VIRDOMAINGETSECURITYLABEL
 /*
  * call-seq:
- *   domain.security_label -> Libvirt::Domain::SecurityLabel
+ *   dom.security_label -> Libvirt::Domain::SecurityLabel
  *
  * Call +virDomainGetSecurityLabel+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabel]
  * to retrieve the security label applied to this domain.
@@ -629,7 +629,7 @@ static VALUE libvirt_dom_security_label(VALUE s) {
 
 /*
  * call-seq:
- *   domain.block_stats(path) -> Libvirt::Domain::BlockStats
+ *   dom.block_stats(path) -> Libvirt::Domain::BlockStats
  *
  * Call +virDomainBlockStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStats]
  * to retrieve statistics about guest block device path.
@@ -657,7 +657,7 @@ static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
 /*
  * call-seq:
- *   domain.memory_stats(flags=0) -> Libvirt::Domain::MemoryStats
+ *   dom.memory_stats(flags=0) -> Libvirt::Domain::MemoryStats
  *
  * Call +virDomainMemoryStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryStats]
  * to retrieve statistics about the amount of memory consumed by a domain.
@@ -696,7 +696,7 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
 /*
  * call-seq:
- *   domain.block_info(path, flags=0) -> Libvirt::Domain::BlockInfo
+ *   dom.blockinfo(path, flags=0) -> Libvirt::Domain::BlockInfo
  *
  * Call +virDomainGetBlockInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockInfo]
  * to retrieve information about the backing file path for the domain.
@@ -730,7 +730,7 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   domain.block_peek(path, offset, size, flags=0) -> string
+ *   dom.block_peek(path, offset, size, flags=0) -> string
  *
  * Call +virDomainBlockPeek+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockPeek]
  * to read size number of bytes, starting at offset offset from domain backing
@@ -777,7 +777,7 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   domain.memory_peek(start, size, flags=0) -> string
+ *   dom.memory_peek(start, size, flags=Libvirt::Domain::MEMORY_VIRTUAL) -> string
  *
  * Call +virDomainMemoryPeek+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryPeek]
  * to read size number of bytes from offset start from the domain memory.
@@ -824,7 +824,7 @@ static VALUE rb_ary_new_wrap(VALUE arg) {
 }
 
 /* call-seq:
- *   domain.get_vcpus -> [ Libvirt::Domain::VCPUInfo ]
+ *   dom.get_vcpus -> [ Libvirt::Domain::VCPUInfo ]
  *
  * Call +virDomainGetVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpus]
  * to retrieve detailed information about the state of a domain's virtual CPUs.
@@ -916,7 +916,7 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
 #if HAVE_VIRDOMAINISACTIVE
 /*
  * call-seq:
- *   domain.active? -> [true|false]
+ *   dom.active? -> [true|false]
  *
  * Call +virDomainIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsActive]
  * to determine if this domain is currently active.
@@ -929,7 +929,7 @@ static VALUE libvirt_dom_active_p(VALUE d) {
 #if HAVE_VIRDOMAINISPERSISTENT
 /*
  * call-seq:
- *   domain.persistent? -> [true|false]
+ *   dom.persistent? -> [true|false]
  *
  * Call +virDomainIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsPersistent]
  * to determine if this is a persistent domain.
@@ -941,7 +941,7 @@ static VALUE libvirt_dom_persistent_p(VALUE d) {
 
 /*
  * call-seq:
- *   domain.ifinfo(if) -> Libvirt::Domain::IfInfo
+ *   dom.ifinfo(if) -> Libvirt::Domain::IfInfo
  *
  * Call +virDomainInterfaceStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInterfaceStats]
  * to retrieve statistics about domain interface if.
