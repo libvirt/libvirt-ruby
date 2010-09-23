@@ -739,21 +739,28 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
  */
 static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
     virDomainPtr dom = domain_get(s);
-    VALUE path, offset, size, flags;
+    VALUE path_val, offset_val, size_val, flags_val;
     char *buffer;
     int r;
     VALUE ret;
+    char *path;
+    unsigned int size, flags;
+    unsigned long long offset;
 
-    rb_scan_args(argc, argv, "31", &path, &offset, &size, &flags);
+    rb_scan_args(argc, argv, "31", &path_val, &offset_val, &size_val,
+                 &flags_val);
 
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
+    if (NIL_P(flags_val))
+        flags_val = INT2FIX(0);
+
+    path = StringValueCStr(path_val);
+    offset = NUM2ULL(offset_val);
+    size = NUM2UINT(size_val);
+    flags = NUM2UINT(flags_val);
 
     buffer = ALLOC_N(char, size);
 
-    r = virDomainBlockPeek(dom, StringValueCStr(path),
-                           NUM2ULL(offset), NUM2UINT(size), buffer,
-                           NUM2UINT(flags));
+    r = virDomainBlockPeek(dom, path, offset, size, buffer, flags);
 
     if (r < 0) {
         xfree(buffer);
@@ -779,20 +786,25 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
  */
 static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
     virDomainPtr dom = domain_get(s);
-    VALUE start, size, flags;
+    VALUE start_val, size_val, flags_val;
     char *buffer;
     int r;
     VALUE ret;
+    unsigned int size, flags;
+    unsigned long long start;
 
-    rb_scan_args(argc, argv, "21", &start, &size, &flags);
+    rb_scan_args(argc, argv, "21", &start_val, &size_val, &flags_val);
 
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
+    if (NIL_P(flags_val))
+        flags_val = INT2FIX(VIR_MEMORY_VIRTUAL);
+
+    start = NUM2UINT(start_val);
+    size = NUM2UINT(size_val);
+    flags = NUM2UINT(flags_val);
 
     buffer = ALLOC_N(char, size);
 
-    r = virDomainMemoryPeek(dom, NUM2ULL(start), NUM2UINT(size), buffer,
-                            NUM2UINT(flags));
+    r = virDomainMemoryPeek(dom, start, size, buffer, flags);
 
     if (r < 0) {
         xfree(buffer);
