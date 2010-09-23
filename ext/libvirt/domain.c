@@ -871,7 +871,7 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
 
         rb_iv_set(vcpuinfo, "@number", UINT2NUM(cpuinfo[i].number));
         rb_iv_set(vcpuinfo, "@state", INT2NUM(cpuinfo[i].state));
-        rb_iv_set(vcpuinfo, "@cpuTime", ULL2NUM(cpuinfo[i].cpuTime));
+        rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM(cpuinfo[i].cpuTime));
         rb_iv_set(vcpuinfo, "@cpu", INT2NUM(cpuinfo[i].cpu));
         /* FIXME: if any of these fail, we'll leak cpuinfo and cpumap */
 
@@ -2129,7 +2129,7 @@ void init_domain()
     rb_define_const(c_domain_vcpuinfo, "BLOCKED", VIR_VCPU_BLOCKED);
     rb_define_attr(c_domain_vcpuinfo, "number", 1, 0);
     rb_define_attr(c_domain_vcpuinfo, "state", 1, 0);
-    rb_define_attr(c_domain_vcpuinfo, "cpuTime", 1, 0);
+    rb_define_attr(c_domain_vcpuinfo, "cpu_time", 1, 0);
     rb_define_attr(c_domain_vcpuinfo, "cpu", 1, 0);
     rb_define_attr(c_domain_vcpuinfo, "cpumap", 1, 0);
 
