@@ -274,6 +274,10 @@ static VALUE libvirt_netw_autostart(VALUE s){
  * to set this network to be autostarted when libvirtd starts.
  */
 static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
+    if (autostart != Qtrue && autostart != Qfalse)
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected TrueClass or FalseClass)");
+
     gen_call_void(virNetworkSetAutostart, conn(s), network_get(s),
                   RTEST(autostart) ? 1 : 0);
 }
