@@ -1485,7 +1485,7 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.has_current_snapshot? -> [true|false]
+ *   dom.has_current_snapshot?(flags=0) -> [true|false]
  *
  * Call +virDomainHasCurrentSnapshot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasCurrentSnapshot]
  * to find out if this domain has a snapshot active.
