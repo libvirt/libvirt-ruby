@@ -1765,6 +1765,8 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     int i;
     VALUE val;
 
+    Check_Type(input, T_ARRAY);
+
     dom = domain_get(d);
 
     type = virDomainGetSchedulerType(dom, &nparams);
