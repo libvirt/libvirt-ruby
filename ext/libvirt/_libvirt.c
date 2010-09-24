@@ -225,7 +225,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
 {
     VALUE uri;
     VALUE cb;
-    VALUE flags;
+    VALUE flags_val;
     char *uri_c;
     virConnectPtr conn;
     virConnectAuthPtr auth;
@@ -234,11 +234,18 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     int auth_alloc;
     VALUE tmp;
     int exception = 0;
+    unsigned int flags;
 
-    rb_scan_args(argc, argv, "03", &uri, &cb, &flags);
+    rb_scan_args(argc, argv, "03", &uri, &cb, &flags_val);
 
     /* handle the optional URI */
     uri_c = get_string_or_nil(uri);
+
+    /* handle the optional flags */
+    if (NIL_P(flags_val))
+        flags = 0;
+    else
+        flags = NUM2UINT(flags_val);
 
     /* handle the optional auth */
     if (!NIL_P(cb)) {
@@ -306,11 +313,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         auth_alloc = 0;
     }
 
-    /* handle the optional flags */
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    conn = virConnectOpenAuth(uri_c, auth, NUM2INT(flags));
+    conn = virConnectOpenAuth(uri_c, auth, flags);
 
     if (auth_alloc) {
         free(auth->credtype);
