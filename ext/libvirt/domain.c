@@ -1266,9 +1266,9 @@ static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
 
 #if HAVE_VIRDOMAINATTACHDEVICEFLAGS
     gen_call_void(virDomainAttachDeviceFlags, conn(s), domain_get(s),
-                  StringValueCStr(xml), FIX2UINT(flags));
+                  StringValueCStr(xml), NUM2UINT(flags));
 #else
-    if (FIX2UINT(flags) != 0)
+    if (NUM2UINT(flags) != 0)
         rb_raise(e_NoSupportError, "Non-zero flags not supported");
     gen_call_void(virDomainAttachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
@@ -1293,10 +1293,10 @@ static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
 
 #if HAVE_VIRDOMAINDETACHDEVICEFLAGS
     gen_call_void(virDomainDetachDeviceFlags, conn(s), domain_get(s),
-                  StringValueCStr(xml), FIX2UINT(flags));
+                  StringValueCStr(xml), NUM2UINT(flags));
 #else
-    if (FIX2UINT(flags) != 0)
-        rb_raise(create_error(e_NoSupportError, "Non-zero flags not supported");
+    if (NUM2UINT(flags) != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
     gen_call_void(virDomainDetachDevice, conn(s), domain_get(s),
                   StringValueCStr(xml));
 #endif
@@ -1320,7 +1320,7 @@ static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE s) {
         flags = INT2FIX(0);
 
     gen_call_void(virDomainUpdateDeviceFlags, conn(s), domain_get(s),
-                  StringValueCStr(xml), FIX2UINT(flags));
+                  StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
 
