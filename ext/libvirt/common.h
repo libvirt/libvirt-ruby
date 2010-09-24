@@ -115,16 +115,18 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         names = ALLOC_N(char *, num);                                   \
         r = virConnectList##objs(conn, names, num);                     \
         if (r < 0) {                                                    \
-            xfree(names);                                                \
+            xfree(names);                                               \
             _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, conn));  \
         }                                                               \
                                                                         \
+        /* FIXME: if this fails, we'll leak names (and names[i]) */     \
         result = rb_ary_new2(num);                                      \
         for (i=0; i<num; i++) {                                         \
+            /* FIXME: if this fails, we'll leak names (and names[i]) */ \
             rb_ary_push(result, rb_str_new2(names[i]));                 \
-            xfree(names[i]);                                             \
+            xfree(names[i]);                                            \
         }                                                               \
-        xfree(names);                                                    \
+        xfree(names);                                                   \
         return result;                                                  \
     } while(0)
 
