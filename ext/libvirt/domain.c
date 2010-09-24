@@ -1419,17 +1419,20 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
  * to retrieve a list of snapshot names available for this domain.
  */
 static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
-    VALUE flags;
+    VALUE flags_val;
     int r, i;
     int num;
     virDomainPtr dom = domain_get(d);
     char **names;
     VALUE result;
+    unsigned int flags;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "01", &flags_val);
 
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
+    if (NIL_P(flags_val))
+        flags = 0;
+    else
+        flags = NUM2UINT(flags_val);
 
     num = virDomainSnapshotNum(dom, 0);
     _E(num < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", "",
@@ -1441,8 +1444,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
     }
     names = ALLOC_N(char *, num);
 
-    r = virDomainSnapshotListNames(domain_get(d), names, num,
-                                   NUM2UINT(flags));
+    r = virDomainSnapshotListNames(domain_get(d), names, num, flags);
     if (r < 0) {
         xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotListNames",
