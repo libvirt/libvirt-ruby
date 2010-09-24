@@ -74,15 +74,18 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
 static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
     int i, r, num;
     virConnectPtr conn = connect_get(c);
-    VALUE cap, flags;
+    VALUE cap, flags_val;
     char *capstr;
     VALUE result;
     char **names;
+    unsigned int flags;
 
-    rb_scan_args(argc, argv, "02", &cap, &flags);
+    rb_scan_args(argc, argv, "02", &cap, &flags_val);
 
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
+    if (NIL_P(flags_val))
+        flags = 0;
+    else
+        flags = NUM2UINT(flags_val);
 
     capstr = get_string_or_nil(cap);
 
@@ -94,7 +97,7 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
         return result;
     }
     names = ALLOC_N(char *, num);
-    r = virNodeListDevices(conn, capstr, names, num, NUM2UINT(flags));
+    r = virNodeListDevices(conn, capstr, names, num, flags);
     if (r < 0) {
         xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices",
