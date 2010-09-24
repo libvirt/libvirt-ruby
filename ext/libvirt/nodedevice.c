@@ -42,7 +42,7 @@ static VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn) {
 
 /*
  * call-seq:
- *   conn.num_of_nodedevices -> fixnum
+ *   conn.num_of_nodedevices(cap=nil, flags=0) -> fixnum
  *
  * Call +virNodeNumOfDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeNumOfDevices]
  * to retrieve the number of node devices on this connection.
@@ -66,7 +66,7 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
 
 /*
  * call-seq:
- *   conn.list_nodedevices -> list
+ *   conn.list_nodedevices(cap=nil, flags=0) -> list
  *
  * Call +virNodeListDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeListDevices]
  * to retrieve a list of node device names on this connection.
