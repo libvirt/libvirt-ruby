@@ -1245,6 +1245,10 @@ static VALUE libvirt_dom_autostart(VALUE s){
  * to make this domain autostart when libvirtd starts up.
  */
 static VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
+    if (autostart != Qtrue && autostart != Qfalse)
+		rb_raise(rb_eTypeError,
+                 "wrong argument type (expected TrueClass or FalseClass)");
+
     gen_call_void(virDomainSetAutostart, conn(s),
                   domain_get(s), RTEST(autostart) ? 1 : 0);
 }
