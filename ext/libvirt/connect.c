@@ -249,26 +249,30 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s)
     int r;
     virConnectPtr conn = connect_get(s);
     VALUE cells;
-    VALUE startCell, maxCells;
+    VALUE start, max;
     unsigned long long *freeMems;
     virNodeInfo nodeinfo;
     int i;
+    unsigned int startCell, maxCells;
 
-    rb_scan_args(argc, argv, "02", &startCell, &maxCells);
+    rb_scan_args(argc, argv, "02", &start, &max);
 
-    if (NIL_P(startCell))
-        startCell = INT2FIX(0);
-    if (NIL_P(maxCells)) {
+    if (NIL_P(start))
+        startCell = 0;
+    else
+        startCell = NUM2UINT(start);
+
+    if (NIL_P(max)) {
         r = virNodeGetInfo(conn, &nodeinfo);
         _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn));
-        freeMems = ALLOC_N(unsigned long long, nodeinfo.nodes);
-        maxCells = INT2FIX(nodeinfo.nodes);
+        maxCells = nodeinfo.nodes;
     }
     else
-        freeMems = ALLOC_N(unsigned long long, NUM2UINT(maxCells));
+        maxCells = NUM2UINT(max);
 
-    r = virNodeGetCellsFreeMemory(conn, freeMems, NUM2INT(startCell),
-                                  NUM2INT(maxCells));
+    freeMems = ALLOC_N(unsigned long long, maxCells);
+
+    r = virNodeGetCellsFreeMemory(conn, freeMems, startCell, maxCells);
     if (r < 0) {
         xfree(freeMems);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
