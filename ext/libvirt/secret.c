@@ -227,20 +227,25 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
 static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
     virSecretPtr secret = secret_get(s);
     VALUE flags;
-    unsigned char *ret;
+    unsigned char *val;
     size_t value_size;
+    VALUE ret;
 
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    ret = virSecretGetValue(secret, &value_size, NUM2UINT(flags));
+    val = virSecretGetValue(secret, &value_size, NUM2UINT(flags));
 
-    _E(ret == NULL, create_error(e_RetrieveError, "virSecretGetValue",
+    _E(val == NULL, create_error(e_RetrieveError, "virSecretGetValue",
                                  conn(s)));
 
-    return rb_str_new((char *)ret, value_size);
+    ret = rb_str_new((char *)val, value_size);
+
+    free(val);
+
+    return ret;
 }
 
 /*
