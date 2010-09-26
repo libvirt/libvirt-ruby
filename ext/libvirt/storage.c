@@ -100,7 +100,7 @@ static VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
 
 /*
  * call-seq:
- *   conn.lookup_pool_by_name(name) -> Libvirt::StoragePool
+ *   conn.lookup_storage_pool_by_name(name) -> Libvirt::StoragePool
  *
  * Call +virStoragePoolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByName]
  * to retrieve a storage pool object by name.
@@ -118,7 +118,7 @@ static VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name) {
 
 /*
  * call-seq:
- *   conn.lookup_pool_by_uuid(uuid) -> Libvirt::StoragePool
+ *   conn.lookup_storage_pool_by_uuid(uuid) -> Libvirt::StoragePool
  *
  * Call +virStoragePoolLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByUUIDString]
  * to retrieve a storage pool object by uuid.
@@ -136,7 +136,7 @@ static VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid) {
 
 /*
  * call-seq:
- *   vol.get_pool -> Libvirt::StoragePool
+ *   vol.pool -> Libvirt::StoragePool
  *
  * Call +virStoragePoolLookupByVolume+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByVolume]
  * to retrieve the storage pool for this volume.
@@ -153,7 +153,7 @@ static VALUE libvirt_vol_get_pool(VALUE v) {
 
 /*
  * call-seq:
- *   conn.create_pool_xml(xml, flags=0) -> Libvirt::StoragePool
+ *   conn.create_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
  *
  * Call +virStoragePoolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreateXML]
  * to start a new transient storage pool from xml.
@@ -177,7 +177,7 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
 
 /*
  * call-seq:
- *   conn.define_pool_xml(xml, flags=0) -> Libvirt::StoragePool
+ *   conn.define_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
  *
  * Call +virStoragePoolDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDefineXML]
  * to define a permanent storage pool from xml.
@@ -201,7 +201,7 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
 
 /*
  * call-seq:
- *   conn.find_storage_pool_sources(type, srcSpec=nil, flags=0) -> string
+ *   conn.discover_storage_pool_sources(type, srcSpec=nil, flags=0) -> string
  *
  * Call +virConnectFindStoragePoolSources+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
  * to find the storage pool sources corresponding to type.
@@ -499,7 +499,7 @@ static VALUE vol_new(virStorageVolPtr n, VALUE conn) {
 
 /*
  * call-seq:
- *   pool.lookup_vol_by_name(name) -> Libvirt::StorageVol
+ *   pool.lookup_volume_by_name(name) -> Libvirt::StorageVol
  *
  * Call +virStorageVolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByName]
  * to retrieve a storage volume object by name.
@@ -516,7 +516,7 @@ static VALUE libvirt_pool_lookup_vol_by_name(VALUE p, VALUE name) {
 
 /*
  * call-seq:
- *   pool.lookup_vol_by_key(key) -> Libvirt::StorageVol
+ *   pool.lookup_volume_by_key(key) -> Libvirt::StorageVol
  *
  * Call +virStorageVolLookupByKey+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByKey]
  * to retrieve a storage volume object by key.
@@ -534,7 +534,7 @@ static VALUE libvirt_pool_lookup_vol_by_key(VALUE p, VALUE key) {
 
 /*
  * call-seq:
- *   pool.lookup_vol_by_path(path) -> Libvirt::StorageVol
+ *   pool.lookup_volume_by_path(path) -> Libvirt::StorageVol
  *
  * Call +virStorageVolLookupByPath+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByPath]
  * to retrieve a storage volume object by path.
@@ -574,7 +574,7 @@ static VALUE libvirt_vol_key(VALUE v) {
 
 /*
  * call-seq:
- *   pool.vol_create_xml(xml, flags=0) -> Libvirt::StorageVol
+ *   pool.create_volume_xml(xml, flags=0) -> Libvirt::StorageVol
  *
  * Call +virStorageVolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
  * to create a new storage volume from xml.
@@ -599,9 +599,9 @@ static VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
 #if HAVE_VIRSTORAGEVOLCREATEXMLFROM
 /*
  * call-seq:
- *   pool.vol_create_xml_from(xml, clonevol, flags=0) -> Libvirt::StorageVol
+ *   pool.create_volume_xml_from(xml, clonevol, flags=0) -> Libvirt::StorageVol
  *
- * Call +virStorageVolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
+ * Call +virStorageVolCreateXMLFrom+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXMLFrom]
  * to clone a volume from an existing volume with the properties specified in
  * xml.
  */
@@ -848,9 +848,12 @@ void init_storage(void) {
     rb_define_method(c_storage_pool, "free", libvirt_pool_free, 0);
     rb_define_method(c_storage_pool, "create_vol_xml",
                      libvirt_pool_vol_create_xml, -1);
+    rb_define_alias(c_storage_pool, "create_volume_xml", "create_vol_xml");
 #if HAVE_VIRSTORAGEVOLCREATEXMLFROM
     rb_define_method(c_storage_pool, "create_vol_xml_from",
                      libvirt_pool_vol_create_xml_from, -1);
+    rb_define_alias(c_storage_pool, "create_volume_xml_from",
+                    "create_vol_xml_from");
 #endif
 #if HAVE_VIRSTORAGEPOOLISACTIVE
     rb_define_method(c_storage_pool, "active?", libvirt_pool_active_p, 0);
