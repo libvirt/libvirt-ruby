@@ -79,6 +79,14 @@ qemu_cmd_line = "/usr/bin/qemu-kvm -S -M pc-0.13 -enable-kvm -m 1024 -smp 1,sock
 `rm -f #{GUEST_DISK} ; qemu-img create -f qcow2 #{GUEST_DISK} 5G`
 `rm -f /var/lib/libvirt/images/ruby-libvirt-test.save`
 
+new_hostdev_xml = <<EOF
+<hostdev mode='subsystem' type='pci' managed='yes'>
+  <source>
+    <address bus='0x45' slot='0x55' function='0x33'/>
+  </source>
+</hostdev>
+EOF
+
 # start tests
 
 # TESTGROUP: conn.num_of_domains
@@ -231,10 +239,64 @@ conn.domain_xml_to_native("qemu-argv", new_dom_xml)
 puts_ok "conn.domain_xml_to_native succeeded"
 
 # TESTGROUP: dom.migrate
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+dconn = Libvirt::open("qemu:///system")
+
+expect_too_many_args(newdom, "migrate", 1, 2, 3, 4, 5, 6)
+expect_too_few_args(newdom, "migrate")
+expect_fail(newdom, ArgumentError, "invalid connection object", "migrate", "foo")
+expect_invalid_arg_type(newdom, "migrate", dconn, 'foo')
+expect_invalid_arg_type(newdom, "migrate", dconn, 0, 1)
+expect_invalid_arg_type(newdom, "migrate", dconn, 0, 'foo', 1)
+expect_invalid_arg_type(newdom, "migrate", dconn, 0, 'foo', 'bar', 'baz')
+
+#newdom.migrate(dconn)
+#puts_ok "dom.migrate succeeded"
+
+dconn.close
+
+newdom.destroy
 
 # TESTGROUP: dom.migrate_to_uri
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "migrate_to_uri", 1, 2, 3, 4, 5)
+expect_too_few_args(newdom, "migrate_to_uri")
+expect_invalid_arg_type(newdom, "migrate_to_uri", 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri", "qemu:///system", 'foo')
+expect_invalid_arg_type(newdom, "migrate_to_uri", "qemu:///system", 0, 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri", "qemu:///system", 0, 'foo', 'bar')
+
+#newdom.migrate_to_uri("qemu://remote/system")
+#puts_ok "dom.migrate_to_uri succeeded"
+
+dconn.close
+
+newdom.destroy
 
 # TESTGROUP: dom.migrate_set_max_downtime
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "migrate_set_max_downtime", 1, 2, 3)
+expect_too_few_args(newdom, "migrate_set_max_downtime")
+expect_invalid_arg_type(newdom, "migrate_set_max_downtime", 'foo')
+expect_invalid_arg_type(newdom, "migrate_set_max_downtime", 10, 'foo')
+expect_fail(newdom, Libvirt::Error, "on off domain", "migrate_set_max_downtime", 10)
+
+newdom.undefine
+
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+#newdom.migrate_to_uri("qemu://remote/system")
+
+expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_set_max_downtime", 10)
+#newdom.migrate_set_max_downtime(10)
+#puts_ok "dom.migrate_set_max_downtime succeeded"
+
+newdom.destroy
 
 # TESTGROUP: dom.shutdown
 newdom = conn.create_domain_xml(new_dom_xml)
@@ -862,10 +924,64 @@ newdom.undefine
 # TESTGROUP: dom.edit_domain_xml
 
 # TESTGROUP: dom.attach_device
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "attach_device", 1, 2, 3)
+expect_too_few_args(newdom, "attach_device")
+expect_invalid_arg_type(newdom, "attach_device", 1)
+expect_invalid_arg_type(newdom, "attach_device", 'foo', 'bar')
+expect_fail(newdom, Libvirt::Error, "invalid XML", "attach_device", "hello")
+expect_fail(newdom, Libvirt::Error, "shut off domain", "attach_device", new_hostdev_xml)
+
+newdom.undefine
+
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+#newdom.attach_device(new_hostdev_xml)
+#puts_ok "dom.attach_device succeeded"
+
+newdom.destroy
 
 # TESTGROUP: dom.detach_device
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "detach_device", 1, 2, 3)
+expect_too_few_args(newdom, "detach_device")
+expect_invalid_arg_type(newdom, "detach_device", 1)
+expect_invalid_arg_type(newdom, "detach_device", 'foo', 'bar')
+expect_fail(newdom, Libvirt::Error, "invalid XML", "detach_device", "hello")
+expect_fail(newdom, Libvirt::Error, "shut off domain", "detach_device", new_hostdev_xml)
+
+newdom.undefine
+
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+#newdom.detach_device(new_hostdev_xml)
+#puts_ok "dom.detach_device succeeded"
+
+newdom.destroy
 
 # TESTGROUP: dom.update_device
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "update_device", 1, 2, 3)
+expect_too_few_args(newdom, "update_device")
+expect_invalid_arg_type(newdom, "update_device", 1)
+expect_invalid_arg_type(newdom, "update_device", 'foo', 'bar')
+expect_fail(newdom, Libvirt::Error, "invalid XML", "update_device", "hello")
+expect_fail(newdom, Libvirt::Error, "shut off domain", "update_device", new_hostdev_xml)
+
+newdom.undefine
+
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+#newdom.update_device(new_hostdev_xml)
+#puts_ok "dom.update_device succeeded"
+
+newdom.destroy
 
 # TESTGROUP: dom.free
 newdom = conn.define_domain_xml(new_dom_xml)
@@ -1110,6 +1226,13 @@ end
 newdom.undefine
 
 # TESTGROUP: dom.scheduler_parameters=
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "scheduler_parameters=", 1, 2)
+expect_too_few_args(newdom, "scheduler_parameters=")
+expect_invalid_arg_type(newdom, "scheduler_parameters=", 0)
+
+newdom.undefine
 
 conn.close
 

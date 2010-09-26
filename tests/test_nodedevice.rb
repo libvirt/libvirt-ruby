@@ -35,6 +35,14 @@ conn.lookup_nodedevice_by_name(testnode.name)
 puts_ok "conn.lookup_nodedevice_by_name running nodedevice succeeded"
 
 # TESTGROUP: conn.create_nodedevice_xml
+expect_too_many_args(conn, "create_nodedevice_xml", 1, 2, 3)
+expect_too_few_args(conn, "create_nodedevice_xml")
+expect_invalid_arg_type(conn, "create_nodedevice_xml", 1)
+expect_invalid_arg_type(conn, "create_nodedevice_xml", "foo", 'bar')
+expect_fail(conn, Libvirt::Error, "invalid XML", "create_nodedevice_xml", "hello")
+
+#conn.create_nodedevice_xml("<nodedevice>")
+#puts_ok "conn.create_nodedevice_xml succeeded
 
 # TESTGROUP: nodedevice.name
 testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
@@ -64,7 +72,6 @@ expect_too_many_args(testnode, "list_caps", 1)
 caplist = testnode.list_caps
 puts_ok "nodedevice.list_caps no args = "
 
-
 # TESTGROUP: nodedevice.xml_desc
 testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
 
@@ -74,14 +81,44 @@ xml = testnode.xml_desc
 puts_ok "nodedevice.xml_desc no args = "
 
 # TESTGROUP: nodedevice.detach
+testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
+
+expect_too_many_args(testnode, "detach", 1)
+
+#nodedevice.detach
+#puts_ok "nodedevice.detach no args = "
 
 # TESTGROUP: nodedevice.reattach
+testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
+
+expect_too_many_args(testnode, "reattach", 1)
+
+#nodedevice.reattach
+#puts_ok "nodedevice.reattach no args = "
 
 # TESTGROUP: nodedevice.reset
+testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
+
+expect_too_many_args(testnode, "reset", 1)
+
+#nodedevice.reset
+#puts_ok "nodedevice.reset no args = "
 
 # TESTGROUP: nodedevice.destroy
+testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
+
+expect_too_many_args(testnode, "destroy", 1)
+
+#nodedevice.destroy
+#puts_ok "nodedevice.destroy no args = "
 
 # TESTGROUP: nodedevice.free
+testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
+
+expect_too_many_args(testnode, "free", 1)
+
+testnode.free
+puts_ok "nodedevice.free succeeded"
 
 conn.close
 

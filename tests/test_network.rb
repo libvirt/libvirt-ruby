@@ -236,6 +236,12 @@ end
 newnet.undefine
 
 # TESTGROUP: net.free
+newnet = conn.define_network_xml(new_net_xml)
+newnet.undefine
+expect_too_many_args(newnet, "free", 1)
+
+newnet.free
+puts_ok "network.free succeeded"
 
 # TESTGROUP: net.active?
 newnet = conn.create_network_xml(new_net_xml)

@@ -43,7 +43,6 @@ newsecret.undefine
 
 # TESTGROUP: conn.lookup_secret_by_usage
 newsecret = conn.define_secret_xml(new_secret_xml)
-#newsecret.set_value("foo")
 
 expect_too_many_args(conn, "lookup_secret_by_usage", 1, 2, 3)
 expect_too_few_args(conn, "lookup_secret_by_usage")

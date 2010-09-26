@@ -112,7 +112,12 @@ puts_ok "nwfilter.xml_desc succeeded"
 newnw.undefine
 
 # TESTGROUP: nwfilter.free
+newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
+newnw.undefine
+expect_too_many_args(newnw, "free", 1)
 
+newnw.free
+puts_ok "nwfilter.free succeeded"
 
 conn.close
 
