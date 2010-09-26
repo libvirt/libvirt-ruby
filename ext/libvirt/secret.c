@@ -87,14 +87,12 @@ static VALUE libvirt_conn_lookup_secret_by_uuid(VALUE c, VALUE uuid) {
  * Call +virSecretLookupByUsage+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretLookupByUsage]
  * to retrieve a secret by usagetype.
  */
-static VALUE libvirt_conn_lookup_secret_by_usage(int argc, VALUE *argv, VALUE c) {
+static VALUE libvirt_conn_lookup_secret_by_usage(VALUE c, VALUE usagetype, VALUE usageID) {
     virSecretPtr secret;
     virConnectPtr conn = connect_get(c);
-    VALUE usageType, usageID;
 
-    rb_scan_args(argc, argv, "11", &usageType, &usageID);
-
-    secret = virSecretLookupByUsage(conn, usageType, StringValueCStr(usageID));
+    secret = virSecretLookupByUsage(conn, NUM2UINT(usagetype),
+                                    StringValueCStr(usageID));
     _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUsage",
                                     "", conn));
 
@@ -290,7 +288,7 @@ void init_secret()
     rb_define_method(c_connect, "lookup_secret_by_uuid",
                      libvirt_conn_lookup_secret_by_uuid, 1);
     rb_define_method(c_connect, "lookup_secret_by_usage",
-                     libvirt_conn_lookup_secret_by_usage, -1);
+                     libvirt_conn_lookup_secret_by_usage, 2);
     rb_define_method(c_connect, "define_secret_xml",
                      libvirt_conn_define_secret_xml, -1);
 
