@@ -412,6 +412,10 @@ static VALUE libvirt_pool_autostart(VALUE s){
  * to make this storage pool start when libvirtd starts.
  */
 static VALUE libvirt_pool_autostart_set(VALUE s, VALUE autostart) {
+    if (autostart != Qtrue && autostart != Qfalse)
+		rb_raise(rb_eTypeError,
+                 "wrong argument type (expected TrueClass or FalseClass)");
+
     gen_call_void(virStoragePoolSetAutostart, conn(s), pool_get(s),
                   RTEST(autostart) ? 1 : 0);
 }
