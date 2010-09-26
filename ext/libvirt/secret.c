@@ -184,8 +184,7 @@ static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
     val = virSecretGetValue(secret_get(s), &value_size,
                             ruby_libvirt_value_to_uint(flags));
 
-    ruby_libvirt_raise_error_if(val == NULL, e_RetrieveError,
-                                "virSecretGetValue",
+    ruby_libvirt_raise_error_if(val == NULL, "virSecretGetValue",
                                 ruby_libvirt_connect_get(s));
 
     args.val = (char *)val;

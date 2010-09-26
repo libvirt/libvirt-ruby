@@ -42,12 +42,7 @@
 static VALUE c_libvirt_version;
 
 VALUE m_libvirt;
-
-/* define additional errors here */
-static VALUE e_ConnectionError;         /* ConnectionError - error during connection establishment */
-VALUE e_DefinitionError;
-VALUE e_RetrieveError;
-VALUE e_Error;
+VALUE e_LibvirtError;
 VALUE e_NoSupportError;
 
 /* custom error function to suppress libvirt printing to stderr */
@@ -74,7 +69,7 @@ static VALUE libvirt_version(int argc, VALUE *argv,
 
     r = virGetVersion(&libVer, ruby_libvirt_get_cstring_or_null(type),
                       &typeVer);
-    ruby_libvirt_raise_error_if(r < 0, rb_eArgError, "virGetVersion", NULL);
+    ruby_libvirt_raise_error_if(r < 0, "virGetVersion", NULL);
 
     result = rb_ary_new2(2);
     rargv[0] = rb_str_new2("libvirt");
@@ -101,8 +96,7 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE RUBY_LIBVIRT_UNUSED(m))
     rb_scan_args(argc, argv, "01", &uri);
 
     conn = virConnectOpen(ruby_libvirt_get_cstring_or_null(uri));
-    ruby_libvirt_raise_error_if(conn == NULL, e_ConnectionError,
-                                "virConnectOpen", NULL);
+    ruby_libvirt_raise_error_if(conn == NULL, "virConnectOpen", NULL);
 
     return ruby_libvirt_connect_new(conn);
 }
@@ -124,8 +118,7 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv,
 
     conn = virConnectOpenReadOnly(ruby_libvirt_get_cstring_or_null(uri));
 
-    ruby_libvirt_raise_error_if(conn == NULL, e_ConnectionError,
-                                "virConnectOpenReadOnly", NULL);
+    ruby_libvirt_raise_error_if(conn == NULL, "virConnectOpenReadOnly", NULL);
 
     return ruby_libvirt_connect_new(conn);
 }
@@ -257,8 +250,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv,
     conn = virConnectOpenAuth(ruby_libvirt_get_cstring_or_null(uri), auth,
                               ruby_libvirt_value_to_uint(flags));
 
-    ruby_libvirt_raise_error_if(conn == NULL, e_ConnectionError,
-                                "virConnectOpenAuth", NULL);
+    ruby_libvirt_raise_error_if(conn == NULL, "virConnectOpenAuth", NULL);
 
     return ruby_libvirt_connect_new(conn);
 }
@@ -692,8 +684,8 @@ static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
 
     ret = virDomainLxcEnterSecurityLabel(&mod, &lab, &oldlab,
                                          ruby_libvirt_value_to_uint(flags));
-    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError,
-                                "virDomainLxcEnterSecurityLabel", NULL);
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainLxcEnterSecurityLabel",
+                                NULL);
 
     result = rb_class_new_instance(0, NULL, c_domain_security_label);
     rb_iv_set(result, "@label", rb_str_new2(oldlab.label));
@@ -735,246 +727,285 @@ void Init__libvirt(void)
     /*
      * Libvirt Errors
      */
-    e_Error =           rb_define_class_under(m_libvirt, "Error",
-                                              rb_eStandardError);
-    e_ConnectionError = rb_define_class_under(m_libvirt, "ConnectionError",
-                                              e_Error);
-    e_DefinitionError = rb_define_class_under(m_libvirt, "DefinitionError",
-                                              e_Error);
-    e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError",
-                                              e_Error);
-    e_NoSupportError =  rb_define_class_under(m_libvirt, "NoSupportError",
-                                              e_Error);
+    e_LibvirtError = rb_define_class_under(m_libvirt, "Error",
+                                           rb_eStandardError);
+    rb_define_attr(e_LibvirtError, "libvirt_function_name", 1, 0);
+    rb_define_attr(e_LibvirtError, "libvirt_message", 1, 0);
+    rb_define_attr(e_LibvirtError, "libvirt_code", 1, 0);
+    rb_define_attr(e_LibvirtError, "libvirt_component", 1, 0);
+    rb_define_attr(e_LibvirtError, "libvirt_level", 1, 0);
 
-    rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
-    rb_define_attr(e_Error, "libvirt_message", 1, 0);
-    rb_define_attr(e_Error, "libvirt_code", 1, 0);
-    rb_define_attr(e_Error, "libvirt_component", 1, 0);
-    rb_define_attr(e_Error, "libvirt_level", 1, 0);
+    e_NoSupportError = rb_define_class_under(m_libvirt, "NoSupportError",
+                                             rb_eStandardError);
 
     /* libvirt error components (domains) */
-    rb_define_const(e_Error, "FROM_NONE", INT2NUM(VIR_FROM_NONE));
-    rb_define_const(e_Error, "FROM_XEN", INT2NUM(VIR_FROM_XEN));
-    rb_define_const(e_Error, "FROM_XEND", INT2NUM(VIR_FROM_XEND));
-    rb_define_const(e_Error, "FROM_XENSTORE", INT2NUM(VIR_FROM_XENSTORE));
-    rb_define_const(e_Error, "FROM_SEXPR", INT2NUM(VIR_FROM_SEXPR));
-    rb_define_const(e_Error, "FROM_XML", INT2NUM(VIR_FROM_XML));
-    rb_define_const(e_Error, "FROM_DOM", INT2NUM(VIR_FROM_DOM));
-    rb_define_const(e_Error, "FROM_RPC", INT2NUM(VIR_FROM_RPC));
-    rb_define_const(e_Error, "FROM_PROXY", INT2NUM(VIR_FROM_PROXY));
-    rb_define_const(e_Error, "FROM_CONF", INT2NUM(VIR_FROM_CONF));
-    rb_define_const(e_Error, "FROM_QEMU", INT2NUM(VIR_FROM_QEMU));
-    rb_define_const(e_Error, "FROM_NET", INT2NUM(VIR_FROM_NET));
-    rb_define_const(e_Error, "FROM_TEST", INT2NUM(VIR_FROM_TEST));
-    rb_define_const(e_Error, "FROM_REMOTE", INT2NUM(VIR_FROM_REMOTE));
-    rb_define_const(e_Error, "FROM_OPENVZ", INT2NUM(VIR_FROM_OPENVZ));
+    rb_define_const(e_LibvirtError, "FROM_NONE", INT2NUM(VIR_FROM_NONE));
+    rb_define_const(e_LibvirtError, "FROM_XEN", INT2NUM(VIR_FROM_XEN));
+    rb_define_const(e_LibvirtError, "FROM_XEND", INT2NUM(VIR_FROM_XEND));
+    rb_define_const(e_LibvirtError, "FROM_XENSTORE",
+                    INT2NUM(VIR_FROM_XENSTORE));
+    rb_define_const(e_LibvirtError, "FROM_SEXPR", INT2NUM(VIR_FROM_SEXPR));
+    rb_define_const(e_LibvirtError, "FROM_XML", INT2NUM(VIR_FROM_XML));
+    rb_define_const(e_LibvirtError, "FROM_DOM", INT2NUM(VIR_FROM_DOM));
+    rb_define_const(e_LibvirtError, "FROM_RPC", INT2NUM(VIR_FROM_RPC));
+    rb_define_const(e_LibvirtError, "FROM_PROXY", INT2NUM(VIR_FROM_PROXY));
+    rb_define_const(e_LibvirtError, "FROM_CONF", INT2NUM(VIR_FROM_CONF));
+    rb_define_const(e_LibvirtError, "FROM_QEMU", INT2NUM(VIR_FROM_QEMU));
+    rb_define_const(e_LibvirtError, "FROM_NET", INT2NUM(VIR_FROM_NET));
+    rb_define_const(e_LibvirtError, "FROM_TEST", INT2NUM(VIR_FROM_TEST));
+    rb_define_const(e_LibvirtError, "FROM_REMOTE", INT2NUM(VIR_FROM_REMOTE));
+    rb_define_const(e_LibvirtError, "FROM_OPENVZ", INT2NUM(VIR_FROM_OPENVZ));
 #if HAVE_CONST_VIR_FROM_VMWARE
-    rb_define_const(e_Error, "FROM_VMWARE", INT2NUM(VIR_FROM_VMWARE));
+    rb_define_const(e_LibvirtError, "FROM_VMWARE", INT2NUM(VIR_FROM_VMWARE));
 #endif
 #if HAVE_CONST_VIR_FROM_XENXM
-    rb_define_const(e_Error, "FROM_XENXM", INT2NUM(VIR_FROM_XENXM));
+    rb_define_const(e_LibvirtError, "FROM_XENXM", INT2NUM(VIR_FROM_XENXM));
 #endif
 #if HAVE_CONST_VIR_FROM_STATS_LINUX
-    rb_define_const(e_Error, "FROM_STATS_LINUX", INT2NUM(VIR_FROM_STATS_LINUX));
+    rb_define_const(e_LibvirtError, "FROM_STATS_LINUX",
+                    INT2NUM(VIR_FROM_STATS_LINUX));
 #endif
 #if HAVE_TYPE_VIR_FROM_LXC
-    rb_define_const(e_Error, "FROM_LXC", INT2NUM(VIR_FROM_LXC));
+    rb_define_const(e_LibvirtError, "FROM_LXC", INT2NUM(VIR_FROM_LXC));
 #endif
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
-    rb_define_const(e_Error, "FROM_STORAGE", INT2NUM(VIR_FROM_STORAGE));
+    rb_define_const(e_LibvirtError, "FROM_STORAGE", INT2NUM(VIR_FROM_STORAGE));
 #endif
 #if HAVE_CONST_VIR_FROM_NETWORK
-    rb_define_const(e_Error, "FROM_NETWORK", INT2NUM(VIR_FROM_NETWORK));
+    rb_define_const(e_LibvirtError, "FROM_NETWORK", INT2NUM(VIR_FROM_NETWORK));
 #endif
 #if HAVE_CONST_VIR_FROM_DOMAIN
-    rb_define_const(e_Error, "FROM_DOMAIN", INT2NUM(VIR_FROM_DOMAIN));
+    rb_define_const(e_LibvirtError, "FROM_DOMAIN", INT2NUM(VIR_FROM_DOMAIN));
 #endif
 #if HAVE_CONST_VIR_FROM_UML
-    rb_define_const(e_Error, "FROM_UML", INT2NUM(VIR_FROM_UML));
+    rb_define_const(e_LibvirtError, "FROM_UML", INT2NUM(VIR_FROM_UML));
 #endif
 #if HAVE_TYPE_VIRNODEDEVICEPTR
-    rb_define_const(e_Error, "FROM_NODEDEV", INT2NUM(VIR_FROM_NODEDEV));
+    rb_define_const(e_LibvirtError, "FROM_NODEDEV", INT2NUM(VIR_FROM_NODEDEV));
 #endif
 #if HAVE_CONST_VIR_FROM_XEN_INOTIFY
-    rb_define_const(e_Error, "FROM_XEN_INOTIFY", INT2NUM(VIR_FROM_XEN_INOTIFY));
+    rb_define_const(e_LibvirtError, "FROM_XEN_INOTIFY",
+                    INT2NUM(VIR_FROM_XEN_INOTIFY));
 #endif
 #if HAVE_CONST_VIR_FROM_SECURITY
-    rb_define_const(e_Error, "FROM_SECURITY", INT2NUM(VIR_FROM_SECURITY));
+    rb_define_const(e_LibvirtError, "FROM_SECURITY",
+                    INT2NUM(VIR_FROM_SECURITY));
 #endif
 #if HAVE_CONST_VIR_FROM_VBOX
-    rb_define_const(e_Error, "FROM_VBOX", INT2NUM(VIR_FROM_VBOX));
+    rb_define_const(e_LibvirtError, "FROM_VBOX", INT2NUM(VIR_FROM_VBOX));
 #endif
 #if HAVE_TYPE_VIRINTERFACEPTR
-    rb_define_const(e_Error, "FROM_INTERFACE", INT2NUM(VIR_FROM_INTERFACE));
+    rb_define_const(e_LibvirtError, "FROM_INTERFACE",
+                    INT2NUM(VIR_FROM_INTERFACE));
 #endif
 #if HAVE_CONST_VIR_FROM_ONE
-    rb_define_const(e_Error, "FROM_ONE", INT2NUM(VIR_FROM_ONE));
+    rb_define_const(e_LibvirtError, "FROM_ONE", INT2NUM(VIR_FROM_ONE));
 #endif
 #if HAVE_CONST_VIR_FROM_ESX
-    rb_define_const(e_Error, "FROM_ESX", INT2NUM(VIR_FROM_ESX));
+    rb_define_const(e_LibvirtError, "FROM_ESX", INT2NUM(VIR_FROM_ESX));
 #endif
 #if HAVE_CONST_VIR_FROM_PHYP
-    rb_define_const(e_Error, "FROM_PHYP", INT2NUM(VIR_FROM_PHYP));
+    rb_define_const(e_LibvirtError, "FROM_PHYP", INT2NUM(VIR_FROM_PHYP));
 #endif
 #if HAVE_TYPE_VIRSECRETPTR
-    rb_define_const(e_Error, "FROM_SECRET", INT2NUM(VIR_FROM_SECRET));
+    rb_define_const(e_LibvirtError, "FROM_SECRET", INT2NUM(VIR_FROM_SECRET));
 #endif
 #if HAVE_VIRCONNECTCOMPARECPU
-    rb_define_const(e_Error, "FROM_CPU", INT2NUM(VIR_FROM_CPU));
+    rb_define_const(e_LibvirtError, "FROM_CPU", INT2NUM(VIR_FROM_CPU));
 #endif
 #if HAVE_CONST_VIR_FROM_XENAPI
-    rb_define_const(e_Error, "FROM_XENAPI", INT2NUM(VIR_FROM_XENAPI));
+    rb_define_const(e_LibvirtError, "FROM_XENAPI", INT2NUM(VIR_FROM_XENAPI));
 #endif
 #if HAVE_TYPE_VIRNWFILTERPTR
-    rb_define_const(e_Error, "FROM_NWFILTER", INT2NUM(VIR_FROM_NWFILTER));
+    rb_define_const(e_LibvirtError, "FROM_NWFILTER",
+                    INT2NUM(VIR_FROM_NWFILTER));
 #endif
 #if HAVE_CONST_VIR_FROM_HOOK
-    rb_define_const(e_Error, "FROM_HOOK", INT2NUM(VIR_FROM_HOOK));
+    rb_define_const(e_LibvirtError, "FROM_HOOK", INT2NUM(VIR_FROM_HOOK));
 #endif
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
-    rb_define_const(e_Error, "FROM_DOMAIN_SNAPSHOT",
+    rb_define_const(e_LibvirtError, "FROM_DOMAIN_SNAPSHOT",
                     INT2NUM(VIR_FROM_DOMAIN_SNAPSHOT));
 #endif
 #if HAVE_CONST_VIR_FROM_AUDIT
-    rb_define_const(e_Error, "FROM_AUDIT", INT2NUM(VIR_FROM_AUDIT));
+    rb_define_const(e_LibvirtError, "FROM_AUDIT", INT2NUM(VIR_FROM_AUDIT));
 #endif
 #if HAVE_CONST_VIR_FROM_SYSINFO
-    rb_define_const(e_Error, "FROM_SYSINFO", INT2NUM(VIR_FROM_SYSINFO));
+    rb_define_const(e_LibvirtError, "FROM_SYSINFO", INT2NUM(VIR_FROM_SYSINFO));
 #endif
 #if HAVE_CONST_VIR_FROM_STREAMS
-    rb_define_const(e_Error, "FROM_STREAMS", INT2NUM(VIR_FROM_STREAMS));
+    rb_define_const(e_LibvirtError, "FROM_STREAMS", INT2NUM(VIR_FROM_STREAMS));
 #endif
 
     /* libvirt error codes */
-    rb_define_const(e_Error, "ERR_OK", INT2NUM(VIR_ERR_OK));
-    rb_define_const(e_Error, "ERR_INTERNAL_ERROR",
+    rb_define_const(e_LibvirtError, "ERR_OK", INT2NUM(VIR_ERR_OK));
+    rb_define_const(e_LibvirtError, "ERR_INTERNAL_ERROR",
                     INT2NUM(VIR_ERR_INTERNAL_ERROR));
-    rb_define_const(e_Error, "ERR_NO_MEMORY", INT2NUM(VIR_ERR_NO_MEMORY));
-    rb_define_const(e_Error, "ERR_NO_SUPPORT", INT2NUM(VIR_ERR_NO_SUPPORT));
-    rb_define_const(e_Error, "ERR_UNKNOWN_HOST", INT2NUM(VIR_ERR_UNKNOWN_HOST));
-    rb_define_const(e_Error, "ERR_NO_CONNECT", INT2NUM(VIR_ERR_NO_CONNECT));
-    rb_define_const(e_Error, "ERR_INVALID_CONN", INT2NUM(VIR_ERR_INVALID_CONN));
-    rb_define_const(e_Error, "ERR_INVALID_DOMAIN",
+    rb_define_const(e_LibvirtError, "ERR_NO_MEMORY",
+                    INT2NUM(VIR_ERR_NO_MEMORY));
+    rb_define_const(e_LibvirtError, "ERR_NO_SUPPORT",
+                    INT2NUM(VIR_ERR_NO_SUPPORT));
+    rb_define_const(e_LibvirtError, "ERR_UNKNOWN_HOST",
+                    INT2NUM(VIR_ERR_UNKNOWN_HOST));
+    rb_define_const(e_LibvirtError, "ERR_NO_CONNECT",
+                    INT2NUM(VIR_ERR_NO_CONNECT));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_CONN",
+                    INT2NUM(VIR_ERR_INVALID_CONN));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_DOMAIN",
                     INT2NUM(VIR_ERR_INVALID_DOMAIN));
-    rb_define_const(e_Error, "ERR_INVALID_ARG", INT2NUM(VIR_ERR_INVALID_ARG));
-    rb_define_const(e_Error, "ERR_OPERATION_FAILED",
+    rb_define_const(e_LibvirtError, "ERR_INVALID_ARG",
+                    INT2NUM(VIR_ERR_INVALID_ARG));
+    rb_define_const(e_LibvirtError, "ERR_OPERATION_FAILED",
                     INT2NUM(VIR_ERR_OPERATION_FAILED));
-    rb_define_const(e_Error, "ERR_GET_FAILED", INT2NUM(VIR_ERR_GET_FAILED));
-    rb_define_const(e_Error, "ERR_POST_FAILED", INT2NUM(VIR_ERR_POST_FAILED));
-    rb_define_const(e_Error, "ERR_HTTP_ERROR", INT2NUM(VIR_ERR_HTTP_ERROR));
-    rb_define_const(e_Error, "ERR_SEXPR_SERIAL", INT2NUM(VIR_ERR_SEXPR_SERIAL));
-    rb_define_const(e_Error, "ERR_NO_XEN", INT2NUM(VIR_ERR_NO_XEN));
-    rb_define_const(e_Error, "ERR_XEN_CALL", INT2NUM(VIR_ERR_XEN_CALL));
-    rb_define_const(e_Error, "ERR_OS_TYPE", INT2NUM(VIR_ERR_OS_TYPE));
-    rb_define_const(e_Error, "ERR_NO_KERNEL", INT2NUM(VIR_ERR_NO_KERNEL));
-    rb_define_const(e_Error, "ERR_NO_ROOT", INT2NUM(VIR_ERR_NO_ROOT));
-    rb_define_const(e_Error, "ERR_NO_SOURCE", INT2NUM(VIR_ERR_NO_SOURCE));
-    rb_define_const(e_Error, "ERR_NO_TARGET", INT2NUM(VIR_ERR_NO_TARGET));
-    rb_define_const(e_Error, "ERR_NO_NAME", INT2NUM(VIR_ERR_NO_NAME));
-    rb_define_const(e_Error, "ERR_NO_OS", INT2NUM(VIR_ERR_NO_OS));
-    rb_define_const(e_Error, "ERR_NO_DEVICE", INT2NUM(VIR_ERR_NO_DEVICE));
-    rb_define_const(e_Error, "ERR_NO_XENSTORE", INT2NUM(VIR_ERR_NO_XENSTORE));
-    rb_define_const(e_Error, "ERR_DRIVER_FULL", INT2NUM(VIR_ERR_DRIVER_FULL));
-    rb_define_const(e_Error, "ERR_CALL_FAILED", INT2NUM(VIR_ERR_CALL_FAILED));
-    rb_define_const(e_Error, "ERR_XML_ERROR", INT2NUM(VIR_ERR_XML_ERROR));
-    rb_define_const(e_Error, "ERR_DOM_EXIST", INT2NUM(VIR_ERR_DOM_EXIST));
-    rb_define_const(e_Error, "ERR_OPERATION_DENIED",
+    rb_define_const(e_LibvirtError, "ERR_GET_FAILED",
+                    INT2NUM(VIR_ERR_GET_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_POST_FAILED",
+                    INT2NUM(VIR_ERR_POST_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_HTTP_ERROR",
+                    INT2NUM(VIR_ERR_HTTP_ERROR));
+    rb_define_const(e_LibvirtError, "ERR_SEXPR_SERIAL",
+                    INT2NUM(VIR_ERR_SEXPR_SERIAL));
+    rb_define_const(e_LibvirtError, "ERR_NO_XEN", INT2NUM(VIR_ERR_NO_XEN));
+    rb_define_const(e_LibvirtError, "ERR_XEN_CALL", INT2NUM(VIR_ERR_XEN_CALL));
+    rb_define_const(e_LibvirtError, "ERR_OS_TYPE", INT2NUM(VIR_ERR_OS_TYPE));
+    rb_define_const(e_LibvirtError, "ERR_NO_KERNEL",
+                    INT2NUM(VIR_ERR_NO_KERNEL));
+    rb_define_const(e_LibvirtError, "ERR_NO_ROOT", INT2NUM(VIR_ERR_NO_ROOT));
+    rb_define_const(e_LibvirtError, "ERR_NO_SOURCE",
+                    INT2NUM(VIR_ERR_NO_SOURCE));
+    rb_define_const(e_LibvirtError, "ERR_NO_TARGET",
+                    INT2NUM(VIR_ERR_NO_TARGET));
+    rb_define_const(e_LibvirtError, "ERR_NO_NAME", INT2NUM(VIR_ERR_NO_NAME));
+    rb_define_const(e_LibvirtError, "ERR_NO_OS", INT2NUM(VIR_ERR_NO_OS));
+    rb_define_const(e_LibvirtError, "ERR_NO_DEVICE",
+                    INT2NUM(VIR_ERR_NO_DEVICE));
+    rb_define_const(e_LibvirtError, "ERR_NO_XENSTORE",
+                    INT2NUM(VIR_ERR_NO_XENSTORE));
+    rb_define_const(e_LibvirtError, "ERR_DRIVER_FULL",
+                    INT2NUM(VIR_ERR_DRIVER_FULL));
+    rb_define_const(e_LibvirtError, "ERR_CALL_FAILED",
+                    INT2NUM(VIR_ERR_CALL_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_XML_ERROR",
+                    INT2NUM(VIR_ERR_XML_ERROR));
+    rb_define_const(e_LibvirtError, "ERR_DOM_EXIST",
+                    INT2NUM(VIR_ERR_DOM_EXIST));
+    rb_define_const(e_LibvirtError, "ERR_OPERATION_DENIED",
                     INT2NUM(VIR_ERR_OPERATION_DENIED));
-    rb_define_const(e_Error, "ERR_OPEN_FAILED", INT2NUM(VIR_ERR_OPEN_FAILED));
-    rb_define_const(e_Error, "ERR_READ_FAILED", INT2NUM(VIR_ERR_READ_FAILED));
-    rb_define_const(e_Error, "ERR_PARSE_FAILED", INT2NUM(VIR_ERR_PARSE_FAILED));
-    rb_define_const(e_Error, "ERR_CONF_SYNTAX", INT2NUM(VIR_ERR_CONF_SYNTAX));
-    rb_define_const(e_Error, "ERR_WRITE_FAILED", INT2NUM(VIR_ERR_WRITE_FAILED));
-    rb_define_const(e_Error, "ERR_XML_DETAIL", INT2NUM(VIR_ERR_XML_DETAIL));
-    rb_define_const(e_Error, "ERR_INVALID_NETWORK",
+    rb_define_const(e_LibvirtError, "ERR_OPEN_FAILED",
+                    INT2NUM(VIR_ERR_OPEN_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_READ_FAILED",
+                    INT2NUM(VIR_ERR_READ_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_PARSE_FAILED",
+                    INT2NUM(VIR_ERR_PARSE_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_CONF_SYNTAX",
+                    INT2NUM(VIR_ERR_CONF_SYNTAX));
+    rb_define_const(e_LibvirtError, "ERR_WRITE_FAILED",
+                    INT2NUM(VIR_ERR_WRITE_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_XML_DETAIL",
+                    INT2NUM(VIR_ERR_XML_DETAIL));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_NETWORK",
                     INT2NUM(VIR_ERR_INVALID_NETWORK));
-    rb_define_const(e_Error, "ERR_NETWORK_EXIST",
+    rb_define_const(e_LibvirtError, "ERR_NETWORK_EXIST",
                     INT2NUM(VIR_ERR_NETWORK_EXIST));
-    rb_define_const(e_Error, "ERR_SYSTEM_ERROR", INT2NUM(VIR_ERR_SYSTEM_ERROR));
-    rb_define_const(e_Error, "ERR_RPC", INT2NUM(VIR_ERR_RPC));
-    rb_define_const(e_Error, "ERR_GNUTLS_ERROR", INT2NUM(VIR_ERR_GNUTLS_ERROR));
-    rb_define_const(e_Error, "WAR_NO_NETWORK", INT2NUM(VIR_WAR_NO_NETWORK));
-    rb_define_const(e_Error, "ERR_NO_DOMAIN", INT2NUM(VIR_ERR_NO_DOMAIN));
-    rb_define_const(e_Error, "ERR_NO_NETWORK", INT2NUM(VIR_ERR_NO_NETWORK));
-    rb_define_const(e_Error, "ERR_INVALID_MAC", INT2NUM(VIR_ERR_INVALID_MAC));
+    rb_define_const(e_LibvirtError, "ERR_SYSTEM_ERROR",
+                    INT2NUM(VIR_ERR_SYSTEM_ERROR));
+    rb_define_const(e_LibvirtError, "ERR_RPC", INT2NUM(VIR_ERR_RPC));
+    rb_define_const(e_LibvirtError, "ERR_GNUTLS_ERROR",
+                    INT2NUM(VIR_ERR_GNUTLS_ERROR));
+    rb_define_const(e_LibvirtError, "WAR_NO_NETWORK",
+                    INT2NUM(VIR_WAR_NO_NETWORK));
+    rb_define_const(e_LibvirtError, "ERR_NO_DOMAIN",
+                    INT2NUM(VIR_ERR_NO_DOMAIN));
+    rb_define_const(e_LibvirtError, "ERR_NO_NETWORK",
+                    INT2NUM(VIR_ERR_NO_NETWORK));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_MAC",
+                    INT2NUM(VIR_ERR_INVALID_MAC));
 #if HAVE_CONST_VIR_ERR_AUTH_FAILED
-    rb_define_const(e_Error, "ERR_AUTH_FAILED", INT2NUM(VIR_ERR_AUTH_FAILED));
+    rb_define_const(e_LibvirtError, "ERR_AUTH_FAILED",
+                    INT2NUM(VIR_ERR_AUTH_FAILED));
 #endif
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
-    rb_define_const(e_Error, "ERR_INVALID_STORAGE_POOL",
+    rb_define_const(e_LibvirtError, "ERR_INVALID_STORAGE_POOL",
                     INT2NUM(VIR_ERR_INVALID_STORAGE_POOL));
-    rb_define_const(e_Error, "ERR_INVALID_STORAGE_VOL",
+    rb_define_const(e_LibvirtError, "ERR_INVALID_STORAGE_VOL",
                     INT2NUM(VIR_ERR_INVALID_STORAGE_VOL));
-    rb_define_const(e_Error, "WAR_NO_STORAGE", INT2NUM(VIR_WAR_NO_STORAGE));
-    rb_define_const(e_Error, "ERR_NO_STORAGE_POOL",
+    rb_define_const(e_LibvirtError, "WAR_NO_STORAGE",
+                    INT2NUM(VIR_WAR_NO_STORAGE));
+    rb_define_const(e_LibvirtError, "ERR_NO_STORAGE_POOL",
                     INT2NUM(VIR_ERR_NO_STORAGE_POOL));
-    rb_define_const(e_Error, "ERR_NO_STORAGE_VOL",
+    rb_define_const(e_LibvirtError, "ERR_NO_STORAGE_VOL",
                     INT2NUM(VIR_ERR_NO_STORAGE_VOL));
 #endif
 #if HAVE_TYPE_VIRNODEDEVICEPTR
-    rb_define_const(e_Error, "WAR_NO_NODE", INT2NUM(VIR_WAR_NO_NODE));
-    rb_define_const(e_Error, "ERR_INVALID_NODE_DEVICE",
+    rb_define_const(e_LibvirtError, "WAR_NO_NODE", INT2NUM(VIR_WAR_NO_NODE));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_NODE_DEVICE",
                     INT2NUM(VIR_ERR_INVALID_NODE_DEVICE));
-    rb_define_const(e_Error, "ERR_NO_NODE_DEVICE",
+    rb_define_const(e_LibvirtError, "ERR_NO_NODE_DEVICE",
                     INT2NUM(VIR_ERR_NO_NODE_DEVICE));
 #endif
 #if HAVE_CONST_VIR_ERR_NO_SECURITY_MODEL
-    rb_define_const(e_Error, "ERR_NO_SECURITY_MODEL",
+    rb_define_const(e_LibvirtError, "ERR_NO_SECURITY_MODEL",
                     INT2NUM(VIR_ERR_NO_SECURITY_MODEL));
 #endif
 #if HAVE_CONST_VIR_ERR_OPERATION_INVALID
-    rb_define_const(e_Error, "ERR_OPERATION_INVALID",
+    rb_define_const(e_LibvirtError, "ERR_OPERATION_INVALID",
                     INT2NUM(VIR_ERR_OPERATION_INVALID));
 #endif
 #if HAVE_TYPE_VIRINTERFACEPTR
-    rb_define_const(e_Error, "WAR_NO_INTERFACE", INT2NUM(VIR_WAR_NO_INTERFACE));
-    rb_define_const(e_Error, "ERR_NO_INTERFACE", INT2NUM(VIR_ERR_NO_INTERFACE));
-    rb_define_const(e_Error, "ERR_INVALID_INTERFACE",
+    rb_define_const(e_LibvirtError, "WAR_NO_INTERFACE",
+                    INT2NUM(VIR_WAR_NO_INTERFACE));
+    rb_define_const(e_LibvirtError, "ERR_NO_INTERFACE",
+                    INT2NUM(VIR_ERR_NO_INTERFACE));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_INTERFACE",
                     INT2NUM(VIR_ERR_INVALID_INTERFACE));
-    rb_define_const(e_Error, "ERR_MULTIPLE_INTERFACES",
+    rb_define_const(e_LibvirtError, "ERR_MULTIPLE_INTERFACES",
                     INT2NUM(VIR_ERR_MULTIPLE_INTERFACES));
 #endif
 #if HAVE_TYPE_VIRNWFILTERPTR
-    rb_define_const(e_Error, "WAR_NO_NWFILTER", INT2NUM(VIR_WAR_NO_NWFILTER));
-    rb_define_const(e_Error, "ERR_INVALID_NWFILTER",
+    rb_define_const(e_LibvirtError, "WAR_NO_NWFILTER",
+                    INT2NUM(VIR_WAR_NO_NWFILTER));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_NWFILTER",
                     INT2NUM(VIR_ERR_INVALID_NWFILTER));
-    rb_define_const(e_Error, "ERR_NO_NWFILTER", INT2NUM(VIR_ERR_NO_NWFILTER));
-    rb_define_const(e_Error, "ERR_BUILD_FIREWALL",
+    rb_define_const(e_LibvirtError, "ERR_NO_NWFILTER",
+                    INT2NUM(VIR_ERR_NO_NWFILTER));
+    rb_define_const(e_LibvirtError, "ERR_BUILD_FIREWALL",
                     INT2NUM(VIR_ERR_BUILD_FIREWALL));
 #endif
 #if HAVE_TYPE_VIRSECRETPTR
-    rb_define_const(e_Error, "WAR_NO_SECRET", INT2NUM(VIR_WAR_NO_SECRET));
-    rb_define_const(e_Error, "ERR_INVALID_SECRET",
+    rb_define_const(e_LibvirtError, "WAR_NO_SECRET",
+                    INT2NUM(VIR_WAR_NO_SECRET));
+    rb_define_const(e_LibvirtError, "ERR_INVALID_SECRET",
                     INT2NUM(VIR_ERR_INVALID_SECRET));
-    rb_define_const(e_Error, "ERR_NO_SECRET", INT2NUM(VIR_ERR_NO_SECRET));
+    rb_define_const(e_LibvirtError, "ERR_NO_SECRET",
+                    INT2NUM(VIR_ERR_NO_SECRET));
 #endif
 #if HAVE_CONST_VIR_ERR_CONFIG_UNSUPPORTED
-    rb_define_const(e_Error, "ERR_CONFIG_UNSUPPORTED",
+    rb_define_const(e_LibvirtError, "ERR_CONFIG_UNSUPPORTED",
                     INT2NUM(VIR_ERR_CONFIG_UNSUPPORTED));
 #endif
 #if HAVE_CONST_VIR_ERR_OPERATION_TIMEOUT
-    rb_define_const(e_Error, "ERR_OPERATION_TIMEOUT",
+    rb_define_const(e_LibvirtError, "ERR_OPERATION_TIMEOUT",
                     INT2NUM(VIR_ERR_OPERATION_TIMEOUT));
 #endif
 #if HAVE_CONST_VIR_ERR_MIGRATE_PERSIST_FAILED
-    rb_define_const(e_Error, "ERR_MIGRATE_PERSIST_FAILED",
+    rb_define_const(e_LibvirtError, "ERR_MIGRATE_PERSIST_FAILED",
                     INT2NUM(VIR_ERR_MIGRATE_PERSIST_FAILED));
 #endif
 #if HAVE_CONST_VIR_ERR_HOOK_SCRIPT_FAILED
-    rb_define_const(e_Error, "ERR_HOOK_SCRIPT_FAILED",
+    rb_define_const(e_LibvirtError, "ERR_HOOK_SCRIPT_FAILED",
                     INT2NUM(VIR_ERR_HOOK_SCRIPT_FAILED));
 #endif
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
-    rb_define_const(e_Error, "ERR_INVALID_DOMAIN_SNAPSHOT",
+    rb_define_const(e_LibvirtError, "ERR_INVALID_DOMAIN_SNAPSHOT",
                     INT2NUM(VIR_ERR_INVALID_DOMAIN_SNAPSHOT));
-    rb_define_const(e_Error, "ERR_NO_DOMAIN_SNAPSHOT",
+    rb_define_const(e_LibvirtError, "ERR_NO_DOMAIN_SNAPSHOT",
                     INT2NUM(VIR_ERR_NO_DOMAIN_SNAPSHOT));
 #endif
 
     /* libvirt levels */
-    rb_define_const(e_Error, "LEVEL_NONE", INT2NUM(VIR_ERR_NONE));
-    rb_define_const(e_Error, "LEVEL_WARNING", INT2NUM(VIR_ERR_WARNING));
-    rb_define_const(e_Error, "LEVEL_ERROR", INT2NUM(VIR_ERR_ERROR));
+    rb_define_const(e_LibvirtError, "LEVEL_NONE", INT2NUM(VIR_ERR_NONE));
+    rb_define_const(e_LibvirtError, "LEVEL_WARNING", INT2NUM(VIR_ERR_WARNING));
+    rb_define_const(e_LibvirtError, "LEVEL_ERROR", INT2NUM(VIR_ERR_ERROR));
 
     rb_define_module_function(m_libvirt, "version", libvirt_version, -1);
     rb_define_module_function(m_libvirt, "open", libvirt_open, -1);

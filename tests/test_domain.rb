@@ -466,7 +466,7 @@ sleep 1
 expect_too_many_args(newdom, "block_stats", 1, 2)
 expect_too_few_args(newdom, "block_stats")
 expect_invalid_arg_type(newdom, "block_stats", 1)
-expect_fail(newdom, Libvirt::RetrieveError, "invalid path", "block_stats", "foo")
+expect_fail(newdom, Libvirt::Error, "invalid path", "block_stats", "foo")
 
 expect_success(newdom, "block device arg", "block_stats", "vda")
 
@@ -491,7 +491,7 @@ expect_too_many_args(newdom, "blockinfo", 1, 2, 3)
 expect_too_few_args(newdom, "blockinfo")
 expect_invalid_arg_type(newdom, "blockinfo", 1)
 expect_invalid_arg_type(newdom, "blockinfo", "foo", "bar")
-expect_fail(newdom, Libvirt::RetrieveError, "invalid path", "blockinfo", "foo")
+expect_fail(newdom, Libvirt::Error, "invalid path", "blockinfo", "foo")
 
 expect_success(newdom, "path arg", "blockinfo", $GUEST_DISK)
 
@@ -509,7 +509,7 @@ expect_invalid_arg_type(newdom, "block_peek", 1, 2, 3)
 expect_invalid_arg_type(newdom, "block_peek", "foo", "bar", 3)
 expect_invalid_arg_type(newdom, "block_peek", "foo", 0, "bar")
 expect_invalid_arg_type(newdom, "block_peek", "foo", 0, 512, "baz")
-expect_fail(newdom, Libvirt::RetrieveError, "invalid path", "block_peek", "foo", 0, 512)
+expect_fail(newdom, Libvirt::Error, "invalid path", "block_peek", "foo", 0, 512)
 
 blockpeek = newdom.block_peek($GUEST_DISK, 0, 512)
 
@@ -591,7 +591,7 @@ sleep 1
 expect_too_many_args(newdom, "ifinfo", 1, 2)
 expect_too_few_args(newdom, "ifinfo")
 expect_invalid_arg_type(newdom, "ifinfo", 1)
-expect_fail(newdom, Libvirt::RetrieveError, "invalid arg", "ifinfo", "foo")
+expect_fail(newdom, Libvirt::Error, "invalid arg", "ifinfo", "foo")
 
 expect_success(newdom, "interface arg", "ifinfo", "rl556")
 
@@ -949,7 +949,7 @@ newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "current_snapshot", 1, 2)
 expect_invalid_arg_type(newdom, "current_snapshot", 'foo')
-expect_fail(newdom, Libvirt::RetrieveError, "with no snapshots", "current_snapshot")
+expect_fail(newdom, Libvirt::Error, "with no snapshots", "current_snapshot")
 
 newdom.snapshot_create_xml("<domainsnapshot><name>foo</name></domainsnapshot>")
 
@@ -962,7 +962,7 @@ newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "job_info", 1)
 
-expect_fail(newdom, Libvirt::RetrieveError, "shutoff domain", "job_info")
+expect_fail(newdom, Libvirt::Error, "shutoff domain", "job_info")
 
 newdom.undefine
 

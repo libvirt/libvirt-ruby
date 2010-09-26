@@ -225,7 +225,7 @@ expect_too_many_args(newpool, "lookup_volume_by_name", 1, 2)
 expect_too_few_args(newpool, "lookup_volume_by_name")
 expect_invalid_arg_type(newpool, "lookup_volume_by_name", 1);
 expect_invalid_arg_type(newpool, "lookup_volume_by_name", nil);
-expect_fail(newpool, Libvirt::RetrieveError, "non-existent name arg", "lookup_volume_by_name", "foobarbazsucker")
+expect_fail(newpool, Libvirt::Error, "non-existent name arg", "lookup_volume_by_name", "foobarbazsucker")
 
 expect_success(newpool, "name arg", "lookup_volume_by_name", "test.img")
 
@@ -240,7 +240,7 @@ expect_too_many_args(newpool, "lookup_volume_by_key", 1, 2)
 expect_too_few_args(newpool, "lookup_volume_by_key")
 expect_invalid_arg_type(newpool, "lookup_volume_by_key", 1);
 expect_invalid_arg_type(newpool, "lookup_volume_by_key", nil);
-expect_fail(newpool, Libvirt::RetrieveError, "non-existent key arg", "lookup_volume_by_key", "foobarbazsucker")
+expect_fail(newpool, Libvirt::Error, "non-existent key arg", "lookup_volume_by_key", "foobarbazsucker")
 
 expect_success(newpool, "name arg", "lookup_volume_by_key", newvol.key)
 
@@ -255,7 +255,7 @@ expect_too_many_args(newpool, "lookup_volume_by_path", 1, 2)
 expect_too_few_args(newpool, "lookup_volume_by_path")
 expect_invalid_arg_type(newpool, "lookup_volume_by_path", 1);
 expect_invalid_arg_type(newpool, "lookup_volume_by_path", nil);
-expect_fail(newpool, Libvirt::RetrieveError, "non-existent path arg", "lookup_volume_by_path", "foobarbazsucker")
+expect_fail(newpool, Libvirt::Error, "non-existent path arg", "lookup_volume_by_path", "foobarbazsucker")
 
 expect_success(newpool, "name arg", "lookup_volume_by_path", newvol.path)
 

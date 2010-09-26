@@ -10,7 +10,7 @@ require 'test_utils.rb'
 set_test_object("Libvirt")
 
 def expect_connect_error(func, args)
-  expect_fail(Libvirt, Libvirt::ConnectionError, "invalid driver", func, *args)
+  expect_fail(Libvirt, Libvirt::Error, "invalid driver", func, *args)
 end
 
 # TESTGROUP: Libvirt::version

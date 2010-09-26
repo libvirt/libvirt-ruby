@@ -30,6 +30,8 @@
 #include "common.h"
 #include "connect.h"
 
+extern VALUE e_LibvirtError;
+
 struct rb_exc_new2_arg {
     VALUE error;
     char *msg;
@@ -93,8 +95,8 @@ VALUE ruby_libvirt_str_new2_and_ary_store_wrap(VALUE arg)
     return Qnil;
 }
 
-void ruby_libvirt_raise_error_if(const int condition, VALUE error,
-                                 const char *method, virConnectPtr conn)
+void ruby_libvirt_raise_error_if(const int condition, const char *method,
+                                 virConnectPtr conn)
 {
     VALUE ruby_errinfo;
     virErrorPtr err;
@@ -127,7 +129,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
         rb_memerror();
     }
 
-    arg.error = error;
+    arg.error = e_LibvirtError;
     arg.msg = msg;
     ruby_errinfo = rb_protect(ruby_libvirt_exc_new2_wrap, (VALUE)&arg,
                               &exception);
@@ -283,7 +285,7 @@ VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
     int i;
 
     errname = nparams_cb(d, flags, opaque, &nparams);
-    ruby_libvirt_raise_error_if(errname != NULL, e_RetrieveError, errname,
+    ruby_libvirt_raise_error_if(errname != NULL, errname,
                                 ruby_libvirt_connect_get(d));
 
     result = rb_hash_new();
@@ -295,7 +297,7 @@ VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
     params = alloca(typesize * nparams);
 
     errname = get_cb(d, flags, params, &nparams, opaque);
-    ruby_libvirt_raise_error_if(errname != NULL, e_RetrieveError, errname,
+    ruby_libvirt_raise_error_if(errname != NULL, errname,
                                 ruby_libvirt_connect_get(d));
 
     for (i = 0; i < nparams; i++) {
@@ -428,7 +430,7 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
     rb_hash_foreach(input, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
 
     errname = set_cb(d, flags, args.params, args.i, opaque);
-    ruby_libvirt_raise_error_if(errname != NULL, e_RetrieveError, errname,
+    ruby_libvirt_raise_error_if(errname != NULL, errname,
                                 ruby_libvirt_connect_get(d));
 
     return Qnil;
@@ -481,7 +483,7 @@ int ruby_libvirt_get_maxcpus(virConnectPtr conn)
     if (maxcpu < 0) {
         /* fall back to nodeinfo */
         ruby_libvirt_raise_error_if(virNodeGetInfo(conn, &nodeinfo) < 0,
-                                    e_RetrieveError, "virNodeGetInfo", conn);
+                                    "virNodeGetInfo", conn);
 
         maxcpu = VIR_NODEINFO_MAXCPUS(nodeinfo);
     }

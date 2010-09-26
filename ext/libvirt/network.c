@@ -177,7 +177,7 @@ static VALUE libvirt_network_autostart(VALUE n)
     int r, autostart;
 
     r = virNetworkGetAutostart(network_get(n), &autostart);
-    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError, "virNetworkAutostart",
+    ruby_libvirt_raise_error_if(r < 0, "virNetworkAutostart",
                                 ruby_libvirt_connect_get(n));
 
     return autostart ? Qtrue : Qfalse;

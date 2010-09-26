@@ -70,7 +70,7 @@ expect_success(conn, "no args", "uri") {|x| x == "qemu:///system" }
 
 # TESTGROUP: conn.max_vcpus
 expect_too_many_args(conn, "max_vcpus", 'kvm', 1)
-expect_fail(conn, Libvirt::RetrieveError, "invalid arg", "max_vcpus", "foo")
+expect_fail(conn, Libvirt::Error, "invalid arg", "max_vcpus", "foo")
 
 expect_success(conn, "no args", "max_vcpus")
 expect_success(conn, "nil arg", "max_vcpus")
@@ -254,7 +254,7 @@ sleep 1
 expect_too_many_args(conn, "lookup_domain_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_domain_by_name")
 expect_invalid_arg_type(conn, "lookup_domain_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_domain_by_name", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent name arg", "lookup_domain_by_name", "foobarbazsucker")
 
 expect_success(conn, "name arg for running domain", "lookup_domain_by_name", "ruby-libvirt-tester") {|x| x.name == "ruby-libvirt-tester"}
 newdom.destroy
@@ -282,7 +282,7 @@ sleep 1
 expect_too_many_args(conn, "lookup_domain_by_uuid", 1, 2)
 expect_too_few_args(conn, "lookup_domain_by_uuid")
 expect_invalid_arg_type(conn, "lookup_domain_by_uuid", 1)
-expect_fail(conn, Libvirt::RetrieveError, "invalid UUID", "lookup_domain_by_uuid", "abcd")
+expect_fail(conn, Libvirt::Error, "invalid UUID", "lookup_domain_by_uuid", "abcd")
 
 expect_success(conn, "UUID arg for running domain", "lookup_domain_by_uuid", newdom.uuid) {|x| x.uuid == $GUEST_UUID}
 newdom.destroy
@@ -296,7 +296,7 @@ expect_too_many_args(conn, "define_domain_xml", 1, 2)
 expect_too_few_args(conn, "define_domain_xml")
 expect_invalid_arg_type(conn, "define_domain_xml", 1)
 expect_invalid_arg_type(conn, "define_domain_xml", nil)
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_domain_xml", "hello")
+expect_fail(conn, Libvirt::Error, "invalid XML", "define_domain_xml", "hello")
 
 newdom = expect_success(conn, "domain xml arg", "define_domain_xml", $new_dom_xml)
 newdom.undefine
@@ -349,7 +349,7 @@ newiface = conn.define_interface_xml($new_interface_xml)
 expect_too_many_args(conn, "lookup_interface_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_interface_by_name")
 expect_invalid_arg_type(conn, "lookup_interface_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_interface_by_name", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent name arg", "lookup_interface_by_name", "foobarbazsucker")
 
 expect_success(conn, "name arg", "lookup_interface_by_name", "ruby-libvirt-tester")
 
@@ -365,7 +365,7 @@ newiface = conn.define_interface_xml($new_interface_xml)
 expect_too_many_args(conn, "lookup_interface_by_mac", 1, 2)
 expect_too_few_args(conn, "lookup_interface_by_mac")
 expect_invalid_arg_type(conn, "lookup_interface_by_mac", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent mac arg", "lookup_interface_by_mac", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent mac arg", "lookup_interface_by_mac", "foobarbazsucker")
 
 # FIXME: we can't look up an interface by MAC address on an inactive interface,
 # but we also can't start up the interface without a /etc/sysconfig file.
@@ -379,7 +379,7 @@ expect_too_few_args(conn, "define_interface_xml")
 expect_invalid_arg_type(conn, "define_interface_xml", 1)
 expect_invalid_arg_type(conn, "define_interface_xml", nil)
 expect_invalid_arg_type(conn, "define_interface_xml", "hello", 'foo')
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_interface_xml", "hello")
+expect_fail(conn, Libvirt::Error, "invalid XML", "define_interface_xml", "hello")
 
 expect_success(conn, "interface XML", "define_interface_xml", $new_interface_xml)
 newiface.undefine
@@ -406,7 +406,7 @@ newnet = conn.create_network_xml($new_net_xml)
 expect_too_many_args(conn, "lookup_network_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_network_by_name")
 expect_invalid_arg_type(conn, "lookup_network_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_network_by_name", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent name arg", "lookup_network_by_name", "foobarbazsucker")
 
 expect_success(conn, "name arg", "lookup_network_by_name", "ruby-libvirt-tester")
 newnet.destroy
@@ -421,7 +421,7 @@ newnet = conn.create_network_xml($new_net_xml)
 expect_too_many_args(conn, "lookup_network_by_uuid", 1, 2)
 expect_too_few_args(conn, "lookup_network_by_uuid")
 expect_invalid_arg_type(conn, "lookup_network_by_uuid", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent uuid arg", "lookup_network_by_uuid", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent uuid arg", "lookup_network_by_uuid", "foobarbazsucker")
 
 expect_success(conn, "uuid arg", "lookup_network_by_uuid", $NETWORK_UUID)
 newnet.destroy
@@ -448,7 +448,7 @@ expect_too_many_args(conn, "define_network_xml", 1, 2)
 expect_too_few_args(conn, "define_network_xml")
 expect_invalid_arg_type(conn, "define_network_xml", 1)
 expect_invalid_arg_type(conn, "define_network_xml", nil)
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_network_xml", "hello")
+expect_fail(conn, Libvirt::Error, "invalid XML", "define_network_xml", "hello")
 
 newnet = expect_success(conn, "network XML", "define_network_xml", $new_net_xml)
 newnet.undefine
@@ -471,7 +471,7 @@ testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
 expect_too_many_args(conn, "lookup_nodedevice_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_nodedevice_by_name")
 expect_invalid_arg_type(conn, "lookup_nodedevice_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_nodedevice_by_name", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent name arg", "lookup_nodedevice_by_name", "foobarbazsucker")
 
 expect_success(conn, "name arg", "lookup_nodedevice_by_name", testnode.name)
 
@@ -519,7 +519,7 @@ expect_too_many_args(conn, "define_nwfilter_xml", 1, 2)
 expect_too_few_args(conn, "define_nwfilter_xml")
 expect_invalid_arg_type(conn, "define_nwfilter_xml", 1)
 expect_invalid_arg_type(conn, "define_nwfilter_xml", nil)
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_nwfilter_xml", "hello")
+expect_fail(conn, Libvirt::Error, "invalid XML", "define_nwfilter_xml", "hello")
 
 newnw = expect_success(conn, "nwfilter XML", "define_nwfilter_xml", $new_nwfilter_xml)
 
@@ -551,7 +551,7 @@ expect_too_many_args(conn, "lookup_secret_by_usage", 1, 2, 3)
 expect_too_few_args(conn, "lookup_secret_by_usage")
 expect_invalid_arg_type(conn, "lookup_secret_by_usage", 'foo', 1)
 expect_invalid_arg_type(conn, "lookup_secret_by_usage", 1, 2)
-expect_fail(conn, Libvirt::RetrieveError, "invalid secret", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "foo")
+expect_fail(conn, Libvirt::Error, "invalid secret", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "foo")
 
 expect_success(conn, "usage type and key", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "/var/lib/libvirt/images/mail.img")
 
@@ -563,7 +563,7 @@ expect_too_few_args(conn, "define_secret_xml")
 expect_invalid_arg_type(conn, "define_secret_xml", 1)
 expect_invalid_arg_type(conn, "define_secret_xml", nil)
 expect_invalid_arg_type(conn, "define_secret_xml", "hello", 'foo')
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_secret_xml", "hello")
+expect_fail(conn, Libvirt::Error, "invalid XML", "define_secret_xml", "hello")
 
 expect_success(conn, "secret XML", "define_secret_xml", $new_secret_xml)
 
@@ -591,7 +591,7 @@ newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 expect_too_many_args(conn, "lookup_storage_pool_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_storage_pool_by_name")
 expect_invalid_arg_type(conn, "lookup_storage_pool_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_storage_pool_by_name", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent name arg", "lookup_storage_pool_by_name", "foobarbazsucker")
 
 expect_success(conn, "name arg", "lookup_storage_pool_by_name", "ruby-libvirt-tester")
 
@@ -607,7 +607,7 @@ newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 expect_too_many_args(conn, "lookup_storage_pool_by_uuid", 1, 2)
 expect_too_few_args(conn, "lookup_storage_pool_by_uuid")
 expect_invalid_arg_type(conn, "lookup_storage_pool_by_uuid", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent uuid arg", "lookup_storage_pool_by_uuid", "foobarbazsucker")
+expect_fail(conn, Libvirt::Error, "non-existent uuid arg", "lookup_storage_pool_by_uuid", "foobarbazsucker")
 
 expect_success(conn, "uuid arg", "lookup_storage_pool_by_uuid", $POOL_UUID)
 
