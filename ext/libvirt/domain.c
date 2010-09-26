@@ -1063,8 +1063,8 @@ static VALUE libvirt_dom_max_memory(VALUE s) {
  *   dom.max_memory = Fixnum
  *
  * Call +virDomainSetMaxMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMaxMemory]
- * to set the maximum amount of memory this domain should be allowed to
- * access.
+ * to set the maximum amount of memory (in kilobytes) this domain should be
+ * allowed to access.
  */
 static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
     virDomainPtr dom = domain_get(s);
@@ -1082,9 +1082,9 @@ static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
  *   dom.memory = Fixnum
  *
  * Call +virDomainSetMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemory]
- * to set the amount of memory this domain should currently have.  Note this
- * will only succeed if both the hypervisor and the domain on this connection
- * support ballooning.
+ * to set the amount of memory (in kilobytes) this domain should currently
+ * have.  Note this will only succeed if both the hypervisor and the domain on
+ * this connection support ballooning.
  */
 static VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
     virDomainPtr dom = domain_get(s);
