@@ -157,24 +157,38 @@ static VALUE libvirt_interface_undefine(VALUE s) {
 
 /*
  * call-seq:
- *   interface.create -> nil
+ *   interface.create(flags=0) -> nil
  *
  * Call +virInterfaceCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceCreate]
  * to start this interface.
  */
-static VALUE libvirt_interface_create(VALUE s) {
-    gen_call_void(virInterfaceCreate, conn(s), interface_get(s), 0);
+static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virInterfaceCreate, conn(s), interface_get(s),
+                  NUM2UINT(flags));
 }
 
 /*
  * call-seq:
- *   interface.destroy -> nil
+ *   interface.destroy(flags=0) -> nil
  *
  * Call +virInterfaceDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDestroy]
  * to shutdown this interface.
  */
-static VALUE libvirt_interface_destroy(VALUE s) {
-    gen_call_void(virInterfaceDestroy, conn(s), interface_get(s), 0);
+static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_void(virInterfaceDestroy, conn(s), interface_get(s),
+                  NUM2UINT(flags));
 }
 
 #if HAVE_VIRINTERFACEISACTIVE
