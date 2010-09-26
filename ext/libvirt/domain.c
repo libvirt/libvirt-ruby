@@ -1144,6 +1144,10 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
     unsigned char *cpumap;
     virNodeInfo nodeinfo;
     virConnectPtr c = conn(s);
+    unsigned int vcpunum;
+
+    vcpunum = NUM2UINT(vcpu);
+    Check_Type(cpulist, T_ARRAY);
 
     r = virNodeGetInfo(c, &nodeinfo);
     _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", "", c));
@@ -1158,7 +1162,7 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
         VIR_USE_CPU(cpumap, NUM2UINT(e));
     }
 
-    r = virDomainPinVcpu(dom, NUM2UINT(vcpu), cpumap, maplen);
+    r = virDomainPinVcpu(dom, vcpunum, cpumap, maplen);
     xfree(cpumap);
     _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", "", c));
 
