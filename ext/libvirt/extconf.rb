@@ -1,5 +1,7 @@
 require 'mkmf'
 
+RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
+
 def have_libvirt_funcs(funcs)
     funcs.each { |f| have_func(f, "libvirt/libvirt.h") }
 end
