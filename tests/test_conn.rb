@@ -9,6 +9,13 @@ require 'test_utils.rb'
 
 conn = Libvirt::open("qemu:///system")
 
+cpu_xml = <<EOF
+<cpu>
+  <arch>x86_64</arch>
+  <model>Nehalem</model>
+</cpu>
+EOF
+
 # TESTGROUP: conn.close
 conn2 = Libvirt::open("qemu:///system")
 expect_too_many_args(conn2, "close", 1)
@@ -113,12 +120,25 @@ expect_too_many_args(conn, "capabilities", 1)
 capabilities = conn.capabilities
 puts_ok "conn.capabilities no args succeeded"
 
+# TESTGROUP: conn.compare_cpu
+expect_too_many_args(conn, "compare_cpu", 1, 2, 3)
+expect_too_few_args(conn, "compare_cpu")
+expect_invalid_arg_type(conn, "compare_cpu", 1)
+expect_invalid_arg_type(conn, "compare_cpu", "hello", 'bar')
+expect_fail(conn, Libvirt::RetrieveError, "invalid XML", "compare_cpu", "hello")
+comp = conn.compare_cpu(cpu_xml)
+puts_ok "conn.compare_cpu succeeded"
+
+# TESTGROUP: conn.baseline_cpu
+expect_too_many_args(conn, "baseline_cpu", 1, 2, 3)
+expect_too_few_args(conn, "baseline_cpu")
+expect_invalid_arg_type(conn, "baseline_cpu", 1)
+expect_invalid_arg_type(conn, "baseline_cpu", [], "foo")
+expect_fail(conn, ArgumentError, "empty array", "baseline_cpu", [])
+
+comp = conn.baseline_cpu([cpu_xml])
+puts_ok "conn.baseline_cpu succeeded"
+
 conn.close
-closed = conn.closed?
-if not closed
-  puts_fail "after close, connection is still open"
-else
-  puts_ok "after close, conn closed? = #{closed}"
-end
 
 finish_tests

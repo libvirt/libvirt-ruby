@@ -74,6 +74,8 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeGetSecurityModel',
                   'virDomainCreateXML',
                   'virDomainGetSecurityLabel',
+                  'virConnectCompareCPU',
+                  'virConnectBaselineCPU',
                 ]
 
 have_libvirt_types(libvirt_types)

@@ -350,6 +350,77 @@ static VALUE libvirt_conn_capabilities(VALUE s) {
 }
 
 /*
+ * call-seq:
+ *   conn.compare_cpu(xml, flags=0) -> compareflag
+ * Call +virConnectCompareCPU+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectCompareCPU]
+ * to compare the host CPU with the XML contained in xml.  Returns one of
+ * Libvirt::CPU_COMPARE_ERROR, Libvirt::CPU_COMPARE_INCOMPATIBLE,
+ * Libvirt::CPU_COMPARE_IDENTICAL, or Libvirt::CPU_COMPARE_SUPERSET.
+ */
+static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s) {
+    VALUE xml, flags;
+    int r;
+    virConnectPtr conn = connect_get(s);
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    r = virConnectCompareCPU(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virConnectCompareCPU", conn));
+
+    return INT2NUM(r);
+}
+
+/*
+ * call-seq:
+ *   conn.baseline_cpu([xml, xml2, ...], flags=0) -> XML
+ * Call +virConnectBaselineCPU+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectBaselineCPU]
+ * to compare the most feature-rich CPU which is compatible with all
+ * given host CPUs.
+ */
+static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
+    VALUE xmlcpus, flags_val;
+    virConnectPtr conn = connect_get(s);
+    char *r;
+    VALUE retval;
+    unsigned int ncpus, flags;
+    VALUE entry;
+    const char **xmllist;
+    int i;
+
+    rb_scan_args(argc, argv, "11", &xmlcpus, &flags_val);
+    if (NIL_P(flags_val))
+        flags = 0;
+    else
+        flags = NUM2UINT(flags_val);
+
+    Check_Type(xmlcpus, T_ARRAY);
+
+    /* FIXME: what do we do on a 0-sized array? */
+
+    ncpus = RARRAY(xmlcpus)->len;
+    xmllist = ALLOC_N(const char *, ncpus);
+
+    for (i = 0; i < ncpus; i++) {
+        /* FIXME: if either of these throws an exception, we'll leak xmllist */
+        entry = rb_ary_entry(xmlcpus, i);
+        xmllist[i] = StringValueCStr(entry);
+    }
+
+    r = virConnectBaselineCPU(conn, xmllist, ncpus, flags);
+    xfree(xmllist);
+    _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU", conn));
+
+    /* FIXME: if this fails, we'll leak r */
+    retval = rb_str_new2(r);
+
+    free(r);
+
+    return retval;
+}
+
+/*
  * Class Libvirt::Connect
  */
 void init_connect()
@@ -404,6 +475,23 @@ void init_connect()
     rb_define_method(c_connect, "secure?", libvirt_conn_secure_p, 0);
 #endif
     rb_define_method(c_connect, "capabilities", libvirt_conn_capabilities, 0);
+
+#if HAVE_VIRCONNECTCOMPARECPU
+    rb_define_const(c_connect, "CPU_COMPARE_ERROR",
+                    INT2NUM(VIR_CPU_COMPARE_ERROR));
+    rb_define_const(c_connect, "CPU_COMPARE_INCOMPATIBLE",
+                    INT2NUM(VIR_CPU_COMPARE_INCOMPATIBLE));
+    rb_define_const(c_connect, "CPU_COMPARE_IDENTICAL",
+                    INT2NUM(VIR_CPU_COMPARE_IDENTICAL));
+    rb_define_const(c_connect, "CPU_COMPARE_SUPERSET",
+                    INT2NUM(VIR_CPU_COMPARE_SUPERSET));
+
+    rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1);
+#endif
+
+#if HAVE_VIRCONNECTBASELINECPU
+    rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1);
+#endif
 
     /* FIXME: implement these */
     /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED)); */
@@ -472,11 +560,5 @@ void init_connect()
     /* rb_define_method(c_connect, "domain_event_deregister_any",
                        libvirt_conn_domain_event_deregister_any, -1);
     */
-    /* rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1); */
-    /* rb_define_const(c_connect, "CPU_COMPARE_ERROR", INT2NUM(VIR_CPU_COMPARE_ERROR)); */
-    /* rb_define_const(c_connect, "CPU_COMPARE_INCOMPATIBLE", INT2NUM(VIR_CPU_COMPARE_INCOMPATIBLE)); */
-    /* rb_define_const(c_connect, "CPU_COMPARE_IDENTICAL", INT2NUM(VIR_CPU_COMPARE_IDENTICAL)); */
-    /* rb_define_const(c_connect, "CPU_COMPARE_SUPERSET", INT2NUM(VIR_CPU_COMPARE_SUPERSET)); */
-    /* rb_define_method(c_connect, "compare_cpu", libvirt_conn_compare_cpu, -1); */
     /* rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1); */
 }
