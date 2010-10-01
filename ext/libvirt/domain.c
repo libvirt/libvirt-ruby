@@ -90,7 +90,8 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     r = virConnectListDomains(conn, ids, num);
     if (r < 0) {
         xfree(ids);
-        _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains", conn));
+        rb_exc_raise(create_error(e_RetrieveError, "virConnectListDomains",
+                                  conn));
     }
 
     result = rb_ary_new2(num);
