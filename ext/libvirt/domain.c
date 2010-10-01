@@ -991,7 +991,8 @@ static VALUE libvirt_dom_id(VALUE s) {
     int out;
 
     id = virDomainGetID(dom);
-    _E(id < 0, create_error(e_RetrieveError, "virDomainGetID", conn(s)));
+    _E(id == (unsigned int)-1, create_error(e_RetrieveError, "virDomainGetID",
+                                            conn(s)));
 
     /* we need to cast the unsigned int id to a signed int out to handle the
      * -1 case
