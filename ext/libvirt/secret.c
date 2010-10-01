@@ -230,6 +230,8 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
     unsigned char *val;
     size_t value_size;
     VALUE ret;
+    int exception = 0;
+    struct rb_str_new_arg args;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -241,7 +243,13 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
     _E(val == NULL, create_error(e_RetrieveError, "virSecretGetValue",
                                  conn(s)));
 
-    ret = rb_str_new((char *)val, value_size);
+    args.val = (char *)val;
+    args.size = value_size;
+    ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
+    if (exception) {
+        free(val);
+        rb_jump_tag(exception);
+    }
 
     free(val);
 

@@ -71,11 +71,10 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
  * to retrieve a list of node device names on this connection.
  */
 static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
-    int i, r, num;
+    int r, num;
     virConnectPtr conn = connect_get(c);
     VALUE cap, flags_val;
     char *capstr;
-    VALUE result;
     char **names;
     unsigned int flags;
 
@@ -90,11 +89,10 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
 
     num = virNodeNumOfDevices(conn, capstr, 0);
     _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
-    if (num == 0) {
+    if (num == 0)
         /* if num is 0, don't call virNodeListDevices function */
-        result = rb_ary_new2(num);
-        return result;
-    }
+        return rb_ary_new2(num);
+
     names = ALLOC_N(char *, num);
     r = virNodeListDevices(conn, capstr, names, num, flags);
     if (r < 0) {
@@ -102,13 +100,7 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
         rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices", conn));
     }
 
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    xfree(names);
-    return result;
+    return gen_list(num, &names);
 }
 
 /*
@@ -214,19 +206,17 @@ static VALUE libvirt_nodedevice_num_of_caps(VALUE c) {
  * to retrieve a list of capabilities of the node device.
  */
 static VALUE libvirt_nodedevice_list_caps(VALUE c) {
-    int i, r, num;
+    int r, num;
     virConnectPtr conn = connect_get(c);
     virNodeDevicePtr nodedev = nodedevice_get(c);
-    VALUE result;
     char **names;
 
     num = virNodeDeviceNumOfCaps(nodedev);
     _E(num < 0, create_error(e_RetrieveError, "virNodeDeviceNumOfCaps", conn));
-    if (num == 0) {
+    if (num == 0)
         /* if num is 0, don't call virNodeDeviceListCaps function */
-        result = rb_ary_new2(num);
-        return result;
-    }
+        return rb_ary_new2(num);
+
     names = ALLOC_N(char *, num);
     r = virNodeDeviceListCaps(nodedev, names, num);
     if (r < 0) {
@@ -235,13 +225,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c) {
                                   conn));
     }
 
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    xfree(names);
-    return result;
+    return gen_list(num, &names);
 }
 
 /*

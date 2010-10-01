@@ -92,6 +92,9 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         return INT2NUM(result);                                         \
     } while(0)
 
+
+VALUE gen_list(int num, char ***list);
+
 /*
  * Generate a call to a virConnectList... function. S is the Ruby VALUE
  * holding the connection and OBJS is a token indicating what objects to
@@ -100,17 +103,15 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
  */
 #define gen_conn_list_names(s, objs)                                    \
     do {                                                                \
-        int i, r, num;                                                  \
+        int r, num;                                                     \
         char **names;                                                   \
         virConnectPtr conn = connect_get(s);                            \
-        VALUE result;                                                   \
                                                                         \
         num = virConnectNumOf##objs(conn);                              \
         _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));   \
         if (num == 0) {                                                 \
             /* if num is 0, don't call virConnectList* function */      \
-            result = rb_ary_new2(num);                                  \
-            return result;                                              \
+            return rb_ary_new2(num);                                    \
         }                                                               \
         names = ALLOC_N(char *, num);                                   \
         r = virConnectList##objs(conn, names, num);                     \
@@ -119,15 +120,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
             _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, conn));  \
         }                                                               \
                                                                         \
-        /* FIXME: if this fails, we'll leak names (and names[i]) */     \
-        result = rb_ary_new2(num);                                      \
-        for (i=0; i<num; i++) {                                         \
-            /* FIXME: if this fails, we'll leak names (and names[i]) */ \
-            rb_ary_push(result, rb_str_new2(names[i]));                 \
-            xfree(names[i]);                                            \
-        }                                                               \
-        xfree(names);                                                   \
-        return result;                                                  \
+        return gen_list(num, &names);                                   \
     } while(0)
 
 /* Generate a call to a function FUNC which returns an int; -1 indicates
@@ -153,5 +146,37 @@ extern VALUE e_NoSupportError;
 extern VALUE m_libvirt;
 
 char *get_string_or_nil(VALUE arg);
+
+VALUE rb_str_new2_wrap(VALUE arg);
+struct rb_ary_entry_arg {
+    VALUE arr;
+    int elem;
+};
+VALUE rb_ary_entry_wrap(VALUE arg);
+struct rb_str_new_arg {
+    char *val;
+    size_t size;
+};
+VALUE rb_str_new_wrap(VALUE arg);
+VALUE rb_ary_new_wrap(VALUE arg);
+struct rb_ary_push_arg {
+    VALUE arr;
+    VALUE value;
+};
+VALUE rb_ary_push_wrap(VALUE arg);
+VALUE rb_ary_new2_wrap(VALUE arg);
+struct rb_iv_set_arg {
+    VALUE klass;
+    char *member;
+    VALUE value;
+};
+VALUE rb_iv_set_wrap(VALUE arg);
+struct rb_class_new_instance_arg {
+    int argc;
+    VALUE *argv;
+    VALUE klass;
+};
+VALUE rb_class_new_instance_wrap(VALUE arg);
+VALUE rb_string_value_cstr_wrap(VALUE arg);
 
 #endif

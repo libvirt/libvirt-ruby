@@ -388,6 +388,8 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
     VALUE entry;
     const char **xmllist;
     int i;
+    int exception = 0;
+    struct rb_ary_entry_arg arg;
 
     rb_scan_args(argc, argv, "11", &xmlcpus, &flags_val);
     if (NIL_P(flags_val))
@@ -397,23 +399,41 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
 
     Check_Type(xmlcpus, T_ARRAY);
 
-    /* FIXME: what do we do on a 0-sized array? */
+    if (RARRAY(xmlcpus)->len < 1) {
+        rb_raise(rb_eArgError, "wrong number of cpu arguments (%d for 1 or more)",
+                 RARRAY(xmlcpus)->len);
+        return Qnil;
+    }
 
     ncpus = RARRAY(xmlcpus)->len;
     xmllist = ALLOC_N(const char *, ncpus);
 
     for (i = 0; i < ncpus; i++) {
-        /* FIXME: if either of these throws an exception, we'll leak xmllist */
-        entry = rb_ary_entry(xmlcpus, i);
-        xmllist[i] = StringValueCStr(entry);
+        arg.arr = xmlcpus;
+        arg.elem = i;
+        entry = rb_protect(rb_ary_entry_wrap, (VALUE)&arg, &exception);
+        if (exception) {
+            xfree(xmllist);
+            rb_jump_tag(exception);
+        }
+
+        xmllist[i] = (char *)rb_protect(rb_string_value_cstr_wrap,
+                                        (VALUE)&entry, &exception);
+        if (exception) {
+            xfree(xmllist);
+            rb_jump_tag(exception);
+        }
     }
 
     r = virConnectBaselineCPU(conn, xmllist, ncpus, flags);
     xfree(xmllist);
     _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU", conn));
 
-    /* FIXME: if this fails, we'll leak r */
-    retval = rb_str_new2(r);
+    retval = rb_protect(rb_str_new2_wrap, (VALUE)&r, &exception);
+    if (exception) {
+        free(r);
+        rb_jump_tag(exception);
+    }
 
     free(r);
 

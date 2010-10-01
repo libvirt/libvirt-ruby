@@ -78,6 +78,8 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
     int i, r, num, *ids;
     virConnectPtr conn = connect_get(s);
     VALUE result;
+    int exception = 0;
+    struct rb_ary_push_arg args;
 
     num = virConnectNumOfDomains(conn);
     _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", conn));
@@ -94,9 +96,20 @@ static VALUE libvirt_conn_list_domains(VALUE s) {
                                   conn));
     }
 
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, INT2NUM(ids[i]));
+    result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
+    if (exception) {
+        xfree(ids);
+        rb_jump_tag(exception);
+    }
+
+    for (i = 0; i < num; i++) {
+        args.arr = result;
+        args. value = INT2NUM(ids[i]);
+        rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            xfree(ids);
+            rb_jump_tag(exception);
+        }
     }
     xfree(ids);
     return result;
@@ -740,6 +753,8 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
     char *path;
     unsigned int size, flags;
     unsigned long long offset;
+    struct rb_str_new_arg args;
+    int exception = 0;
 
     rb_scan_args(argc, argv, "31", &path_val, &offset_val, &size_val,
                  &flags_val);
@@ -762,9 +777,12 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
                                   conn(s)));
     }
 
-    ret = rb_str_new((char *)buffer, size);
-
+    args.val = buffer;
+    args.size = size;
+    ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
     xfree(buffer);
+    if (exception)
+        rb_jump_tag(exception);
 
     return ret;
 }
@@ -786,6 +804,8 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
     VALUE ret;
     unsigned int size, flags;
     unsigned long long start;
+    struct rb_str_new_arg args;
+    int exception = 0;
 
     rb_scan_args(argc, argv, "21", &start_val, &size_val, &flags_val);
 
@@ -806,15 +826,14 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
                                   conn(s)));
     }
 
-    ret = rb_str_new((char *)buffer, size);
-
+    args.val = buffer;
+    args.size = size;
+    ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
     xfree(buffer);
+    if (exception)
+        rb_jump_tag(exception);
 
     return ret;
-}
-
-static VALUE rb_ary_new_wrap(VALUE arg) {
-    return rb_ary_new();
 }
 
 /* call-seq:
@@ -833,9 +852,11 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
     int r, i, j;
     VALUE vcpuinfo;
     VALUE p2vcpumap;
-    VALUE val;
     VALUE result;
-    int exception;
+    int exception = 0;
+    struct rb_ary_push_arg args;
+    struct rb_iv_set_arg iv_args;
+    struct rb_class_new_instance_arg klass_args;
 
     r = virNodeGetInfo(conn(s), &nodeinfo);
     _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn(s)));
@@ -872,14 +893,50 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
     }
 
     for (i = 0; i < dominfo.nrVirtCpu; i++) {
-        vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
-        /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+        klass_args.argc = 0;
+        klass_args.argv = NULL;
+        klass_args.klass = c_domain_vcpuinfo;
+        vcpuinfo = rb_protect(rb_class_new_instance_wrap, (VALUE)&klass_args,
+                              &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
 
-        rb_iv_set(vcpuinfo, "@number", UINT2NUM(cpuinfo[i].number));
-        rb_iv_set(vcpuinfo, "@state", INT2NUM(cpuinfo[i].state));
-        rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM(cpuinfo[i].cpuTime));
-        rb_iv_set(vcpuinfo, "@cpu", INT2NUM(cpuinfo[i].cpu));
-        /* FIXME: if any of these fail, we'll leak cpuinfo and cpumap */
+        iv_args.klass = vcpuinfo;
+        iv_args.member = "@number";
+        iv_args.value = UINT2NUM(cpuinfo[i].number);
+        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
+        iv_args.member = "@state";
+        iv_args.value = INT2NUM(cpuinfo[i].state);
+        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
+        iv_args.member = "@cpu_time";
+        iv_args.value = ULL2NUM(cpuinfo[i].cpuTime);
+        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
+        iv_args.member = "@cpu";
+        iv_args.value = INT2NUM(cpuinfo[i].cpu);
+        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
 
         p2vcpumap = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
         if (exception) {
@@ -889,16 +946,34 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
         }
 
         for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++) {
-            val = (VIR_CPU_USABLE(cpumap, cpumaplen, i, j)) ? Qtrue : Qfalse;
-            rb_ary_store(p2vcpumap, j, val);
-            /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+            args.arr = p2vcpumap;
+            args.value = (VIR_CPU_USABLE(cpumap, cpumaplen, i, j)) ? Qtrue : Qfalse;
+            rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
+            if (exception) {
+                xfree(cpuinfo);
+                free(cpumap);
+                rb_jump_tag(exception);
+            }
         }
 
-        rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
-        /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+        iv_args.klass = vcpuinfo;
+        iv_args.member = "@cpumap";
+        iv_args.value = p2vcpumap;
+        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
 
-        rb_ary_store(result, i, vcpuinfo);
-        /* FIXME: if this fails, we'll leak cpuinfo and cpumap */
+        args.arr = result;
+        args.value = vcpuinfo;
+        rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            xfree(cpuinfo);
+            free(cpumap);
+            rb_jump_tag(exception);
+        }
     }
 
     free(cpumap);
@@ -1411,11 +1486,10 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
  */
 static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
     VALUE flags_val;
-    int r, i;
+    int r;
     int num;
     virDomainPtr dom = domain_get(d);
     char **names;
-    VALUE result;
     unsigned int flags;
 
     rb_scan_args(argc, argv, "01", &flags_val);
@@ -1427,11 +1501,10 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
 
     num = virDomainSnapshotNum(dom, 0);
     _E(num < 0, create_error(e_RetrieveError, "virDomainSnapshotNum", conn(d)));
-    if (num == 0) {
+    if (num == 0)
         /* if num is 0, don't call virDomainSnapshotListNames function */
-        result = rb_ary_new2(num);
-        return result;
-    }
+        return rb_ary_new2(num);
+
     names = ALLOC_N(char *, num);
 
     r = virDomainSnapshotListNames(domain_get(d), names, num, flags);
@@ -1441,13 +1514,7 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
                                   conn(d)));
     }
 
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    xfree(names);
-    return result;
+    return gen_list(num, &names);
 }
 
 /*
@@ -1649,18 +1716,38 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
     int nparams;
     char *type;
     VALUE result;
+    int exception = 0;
+    struct rb_ary_push_arg args;
 
     type = virDomainGetSchedulerType(domain_get(d), &nparams);
 
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
                                   conn(d)));
 
-    result = rb_ary_new();
+    result = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
+    if (exception) {
+        free(type);
+        rb_jump_tag(exception);
+    }
 
-    rb_ary_store(result, 0, rb_str_new2(type));
-    rb_ary_store(result, 1, INT2FIX(nparams));
+    args.arr = result;
+    args.value = rb_protect(rb_str_new2_wrap, (VALUE)&type, &exception);
+    if (exception) {
+        free(type);
+        rb_jump_tag(exception);
+    }
+    rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
+    if (exception) {
+        free(type);
+        rb_jump_tag(exception);
+    }
 
-    xfree(type);
+    args.arr = result;
+    args.value = INT2FIX(nparams);
+    rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
+    free(type);
+    if (exception)
+        rb_jump_tag(exception);
 
     return result;
 }

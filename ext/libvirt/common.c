@@ -21,6 +21,66 @@
 #include <ruby.h>
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
+#include "common.h"
+
+struct rb_exc_new2_arg {
+    VALUE error;
+    char *msg;
+};
+
+static VALUE rb_exc_new2_wrap(VALUE arg) {
+    struct rb_exc_new2_arg *e = (struct rb_exc_new2_arg *)arg;
+
+    return rb_exc_new2(e->error, e->msg);
+}
+
+VALUE rb_ary_new2_wrap(VALUE arg) {
+    return rb_ary_new2(*((int *)arg));
+}
+
+VALUE rb_ary_push_wrap(VALUE arg) {
+    struct rb_ary_push_arg *e = (struct rb_ary_push_arg *)arg;
+
+    return rb_ary_push(e->arr, e->value);
+}
+
+VALUE rb_str_new2_wrap(VALUE arg) {
+    char **str = (char **)arg;
+
+    return rb_str_new2(*str);
+}
+
+VALUE rb_ary_entry_wrap(VALUE arg) {
+    struct rb_ary_entry_arg *e = (struct rb_ary_entry_arg *)arg;
+
+    return rb_ary_entry(e->arr, e->elem);
+}
+
+VALUE rb_str_new_wrap(VALUE arg) {
+    struct rb_str_new_arg *e = (struct rb_str_new_arg *)arg;
+
+    return rb_str_new(e->val, e->size);
+}
+
+VALUE rb_ary_new_wrap(VALUE arg) {
+    return rb_ary_new();
+}
+
+VALUE rb_iv_set_wrap(VALUE arg) {
+    struct rb_iv_set_arg *e = (struct rb_iv_set_arg *)arg;
+
+    return rb_iv_set(e->klass, e->member, e->value);
+}
+
+VALUE rb_class_new_instance_wrap(VALUE arg) {
+    struct rb_class_new_instance_arg *e = (struct rb_class_new_instance_arg *)arg;
+
+    return rb_class_new_instance(e->argc, e->argv, e->klass);
+}
+
+VALUE rb_string_value_cstr_wrap(VALUE arg) {
+    return (VALUE)rb_string_value_cstr((VALUE *)arg);
+}
 
 /* Error handling */
 VALUE create_error(VALUE error, const char* method, virConnectPtr conn) {
@@ -28,6 +88,8 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn) {
     virErrorPtr err;
     char *msg;
     int rc;
+    struct rb_exc_new2_arg arg;
+    int exception = 0;
 
     if (conn == NULL)
         err = virGetLastError();
@@ -45,10 +107,12 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn) {
         rb_memerror();
     }
 
-    /* FIXME: if rb_exc_new2 fails, we will leak msg */
-    ruby_errinfo = rb_exc_new2(error, msg);
-
+    arg.error = error;
+    arg.msg = msg;
+    ruby_errinfo = rb_protect(rb_exc_new2_wrap, (VALUE)&arg, &exception);
     free(msg);
+    if (exception)
+        rb_jump_tag(exception);
 
     rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
 
@@ -80,3 +144,49 @@ VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
     return result;
 }
 
+/* this is an odd function, because it has massive side-effects.  The first
+ * tip that something is weird here should be the triple-starred list.
+ * The intended usage of this function is after a list has been collected
+ * from a libvirt list function, and now we want to make an array out of it.
+ * However, it is possible that the act of creating an array causes an
+ * exception, which would lead to a memory leak of the values we got from
+ * libvirt.  Therefore, this function not only wraps all of the relevant
+ * calls with rb_protect, it also frees every individual entry in list
+ * along with list itself.
+ */
+VALUE gen_list(int num, char ***list) {
+    VALUE result;
+    int exception = 0;
+    int i, j;
+    struct rb_ary_push_arg arg;
+
+    result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
+    if (exception) {
+        for (i = 0; i < num; i++)
+            free((*list)[i]);
+        xfree(*list);
+        rb_jump_tag(exception);
+    }
+    for (i = 0; i < num; i++) {
+        arg.arr = result;
+        arg.value = rb_protect(rb_str_new2_wrap, (VALUE)&((*list)[i]),
+                               &exception);
+        if (exception) {
+            for (j = i; j < num; j++)
+                xfree((*list)[j]);
+            xfree(*list);
+            rb_jump_tag(exception);
+        }
+        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
+        if (exception) {
+            for (j = i; j < num; j++)
+                xfree((*list)[j]);
+            xfree(*list);
+            rb_jump_tag(exception);
+        }
+        xfree((*list)[i]);
+    }
+    xfree(*list);
+
+    return result;
+}

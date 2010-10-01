@@ -234,6 +234,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     VALUE tmp;
     int exception = 0;
     unsigned int flags;
+    struct rb_ary_entry_arg args;
 
     rb_scan_args(argc, argv, "03", &uri, &cb, &flags_val);
 
@@ -282,10 +283,14 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
                 rb_memerror();
             }
             for (i = 0; i < auth->ncredtype; i++) {
-                /* FIXME: if rb_ary_entry fails here, we'll leak auth->credtype
-                 * and auth
-                 */
-                tmp = rb_ary_entry(creds, i);
+                args.arr = creds;
+                args.elem = i;
+                tmp = rb_protect(rb_ary_entry_wrap, (VALUE)&args, &exception);
+                if (exception) {
+                    free(auth->credtype);
+                    xfree(auth);
+                    rb_jump_tag(exception);
+                }
 
                 auth->credtype[i] = rb_protect(rb_num2int_wrap, tmp,
                                                &exception);

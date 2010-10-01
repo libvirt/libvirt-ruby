@@ -441,18 +441,15 @@ static VALUE libvirt_pool_num_of_volumes(VALUE s) {
  * to retrieve a list of volume names in this storage pools.
  */
 static VALUE libvirt_pool_list_volumes(VALUE s) {
-    int i, r, num;
+    int r, num;
     char **names;
     virStoragePoolPtr pool = pool_get(s);
-    VALUE result;
 
     num = virStoragePoolNumOfVolumes(pool);
     _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
                              conn(s)));
-    if (num == 0) {
-        result = rb_ary_new2(num);
-        return result;
-    }
+    if (num == 0)
+        return rb_ary_new2(num);
 
     names = ALLOC_N(char *, num);
     r = virStoragePoolListVolumes(pool, names, num);
@@ -462,13 +459,7 @@ static VALUE libvirt_pool_list_volumes(VALUE s) {
                                   conn(s)));
     }
 
-    result = rb_ary_new2(num);
-    for (i=0; i<num; i++) {
-        rb_ary_push(result, rb_str_new2(names[i]));
-        free(names[i]);
-    }
-    xfree(names);
-    return result;
+    return gen_list(num, &names);
 }
 
 /*
