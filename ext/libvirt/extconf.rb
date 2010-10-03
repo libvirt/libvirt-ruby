@@ -27,6 +27,10 @@ SRC
   end
 end
 
+def have_libvirt_consts(consts)
+  consts.each { |c| have_const(c, "libvirt/libvirt.h") }
+end
+
 extension_name = '_libvirt'
 
 dir_config(extension_name)
@@ -78,27 +82,30 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectBaselineCPU',
                 ]
 
+libvirt_consts = [ 'VIR_MIGRATE_LIVE',
+                   'VIR_MIGRATE_PEER2PEER',
+                   'VIR_MIGRATE_TUNNELLED',
+                   'VIR_MIGRATE_PERSIST_DEST',
+                   'VIR_MIGRATE_UNDEFINE_SOURCE',
+                   'VIR_MIGRATE_PAUSED',
+                   'VIR_MIGRATE_NON_SHARED_DISK',
+                   'VIR_MIGRATE_NON_SHARED_INC',
+                   'VIR_DOMAIN_XML_UPDATE_CPU',
+                   'VIR_MEMORY_PHYSICAL',
+                   'VIR_DOMAIN_START_PAUSED',
+                   'VIR_DUMP_CRASH',
+                   'VIR_DUMP_LIVE',
+                   'VIR_DOMAIN_DEVICE_MODIFY_CURRENT',
+                   'VIR_DOMAIN_DEVICE_MODIFY_CONFIG',
+                   'VIR_INTERFACE_XML_INACTIVE',
+                   'VIR_STORAGE_POOL_INACCESSIBLE',
+                 ]
+
 have_libvirt_types(libvirt_types)
 have_libvirt_funcs(libvirt_funcs)
 have_func("virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
 
-have_const('VIR_MIGRATE_LIVE', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_PEER2PEER', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_TUNNELLED', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_PERSIST_DEST', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_UNDEFINE_SOURCE', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_PAUSED', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_NON_SHARED_DISK', "libvirt/libvirt.h")
-have_const('VIR_MIGRATE_NON_SHARED_INC', "libvirt/libvirt.h")
-have_const('VIR_DOMAIN_XML_UPDATE_CPU', "libvirt/libvirt.h")
-have_const('VIR_MEMORY_PHYSICAL', "libvirt/libvirt.h")
-have_const('VIR_DOMAIN_START_PAUSED', "libvirt/libvirt.h")
-have_const('VIR_DUMP_CRASH', "libvirt/libvirt.h")
-have_const('VIR_DUMP_LIVE', "libvirt/libvirt.h")
-have_const('VIR_DOMAIN_DEVICE_MODIFY_CURRENT', "libvirt/libvirt.h")
-have_const('VIR_DOMAIN_DEVICE_MODIFY_CONFIG', "libvirt/libvirt.h")
-have_const('VIR_INTERFACE_XML_INACTIVE', "libvirt/libvirt.h")
-have_const('VIR_STORAGE_POOL_INACCESSIBLE', "libvirt/libvirt.h")
+have_libvirt_consts(libvirt_consts)
 
 create_header
 create_makefile(extension_name)
