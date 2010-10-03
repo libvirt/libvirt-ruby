@@ -20,6 +20,9 @@
 
 #include <ruby.h>
 #include <libvirt/libvirt.h>
+#if HAVE_VIRDOMAINQEMUMONITORCOMMAND
+#include <libvirt/libvirt-qemu.h>
+#endif
 #include <libvirt/virterror.h>
 #include "common.h"
 #include "connect.h"
@@ -1902,6 +1905,51 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     return Qnil;
 }
 
+#if HAVE_VIRDOMAINQEMUMONITORCOMMAND
+/*
+ * call-seq:
+ *   dom.qemu_monitor_command -> string
+ *
+ * Call virDomainQemuMonitorCommand
+ * to send a qemu command directly to the monitor.  Note that this will only
+ * work on qemu hypervisors, and the input and output formats are not
+ * guaranteed to be stable.  Also note that using this command can severly
+ * impede libvirt's ability to manage the domain; use with caution!
+ */
+static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d) {
+    VALUE cmd, flags;
+    virDomainPtr dom;
+    char *result;
+    VALUE ret;
+    int exception;
+    virConnectPtr c;
+
+    rb_scan_args(argc, argv, "11", &cmd, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    c = conn(d);
+    type = virConnectGetType(c);
+    _E(type == NULL, create_error(e_Error, "virConnectGetType", c));
+    if (strcmp(type, "QEMU") != 0)
+        rb_raise(rb_TypeError, "Tried to use virDomainQemuMonitor command on %s connection", type);
+
+    dom = domain_get(d);
+
+    r = virDomainQemuMonitorCommand(dom, StringValueCStr(cmd), &result,
+                                    NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainQemuMonitorCommand", c));
+
+    ret = rb_protect(rb_str_new2_wrap, &result, &exception);
+    free(result);
+    if (exception)
+        rb_jump_tag(exception);
+
+    return ret;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2248,5 +2296,10 @@ void init_domain()
 
     rb_define_method(c_domain, "job_info", libvirt_dom_job_info, 0);
     rb_define_method(c_domain, "abort_job", libvirt_dom_abort_job, 0);
+#endif
+
+#if HAVE_VIRDOMAINQEMUMONITORCOMMAND
+    rb_define_method(c_domain, "qemu_monitor_command",
+                     libvirt_dom_qemu_monitor_command, -1);
 #endif
 }

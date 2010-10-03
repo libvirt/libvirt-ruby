@@ -80,6 +80,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
 
 have_libvirt_types(libvirt_types)
 have_libvirt_funcs(libvirt_funcs)
+have_func("virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
 
 have_const('VIR_MIGRATE_LIVE', "libvirt/libvirt.h")
 have_const('VIR_MIGRATE_PEER2PEER', "libvirt/libvirt.h")
