@@ -349,6 +349,7 @@ static VALUE libvirt_conn_capabilities(VALUE s) {
     gen_call_string(virConnectGetCapabilities, conn(s), 1, connect_get(s));
 }
 
+#if HAVE_VIRCONNECTCOMPARECPU
 /*
  * call-seq:
  *   conn.compare_cpu(xml, flags=0) -> compareflag
@@ -371,7 +372,10 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s) {
 
     return INT2NUM(r);
 }
+#endif
 
+
+#if HAVE_VIRCONNECTBASELINECPU
 /*
  * call-seq:
  *   conn.baseline_cpu([xml, xml2, ...], flags=0) -> XML
@@ -439,6 +443,7 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
 
     return retval;
 }
+#endif
 
 /*
  * Class Libvirt::Connect

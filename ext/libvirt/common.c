@@ -18,6 +18,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+#include <stdio.h>
 #include <ruby.h>
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
