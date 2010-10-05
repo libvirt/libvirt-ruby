@@ -251,9 +251,9 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     if (!NIL_P(cb)) {
         Check_Type(cb, T_ARRAY);
 
-        if (RARRAY(cb)->len != 3) {
+        if (RARRAY_LEN(cb) != 3) {
             rb_raise(rb_eArgError, "wrong number of credential arguments (%d for 3)",
-                     RARRAY(cb)->len);
+                     RARRAY_LEN(cb));
             return Qnil;
         }
 
@@ -269,7 +269,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         auth = ALLOC(virConnectAuth);
         auth_alloc = 1;
 
-        auth->ncredtype = RARRAY(creds)->len;
+        auth->ncredtype = RARRAY_LEN(creds);
         auth->credtype = NULL;
         if (auth->ncredtype > 0) {
             /* we don't use ALLOC_N here because that can throw an exception,

@@ -1227,7 +1227,7 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
     cpumap = ALLOC_N(unsigned char, maplen);
     MEMZERO(cpumap, unsigned char, maplen);
 
-    len = RARRAY(cpulist)->len;
+    len = RARRAY_LEN(cpulist);
     for(i = 0; i < len; i++) {
         VALUE e = rb_ary_entry(cpulist, i);
         VIR_USE_CPU(cpumap, NUM2UINT(e));

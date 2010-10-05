@@ -179,4 +179,16 @@ struct rb_class_new_instance_arg {
 VALUE rb_class_new_instance_wrap(VALUE arg);
 VALUE rb_string_value_cstr_wrap(VALUE arg);
 
+#ifndef RARRAY_LEN
+#define RARRAY_LEN(ar) (RARRAY(ar)->len)
+#endif
+
+#ifndef RSTRING_PTR
+#define RSTRING_PTR(str) (RSTRING(str)->ptr)
+#endif
+
+#ifndef RSTRING_LEN
+#define RSTRING_LEN(str) (RSTRING(str)->len)
+#endif
+
 #endif

@@ -209,8 +209,8 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
 
     StringValue(value);
 
-    r = virSecretSetValue(secret, (unsigned char *)RSTRING(value)->ptr,
-                          RSTRING(value)->len, NUM2UINT(flags));
+    r = virSecretSetValue(secret, (unsigned char *)RSTRING_PTR(value),
+                          RSTRING_LEN(value), NUM2UINT(flags));
 
     _E(r < 0, create_error(e_RetrieveError, "virSecretSetValue", conn(s)));
 
