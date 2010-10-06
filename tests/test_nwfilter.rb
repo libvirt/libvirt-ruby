@@ -7,11 +7,13 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+UUID = "bd339530-134c-6d07-441a-17fb90dad807"
+
 conn = Libvirt::open("qemu:///system")
 
 new_nwfilter_xml = <<EOF
 <filter name='ruby-libvirt-tester' chain='ipv4'>
-  <uuid>bd339530-134c-6d07-441a-17fb90dad807</uuid>
+  <uuid>#{UUID}</uuid>
   <rule action='accept' direction='out' priority='100'>
     <ip srcipaddr='0.0.0.0' dstipaddr='255.255.255.255' protocol='tcp' srcportstart='63000' dstportstart='62000'/>
   </rule>
@@ -23,13 +25,11 @@ EOF
 
 # TESTGROUP: conn.num_of_nwfilters
 expect_too_many_args(conn, "num_of_nwfilters", 1)
-numfilters = conn.num_of_nwfilters
-puts_ok "conn.num_of_nwfilters no args = #{numfilters}"
+expect_success(conn, "no args", "num_of_nwfilters")
 
 # TESTGROUP: conn.list_nwfilters
 expect_too_many_args(conn, "list_nwfilters", 1)
-filterlist = conn.list_nwfilters
-puts_ok "conn.list_nwfilters no args = "
+expect_success(conn, "no args", "list_nwfilters")
 
 # TESTGROUP: conn.lookup_nwfilter_by_name
 newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
@@ -38,8 +38,7 @@ expect_too_many_args(conn, "lookup_nwfilter_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_nwfilter_by_name")
 expect_invalid_arg_type(conn, "lookup_nwfilter_by_name", 1)
 
-filt = conn.lookup_nwfilter_by_name("ruby-libvirt-tester")
-puts_ok "conn.lookup_nwfilter_by_name succeeded"
+expect_success(conn, "name arg", "lookup_nwfilter_by_name", "ruby-libvirt-tester")
 
 newnw.undefine
 
@@ -50,8 +49,7 @@ expect_too_many_args(conn, "lookup_nwfilter_by_uuid", 1, 2)
 expect_too_few_args(conn, "lookup_nwfilter_by_uuid")
 expect_invalid_arg_type(conn, "lookup_nwfilter_by_uuid", 1)
 
-filt = conn.lookup_nwfilter_by_uuid("bd339530-134c-6d07-441a-17fb90dad807")
-puts_ok "conn.lookup_nwfilter_by_uuid succeeded"
+expect_success(conn, "uuid arg", "lookup_nwfilter_by_uuid", UUID) {|x| x.uuid == UUID}
 
 newnw.undefine
 
@@ -62,8 +60,8 @@ expect_invalid_arg_type(conn, "define_nwfilter_xml", 1)
 expect_invalid_arg_type(conn, "define_nwfilter_xml", nil)
 expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_nwfilter_xml", "hello")
 
-newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
-puts_ok "conn.define_nwfilter_xml succeeded"
+newnw = expect_success(conn, "nwfilter XML", "define_nwfilter_xml", new_nwfilter_xml)
+
 newnw.undefine
 
 # TESTGROUP: nwfilter.undefine
@@ -71,19 +69,14 @@ newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
 
 expect_too_many_args(newnw, "undefine", 1)
 
-newnw.undefine
-puts_ok "nwfilter.undefine succeeded"
+expect_success(newnw, "no args", "undefine")
 
 # TESTGROUP: nwfilter.name
 newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
 
 expect_too_many_args(newnw, "name", 1)
-name = newnw.name
-if name != "ruby-libvirt-tester"
-  puts_fail "nwfilter.name expected to be ruby-libvirt-tester, but was #{name}"
-else
-  puts_ok "nwfilter.name succeeded"
-end
+
+expect_success(newnw, "no args", "name") {|x| x == "ruby-libvirt-tester"}
 
 newnw.undefine
 
@@ -91,12 +84,8 @@ newnw.undefine
 newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
 
 expect_too_many_args(newnw, "uuid", 1)
-uuid = newnw.uuid
-if uuid != "bd339530-134c-6d07-441a-17fb90dad807"
-  puts_fail "nwfilter.uuid expected to be bd339530-134c-6d07-441a-17fb90dad807, but was #{uuid}"
-else
-  puts_ok "nwfilter.uuid succeeded"
-end
+
+expect_success(newnw, "no args", "uuid") {|x| x == UUID}
 
 newnw.undefine
 
@@ -106,8 +95,7 @@ newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
 expect_too_many_args(newnw, "xml_desc", 1, 2)
 expect_invalid_arg_type(newnw, "xml_desc", "foo")
 
-newnw.xml_desc
-puts_ok "nwfilter.xml_desc succeeded"
+expect_success(newnw, "no args", "xml_desc")
 
 newnw.undefine
 
@@ -116,8 +104,7 @@ newnw = conn.define_nwfilter_xml(new_nwfilter_xml)
 newnw.undefine
 expect_too_many_args(newnw, "free", 1)
 
-newnw.free
-puts_ok "nwfilter.free succeeded"
+expect_success(newnw, "no args", "free")
 
 conn.close
 

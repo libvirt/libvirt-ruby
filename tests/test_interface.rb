@@ -7,6 +7,17 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+def find_valid_iface(conn)
+  conn.list_interfaces.each do |ifname|
+    iface = conn.lookup_interface_by_name(ifname)
+    if iface.mac == "00:00:00:00:00:00"
+      next
+    end
+    return iface
+  end
+end
+
+
 conn = Libvirt::open("qemu:///system")
 
 begin
@@ -25,23 +36,19 @@ EOF
 
 # TESTGROUP: conn.num_of_interfaces
 expect_too_many_args(conn, "num_of_interfaces", 1)
-numifaces = conn.num_of_interfaces
-puts_ok "conn.num_of_interfaces no args = #{numifaces}"
+expect_success(conn, "no args", "num_of_interfaces")
 
 # TESTGROUP: conn.list_interfaces
 expect_too_many_args(conn, "list_interfaces", 1)
-ifacelist = conn.list_interfaces
-puts_ok "conn.list_interfaces no args = "
+expect_success(conn, "no args", "list_interfaces")
 
 # TESTGROUP: conn.num_of_defined_interfaces
 expect_too_many_args(conn, "num_of_defined_interfaces", 1)
-numifaces = conn.num_of_defined_interfaces
-puts_ok "conn.num_of_defined_interfaces no args = #{numifaces}"
+expect_success(conn, "no args", "num_of_defined_interfaces")
 
 # TESTGROUP: conn.list_defined_interfaces
 expect_too_many_args(conn, "list_defined_interfaces", 1)
-ifacelist = conn.list_defined_interfaces
-puts_ok "conn.list_defined_interfaces no args = "
+expect_success(conn, "no args", "list_defined_interfaces")
 
 # TESTGROUP: conn.lookup_interface_by_name
 newiface = conn.define_interface_xml(new_interface_xml)
@@ -51,12 +58,12 @@ expect_too_few_args(conn, "lookup_interface_by_name")
 expect_invalid_arg_type(conn, "lookup_interface_by_name", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_interface_by_name", "foobarbazsucker")
 
-conn.lookup_interface_by_name("ruby-libvirt-tester")
-puts_ok "conn.lookup_interface_by_name running interface succeeded"
+expect_success(conn, "name arg", "lookup_interface_by_name", "ruby-libvirt-tester")
 
 newiface.destroy
-conn.lookup_interface_by_name("ruby-libvirt-tester")
-puts_ok "conn.lookup_interface_by_name defined but off interface succeeded"
+
+expect_success(conn, "name arg", "lookup_interface_by_name", "ruby-libvirt-tester")
+
 newiface.undefine
 
 # TESTGROUP: conn.lookup_interface_by_mac
@@ -67,13 +74,11 @@ expect_too_few_args(conn, "lookup_interface_by_mac")
 expect_invalid_arg_type(conn, "lookup_interface_by_mac", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent mac arg", "lookup_interface_by_mac", "foobarbazsucker")
 
-#conn.lookup_interface_by_mac("ruby-libvirt-tester")
-#puts_ok "conn.lookup_interface_by_mac running interface succeeded"
-#newiface.destroy
+testiface = find_valid_iface(conn)
+if not testiface.nil?
+  expect_success(conn, "name arg", "lookup_interface_by_mac", testiface.mac) {|x| x.mac == testiface.mac}
+end
 
-#newiface = conn.define_interface_xml(new_interface_xml)
-#conn.lookup_interface_by_mac("ruby-libvirt-tester")
-#puts_ok "conn.lookup_interface_by_mac defined but off interface succeeded"
 newiface.undefine
 
 # TESTGROUP: conn.define_interface_xml
@@ -84,8 +89,7 @@ expect_invalid_arg_type(conn, "define_interface_xml", nil)
 expect_invalid_arg_type(conn, "define_interface_xml", "hello", 'foo')
 expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_interface_xml", "hello")
 
-newiface = conn.define_interface_xml(new_interface_xml)
-puts_ok "conn.define_interface_xml with valid XML succeeded"
+expect_success(conn, "interface XML", "define_interface_xml", new_interface_xml)
 newiface.undefine
 
 # TESTGROUP: iface.undefine
@@ -93,8 +97,7 @@ newiface = conn.define_interface_xml(new_interface_xml)
 
 expect_too_many_args(newiface, "undefine", 1)
 
-newiface.undefine
-puts_ok "iface.undefine succeeded"
+expect_success(newiface, "no args", "undefine")
 
 # TESTGROUP: iface.create
 newiface = conn.define_interface_xml(new_interface_xml)
@@ -102,8 +105,7 @@ newiface = conn.define_interface_xml(new_interface_xml)
 expect_too_many_args(newiface, "create", 1, 2)
 expect_invalid_arg_type(newiface, "create", 'foo')
 
-#newiface.create
-#puts_ok "iface.create succeeded"
+#expect_success(newiface, "no args", "create")
 
 #expect_fail(newiface, Libvirt::Error, "on already running interface", "create")
 
@@ -115,8 +117,8 @@ newiface = conn.define_interface_xml(new_interface_xml)
 
 expect_too_many_args(newiface, "destroy", 1, 2)
 expect_invalid_arg_type(newiface, "destroy", 'foo')
-newiface.destroy
-puts_ok "iface.destroy succeeded"
+
+expect_success(newiface, "no args", "destroy")
 
 newiface.undefine
 
@@ -125,32 +127,10 @@ newiface = conn.define_interface_xml(new_interface_xml)
 
 expect_too_many_args(newiface, "active?", 1)
 
-#active = newiface.active?
-#if not active
-#  puts_fail "iface.active? on running interface was false"
-#else
-#  puts_ok "iface.active? on running interface was true"
-#end
-
-#newiface.destroy
-
-#newiface = conn.define_interface_xml(new_interface_xml)
-
-active = newiface.active?
-if active
-  puts_fail "iface.active? on shutoff interface was true"
-else
-  puts_ok "iface.active? on shutoff interface was false"
-end
+expect_success(newiface, "no args", "active?") {|x| x == false}
 
 #newiface.create
-
-#active = newiface.active?
-#if not active
-#  puts_fail "iface.active? on running interface was false"
-#else
-#  puts_ok "iface.active? on running interface was true"
-#end
+#expect_success(newiface, "no args", "active?") {|x| x == true}
 
 #newiface.destroy
 newiface.undefine
@@ -159,40 +139,33 @@ newiface.undefine
 newiface = conn.define_interface_xml(new_interface_xml)
 
 expect_too_many_args(newiface, "name", 1)
-name = newiface.name
-if name != "ruby-libvirt-tester"
-  puts_fail "iface.name expected to be ruby-libvirt-tester, but was #{name}"
-else
-  puts_ok "iface.name succeeded"
-end
+
+expect_success(newiface, "no args", "name") {|x| x == "ruby-libvirt-tester"}
 
 newiface.undefine
 
 # TESTGROUP: iface.mac
-newiface = conn.define_interface_xml(new_interface_xml)
+testiface = find_valid_iface(conn)
+if not testiface.nil?
+  expect_too_many_args(testiface, "mac", 1)
 
-expect_too_many_args(newiface, "mac", 1)
-#mac = newiface.mac
-#if mac != "ruby-libvirt-tester"
-#  puts_fail "iface.mac expected to be ruby-libvirt-tester, but was #{mac}"
-#else
-#  puts_ok "iface.mac succeeded"
-#end
-
-newiface.undefine
+  expect_success(testiface, "no args", "mac") {|x| x == testiface.mac}
+end
 
 # TESTGROUP: iface.xml_desc
-newiface = conn.define_interface_xml(new_interface_xml)
-
-expect_too_many_args(newiface, "xml_desc", 1, 2)
-expect_invalid_arg_type(newiface, "xml_desc", "foo")
-
-#newiface.xml_desc
-#puts_ok "iface.xml_desc succeeded"
-
-newiface.undefine
+testiface = find_valid_iface(conn)
+if not testiface.nil?
+  expect_too_many_args(testiface, "xml_desc", 1, 2)
+  expect_invalid_arg_type(testiface, "xml_desc", "foo")
+  expect_success(testiface, "no args", "xml_desc")
+end
 
 # TESTGROUP: iface.free
+newiface = conn.define_interface_xml(new_interface_xml)
+newiface.undefine
+expect_too_many_args(newiface, "free", 1)
+
+expect_success(newiface, "no args", "free")
 
 conn.close
 

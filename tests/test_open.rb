@@ -12,67 +12,44 @@ def expect_connect_error(func, args)
 end
 
 # TESTGROUP: Libvirt::version
-version = Libvirt::version
-puts_ok "Libvirt::version no args: #{version[0]}, type_version: #{version[1]}"
-
-version = Libvirt::version(nil)
-puts_ok "Libvirt::version nil arg: #{version[0]}, type_version: #{version[1]}"
-
-expect_invalid_arg_type(Libvirt, "version", 1)
-
-version = Libvirt::version("Test")
-puts_ok "Libvirt::version Test arg #{version[0]}, type_version: #{version[1]}"
-
 expect_too_many_args(Libvirt, "version", "test", 1)
+expect_invalid_arg_type(Libvirt, "version", 1)
+expect_success(Libvirt, "no args", "version") {|x| x.class == Array and x.length == 2}
+expect_success(Libvirt, "nil arg", "version", nil) {|x| x.class == Array and x.length == 2}
+expect_success(Libvirt, "Test arg", "version", "Test") {|x| x.class == Array and x.length == 2}
 
 # TESTGROUP: Libvirt::open
-conn = Libvirt::open
-puts_ok "Libvirt::open no args succeeded"
-conn.close
-
-conn = Libvirt::open("qemu:///system")
-puts_ok "Libvirt::open qemu:///system succeeded"
-conn.close
-
-conn = Libvirt::open(nil)
-puts_ok "Libvirt::open nil arg succeeded"
-conn.close
-
 expect_too_many_args(Libvirt, "open", "qemu:///system", 1)
 expect_connect_error("open", "foo:///system")
+conn = expect_success(Libvirt, "no args", "open") {|x| x.class == Libvirt::Connect }
+conn.close
+conn = expect_success(Libvirt, "qemu:///system", "open", "qemu:///system") {|x| x.class == Libvirt::Connect }
+conn.close
+conn = expect_success(Libvirt, "nil arg", "open", nil) {|x| x.class == Libvirt::Connect }
+conn.close
 
 # TESTGROUP: Libvirt::open_read_only
-conn = Libvirt::open_read_only
-puts_ok "Libvirt::open_read_only no args succeeded"
-conn.close
-
-conn = Libvirt::open_read_only("qemu:///system")
-puts_ok "Libvirt::open_read_only qemu:///system succeeded"
-conn.close
-
-conn = Libvirt::open_read_only(nil)
-puts_ok "Libvirt::open_read_only nil arg succeeded"
-conn.close
-
 expect_too_many_args(Libvirt, "open_read_only", "qemu:///system", 1)
 expect_connect_error("open_read_only", "foo:///system")
+conn = expect_success(Libvirt, "no args", "open_read_only") {|x| x.class == Libvirt::Connect }
+conn.close
+conn = expect_success(Libvirt, "qemu:///system", "open_read_only", "qemu:///system") {|x| x.class == Libvirt::Connect }
+conn.close
+conn = expect_success(Libvirt, "nil arg", "open_read_only", nil) {|x| x.class == Libvirt::Connect }
+conn.close
 
 # TESTGROUP: Libvirt::open_auth
-conn = Libvirt::open_auth
-puts_ok "Libvirt::open_auth no args succeeded"
-conn.close
-
-conn = Libvirt::open_auth("qemu:///system")
-puts_ok "Libvirt::open_auth uri arg succeeded"
-conn.close
-
 expect_too_many_args(Libvirt, "open_auth", "qemu:///system", 'hello', 1, 2)
 expect_connect_error("open_auth", "foo:///system")
-expect_fail(Libvirt, TypeError, "invalid auth", "open_auth", "qemu:///system", 1)
-expect_fail(Libvirt, ArgumentError, "invalid number auth", "open_auth", "qemu:///system", [])
-expect_fail(Libvirt, TypeError, "invalid auth type", "open_auth", "qemu:///system", [1,2,3])
-expect_fail(Libvirt, TypeError, "invalid flag", "open_auth", "qemu:///system", [1, 2, 3], 'foo')
-expect_fail(Libvirt, TypeError, "invalid credential type", "open_auth", "qemu:///system", [['hello'], 2, 3])
+expect_invalid_arg_type(Libvirt, "open_auth", 1)
+expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [1, 2, 3], 'foo')
+expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [1, 2, 3])
+expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [['hello'], 2, 3])
+expect_too_few_args(Libvirt, "open_auth", "qemu:///system", [])
+expect_too_many_args(Libvirt, "open_auth", "qemu:///system", [1, 2, 3, 4])
+conn = expect_success(Libvirt, "no args", "open_auth") {|x| x.class == Libvirt::Connect }
+conn.close
+conn = expect_success(Libvirt, "uri arg", "open_auth", "qemu:///system") {|x| x.class == Libvirt::Connect }
 
 def my_auth(creds, userdata)
   if not userdata.nil?
@@ -94,16 +71,13 @@ def my_auth(creds, userdata)
   end
 end
 
-conn = Libvirt::open_auth("qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, nil])
-puts_ok "Libvirt::open_auth credentials succeeded"
+conn = expect_success(Libvirt, "credentials", "open_auth", "qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, nil])
 conn.close
 
-conn = Libvirt::open_auth("qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, nil], Libvirt::CONNECT_RO)
-puts_ok "Libvirt::open_auth R/O credentials succeeded"
+conn = expect_success(Libvirt, "R/O credentials", "open_auth", "qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, nil], Libvirt::CONNECT_RO)
 conn.close
 
-conn = Libvirt::open_auth("qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, "wowee"], Libvirt::CONNECT_RO)
-puts_ok "Libvirt::open_auth R/O credentials user-data succeeded"
+conn = expect_success(Libvirt, "R/O credentials user-data", "open_auth", "qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, "wowee"], Libvirt::CONNECT_RO)
 conn.close
 
 finish_tests

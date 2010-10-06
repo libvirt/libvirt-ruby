@@ -12,79 +12,75 @@ conn = Libvirt::open("qemu:///system")
 cpu_xml = <<EOF
 <cpu>
   <arch>x86_64</arch>
-  <model>Nehalem</model>
+  <model>athlon</model>
 </cpu>
 EOF
 
 # TESTGROUP: conn.close
 conn2 = Libvirt::open("qemu:///system")
 expect_too_many_args(conn2, "close", 1)
-conn2.close
+expect_success(conn2, "no args", "close")
 
 # TESTGROUP: conn.closed?
-expect_too_many_args(conn, "closed?", 1)
+conn2 = Libvirt::open("qemu:///system")
 
-closed = conn.closed?
-if closed
-  puts_fail "conn.closed? true after successful connection"
-else
-  puts_ok "conn.closed? no args = #{closed}"
-end
+expect_too_many_args(conn2, "closed?", 1)
+expect_success(conn2, "no args", "closed?") {|x| x == false }
+conn2.close
+expect_success(conn2, "no args", "closed?") {|x| x == true }
 
 # TESTGROUP: conn.type
 expect_too_many_args(conn, "type", 1)
 
-type = conn.type
-puts_ok "conn.type no args = #{type}"
+expect_success(conn, "no args", "type") {|x| x == "QEMU"}
 
 # TESTGROUP: conn.version
 expect_too_many_args(conn, "version", 1)
 
-version = conn.version
-puts_ok "conn.version no args = #{version}"
+expect_success(conn, "no args", "version")
 
 # TESTGROUP: conn.libversion
 expect_too_many_args(conn, "libversion", 1)
 
-libversion = conn.libversion
-puts_ok "conn.libversion no args = #{libversion}"
+expect_success(conn, "no args", "libversion")
 
 # TESTGROUP: conn.hostname
 expect_too_many_args(conn, "hostname", 1)
 
-hostname = conn.hostname
-puts_ok "conn.hostname no args = #{hostname}"
+expect_success(conn, "no args", "hostname")
 
 # TESTGROUP: conn.uri
 expect_too_many_args(conn, "uri", 1)
 
-uri = conn.uri
-puts_ok "conn.uri no args = #{uri}"
+expect_success(conn, "no args", "uri") {|x| x == "qemu:///system" }
 
 # TESTGROUP: conn.max_vcpus
 expect_too_many_args(conn, "max_vcpus", 'kvm', 1)
 expect_fail(conn, Libvirt::RetrieveError, "invalid arg", "max_vcpus", "foo")
 
-max_vcpus = conn.max_vcpus
-puts_ok "conn.max_vcpus no args = #{max_vcpus}"
-max_vcpus = conn.max_vcpus(nil)
-puts_ok "conn.max_vcpus nil arg = #{max_vcpus}"
-max_vcpus = conn.max_vcpus('kvm')
-puts_ok "conn.max_vcpus kvm arg = #{max_vcpus}"
-max_vcpus = conn.max_vcpus('qemu')
-puts_ok "conn.max_vcpus qemu arg = #{max_vcpus}"
+expect_success(conn, "no args", "max_vcpus")
+expect_success(conn, "nil arg", "max_vcpus")
+expect_success(conn, "kvm arg", "max_vcpus")
+expect_success(conn, "qemu arg", "max_vcpus")
 
 # TESTGROUP: conn.node_get_info
 expect_too_many_args(conn, "node_get_info", 1)
-info = conn.node_get_info
-puts_ok "conn.node_get_info no args = Model: #{info.model}, Memory: #{info.memory}, CPUs: #{info.cpus}, MHz: #{info.mhz}, Nodes: #{info.nodes}, Sockets: #{info.sockets}, Cores: #{info.cores}, Threads: #{info.threads}"
+
+expect_success(conn, "no args", "node_get_info")
 
 begin
   # TESTGROUP: conn.node_free_memory
   expect_too_many_args(conn, "node_free_memory", 1)
-  freemem = conn.node_free_memory
-  puts_ok "conn.node_free_memory no args = #{max_vcpus}"
 
+  conn.node_free_memory
+  puts_ok "conn.node_free_memory no args"
+rescue Libvirt::RetrieveError
+  puts_skipped "conn.node_free_memory not supported on this host"
+rescue NoMethodError
+  puts_skipped "conn.node_free_memory does not exist"
+end
+
+begin
   # TESTGROUP: conn.node_cells_free_memory
   expect_too_many_args(conn, "node_cells_free_memory", 1, 2, 3)
   expect_invalid_arg_type(conn, "node_cells_free_memory", 'start')
@@ -96,29 +92,27 @@ begin
   puts_ok "conn.node_cells_free_memory(0) = "
   cell_mem = conn.node_cells_free_memory(0, 1)
   puts_ok "conn.node_cells_free_memory(0, 1) = "
-rescue Libvirt::RetrieveError => e
-  # these can fail on machines with no NUMA.  Just ignore the failure
+rescue Libvirt::RetrieveError
+  puts_skipped "conn.node_cells_free_memory not supported on this host"
+rescue NoMethodError
+  puts_skipped "conn.node_cells_free_memory does not exist"
 end
 
 # TESTGROUP: conn.node_get_security_model
 expect_too_many_args(conn, "node_get_security_model", 1)
-secmodel = conn.node_get_security_model
-puts_ok "conn.node_get_security_model no args = Model: #{secmodel.model}, DOI: #{secmodel.doi}"
+expect_success(conn, "no args", "node_get_security_model")
 
 # TESTGROUP: conn.encrypted?
 expect_too_many_args(conn, "encrypted?", 1)
-encrypted = conn.encrypted?
-puts_ok "conn.encrypted? no args = #{encrypted}"
+expect_success(conn, "no args", "encrypted?")
 
 # TESTGROUP: conn.secure?
 expect_too_many_args(conn, "secure?", 1)
-secure = conn.secure?
-puts_ok "conn.secure? no args = #{secure}"
+expect_success(conn, "no args", "secure?") {|x| x == true}
 
 # TESTGROUP: conn.capabilities
 expect_too_many_args(conn, "capabilities", 1)
-capabilities = conn.capabilities
-puts_ok "conn.capabilities no args succeeded"
+expect_success(conn, "no args", "capabilities")
 
 # TESTGROUP: conn.compare_cpu
 expect_too_many_args(conn, "compare_cpu", 1, 2, 3)
@@ -126,8 +120,7 @@ expect_too_few_args(conn, "compare_cpu")
 expect_invalid_arg_type(conn, "compare_cpu", 1)
 expect_invalid_arg_type(conn, "compare_cpu", "hello", 'bar')
 expect_fail(conn, Libvirt::RetrieveError, "invalid XML", "compare_cpu", "hello")
-comp = conn.compare_cpu(cpu_xml)
-puts_ok "conn.compare_cpu succeeded"
+expect_success(conn, "CPU XML", "compare_cpu", cpu_xml)
 
 # TESTGROUP: conn.baseline_cpu
 expect_too_many_args(conn, "baseline_cpu", 1, 2, 3)
@@ -135,9 +128,7 @@ expect_too_few_args(conn, "baseline_cpu")
 expect_invalid_arg_type(conn, "baseline_cpu", 1)
 expect_invalid_arg_type(conn, "baseline_cpu", [], "foo")
 expect_fail(conn, ArgumentError, "empty array", "baseline_cpu", [])
-
-comp = conn.baseline_cpu([cpu_xml])
-puts_ok "conn.baseline_cpu succeeded"
+expect_success(conn, "CPU XML", "baseline_cpu", [cpu_xml])
 
 conn.close
 

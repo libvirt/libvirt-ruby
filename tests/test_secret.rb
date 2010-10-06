@@ -7,12 +7,14 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+UUID = "bd339530-134c-6d07-4410-17fb90dad805"
+
 conn = Libvirt::open("qemu:///system")
 
 new_secret_xml = <<EOF
 <secret ephemeral='no' private='no'>
   <description>test secret</description>
-  <uuid>bd339530-134c-6d07-4410-17fb90dad805</uuid>
+  <uuid>#{UUID}</uuid>
   <usage type='volume'>
     <volume>/var/lib/libvirt/images/mail.img</volume>
   </usage>
@@ -21,13 +23,11 @@ EOF
 
 # TESTGROUP: conn.num_of_secrets
 expect_too_many_args(conn, "num_of_secrets", 1)
-secrets = conn.num_of_secrets
-puts_ok "conn.num_of_secrets no args = #{secrets}"
+expect_success(conn, "no args", "num_of_secrets")
 
 # TESTGROUP: conn.list_secrets
 expect_too_many_args(conn, "list_secrets", 1)
-secrets = conn.list_secrets
-puts_ok "conn.list_secrets no args = "
+expect_success(conn, "no args", "list_secrets")
 
 # TESTGROUP: conn.lookup_secret_by_uuid
 newsecret = conn.define_secret_xml(new_secret_xml)
@@ -36,8 +36,7 @@ expect_too_many_args(conn, "lookup_secret_by_uuid", 1, 2)
 expect_too_few_args(conn, "lookup_secret_by_uuid")
 expect_invalid_arg_type(conn, "lookup_secret_by_uuid", 1)
 
-sec = conn.lookup_secret_by_uuid("bd339530-134c-6d07-4410-17fb90dad805")
-puts_ok "conn.lookup_secret_by_uuid succeeded"
+expect_success(conn, "uuid arg", "lookup_secret_by_uuid", UUID) {|x| x.uuid == UUID}
 
 newsecret.undefine
 
@@ -50,8 +49,7 @@ expect_invalid_arg_type(conn, "lookup_secret_by_usage", 'foo', 1)
 expect_invalid_arg_type(conn, "lookup_secret_by_usage", 1, 2)
 expect_fail(conn, Libvirt::RetrieveError, "invalid secret", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "foo")
 
-conn.lookup_secret_by_usage(Libvirt::Secret::USAGE_TYPE_VOLUME, "/var/lib/libvirt/images/mail.img")
-puts_ok "conn.lookup_secret_by_usage succeeded"
+expect_success(conn, "usage type and key", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "/var/lib/libvirt/images/mail.img")
 
 newsecret.undefine
 
@@ -63,20 +61,16 @@ expect_invalid_arg_type(conn, "define_secret_xml", nil)
 expect_invalid_arg_type(conn, "define_secret_xml", "hello", 'foo')
 expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_secret_xml", "hello")
 
-newsecret = conn.define_secret_xml(new_secret_xml)
-puts_ok "conn.define_secret_xml succeeded"
+expect_success(conn, "secret XML", "define_secret_xml", new_secret_xml)
+
 newsecret.undefine
 
 # TESTGROUP: secret.uuid
 newsecret = conn.define_secret_xml(new_secret_xml)
 
 expect_too_many_args(newsecret, "uuid", 1)
-uuid = newsecret.uuid
-if uuid != "bd339530-134c-6d07-4410-17fb90dad805"
-  puts_fail "nwfilter.uuid expected to be bd339530-134c-6d07-4410-17fb90dad805, but was #{uuid}"
-else
-  puts_ok "secret.uuid succeeded"
-end
+
+expect_success(newsecret, "no args", "uuid") {|x| x == UUID}
 
 newsecret.undefine
 
@@ -84,12 +78,8 @@ newsecret.undefine
 newsecret = conn.define_secret_xml(new_secret_xml)
 
 expect_too_many_args(newsecret, "usagetype", 1)
-usagetype = newsecret.usagetype
-if usagetype != Libvirt::Secret::USAGE_TYPE_VOLUME
-  puts_fail "secret.usagetype expected to be 0, but was #{usagetype}"
-else
-  puts_ok "secret.usagetype no args = #{usagetype}"
-end
+
+expect_success(newsecret, "no args", "usagetype") {|x| x == Libvirt::Secret::USAGE_TYPE_VOLUME}
 
 newsecret.undefine
 
@@ -97,8 +87,8 @@ newsecret.undefine
 newsecret = conn.define_secret_xml(new_secret_xml)
 
 expect_too_many_args(newsecret, "usageid", 1)
-usageid = newsecret.usageid
-puts_ok "secret.usageid no args = #{usageid}"
+
+expect_success(newsecret, "no args", "usageid")
 
 newsecret.undefine
 
@@ -108,8 +98,7 @@ newsecret = conn.define_secret_xml(new_secret_xml)
 expect_too_many_args(newsecret, "xml_desc", 1, 2)
 expect_invalid_arg_type(newsecret, "xml_desc", "foo")
 
-newsecret.xml_desc
-puts_ok "secret.xml_desc succeeded"
+expect_success(newsecret, "no args", "xml_desc")
 
 newsecret.undefine
 
@@ -121,8 +110,7 @@ expect_too_few_args(newsecret, "set_value")
 expect_invalid_arg_type(newsecret, "set_value", 1)
 expect_invalid_arg_type(newsecret, "set_value", "foo", "bar")
 
-newsecret.set_value("foo")
-puts_ok "secret.set_value succeeded"
+expect_success(newsecret, "value arg", "set_value", "foo")
 
 newsecret.undefine
 
@@ -133,12 +121,7 @@ newsecret.set_value("foo")
 expect_too_many_args(newsecret, "get_value", 1, 2)
 expect_invalid_arg_type(newsecret, "get_value", 'foo')
 
-val = newsecret.get_value
-if val != 'foo'
-  puts_fail "secret.get_value expected to get foo, but instead got #{val}"
-else
-  puts_ok "secret.get_value succeeded"
-end
+expect_success(newsecret, "no args", "get_value") {|x| x == 'foo'}
 
 newsecret.undefine
 
@@ -147,8 +130,7 @@ newsecret = conn.define_secret_xml(new_secret_xml)
 
 expect_too_many_args(newsecret, "undefine", 1)
 
-newsecret.undefine
-puts_ok "secret.undefine succeeded"
+expect_success(newsecret, "no args", "undefine")
 
 # TESTGROUP: secret.free
 newsecret = conn.define_secret_xml(new_secret_xml)
@@ -156,7 +138,7 @@ newsecret.undefine
 
 expect_too_many_args(newsecret, "free", 1)
 
-puts_ok "secret.free succeeded"
+expect_success(newsecret, "no args", "free")
 
 conn.close
 

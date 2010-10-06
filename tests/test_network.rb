@@ -7,6 +7,8 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+UUID = "04068860-d9a2-47c5-bc9d-9e047ae901da"
+
 conn = Libvirt::open("qemu:///system")
 
 # initial cleanup for previous run
@@ -21,7 +23,7 @@ end
 new_net_xml = <<EOF
 <network>
   <name>ruby-libvirt-tester</name>
-  <uuid>04068860-d9a2-47c5-bc9d-9e047ae901da</uuid>
+  <uuid>#{UUID}</uuid>
   <forward mode='nat'/>
   <bridge name='rubybr0' stp='on' delay='0' />
   <ip address='192.168.134.1' netmask='255.255.255.0'>
@@ -34,23 +36,19 @@ EOF
 
 # TESTGROUP: conn.num_of_networks
 expect_too_many_args(conn, "num_of_networks", 1)
-numnets = conn.num_of_networks
-puts_ok "conn.num_of_networks no args = #{numnets}"
+expect_success(conn, "no args", "num_of_networks")
 
 # TESTGROUP: conn.list_networks
 expect_too_many_args(conn, "list_networks", 1)
-netlist = conn.list_networks
-puts_ok "conn.list_networks no args = "
+expect_success(conn, "no args", "list_networks")
 
 # TESTGROUP: conn.num_of_defined_networks
 expect_too_many_args(conn, "num_of_defined_networks", 1)
-numnets = conn.num_of_defined_networks
-puts_ok "conn.num_of_defined_networks no args = #{numnets}"
+expect_success(conn, "no args", "num_of_defined_networks")
 
 # TESTGROUP: conn.list_defined_networks
 expect_too_many_args(conn, "list_defined_networks", 1)
-netlist = conn.list_defined_networks
-puts_ok "conn.list_defined_networks no args = "
+expect_success(conn, "no args", "list_defined_networks")
 
 # TESTGROUP: conn.lookup_network_by_name
 newnet = conn.create_network_xml(new_net_xml)
@@ -60,13 +58,11 @@ expect_too_few_args(conn, "lookup_network_by_name")
 expect_invalid_arg_type(conn, "lookup_network_by_name", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_network_by_name", "foobarbazsucker")
 
-conn.lookup_network_by_name("ruby-libvirt-tester")
-puts_ok "conn.lookup_network_by_name running network succeeded"
+expect_success(conn, "name arg", "lookup_network_by_name", "ruby-libvirt-tester")
 newnet.destroy
 
 newnet = conn.define_network_xml(new_net_xml)
-conn.lookup_network_by_name("ruby-libvirt-tester")
-puts_ok "conn.lookup_network_by_name defined but off network succeeded"
+expect_success(conn, "name arg", "lookup_network_by_name", "ruby-libvirt-tester")
 newnet.undefine
 
 # TESTGROUP: conn.lookup_network_by_uuid
@@ -77,13 +73,11 @@ expect_too_few_args(conn, "lookup_network_by_uuid")
 expect_invalid_arg_type(conn, "lookup_network_by_uuid", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent uuid arg", "lookup_network_by_uuid", "foobarbazsucker")
 
-conn.lookup_network_by_uuid("04068860-d9a2-47c5-bc9d-9e047ae901da")
-puts_ok "conn.lookup_network_by_uuid running network succeeded"
+expect_success(conn, "uuid arg", "lookup_network_by_uuid", UUID)
 newnet.destroy
 
 newnet = conn.define_network_xml(new_net_xml)
-conn.lookup_network_by_uuid("04068860-d9a2-47c5-bc9d-9e047ae901da")
-puts_ok "conn.lookup_network_by_uuid defined but off network succeeded"
+expect_success(conn, "uuid arg", "lookup_network_by_uuid", UUID)
 newnet.undefine
 
 # TESTGROUP: conn.create_network_xml
@@ -93,8 +87,7 @@ expect_invalid_arg_type(conn, "create_network_xml", nil)
 expect_invalid_arg_type(conn, "create_network_xml", 1)
 expect_fail(conn, Libvirt::Error, "invalid xml", "create_network_xml", "hello")
 
-newnet = conn.create_network_xml(new_net_xml)
-puts_ok "conn.create_network_xml started new network"
+newnet = expect_success(conn, "network XML", "create_network_xml", new_net_xml)
 
 expect_fail(conn, Libvirt::Error, "already existing network", "create_network_xml", new_net_xml)
 
@@ -107,8 +100,7 @@ expect_invalid_arg_type(conn, "define_network_xml", 1)
 expect_invalid_arg_type(conn, "define_network_xml", nil)
 expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_network_xml", "hello")
 
-newnet = conn.define_network_xml(new_net_xml)
-puts_ok "conn.define_network_xml with valid XML succeeded"
+newnet = expect_success(conn, "network XML", "define_network_xml", new_net_xml)
 newnet.undefine
 
 # TESTGROUP: net.undefine
@@ -116,16 +108,14 @@ newnet = conn.define_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "undefine", 1)
 
-newnet.undefine
-puts_ok "net.undefine succeeded"
+expect_success(newnet, "no args", "undefine")
 
 # TESTGROUP: net.create
 newnet = conn.define_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "create", 1)
 
-newnet.create
-puts_ok "net.create succeeded"
+expect_success(newnet, "no args", "create")
 
 expect_fail(newnet, Libvirt::Error, "on already running network", "create")
 
@@ -136,19 +126,15 @@ newnet.undefine
 newnet = conn.create_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "destroy", 1)
-newnet.destroy
-puts_ok "net.destroy succeeded"
+
+expect_success(newnet, "no args", "destroy")
 
 # TESTGROUP: net.name
 newnet = conn.create_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "name", 1)
-name = newnet.name
-if name != "ruby-libvirt-tester"
-  puts_fail "net.name expected to be ruby-libvirt-tester, but was #{name}"
-else
-  puts_ok "net.name succeeded"
-end
+
+expect_success(newnet, "no args", "name") {|x| x == "ruby-libvirt-tester"}
 
 newnet.destroy
 
@@ -156,12 +142,8 @@ newnet.destroy
 newnet = conn.create_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "uuid", 1)
-uuid = newnet.uuid
-if uuid != "04068860-d9a2-47c5-bc9d-9e047ae901da"
-  puts_fail "net.uuid expected to be 04068860-d9a2-47c5-bc9d-9e047ae901da, but was #{uuid}"
-else
-  puts_ok "net.uuid succeeded"
-end
+
+expect_success(newnet, "no args", "uuid") {|x| x == UUID}
 
 newnet.destroy
 
@@ -171,8 +153,7 @@ newnet = conn.create_network_xml(new_net_xml)
 expect_too_many_args(newnet, "xml_desc", 1, 2)
 expect_invalid_arg_type(newnet, "xml_desc", "foo")
 
-newnet.xml_desc
-puts_ok "net.xml_desc succeeded"
+expect_success(newnet, "no args", "xml_desc")
 
 newnet.destroy
 
@@ -180,12 +161,8 @@ newnet.destroy
 newnet = conn.create_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "bridge_name", 1)
-bridge_name = newnet.bridge_name
-if bridge_name != "rubybr0"
-  puts_fail "net.bridge_name expected to be rubybr0, but was #{bridge_name}"
-else
-  puts_ok "net.bridge_name succeeded"
-end
+
+expect_success(newnet, "no args", "bridge_name") {|x| x == "rubybr0"}
 
 newnet.destroy
 
@@ -194,19 +171,11 @@ newnet = conn.define_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "autostart?", 1)
 
-if newnet.autostart?
-  puts_fail "net.autostart? on new network is true"
-else
-  puts_ok "net.autostart? on new network is false"
-end
+expect_success(newnet, "no args", "autostart?") {|x| x == false}
 
 newnet.autostart = true
 
-if not newnet.autostart?
-  puts_fail "net.autostart? after setting autostart is false"
-else
-  puts_ok "net.autostart? after setting autostart is true"
-end
+expect_success(newnet, "no args", "autostart?") {|x| x == true}
 
 newnet.undefine
 
@@ -218,15 +187,14 @@ expect_invalid_arg_type(newnet, "autostart=", 'foo')
 expect_invalid_arg_type(newnet, "autostart=", nil)
 expect_invalid_arg_type(newnet, "autostart=", 1234)
 
-newnet.autostart=true
+expect_success(newnet, "boolean arg", "autostart=", true)
 if not newnet.autostart?
   puts_fail "net.autostart= did not set autostart to true"
 else
   puts_ok "net.autostart= set autostart to true"
 end
 
-newnet.autostart=false
-
+expect_success(newnet, "boolean arg", "autostart=", false)
 if newnet.autostart?
   puts_fail "net.autostart= did not set autostart to false"
 else
@@ -240,40 +208,24 @@ newnet = conn.define_network_xml(new_net_xml)
 newnet.undefine
 expect_too_many_args(newnet, "free", 1)
 
-newnet.free
-puts_ok "network.free succeeded"
+expect_success(newnet, "no args", "free")
 
 # TESTGROUP: net.active?
 newnet = conn.create_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "active?", 1)
 
-active = newnet.active?
-if not active
-  puts_fail "net.active? on running network was false"
-else
-  puts_ok "net.active? on running network was true"
-end
+expect_success(newnet, "no args", "active?") {|x| x == true}
 
 newnet.destroy
 
 newnet = conn.define_network_xml(new_net_xml)
 
-active = newnet.active?
-if active
-  puts_fail "net.active? on shutoff network was true"
-else
-  puts_ok "net.active? on shutoff network was false"
-end
+expect_success(newnet, "no args", "active?") {|x| x == false}
 
 newnet.create
 
-active = newnet.active?
-if not active
-  puts_fail "net.active? on running network was false"
-else
-  puts_ok "net.active? on running network was true"
-end
+expect_success(newnet, "no args", "active?") {|x| x == true}
 
 newnet.destroy
 newnet.undefine
@@ -283,23 +235,13 @@ newnet = conn.create_network_xml(new_net_xml)
 
 expect_too_many_args(newnet, "persistent?", 1)
 
-per = newnet.persistent?
-if per
-  puts_fail "net.persistent? on transient network was true"
-else
-  puts_ok "net.persistent? on transient network was false"
-end
+expect_success(newnet, "no args", "persistent?") {|x| x == false}
 
 newnet.destroy
 
 newnet = conn.define_network_xml(new_net_xml)
 
-per = newnet.persistent?
-if not per
-  puts_fail "net.persisent? on permanent network was false"
-else
-  puts_ok "net.persistent? on permanent network was true"
-end
+expect_success(newnet, "no args", "persistent?") {|x| x == true}
 
 newnet.undefine
 
