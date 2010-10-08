@@ -7,7 +7,7 @@ Usage
 -----
 
 In your ruby code, do a "require 'libvirt'"; to obtain a connection, use
-'Libvirt::open' or 'Libvirt::openReadOnly'. See tests/*.rb for more
+'Libvirt::open' or 'Libvirt::open_read_only'. See tests/*.rb for more
 examples.
 
 Hacking
@@ -23,4 +23,4 @@ To run against the checkout, make sure you set RUBYLIB (assuming DIR is the
 toplevel of your source checkout):
 
   export RUBYLIB=$dir/lib:$dir/ext/libvirt
-  ruby -rlibvirt -e 'puts Libvirt::version("xen")[0]'
+  ruby -rlibvirt -e 'puts Libvirt::version[0]'
