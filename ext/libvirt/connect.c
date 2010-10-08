@@ -403,13 +403,13 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
 
     Check_Type(xmlcpus, T_ARRAY);
 
-    if (RARRAY(xmlcpus)->len < 1) {
+    if (RARRAY_LEN(xmlcpus) < 1) {
         rb_raise(rb_eArgError, "wrong number of cpu arguments (%d for 1 or more)",
-                 RARRAY(xmlcpus)->len);
+                 RARRAY_LEN(xmlcpus));
         return Qnil;
     }
 
-    ncpus = RARRAY(xmlcpus)->len;
+    ncpus = RARRAY_LEN(xmlcpus);
     xmllist = ALLOC_N(const char *, ncpus);
 
     for (i = 0; i < ncpus; i++) {
