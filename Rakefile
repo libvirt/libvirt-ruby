@@ -105,14 +105,6 @@ Rake::GemPackageTask.new(SPEC) do |pkg|
     pkg.need_zip = true
 end
 
-desc "Update the ruby-libvirt site"
-task :site => [ :rdoc ] do |t|
-    system("rsync -av doc/site/ libvirt:/data/www/libvirt.org/ruby/")
-    if $? != 0
-        raise "rsync failed: #{$?}"
-    end
-end
-
 desc "Build (S)RPM for #{PKG_NAME}"
 task :rpm => [ :package ] do |t|
     system("sed -e 's/@VERSION@/#{PKG_VERSION}/' #{SPEC_FILE} > pkg/#{SPEC_FILE}")
@@ -123,16 +115,4 @@ task :rpm => [ :package ] do |t|
             raise "rpmbuild failed"
         end
     end
-end
-
-desc "Release a version to the site"
-task :dist => [ :rpm ] do |t|
-    puts "Copying files"
-    unless sh "scp -p #{DIST_FILES.to_s} libvirt:/data/www/libvirt.org/ruby/download"
-        $stderr.puts "Copy to libvirt failed"
-        break
-    end
-    puts "Commit and tag #{PKG_VERSION}"
-    system "hg commit -m 'Released version #{PKG_VERSION}'"
-    system "hg tag -m 'Tag release #{PKG_VERSION}' #{PKG_NAME}-#{PKG_VERSION}"
 end
