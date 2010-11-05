@@ -24,3 +24,46 @@ toplevel of your source checkout):
 
   export RUBYLIB=$dir/lib:$dir/ext/libvirt
   ruby -rlibvirt -e 'puts Libvirt::version[0]'
+
+Notes
+-----
+As of November 5, 2010, the ruby-libvirt bindings support all of the libvirt
+APIs up to libvirt commit hash a59dde7869b10e64fb86c73f42f4a6299830dc9e with
+the following exceptions:
+
+- virConnectRef
+- virDomainGetConnect
+- virDomainRef
+- virDomainSetMemoryParameters
+- virDomainGetMemoryParameters
+- virDomainSetVcpusFlags
+- virDomainGetVcpusFlags
+- virNetworkGetConnect
+- virNetworkRef
+- virInterfaceGetConnect
+- virInterfaceRef
+- virStoragePoolGetConnect
+- virStoragePoolRef
+- virStorageVolGetConnect
+- virStorageVolRef
+- virNodeDeviceRef
+- virConnectDomainEventRegister
+- virConnectDomainEventDeregister
+- virEventRegisterImpl
+- virSecretGetConnect
+- virSecretRef
+- virStreamNew
+- virStreamRef
+- virStreamSend
+- virStreamRecv
+- virStreamSendAll
+- virStreamRecvAll
+- virStreamEventAddCallback
+- virStreamEventUpdateCallback
+- virStreamEventRemoveCallback
+- virStreamFinish
+- virStreamAbort
+- virStreamFree
+- virNWFilterRef
+- virConnectDomainEventRegisterAny
+- virConnectDomainEventDeregisterAny
