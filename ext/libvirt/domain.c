@@ -933,6 +933,18 @@ static VALUE libvirt_dom_max_vcpus(VALUE s) {
     return INT2NUM(vcpus);
 }
 
+#if HAVE_VIRDOMAINGETVCPUSFLAGS
+/* call-seq:
+ *   dom.num_vcpus(flags) -> fixnum
+ *
+ * Call +virDomainGetVcpusFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpusFlags]
+ * to retrieve the number of virtual CPUs assigned to this domain.
+ */
+static VALUE libvirt_dom_num_vcpus(VALUE d, VALUE flags) {
+    gen_call_int(virDomainGetVcpusFlags, conn(d), domain_get(d),
+                 NUM2UINT(flags));
+}
+#endif
 
 /*
  * call-seq:
@@ -940,11 +952,37 @@ static VALUE libvirt_dom_max_vcpus(VALUE s) {
  *
  * Call +virDomainSetVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpus]
  * to set the current number of virtual CPUs this domain should have.  Note
- * that this will only work if both the hypervisor and domain on this connection
- * support virtual CPU hotplug/hot-unplug.
+ * that this will only work if both the hypervisor and domain on this
+ * connection support virtual CPU hotplug/hot-unplug.
  */
 static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
     gen_call_void(virDomainSetVcpus, conn(s), domain_get(s), NUM2UINT(nvcpus));
+}
+
+/*
+ * call-seq:
+ *   dom.vcpus_flags = Fixnum,flags
+ *
+ * Call +virDomainSetVcpusFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpusFlags]
+ * to set the current number of virtual CPUs this domain should have.  The
+ * flags parameter controls whether the change is made to the running domain
+ * the domain configuration, or both, and must not be 0.
+ */
+static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus) {
+    VALUE nvcpus;
+    VALUE flags;
+
+    Check_Type(vcpus, T_ARRAY);
+
+    if (RARRAY_LEN(vcpus) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)",
+                 RARRAY_LEN(vcpus));
+
+    nvcpus = rb_ary_entry(vcpus, 0);
+    flags = rb_ary_entry(vcpus, 1);
+
+    gen_call_void(virDomainSetVcpusFlags, conn(s), domain_get(s),
+                  NUM2UINT(nvcpus), NUM2UINT(flags));
 }
 
 /*
@@ -1767,6 +1805,12 @@ void init_domain()
     rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
 #endif
 
+#if HAVE_VIRDOMAINGETVCPUSFLAGS
+    rb_define_const(c_domain, "VCPU_LIVE", INT2NUM(VIR_DOMAIN_VCPU_LIVE));
+    rb_define_const(c_domain, "VCPU_CONFIG", INT2NUM(VIR_DOMAIN_VCPU_CONFIG));
+    rb_define_const(c_domain, "VCPU_MAXIMUM", INT2NUM(VIR_DOMAIN_VCPU_MAXIMUM));
+#endif
+
     rb_define_method(c_domain, "migrate", libvirt_dom_migrate, -1);
 #if HAVE_VIRDOMAINMIGRATETOURI
     rb_define_method(c_domain, "migrate_to_uri",
@@ -1797,6 +1841,7 @@ void init_domain()
     rb_define_method(c_domain, "memory=", libvirt_dom_memory_set, 1);
     rb_define_method(c_domain, "max_vcpus", libvirt_dom_max_vcpus, 0);
     rb_define_method(c_domain, "vcpus=", libvirt_dom_vcpus_set, 1);
+    rb_define_method(c_domain, "vcpus_flags=", libvirt_dom_vcpus_set_flags, 1);
     rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, 2);
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
@@ -2020,5 +2065,9 @@ void init_domain()
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
     rb_define_method(c_domain, "qemu_monitor_command",
                      libvirt_dom_qemu_monitor_command, -1);
+#endif
+
+#if HAVE_VIRDOMAINGETVCPUSFLAGS
+    rb_define_method(c_domain, "num_vcpus", libvirt_dom_num_vcpus, 1);
 #endif
 }

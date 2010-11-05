@@ -94,6 +94,8 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainGetSecurityLabel',
                   'virConnectCompareCPU',
                   'virConnectBaselineCPU',
+                  'virDomainSetVcpusFlags',
+                  'virDomainGetVcpusFlags',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

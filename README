@@ -36,8 +36,6 @@ with the following exceptions:
 - virDomainRef
 - virDomainSetMemoryParameters
 - virDomainGetMemoryParameters
-- virDomainSetVcpusFlags
-- virDomainGetVcpusFlags
 - virDomainIsUpdated
 - virDomainOpenConsole
 - virNetworkGetConnect

@@ -1078,6 +1078,53 @@ expect_invalid_arg_type(newdom, "scheduler_parameters=", 0)
 
 newdom.undefine
 
+# TESTGROUP: dom.num_vcpus
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "num_vcpus", 1, 2)
+expect_too_few_args(newdom, "num_vcpus")
+expect_invalid_arg_type(newdom, "num_vcpus", 'foo')
+expect_fail(newdom, Libvirt::Error, "zero flags", "num_vcpus", 0)
+expect_fail(newdom, Libvirt::Error, "active flag on shutoff domain", "num_vcpus", Libvirt::Domain::VCPU_LIVE)
+expect_fail(newdom, Libvirt::Error, "live and config flags", "num_vcpus", Libvirt::Domain::VCPU_LIVE | Libvirt::Domain::VCPU_CONFIG)
+expect_success(newdom, "config flag", "num_vcpus", Libvirt::Domain::VCPU_CONFIG) {|x| x == 2}
+
+newdom.undefine
+
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+expect_success(newdom, "config flag on transient domain", "num_vcpus", Libvirt::Domain::VCPU_CONFIG)
+expect_success(newdom, "live flag on transient domain", "num_vcpus", Libvirt::Domain::VCPU_LIVE)
+
+newdom.destroy
+
+# TESTGROUP: dom.vcpus_flags=
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "vcpus_flags=", 1, 2, 3)
+expect_too_few_args(newdom, "vcpus_flags=")
+expect_invalid_arg_type(newdom, "vcpus_flags=", 1)
+expect_invalid_arg_type(newdom, "vcpus_flags=", ['foo', 2])
+expect_invalid_arg_type(newdom, "vcpus_flags=", [2, 'foo'])
+expect_fail(newdom, Libvirt::Error, "zero flags", "vcpus_flags=", [2, 0])
+expect_fail(newdom, Libvirt::Error, "zero vcpus", "vcpus_flags=", [0, Libvirt::Domain::VCPU_CONFIG])
+expect_fail(newdom, Libvirt::Error, "live vcpu on shutoff domain", "vcpus_flags=", [2, Libvirt::Domain::VCPU_LIVE])
+expect_success(newdom, "2 vcpu config", "vcpus_flags=", [2, Libvirt::Domain::VCPU_CONFIG])
+
+newdom.undefine
+
+newdom = conn.create_domain_xml(new_dom_xml)
+sleep 1
+
+expect_fail(newdom, Libvirt::Error, "vcpu config on transient domain", "vcpus_flags=", [2, Libvirt::Domain::VCPU_CONFIG])
+expect_fail(newdom, Libvirt::Error, "too many vcpus", "vcpus_flags=", [4, Libvirt::Domain::VCPU_LIVE])
+
+# FIXME: this doesn't work for some reason
+#expect_success(newdom, "vcpus to 1", "vcpus_flags", [1,Libvirt::Domain::VCPU_LIVE])
+
+newdom.destroy
+
 conn.close
 
 finish_tests
