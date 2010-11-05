@@ -669,7 +669,7 @@ static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
 /*
  * call-seq:
- *   dom.memory_stats(flags=0) -> Libvirt::Domain::MemoryStats
+ *   dom.memory_stats(flags=0) -> [ Libvirt::Domain::MemoryStats ]
  *
  * Call +virDomainMemoryStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryStats]
  * to retrieve statistics about the amount of memory consumed by a domain.
@@ -691,6 +691,16 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
     r = virDomainMemoryStats(dom, stats, 6, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats", conn(s)));
 
+    /* FIXME: the right rubyish way to have done this would have been to
+     * create a hash with the values, something like:
+     *
+     * { 'SWAP_IN' => 0, 'SWAP_OUT' => 98, 'MAJOR_FAULT' => 45,
+     *   'MINOR_FAULT' => 55, 'UNUSED' => 455, 'AVAILABLE' => 98 }
+     *
+     * Unfortunately this has already been released with the array version
+     * so we have to maintain compatibility with that.  We should probably add
+     * a new memory_stats-like call that properly creates the hash.
+     */
     result = rb_ary_new2(r);
     for (i=0; i<r; i++) {
         tmp = rb_class_new_instance(0, NULL, c_domain_memory_stats);
