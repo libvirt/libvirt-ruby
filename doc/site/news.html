@@ -55,15 +55,29 @@
 	</ul>
       </div>
       <div id="content">
+	<h1>News</h1>
+	<ul>
+	  <li>November 10, 2010 - Gem for version 0.2.0 pushed to
+	  rubygems.org</li>
+	  <li>July 1, 2010 - Release 0.2.0</li>
+	  <li>November 18, 2008 - Release 0.1.0</li>
+	  <li>April 15, 2008 - Release 0.0.7</li>
+	  <li>April 2, 2008 - Release 0.0.6</li>
+	  <li>April 2, 2008 - Release 0.0.5</li>
+	  <li>April 1, 2008 - Release 0.0.4</li>
+	  <li>December 6, 2007 - Release 0.0.2</li>
+	  <li>November 19, 2007 - Release 0.0.1</li>
+	</ul>
 	<h1>Releases</h1>
 	<h3>0.2.0: July 1 2010</h3>
-	<p>- Updated Storage class, implementing pool.active?, pool.persistent?,
-	  pool.vol_create_xml_from.</p>
-	<p>- Updated Connect class, implementing conn.node_free_memory,
+	<ul>
+	  <li>Updated Storage class, implementing pool.active?, pool.persistent?,
+	  pool.vol_create_xml_from.</li>
+	  <li>Updated Connect class, implementing conn.node_free_memory,
 	  conn.node_cells_free_memory, conn.node_get_security_model, conn.encrypted?,
-	  conn.libversion, and conn.secure?</p>
-	<p>- Updated Network class, implementing network.active? and network.persistent?</p>
-	<p>- Update Domain class, implementing conn.domain_xml_from_native,
+	  conn.libversion, and conn.secure?</li>
+	  <li>Updated Network class, implementing network.active? and network.persistent?</li>
+	  <li>Update Domain class, implementing conn.domain_xml_from_native,
 	  conn.domain_xml_to_native, dom.migrate_to_uri, dom.migrate_set_max_downtime,
 	  dom.managed_save, dom.has_managed_save?, dom.managed_save_remove,
 	  dom.security_label, dom.block_stats, dom.memory_stats, dom.blockinfo,
@@ -71,48 +85,64 @@
 	  dom.snapshot_create_xml, dom.num_of_snapshots, dom.list_snapshots,
 	  dom.lookup_snapshot_by_name, dom.has_current_snapshot?,
 	  dom.revert_to_snapshot, dom.current_snapshot, snapshot.xml_desc,
-	  snapshot.delete, dom.job_info, and dom.abort_job.</p>
-	<p>- Implementation of the NodeDevice class.</p>
-	<p>- Implementation of the Secret class.</p>
-	<p>- Implementation of the NWFilter class.</p>
-	<p>- Implementation of the Interface class.</p>
-	<p>- Conversion of the development tree to git.</p>
-	<p>- New maintainer (Chris Lalancette).  David Lutterkort has agreed to transfer maintainership
-	  since he is not actively involved in their development anymore.</p>
+	  snapshot.delete, dom.job_info, and dom.abort_job.</li>
+	  <li>Implementation of the NodeDevice class.</li>
+	  <li>Implementation of the Secret class.</li>
+	  <li>Implementation of the NWFilter class.</li>
+	  <li>Implementation of the Interface class.</li>
+	  <li>Conversion of the development tree to git.</li>
+	  <li>New maintainer (Chris Lalancette).  David Lutterkort has agreed to transfer maintainership
+	  since he is not actively involved in their development anymore.</li>
+	</ul>
 	<h3>0.1.0: November 18 2008</h3>
-	<p>- Short-circuit calls to list functions for empty lists.
+	<ul>
+	  <li>Short-circuit calls to list functions for empty lists.
 	  As an optimizaton (and workaround for a bug in 0.4.3), do not call
 	  virConnectList* functions if the coresponding virConnectNumOf* call
-	  returned 0. Return an empty list instead.</p>
-	<p>- Add the MIGRATE_LIVE (enum virDomainMigrateFlags)
-	flag.</p>
-	<p>- Fix dom_migrate: (1) allow passing nil for dname and uri,
-	  (2) make all but the first two parameters optional.</p>
-	<p>- Add the binding for virConnectFindStoragePoolSources.</p>
+	  returned 0. Return an empty list instead.</li>
+	  <li>Add the MIGRATE_LIVE (enum virDomainMigrateFlags)
+	    flag.</li>
+	  <li>Fix dom_migrate: (1) allow passing nil for dname and uri,
+	    (2) make all but the first two parameters optional.</li>
+	  <li>Add the binding for virConnectFindStoragePoolSources.</li>
+	</ul>
 	<h3>0.0.7: April 15 2008</h3>
-	<p>Add the binding for virDomainMigrate.</p>
+	<ul>
+	  <li>Add the binding for virDomainMigrate.</li>
+	</ul>
 	<h3>0.0.6: April 2 2008</h3>
-	<p>- Fix a test failure from 0.0.5</p>
+	<ul>
+	  <li>Fix a test failure from 0.0.5</li>
+	</ul>
 	<h3>0.0.5: April 2 2008</h3>
-	<p>- Add free methods to the various objects.
-	  It is sometimes necessary to free a virXXX object explicitly instead of
-	  waiting for the garbage collector to come and do it. This adds explicit
-	  free methods that call the underlying virXXXFree functions
-	  to do that.</p>
-	<p>- More finegrained exceptions.
-	  Errors from libvirt are now translated in not just one but four different
-	  kinds of exceptions, and the error message from libvirt's virError
-	  structure is returned.</p>
+	<ul>
+	  <li>Add free methods to the various objects.
+	    It is sometimes necessary to free a virXXX object explicitly instead of
+	    waiting for the garbage collector to come and do it. This adds explicit
+	    free methods that call the underlying virXXXFree functions
+	    to do that.</li>
+	  <li>More finegrained exceptions.
+	    Errors from libvirt are now translated in not just one but four different
+	    kinds of exceptions, and the error message from libvirt's virError
+	    structure is returned.</li>
+	</ul>
 	<h3>0.0.4: April 1 2008</h3>
-	<p>- Bindings for storage API in libvirt 0.4.1</p>
-	<p>- Bindings for virDomainSetMemory and virDomainSetVcpus</p>
-	<p>- Binding for virDomainPinVcpu</p>
+	<ul>
+	  <li>Bindings for storage API in libvirt 0.4.1</li>
+	  <li>Bindings for virDomainSetMemory and virDomainSetVcpus</li>
+	  <li>Binding for virDomainPinVcpu</li>
+	</ul>
 	<h3>0.0.2: December 6 2007</h3>
-	<p>- Add the virNodeGetInfo call</p>
-	<p>- Convert Ruby API from StudlyCaps to _ separation.
-	  Using one_two_three instead of oneTwoThree is the standard Ruby way.</p>
+	<ul>
+	  <li>Add the virNodeGetInfo call</li>
+	  <li>Convert Ruby API from StudlyCaps to _ separation.
+	    Using one_two_three instead of oneTwoThree is the standard
+	    Ruby way.</li>
+	</ul>
 	<h3>0.0.1: November 19 2007</h3>
-	<p>- Initial release</p>
+	<ul>
+	  <li>Initial release</li>
+	</ul>
       </div>
     </div>
     <div>
