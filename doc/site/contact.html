@@ -13,10 +13,12 @@
     <div id="header">
       <div id="rubyHeaderLogo"></div>
       <div id="headerSearch">
-        <form action="search.php" enctype="application/x-www-form-urlencoded" method="get"><div>
+        <form action="search.php" enctype="application/x-www-form-urlencoded" method="get">
+	  <div>
             <input id="query" name="query" type="text" size="12" value="" />
             <input id="submit" name="submit" type="submit" value="Search" />
-          </div></form>
+          </div>
+	</form>
       </div>
     </div>
     <div id="body">
@@ -24,32 +26,15 @@
         <ul class="l0">
 	  <li>
             <div>
-	      <a title="Front page of the ruby-libvirt website" class="inactive" href="index.html">Home</a>
-            </div>
-          </li>
-	  <li>
-            <div>
-              <a title="Details of new features and bugs fixed in each release" class="inactive" href="news.html">News</a>
-            </div>
-          </li>
-	  <li>
-            <div>
-              <a title="Get the latest source releases, binary builds and get access to the source repository" class="inactive" href="downloads.html">Downloads</a>
-            </div>
-          </li>
-	  <li>
-            <div>
-              <a title="API documentation for application developers" class="inactive" href="api/index.html">API Documentation</a>
-            </div>
-          </li>
-	  <li>
-            <div>
-	      <span class="active">Contact</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <a title="Miscellaneous links of interest related to libvirt" class="inactive" href="relatedlinks.html">Related Links</a>
+	      <a title="Front page of the ruby-libvirt website" class="active" href="index.html">Ruby</a>
+	      <ul class="l1">
+		<li><div><a title="Details of new features and bugs fixed in each release" class="inactive" href="news.html">News</a></div></li>
+		<li><div><a title="Get the latest source releases, binary builds and get access to the source repository" class="inactive" href="downloads.html">Downloads</a></div></li>
+		<li><div><a title="API documentation for application developers" class="inactive" href="api/index.html">API Documentation</a></div></li>
+		<li><div><span class="active">Contact</span></div></li>
+		<li><div><a title="Miscellaneous links of interest related to libvirt" class="inactive" href="relatedlinks.html">Related Links</a></div></li>
+		<li><div><a title="Libvirt.org Home" class="inactive" href="http://libvirt.org">Libvirt.org</a></div></li>
+	      </ul>
             </div>
           </li>
 	</ul>
