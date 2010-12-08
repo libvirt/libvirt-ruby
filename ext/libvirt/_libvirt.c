@@ -126,23 +126,17 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
 }
 
 static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
-                                         unsigned int ncred, void *cbdata)
-{
-    VALUE auth;
-    VALUE cb;
-    VALUE usercb;
-    VALUE credlist;
+                                         unsigned int ncred, void *cbdata) {
+    VALUE userdata;
     VALUE newcred;
-    VALUE thisentry;
-    VALUE result;
     int i;
+    VALUE result;
 
-    auth = (VALUE)cbdata;
+    userdata = (VALUE)cbdata;
 
-    cb = rb_ary_entry(auth, 1);
-    usercb = rb_ary_entry(auth, 2);
+    if (!rb_block_given_p())
+        rb_raise(rb_eRuntimeError, "No block given, this should never happen!\n");
 
-    credlist = rb_ary_new();
     for (i = 0; i < ncred; i++) {
         newcred = rb_hash_new();
 
@@ -160,31 +154,33 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
         else
             rb_hash_aset(newcred, rb_str_new2("defresult"), Qnil);
         rb_hash_aset(newcred, rb_str_new2("result"), Qnil);
+        rb_hash_aset(newcred, rb_str_new2("userdata"), userdata);
 
-        /* now store this new hash object into the credlist */
-        rb_ary_store(credlist, i, newcred);
-    }
-
-    /* call out to the ruby object */
-    rb_funcall(rb_class_of(cb), rb_to_id(cb), 2, credlist, usercb);
-
-    /* OK, the ruby callout was successful.  Pull the data out of the ruby
-     * array and store it back into the C structures
-     */
-    for (i = 0; i < ncred; i++) {
-        thisentry = rb_ary_entry(credlist, i);
-        result = rb_hash_aref(thisentry, rb_str_new2("result"));
+        result = rb_yield(newcred);
         if (NIL_P(result)) {
             cred[i].result = NULL;
             cred[i].resultlen = 0;
         }
         else {
-            cred[i].result = StringValueCStr(result);
+            cred[i].result = strdup(StringValueCStr(result));
             cred[i].resultlen = strlen(cred[i].result);
         }
     }
 
     return 0;
+}
+
+
+struct wrap_callout {
+    char *uri;
+    virConnectAuthPtr auth;
+    unsigned int flags;
+};
+
+static VALUE rb_open_auth_wrap(VALUE arg) {
+    struct wrap_callout *e = (struct wrap_callout *)arg;
+
+    return (VALUE)virConnectOpenAuth(e->uri, e->auth, e->flags);
 }
 
 static VALUE rb_num2int_wrap(VALUE arg) {
@@ -193,50 +189,52 @@ static VALUE rb_num2int_wrap(VALUE arg) {
 
 /*
  * call-seq:
- *   Libvirt::open_auth(url=nil, auth=nil, flags=0) -> Libvirt::Connect
+ *   Libvirt::open_auth(uri=nil, credlist=nil, userdata=nil, flags=0) {|...| authentication block} -> Libvirt::Connect
  *
  * Call
  * +virConnectOpenAuth+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenAuth]
- * to open a connection to a URL, with a possible authentication callback.
- * If an authentication callback is desired, then the auth parameter should
- * be a 3 element array.  The first element is an array that specifies
- * which credentials the callback is willing to support; the full list is
- * available at http://libvirt.org/html/libvirt-libvirt.html#virConnectCredentialType.
- * The second element of the array is a callback to be registered with libvirt;
- * when additional credentials are required, this callback will be called to
- * collect them.  This callback must take 2 parameters: the first is an array
- * of hashes that represent the credential structures libvirt needs to continue,
- * and the second is any additional user data that was passed in.  Each of the
- * credential hashes contains 5 elements:
+ * to open a connection to a libvirt URI, with a possible authentication block.
+ * If an authentication block is desired, then credlist should be an array that
+ * specifies which credentials the authentication block is willing to support;
+ * the full list is available at http://libvirt.org/html/libvirt-libvirt.html#virConnectCredentialType.
+ * If userdata is not nil and an authentication block is given, userdata will
+ * be passed unaltered into the authentication block.  The flags parameter
+ * controls how to open connection.  The only options currently available for
+ * flags are 0 for a read/write connection and Libvirt::CONNECT_RO for a
+ * read-only connection.
+ *
+ * If the credlist is not empty, and an authentication block is given, the
+ * authentication block will be called once for each credential necessary
+ * to complete the authentication.  The authentication block will be passed a
+ * single parameter, which is a hash of values containing information necessary
+ * to complete authentication.  This hash contains 5 elements:
  *
  * type - the type of credential to be examined
  * prompt - a suggested prompt to show to the user
  * challenge - any additional challenge information
  * defresult - a default result to use if credentials could not be obtained
- * result - an element to store the result of collecting credentials.  This
- *          should be a string.
+ * userdata - the userdata passed into open_auth initially
  *
- * The third and final argument to open_auth is a flags parameter that controls
- * how to open a connection.  The only options currently are 0 for a read/write
- * connection and Libvirt::CONNECT_RO for a read-only connection.
+ * The authentication block should return the result of collecting the
+ * information; these results will then be sent to libvirt for authentication.
  */
-static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
-{
+static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m) {
+    virConnectAuthPtr auth;
     VALUE uri;
-    VALUE cb;
+    VALUE credlist;
+    VALUE userdata;
     VALUE flags_val;
     char *uri_c;
-    virConnectPtr conn;
-    virConnectAuthPtr auth;
-    VALUE creds;
-    int i;
+    virConnectPtr conn = NULL;
+    unsigned int flags;
     int auth_alloc;
+    int i;
     VALUE tmp;
     int exception = 0;
-    unsigned int flags;
     struct rb_ary_entry_arg args;
+    struct wrap_callout callargs;
 
-    rb_scan_args(argc, argv, "03", &uri, &cb, &flags_val);
+    rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags_val);
 
     /* handle the optional URI */
     uri_c = get_string_or_nil(uri);
@@ -247,29 +245,16 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     else
         flags = NUM2UINT(flags_val);
 
-    /* handle the optional auth */
-    if (!NIL_P(cb)) {
-        Check_Type(cb, T_ARRAY);
-
-        if (RARRAY_LEN(cb) != 3) {
-            rb_raise(rb_eArgError, "wrong number of credential arguments (%d for 3)",
-                     RARRAY_LEN(cb));
-            return Qnil;
-        }
-
-        /* the first array element has to be an array itself, which contains
-         * the flags that the callback is willing to support */
-        creds = rb_ary_entry(cb, 0);
-
-        Check_Type(creds, T_ARRAY);
-        /* note that we don't check for array length here, since an array of
-         * 0 length, while useless, is valid
-         */
-
+    if (rb_block_given_p()) {
         auth = ALLOC(virConnectAuth);
         auth_alloc = 1;
 
-        auth->ncredtype = RARRAY_LEN(creds);
+        if (TYPE(credlist) == T_NIL)
+            auth->ncredtype = 0;
+        else if (TYPE(credlist) == T_ARRAY)
+            auth->ncredtype = RARRAY_LEN(credlist);
+        else
+            rb_raise(rb_eTypeError, "wrong argument type (expected Array or nil)");
         auth->credtype = NULL;
         if (auth->ncredtype > 0) {
             /* we don't use ALLOC_N here because that can throw an exception,
@@ -283,46 +268,42 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
                 rb_memerror();
             }
             for (i = 0; i < auth->ncredtype; i++) {
-                args.arr = creds;
+                args.arr = credlist;
                 args.elem = i;
                 tmp = rb_protect(rb_ary_entry_wrap, (VALUE)&args, &exception);
-                if (exception) {
-                    free(auth->credtype);
-                    xfree(auth);
-                    rb_jump_tag(exception);
-                }
+                if (exception)
+                    goto do_cleanup;
 
                 auth->credtype[i] = rb_protect(rb_num2int_wrap, tmp,
                                                &exception);
-                if (exception) {
-                    free(auth->credtype);
-                    xfree(auth);
-                    rb_jump_tag(exception);
-                }
+                if (exception)
+                    goto do_cleanup;
             }
         }
 
         auth->cb = libvirt_auth_callback_wrapper;
-
-        /* we pass the entire array in the cbdata so that
-         * libvirt_auth_callback_wrapper can unmarshal it and have both the
-         * data the user supplied (which would have been in element 2), as well
-         * as the ruby callback function that we want to call to (which would
-         * have been in element 1).
-         */
-        auth->cbdata = (void *)cb;
+        auth->cbdata = (void *)userdata;
     }
     else {
         auth = virConnectAuthPtrDefault;
         auth_alloc = 0;
     }
 
-    conn = virConnectOpenAuth(uri_c, auth, flags);
+    callargs.uri = uri_c;
+    callargs.auth = auth;
+    callargs.flags = flags;
 
+    conn = (virConnectPtr)rb_protect(rb_open_auth_wrap, (VALUE)&callargs,
+                                     &exception);
+
+do_cleanup:
     if (auth_alloc) {
         free(auth->credtype);
         xfree(auth);
     }
+
+    if (exception)
+        rb_jump_tag(exception);
 
     _E(conn == NULL, create_error(e_ConnectionError, "virConnectOpenAuth",
                                   NULL));
