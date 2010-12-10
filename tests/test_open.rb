@@ -39,45 +39,88 @@ conn = expect_success(Libvirt, "nil arg", "open_read_only", nil) {|x| x.class ==
 conn.close
 
 # TESTGROUP: Libvirt::open_auth
-expect_too_many_args(Libvirt, "open_auth", "qemu:///system", 'hello', 1, 2)
+expect_too_many_args(Libvirt, "open_auth", "qemu:///system", [], "hello there", 1, 2)
 expect_connect_error("open_auth", "foo:///system")
 expect_invalid_arg_type(Libvirt, "open_auth", 1)
-expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [1, 2, 3], 'foo')
-expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [1, 2, 3])
-expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [['hello'], 2, 3])
-expect_too_few_args(Libvirt, "open_auth", "qemu:///system", [])
-expect_too_many_args(Libvirt, "open_auth", "qemu:///system", [1, 2, 3, 4])
-conn = expect_success(Libvirt, "no args", "open_auth") {|x| x.class == Libvirt::Connect }
-conn.close
-conn = expect_success(Libvirt, "uri arg", "open_auth", "qemu:///system") {|x| x.class == Libvirt::Connect }
+expect_invalid_arg_type(Libvirt, "open_auth", "qemu:///system", [], "hello", "foo")
 
-def my_auth(creds, userdata)
-  if not userdata.nil?
-    puts "userdata is #{userdata}"
-  end
-  creds.each do |cred|
+conn = expect_success(Libvirt, "no args", "open_auth")  {|x| x.class == Libvirt::Connect }
+conn.close
+
+conn = expect_success(Libvirt, "uri arg", "open_auth", "qemu:///system") {|x| x.class == Libvirt::Connect }
+conn.close
+
+conn = expect_success(Libvirt, "uri and empty cred args", "open_auth", "qemu:///system", []) {|x| x.class == Libvirt::Connect }
+conn.close
+
+conn = expect_success(Libvirt, "uri and full cred args", "open_auth", "qemu:///system", [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE]) {|x| x.class == Libvirt::Connect }
+conn.close
+
+conn = expect_success(Libvirt, "uri, full cred, and user args", "open_auth", "qemu:///system", [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], "hello") {|x| x.class == Libvirt::Connect }
+conn.close
+
+# equivalent to "expect_success"
+begin
+  conn = Libvirt::open_auth("qemu:///system", [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], "hello") do |cred|
+    if not cred["userdata"].nil?
+      puts "userdata is #{cred["userdata"]}"
+    end
     if cred["type"] == Libvirt::CRED_AUTHNAME
-      puts "#{cred['prompt']}: "
+      print "#{cred['prompt']}: "
       res = gets
       # strip off the \n
-      cred["result"] = res[0..-2]
+      res = res[0..-2]
     elsif cred["type"] == Libvirt::CRED_PASSPHRASE
-      puts "#{cred['prompt']}: "
+      print "#{cred['prompt']}: "
       res = gets
-      cred["result"] = res[0..-2]
+      res = res[0..-2]
     else
       raise "Unsupported credential #{cred['type']}"
     end
+    res
   end
+
+  puts "OK: open_auth uri, creds, userdata, auth block succeeded"
+  $SUCCESS = $SUCCESS + 1
+  conn.close
+rescue NoMethodError
+  puts "SKIPPED: open_auth does not exist"
+  $SKIPPED = $SKIPPED + 1
+rescue => e
+  puts "FAIL: open_auth uri, creds, userdata, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
+  $FAIL = $FAIL + 1
 end
 
-conn = expect_success(Libvirt, "credentials", "open_auth", "qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, nil])
-conn.close
+# equivalent to "expect_success"
+begin
+  conn = Libvirt::open_auth("qemu:///system", [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], "hello", Libvirt::CONNECT_RO) do |cred|
+    if not cred["userdata"].nil?
+      puts "userdata is #{cred["userdata"]}"
+    end
+    if cred["type"] == Libvirt::CRED_AUTHNAME
+      print "#{cred['prompt']}: "
+      res = gets
+      # strip off the \n
+      res = res[0..-2]
+    elsif cred["type"] == Libvirt::CRED_PASSPHRASE
+      print "#{cred['prompt']}: "
+      res = gets
+      res = res[0..-2]
+    else
+      raise "Unsupported credential #{cred['type']}"
+    end
+    res
+  end
 
-conn = expect_success(Libvirt, "R/O credentials", "open_auth", "qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, nil], Libvirt::CONNECT_RO)
-conn.close
-
-conn = expect_success(Libvirt, "R/O credentials user-data", "open_auth", "qemu:///system", [[Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], :my_auth, "wowee"], Libvirt::CONNECT_RO)
-conn.close
+  puts "OK: open_auth uri, creds, userdata, R/O flag, auth block succeeded"
+  $SUCCESS = $SUCCESS + 1
+  conn.close
+rescue NoMethodError
+  puts "SKIPPED: open_auth does not exist"
+  $SKIPPED = $SKIPPED + 1
+rescue => e
+  puts "FAIL: open_auth uri, creds, userdata, R/O flag, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
+  $FAIL = $FAIL + 1
+end
 
 finish_tests
