@@ -149,17 +149,11 @@ extern VALUE m_libvirt;
 
 char *get_string_or_nil(VALUE arg);
 
-VALUE rb_str_new2_wrap(VALUE arg);
 struct rb_ary_entry_arg {
     VALUE arr;
     int elem;
 };
 VALUE rb_ary_entry_wrap(VALUE arg);
-struct rb_str_new_arg {
-    char *val;
-    size_t size;
-};
-VALUE rb_str_new_wrap(VALUE arg);
 VALUE rb_ary_new_wrap(VALUE arg);
 struct rb_ary_push_arg {
     VALUE arr;
@@ -167,19 +161,28 @@ struct rb_ary_push_arg {
 };
 VALUE rb_ary_push_wrap(VALUE arg);
 VALUE rb_ary_new2_wrap(VALUE arg);
+
+VALUE rb_str_new2_wrap(VALUE arg);
+struct rb_str_new_arg {
+    char *val;
+    size_t size;
+};
+VALUE rb_str_new_wrap(VALUE arg);
+VALUE rb_string_value_cstr_wrap(VALUE arg);
+
 struct rb_iv_set_arg {
     VALUE klass;
     char *member;
     VALUE value;
 };
 VALUE rb_iv_set_wrap(VALUE arg);
+
 struct rb_class_new_instance_arg {
     int argc;
     VALUE *argv;
     VALUE klass;
 };
 VALUE rb_class_new_instance_wrap(VALUE arg);
-VALUE rb_string_value_cstr_wrap(VALUE arg);
 
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(ar) (RARRAY(ar)->len)

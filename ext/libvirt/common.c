@@ -60,14 +60,14 @@ VALUE rb_ary_entry_wrap(VALUE arg) {
     return rb_ary_entry(e->arr, e->elem);
 }
 
+VALUE rb_ary_new_wrap(VALUE arg) {
+    return rb_ary_new();
+}
+
 VALUE rb_str_new_wrap(VALUE arg) {
     struct rb_str_new_arg *e = (struct rb_str_new_arg *)arg;
 
     return rb_str_new(e->val, e->size);
-}
-
-VALUE rb_ary_new_wrap(VALUE arg) {
-    return rb_ary_new();
 }
 
 VALUE rb_iv_set_wrap(VALUE arg) {
