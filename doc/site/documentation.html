@@ -28,9 +28,9 @@
 	      <ul class="l1">
 		<li><div><a title="Details of new features and bugs fixed in each release" class="inactive" href="news.html">News</a></div></li>
 		<li><div><a title="Get the latest source releases, binary builds and get access to the source repository" class="inactive" href="downloads.html">Downloads</a></div></li>
-		<li><div><a title="Documentation for application developers" class="inactive" href="documentation.html">Documentation</a></div></li>
+		<li><div><span class="active">Documentation</span></div></li>
 		<li><div><a title="How and where to report bugs, request features, and otherwise get in touch with the developers" class="inactive" href="contact.html">Contact</a></div></li>
-		<li><div><span class="active">Related Links</span></div></li>
+		<li><div><a title="Miscellaneous links of interest related to libvirt" class="inactive" href="relatedlinks.html">Related Links</a></div></li>
 		<li><div><a title="Libvirt.org Home" class="inactive" href="http://libvirt.org">Libvirt.org</a></div></li>
 	      </ul>
             </div>
@@ -38,14 +38,31 @@
 	</ul>
       </div>
       <div id="content">
-        <h1>Related links</h1>
-        <p>This page contains some links of interest having to do
-        with ruby and libvirt</p>
-	<ul>
-	  <li><a href="http://libvirt.org">Libvirt</a></li>
-	  <li><a href="http://ruby-lang.org">Ruby</a></li>
-	  <li><a href="http://rubygems.org">Rubygems.org</a></li>
-	</ul>
+	<h1>Documentation</h1>
+	<p>This page contains documentation for application writers
+	using the ruby-libvirt bindings</p>
+	<h2>RDoc API documentation</h2>
+	<p>The <a href="api/index.html">API documentation</a> for the
+	  ruby-libvirt bindings are automatically generated out of the
+	  source code using RDoc.
+	</p>
+	<h2>Examples</h2>
+	<p>Sometimes the easiest way to learn is by looking through
+	example code.  The following examples each demonstrate one or
+	more of the methods in the library.  Note that some of the
+	examples may not work on your particular setup, depending on
+	the hypervisor in use, the version of libvirt in use, and the
+	version of the ruby-libvirt bindings in use.
+	  <ol>
+	    <li><a href="examples/open.rb">Connect to a
+	    hypervisor</a></li>
+	    <li><a href="examples/open_auth.rb">Connect to a
+	    hypervisor with authentication needed</a></li>
+	    <li><a href="examples/node_info.rb">Retrieve various
+	    information about a hypervisor</a></li>
+	    <li><a href="examples/domain_create.rb">Manipulate a domain</a></li>
+	  </ol>
+	</p>
       </div>
     </div>
     <div>
