@@ -488,7 +488,7 @@ static VALUE libvirt_pool_active_p(VALUE p) {
  *   pool.persistent? -> [true|false]
  *
  * Call +virStoragePoolIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsPersistent]
- * to determine if this storage pool is persistent?
+ * to determine if this storage pool is persistent.
  */
 static VALUE libvirt_pool_persistent_p(VALUE p) {
     gen_call_truefalse(virStoragePoolIsPersistent, conn(p), pool_get(p));

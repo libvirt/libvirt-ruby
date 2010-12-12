@@ -150,7 +150,9 @@ static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv, VALUE s
  *   dom.shutdown -> nil
  *
  * Call +virDomainShutdown+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainShutdown]
- * to do a soft shutdown of the domain.
+ * to do a soft shutdown of the domain.  The mechanism for doing the shutdown
+ * is hypervisor specific, and may require software running inside the domain
+ * to succeed.
  */
 static VALUE libvirt_dom_shutdown(VALUE s) {
     gen_call_void(virDomainShutdown, conn(s), domain_get(s));
@@ -317,8 +319,7 @@ static VALUE libvirt_dom_restore(VALUE s, VALUE from) {
  *   Libvirt::Domain::restore(conn, filename) -> nil
  *
  * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
- * to restore the domain from the filename.  Note that this singleton method
- * is deprecated in favor of dom.restore.
+ * to restore the domain from the filename.
  */
 static VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
     gen_call_void(virDomainRestore, conn(c), connect_get(c),
@@ -381,7 +382,7 @@ static VALUE libvirt_dom_security_label(VALUE s) {
  *   dom.block_stats(path) -> Libvirt::Domain::BlockStats
  *
  * Call +virDomainBlockStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStats]
- * to retrieve statistics about guest block device path.
+ * to retrieve statistics about domain block device path.
  */
 static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
     virDomainPtr dom = domain_get(s);
@@ -1106,7 +1107,7 @@ static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
  *   dom.detach_device(device_xml, flags=0) -> nil
  *
  * Call +virDomainDetachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
- * to detach the device described the device_xml from the domain.
+ * to detach the device described by the device_xml from the domain.
  */
 static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
     VALUE xml;
@@ -1134,7 +1135,7 @@ static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
  *   dom.update_device(device_xml, flags=0) -> nil
  *
  * Call +virDomainUpdateDeviceFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUpdateDeviceFlags]
- * to update the device described the device_xml from the domain.
+ * to update the device described by the device_xml.
  */
 static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE s) {
     VALUE xml;
@@ -1654,7 +1655,7 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 /*
  * call-seq:
- *   dom.qemu_monitor_command -> string
+ *   dom.qemu_monitor_command(cmd, flags=0) -> string
  *
  * Call virDomainQemuMonitorCommand
  * to send a qemu command directly to the monitor.  Note that this will only

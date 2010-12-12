@@ -210,9 +210,13 @@ static VALUE rb_num2int_wrap(VALUE arg) {
  * to complete authentication.  This hash contains 5 elements:
  *
  * type - the type of credential to be examined
+ *
  * prompt - a suggested prompt to show to the user
+ *
  * challenge - any additional challenge information
+ *
  * defresult - a default result to use if credentials could not be obtained
+ *
  * userdata - the userdata passed into open_auth initially
  *
  * The authentication block should return the result of collecting the
