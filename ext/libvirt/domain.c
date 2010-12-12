@@ -47,15 +47,15 @@ static VALUE c_domain_job_info;
 #endif
 static VALUE c_domain_vcpuinfo;
 
-static void domain_free(void *d) {
+void domain_free(void *d) {
     generic_free(Domain, d);
 }
 
-static VALUE domain_new(virDomainPtr d, VALUE conn) {
+VALUE domain_new(virDomainPtr d, VALUE conn) {
     return generic_new(c_domain, d, conn, domain_free);
 }
 
-static virDomainPtr domain_get(VALUE s) {
+virDomainPtr domain_get(VALUE s) {
     generic_get(Domain, s);
 }
 

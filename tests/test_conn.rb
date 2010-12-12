@@ -130,6 +130,74 @@ expect_invalid_arg_type(conn, "baseline_cpu", [], "foo")
 expect_fail(conn, ArgumentError, "empty array", "baseline_cpu", [])
 expect_success(conn, "CPU XML", "baseline_cpu", [cpu_xml])
 
+# TESTGROUP: conn.domain_event_register_any
+dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+}
+
+def dom_event_callback_symbol(conn, dom, event, detail, opaque)
+end
+
+expect_too_many_args(conn, "domain_event_register_any", 1, 2, 3, 4, 5)
+expect_too_few_args(conn, "domain_event_register_any")
+expect_too_few_args(conn, "domain_event_register_any", 1)
+expect_invalid_arg_type(conn, "domain_event_register_any", "hello", 1)
+expect_invalid_arg_type(conn, "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, 1)
+expect_invalid_arg_type(conn, "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, 1)
+expect_fail(conn, ArgumentError, "invalid event ID", "domain_event_register_any", 456789, dom_event_callback_proc)
+
+callbackID = expect_success(conn, "eventID and proc", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc)
+conn.domain_event_deregister_any(callbackID)
+
+callbackID = expect_success(conn, "eventID and symbol", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, :dom_event_callback_symbol)
+conn.domain_event_deregister_any(callbackID)
+
+callbackID = expect_success(conn, "eventID, proc, nil domain", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, nil)
+conn.domain_event_deregister_any(callbackID)
+
+callbackID = expect_success(conn, "eventID, proc, nil domain, opaque", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, nil, "opaque user data")
+conn.domain_event_deregister_any(callbackID)
+
+# TESTGROUP: conn.domain_event_deregister_any
+dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+}
+
+callbackID = conn.domain_event_register_any(Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc)
+
+expect_too_many_args(conn, "domain_event_deregister_any", 1, 2)
+expect_too_few_args(conn, "domain_event_deregister_any")
+expect_invalid_arg_type(conn, "domain_event_deregister_any", "hello")
+
+expect_success(conn, "callbackID", "domain_event_deregister_any", callbackID)
+
+# TESTGROUP: conn.domain_event_register
+dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+}
+
+def dom_event_callback_symbol(conn, dom, event, detail, opaque)
+end
+
+expect_too_many_args(conn, "domain_event_register", 1, 2, 3)
+expect_too_few_args(conn, "domain_event_register")
+expect_invalid_arg_type(conn, "domain_event_register", "hello")
+
+expect_success(conn, "proc", "domain_event_register", dom_event_callback_proc)
+conn.domain_event_deregister
+
+expect_success(conn, "symbol", "domain_event_register", :dom_event_callback_symbol)
+conn.domain_event_deregister
+
+expect_success(conn, "proc and opaque", "domain_event_register", dom_event_callback_proc, "opaque user data")
+conn.domain_event_deregister
+
+# TESTGROUP: conn.domain_event_deregister
+dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+}
+
+conn.domain_event_register(dom_event_callback_proc)
+
+expect_too_many_args(conn, "domain_event_deregister", 1)
+expect_success(conn, "no args", "domain_event_deregister")
+
 conn.close
 
 finish_tests

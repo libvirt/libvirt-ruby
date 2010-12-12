@@ -23,6 +23,7 @@
 #include <libvirt/virterror.h>
 #include "extconf.h"
 #include "common.h"
+#include "domain.h"
 
 VALUE c_connect;
 static VALUE c_node_security_model;
@@ -353,6 +354,7 @@ static VALUE libvirt_conn_capabilities(VALUE s) {
 /*
  * call-seq:
  *   conn.compare_cpu(xml, flags=0) -> compareflag
+ *
  * Call +virConnectCompareCPU+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectCompareCPU]
  * to compare the host CPU with the XML contained in xml.  Returns one of
  * Libvirt::CPU_COMPARE_ERROR, Libvirt::CPU_COMPARE_INCOMPATIBLE,
@@ -379,6 +381,7 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s) {
 /*
  * call-seq:
  *   conn.baseline_cpu([xml, xml2, ...], flags=0) -> XML
+ *
  * Call +virConnectBaselineCPU+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectBaselineCPU]
  * to compare the most feature-rich CPU which is compatible with all
  * given host CPUs.
@@ -444,6 +447,409 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
     return retval;
 }
 #endif
+
+static int domain_event_lifecycle_callback(virConnectPtr conn,
+                                           virDomainPtr dom, int event,
+                                           int detail, void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event lifecycle callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 5, newc,
+                   domain_new(dom, newc), INT2FIX(event), INT2FIX(detail),
+                   cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 5, newc, domain_new(dom, newc),
+                   INT2FIX(event), INT2FIX(detail), cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event lifecycle callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
+                                        void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event reboot callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 3, newc,
+                   domain_new(dom, newc), cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 3, newc, domain_new(dom, newc),
+                   cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event reboot callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+static int domain_event_rtc_callback(virConnectPtr conn, virDomainPtr dom,
+                                     long long utc_offset, void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event rtc callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
+                   domain_new(dom, newc), LL2NUM(utc_offset), cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
+                   LL2NUM(utc_offset), cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event rtc callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+static int domain_event_watchdog_callback(virConnectPtr conn, virDomainPtr dom,
+                                          int action, void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event watchdog callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
+                   domain_new(dom, newc), INT2FIX(action), cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
+                   INT2FIX(action), cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event watchdog callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+static int domain_event_io_error_callback(virConnectPtr conn, virDomainPtr dom,
+                                          const char *src_path,
+                                          const char *dev_alias,
+                                          int action,
+                                          void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event IO error callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 6, newc,
+                   domain_new(dom, newc), rb_str_new2(src_path),
+                   rb_str_new2(dev_alias), INT2FIX(action), cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 6, newc, domain_new(dom, newc),
+                   rb_str_new2(src_path), rb_str_new2(dev_alias),
+                   INT2FIX(action), cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event IO error callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+static int domain_event_io_error_reason_callback(virConnectPtr conn,
+                                                 virDomainPtr dom,
+                                                 const char *src_path,
+                                                 const char *dev_alias,
+                                                 int action,
+                                                 const char *reason,
+                                                 void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event IO error reason callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 7, newc,
+                   domain_new(dom, newc), rb_str_new2(src_path),
+                   rb_str_new2(dev_alias), INT2FIX(action),
+                   rb_str_new2(reason), cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 7, newc, domain_new(dom, newc),
+                   rb_str_new2(src_path), rb_str_new2(dev_alias),
+                   INT2FIX(action), rb_str_new2(reason), cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event IO error reason callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
+                                          int phase,
+                                          virDomainEventGraphicsAddressPtr local,
+                                          virDomainEventGraphicsAddressPtr remote,
+                                          const char *authScheme,
+                                          virDomainEventGraphicsSubjectPtr subject,
+                                          void *opaque) {
+    VALUE passthrough = (VALUE)opaque;
+    VALUE cb;
+    VALUE cb_opaque;
+    VALUE newc;
+    VALUE local_hash;
+    VALUE remote_hash;
+    VALUE subject_array;
+    VALUE pair;
+    int i;
+
+    if (TYPE(passthrough) != T_ARRAY)
+        rb_raise(rb_eTypeError,
+                 "wrong domain event graphics callback argument type (expected Array)");
+
+    cb = rb_ary_entry(passthrough, 0);
+    cb_opaque = rb_ary_entry(passthrough, 1);
+
+    local_hash = rb_hash_new();
+    rb_hash_aset(local_hash, rb_str_new2("family"), INT2FIX(local->family));
+    rb_hash_aset(local_hash, rb_str_new2("node"), rb_str_new2(local->node));
+    rb_hash_aset(local_hash, rb_str_new2("service"),
+                 rb_str_new2(local->service));
+
+    remote_hash = rb_hash_new();
+    rb_hash_aset(remote_hash, rb_str_new2("family"), INT2FIX(remote->family));
+    rb_hash_aset(remote_hash, rb_str_new2("node"), rb_str_new2(remote->node));
+    rb_hash_aset(remote_hash, rb_str_new2("service"),
+                 rb_str_new2(remote->service));
+
+    subject_array = rb_ary_new();
+    for (i = 0; i < subject->nidentity; i++) {
+        pair = rb_ary_new();
+        rb_ary_store(pair, 0, rb_str_new2(subject->identities[i].type));
+        rb_ary_store(pair, 1, rb_str_new2(subject->identities[i].name));
+
+        rb_ary_store(subject_array, i, pair);
+    }
+
+    newc = connect_new(conn);
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+        rb_funcall(rb_class_of(cb), rb_to_id(cb), 8, newc,
+                   domain_new(dom, newc), INT2FIX(phase), local_hash,
+                   remote_hash, rb_str_new2(authScheme), subject_array,
+                   cb_opaque);
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+        rb_funcall(cb, rb_intern("call"), 8, newc, domain_new(dom, newc),
+                   INT2FIX(phase), local_hash, remote_hash,
+                   rb_str_new2(authScheme), subject_array, cb_opaque);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong domain event graphics callback (expected Symbol or Proc)");
+
+    return 0;
+}
+
+/*
+ * call-seq:
+ *   conn.domain_event_register_any(eventID, callback, dom=nil, opaque=nil) -> fixnum
+ *
+ * Call +virConnectDomainEventRegisterAny+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventRegisterAny]
+ * to register callback for eventID with libvirt.  The eventID must be one of
+ * the Libvirt::Connect::DOMAIN_EVENT_ID_* constants.  The callback can either
+ * by a Symbol (that is the name of a method to callback) or a Proc.  Note that
+ * the callback must accept different numbers of arguments depending on the
+ * eventID passed in.  The arguments are as follows:
+ *
+ * - DOMAIN_EVENT_ID_LIFECYCLE: Libvirt::Connect, Libvirt::Domain, event, detail, opaque
+ * - DOMAIN_EVENT_ID_REBOOT: Libvirt::Connect, Libvirt::Domain, opaque
+ * - DOMAIN_EVENT_ID_RTC_CHANGE: Libvirt::Connect, Libvirt::Domain, utc_offset, opaque
+ * - DOMAIN_EVENT_ID_WATCHDOG: Libvirt::Connect, Libvirt::Domain, action, opaque
+ * - DOMAIN_EVENT_ID_IO_ERROR: Libvirt::Connect, Libvirt::Domain, src_path, dev_alias, action, opaque
+ * - DOMAIN_EVENT_ID_IO_ERROR_REASON: Libvirt::Connect, Libvirt::Domain, src_path, dev_alias, action, reason, opaque
+ * - DOMAIN_EVENT_ID_GRAPHICS: Libvirt::Connect, Libvirt::Domain, phase, local, remote, auth_scheme, subject, opaque
+
+ * If dom is a valid Libvirt::Domain object, then only events from that
+ * domain will be seen.  The opaque parameter can be any valid ruby type, and
+ * will be passed into callback as "opaque".  This method returns a
+ * libvirt-specific handle, which must be used by the application to
+ * deregister the callback later (see domain_event_deregister_any).
+ */
+static VALUE libvirt_conn_domain_event_register_any(int argc, VALUE *argv,
+                                                    VALUE c) {
+    virConnectPtr conn = connect_get(c);
+    VALUE eventID, cb, dom, opaque;
+    virDomainPtr domain;
+    virConnectDomainEventGenericCallback internalcb = NULL;
+    int ret;
+    VALUE passthrough;
+
+    rb_scan_args(argc, argv, "22", &eventID, &cb, &dom, &opaque);
+
+    if (!is_symbol_or_proc(cb))
+        rb_raise(rb_eTypeError, "wrong argument type (expected Symbol or Proc)");
+
+    if (NIL_P(dom))
+        domain = NULL;
+    else
+        domain = domain_get(dom);
+
+    switch(NUM2INT(eventID)) {
+    case VIR_DOMAIN_EVENT_ID_LIFECYCLE:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_lifecycle_callback);
+        break;
+    case VIR_DOMAIN_EVENT_ID_REBOOT:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_reboot_callback);
+        break;
+    case VIR_DOMAIN_EVENT_ID_RTC_CHANGE:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_rtc_callback);
+        break;
+    case VIR_DOMAIN_EVENT_ID_WATCHDOG:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_watchdog_callback);
+        break;
+    case VIR_DOMAIN_EVENT_ID_IO_ERROR:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_io_error_callback);
+        break;
+    case VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_io_error_reason_callback);
+        break;
+    case VIR_DOMAIN_EVENT_ID_GRAPHICS:
+        internalcb = VIR_DOMAIN_EVENT_CALLBACK(domain_event_graphics_callback);
+        break;
+    default:
+        rb_raise(rb_eArgError, "invalid eventID argument %d",
+                 NUM2INT(eventID));
+        break;
+    }
+
+    passthrough = rb_ary_new();
+    rb_ary_store(passthrough, 0, cb);
+    rb_ary_store(passthrough, 1, opaque);
+
+    ret = virConnectDomainEventRegisterAny(conn, domain, NUM2INT(eventID),
+                                           internalcb, (void *)passthrough,
+                                           NULL);
+
+    _E(ret < 0, create_error(e_RetrieveError,
+                             "virConnectDomainEventRegisterAny", conn));
+
+    return INT2NUM(ret);
+}
+
+/*
+ * call-seq:
+ *   conn.domain_event_deregister_any(callbackID) -> nil
+ *
+ * Call +virConnectDomainEventDeregisterAny+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventDeregisterAny]
+ * to deregister a callback from libvirt.  The callbackID must be a
+ * libvirt-specific handle returned by domain_event_register_any.
+ */
+static VALUE libvirt_conn_domain_event_deregister_any(VALUE c,
+                                                      VALUE callbackID) {
+    gen_call_void(virConnectDomainEventDeregisterAny, conn(c), connect_get(c),
+                  NUM2INT(callbackID));
+}
+
+/*
+ * this is a bit of silliness.  Because libvirt internals track the address
+ * of the function pointer, trying to use domain_event_lifecycle_callback
+ * for both register and register_any would mean that we could only register
+ * one or the other for lifecycle callbacks.  Instead we do a simple wrapper
+ * so that the addresses are different
+ */
+static int domain_event_callback(virConnectPtr conn,
+                                 virDomainPtr dom, int event,
+                                 int detail, void *opaque) {
+    return domain_event_lifecycle_callback(conn, dom, event, detail, opaque);
+}
+/*
+ * call-seq:
+ *   conn.domain_event_register(callback, opaque=nil) -> nil
+ *
+ * Call +virConnectDomainEventRegister+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventRegister]
+ * to register callback for domain lifecycle events with libvirt.  The
+ * callback can either by a Symbol (that is the name of a method to callback)
+ * or a Proc.  The callback must accept 5 parameters: Libvirt::Connect,
+ * Libvirt::Domain, event, detail, opaque.  The opaque parameter to
+ * domain_event_register can be any valid ruby type, and will be passed into
+ * callback as "opaque".  This method is deprecated in favor of
+ * domain_event_register_any.
+ */
+static VALUE libvirt_conn_domain_event_register(int argc, VALUE *argv,
+                                                VALUE c) {
+    VALUE cb, opaque;
+    VALUE passthrough;
+
+    rb_scan_args(argc, argv, "11", &cb, &opaque);
+
+    if (!is_symbol_or_proc(cb))
+        rb_raise(rb_eTypeError, "wrong argument type (expected Symbol or Proc)");
+
+    passthrough = rb_ary_new();
+    rb_ary_store(passthrough, 0, cb);
+    rb_ary_store(passthrough, 1, opaque);
+
+    gen_call_void(virConnectDomainEventRegister, conn(c), connect_get(c),
+                  domain_event_callback, (void *)passthrough, NULL);
+}
+
+/*
+ * call-seq:
+ *   conn.domain_event_deregister(callback) -> nil
+ *
+ * Call +virConnectDomainEventDeregister+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventDeregister]
+ * to deregister the event callback from libvirt.  This method is deprecated
+ * in favor of domain_event_deregister_any (though they cannot be mixed; if
+ * the callback was registered with domain_event_register, it must be
+ * deregistered with domain_event_deregister).
+ */
+static VALUE libvirt_conn_domain_event_deregister(VALUE c) {
+    gen_call_void(virConnectDomainEventDeregister, conn(c), connect_get(c),
+                  domain_event_callback);
+}
 
 /*
  * Class Libvirt::Connect
@@ -518,72 +924,109 @@ void init_connect()
     rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1);
 #endif
 
-    /* FIXME: implement these */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_ADDED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED_ADDED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_UPDATED", INT2NUM(VIR_DOMAIN_EVENT_DEFINED_UPDATED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED", INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED_REMOVED", INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED_REMOVED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED", INT2NUM(VIR_DOMAIN_EVENT_STARTED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_BOOTED", INT2NUM(VIR_DOMAIN_EVENT_STARTED_BOOTED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_STARTED_MIGRATED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_RESTORED", INT2NUM(VIR_DOMAIN_EVENT_STARTED_RESTORED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT", INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_PAUSED", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_PAUSED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_MIGRATED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_WATCHDOG", INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_WATCHDOG)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED", INT2NUM(VIR_DOMAIN_EVENT_RESUMED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_UNPAUSED", INT2NUM(VIR_DOMAIN_EVENT_RESUMED_UNPAUSED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_RESUMED_MIGRATED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SHUTDOWN", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SHUTDOWN)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_DESTROYED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_DESTROYED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_CRASHED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_CRASHED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_MIGRATED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_MIGRATED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SAVED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SAVED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FAILED", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FAILED)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT", INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_NONE", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_NONE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_PAUSE", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_PAUSE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_RESET", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_RESET)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_POWEROFF", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_POWEROFF)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_SHUTDOWN", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_SHUTDOWN)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_DEBUG", INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_DEBUG)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_NONE", INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_NONE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_PAUSE", INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_PAUSE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_REPORT", INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_REPORT)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_CONNECT", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_CONNECT)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_INITIALIZE", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_INITIALIZE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_DISCONNECT", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_DISCONNECT)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6", INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_LIFECYCLE", INT2NUM(VIR_DOMAIN_EVENT_ID_LIFECYCLE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_REBOOT", INT2NUM(VIR_DOMAIN_EVENT_ID_REBOOT)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_RTC_CHANGE", INT2NUM(VIR_DOMAIN_EVENT_ID_RTC_CHANGE)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_WATCHDOG", INT2NUM(VIR_DOMAIN_EVENT_ID_WATCHDOG)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR", INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_GRAPHICS", INT2NUM(VIR_DOMAIN_EVENT_ID_GRAPHICS)); */
-    /* rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR_REASON", INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON)); */
-    /* rb_define_const(c_connect, "EVENT_HANDLE_READABLE", INT2NUM(VIR_EVENT_HANDLE_READABLE)); */
-    /* rb_define_const(c_connect, "EVENT_HANDLE_WRITABLE", INT2NUM(VIR_EVENT_HANDLE_WRITABLE)); */
-    /* rb_define_const(c_connect, "EVENT_HANDLE_ERROR", INT2NUM(VIR_EVENT_HANDLE_ERROR)); */
-    /* rb_define_const(c_connect, "EVENT_HANDLE_HANGUP", INT2NUM(VIR_EVENT_HANDLE_HANGUP)); */
-    /* rb_define_method(c_connect, "domain_event_register",
-                       libvirt_conn_domain_event_register", -1);
-    */
-    /* rb_define_method(c_connect, "domain_event_register",
-                       libvirt_conn_domain_event_register", -1);
-    */
-    /* rb_define_method(c_connect, "Domain_event_deregister",
-                       libvirt_conn_domain_event_deregister, -1);
-    */
-    /* rb_define_method(c_connect, "domain_event_register_any",
-                        libvirt_conn_domain_event_register_any, -1);
-    */
-    /* rb_define_method(c_connect, "domain_event_deregister_any",
-                       libvirt_conn_domain_event_deregister_any, -1);
-    */
-    /* rb_define_method(c_connect, "event_register_impl", libvirt_conn_event_register_impl, -1); */
+    rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED",
+                    INT2NUM(VIR_DOMAIN_EVENT_DEFINED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_ADDED",
+                    INT2NUM(VIR_DOMAIN_EVENT_DEFINED_ADDED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_UPDATED",
+                    INT2NUM(VIR_DOMAIN_EVENT_DEFINED_UPDATED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED",
+                    INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED_REMOVED",
+                    INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED_REMOVED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_BOOTED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_BOOTED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_MIGRATED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_MIGRATED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_RESTORED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_RESTORED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_PAUSED",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_PAUSED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_MIGRATED",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_MIGRATED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_WATCHDOG",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_WATCHDOG));
+    rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED",
+                    INT2NUM(VIR_DOMAIN_EVENT_RESUMED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_UNPAUSED",
+                    INT2NUM(VIR_DOMAIN_EVENT_RESUMED_UNPAUSED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_MIGRATED",
+                    INT2NUM(VIR_DOMAIN_EVENT_RESUMED_MIGRATED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SHUTDOWN",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SHUTDOWN));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_DESTROYED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_DESTROYED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_CRASHED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_CRASHED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_MIGRATED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_MIGRATED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SAVED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SAVED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FAILED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FAILED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT));
+    rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_NONE",
+                    INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_NONE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_PAUSE",
+                    INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_PAUSE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_RESET",
+                    INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_RESET));
+    rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_POWEROFF",
+                    INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_POWEROFF));
+    rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_SHUTDOWN",
+                    INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_SHUTDOWN));
+    rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_DEBUG",
+                    INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_DEBUG));
+    rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_NONE",
+                    INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_NONE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_PAUSE",
+                    INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_PAUSE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_REPORT",
+                    INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_REPORT));
+    rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_CONNECT",
+                    INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_CONNECT));
+    rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_INITIALIZE",
+                    INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_INITIALIZE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_DISCONNECT",
+                    INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_DISCONNECT));
+    rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4",
+                    INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4));
+    rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6",
+                    INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6));
+
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_LIFECYCLE",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_LIFECYCLE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_REBOOT",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_REBOOT));
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_RTC_CHANGE",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_RTC_CHANGE));
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_WATCHDOG",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_WATCHDOG));
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR));
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR_REASON",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON));
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_GRAPHICS",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_GRAPHICS));
+
+    rb_define_method(c_connect, "domain_event_register",
+                     libvirt_conn_domain_event_register, -1);
+    rb_define_method(c_connect, "domain_event_deregister",
+                     libvirt_conn_domain_event_deregister, 0);
+
+    rb_define_method(c_connect, "domain_event_register_any",
+                     libvirt_conn_domain_event_register_any, -1);
+    rb_define_method(c_connect, "domain_event_deregister_any",
+                     libvirt_conn_domain_event_deregister_any, 1);
 }
