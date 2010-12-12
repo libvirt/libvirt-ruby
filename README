@@ -27,9 +27,9 @@ toplevel of your source checkout):
 
 Notes
 -----
-As of November 5, 2010, the ruby-libvirt bindings support all of the libvirt
-APIs up to libvirt commit hash a59dde7869b10e64fb86c73f42f4a6299830dc9e with
-the following exceptions:
+As of December 12, 2010, the ruby-libvirt bindings support all of the libvirt
+APIs up to libvirt commit hash e8d05c978da774b7abbbc38dfcc00b9b582fdf72
+with the following exceptions:
 
 - virConnectRef
 - virDomainGetConnect
@@ -38,6 +38,8 @@ the following exceptions:
 - virDomainGetMemoryParameters
 - virDomainSetVcpusFlags
 - virDomainGetVcpusFlags
+- virDomainIsUpdated
+- virDomainOpenConsole
 - virNetworkGetConnect
 - virNetworkRef
 - virInterfaceGetConnect
@@ -47,9 +49,6 @@ the following exceptions:
 - virStorageVolGetConnect
 - virStorageVolRef
 - virNodeDeviceRef
-- virConnectDomainEventRegister
-- virConnectDomainEventDeregister
-- virEventRegisterImpl
 - virSecretGetConnect
 - virSecretRef
 - virStreamNew
@@ -65,5 +64,3 @@ the following exceptions:
 - virStreamAbort
 - virStreamFree
 - virNWFilterRef
-- virConnectDomainEventRegisterAny
-- virConnectDomainEventDeregisterAny
