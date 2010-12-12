@@ -182,17 +182,12 @@ static VALUE libvirt_conn_uri(VALUE s) {
  * for this connection.
  */
 static VALUE libvirt_conn_max_vcpus(int argc, VALUE *argv, VALUE s) {
-    int result;
-    virConnectPtr conn = connect_get(s);
     VALUE type;
 
     rb_scan_args(argc, argv, "01", &type);
 
-    result = virConnectGetMaxVcpus(conn, get_string_or_nil(type));
-    _E(result < 0, create_error(e_RetrieveError, "virConnectGetMaxVcpus",
-                                conn));
-
-    return INT2NUM(result);
+    gen_call_int(virConnectGetMaxVcpus, conn(s), connect_get(s),
+                 get_string_or_nil(type));
 }
 
 /*
@@ -368,17 +363,13 @@ static VALUE libvirt_conn_capabilities(VALUE s) {
  */
 static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s) {
     VALUE xml, flags;
-    int r;
-    virConnectPtr conn = connect_get(s);
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    r = virConnectCompareCPU(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virConnectCompareCPU", conn));
-
-    return INT2NUM(r);
+    gen_call_int(virConnectCompareCPU, conn(s), connect_get(s),
+                 StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
 
@@ -726,11 +717,9 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
  */
 static VALUE libvirt_conn_domain_event_register_any(int argc, VALUE *argv,
                                                     VALUE c) {
-    virConnectPtr conn = connect_get(c);
     VALUE eventID, cb, dom, opaque;
     virDomainPtr domain;
     virConnectDomainEventGenericCallback internalcb = NULL;
-    int ret;
     VALUE passthrough;
 
     rb_scan_args(argc, argv, "22", &eventID, &cb, &dom, &opaque);
@@ -775,14 +764,9 @@ static VALUE libvirt_conn_domain_event_register_any(int argc, VALUE *argv,
     rb_ary_store(passthrough, 0, cb);
     rb_ary_store(passthrough, 1, opaque);
 
-    ret = virConnectDomainEventRegisterAny(conn, domain, NUM2INT(eventID),
-                                           internalcb, (void *)passthrough,
-                                           NULL);
-
-    _E(ret < 0, create_error(e_RetrieveError,
-                             "virConnectDomainEventRegisterAny", conn));
-
-    return INT2NUM(ret);
+    gen_call_int(virConnectDomainEventRegisterAny, conn(c), connect_get(c),
+                 domain, NUM2INT(eventID), internalcb, (void *)passthrough,
+                 NULL);
 }
 
 /*

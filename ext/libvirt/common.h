@@ -134,6 +134,18 @@ VALUE gen_list(int num, char ***list);
         return _r_##func ? Qtrue : Qfalse;                              \
     } while(0)
 
+/* Generate a call to a function FUNC which returns an int error, where -1
+ * indicates error and >= 0 success. The Ruby function will return the integer
+ * success and throw an exception on error.
+ */
+#define gen_call_int(func, conn, args...)                               \
+    do {                                                                \
+        int _r_##func;                                                  \
+        _r_##func = func(args);                                         \
+        _E(_r_##func < 0, create_error(e_RetrieveError, #func, conn));  \
+        return INT2NUM(_r_##func);                                      \
+    } while(0)
+
 /* Error handling */
 #define _E(cond, excep) \
     do { if (cond) rb_exc_raise(excep); } while(0)

@@ -81,13 +81,7 @@ static VALUE libvirt_nodedevice_parent(VALUE c) {
  * to retrieve the number of capabilities of the node device.
  */
 static VALUE libvirt_nodedevice_num_of_caps(VALUE c) {
-    int result;
-
-    result = virNodeDeviceNumOfCaps(nodedevice_get(c));
-    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices",
-                                connect_get(c)));
-
-    return INT2NUM(result);
+    gen_call_int(virNodeDeviceNumOfCaps, conn(c), nodedevice_get(c));
 }
 
 /*

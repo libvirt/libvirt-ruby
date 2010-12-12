@@ -66,14 +66,7 @@ static VALUE libvirt_secret_uuid(VALUE s) {
  * to retrieve the usagetype for this secret.
  */
 static VALUE libvirt_secret_usagetype(VALUE s) {
-    virSecretPtr secret = secret_get(s);
-    int ret;
-
-    ret = virSecretGetUsageType(secret);
-    _E(ret < 0, create_error(e_RetrieveError, "virSecretGetUsageType",
-                             conn(s)));
-
-    return INT2NUM(ret);
+    gen_call_int(virSecretGetUsageType, conn(s), secret_get(s));
 }
 
 /*

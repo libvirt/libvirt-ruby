@@ -923,14 +923,7 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
  * to retrieve the maximum number of virtual CPUs this domain can use.
  */
 static VALUE libvirt_dom_max_vcpus(VALUE s) {
-    virDomainPtr dom = domain_get(s);
-    int vcpus;
-
-    vcpus = virDomainGetMaxVcpus(dom);
-    _E(vcpus < 0, create_error(e_RetrieveError, "virDomainGetMaxVcpus",
-                               conn(s)));
-
-    return INT2NUM(vcpus);
+    gen_call_int(virDomainGetMaxVcpus, conn(s), domain_get(s));
 }
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
@@ -1249,8 +1242,6 @@ static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d) {
  * to retrieve the number of available snapshots for this domain.
  */
 static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
-    int result;
-    virDomainPtr dom = domain_get(d);
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1258,11 +1249,8 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    result = virDomainSnapshotNum(dom, NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virDomainSnapshotNum",
-                                conn(d)));
-
-    return INT2NUM(result);
+    gen_call_int(virDomainSnapshotNum, conn(d), domain_get(d),
+                 NUM2UINT(flags));
 }
 
 /*
