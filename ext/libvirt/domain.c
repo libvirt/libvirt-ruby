@@ -99,7 +99,6 @@ static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
  */
 static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
     VALUE flags, dname_val, bandwidth, duri_val;
-    int ret;
 
     rb_scan_args(argc, argv, "13", &duri_val, &flags, &dname_val, &bandwidth);
 
@@ -108,13 +107,9 @@ static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    ret = virDomainMigrateToURI(domain_get(s), StringValueCStr(duri_val),
-                                NUM2ULONG(flags), get_string_or_nil(dname_val),
-                                NUM2ULONG(bandwidth));
-
-    _E(ret < 0, create_error(e_Error, "virDomainMigrateToURI", conn(s)));
-
-    return Qnil;
+    gen_call_void(virDomainMigrateToURI, conn(s), domain_get(s),
+                  StringValueCStr(duri_val), NUM2ULONG(flags),
+                  get_string_or_nil(dname_val), NUM2ULONG(bandwidth));
 }
 #endif
 
@@ -126,22 +121,17 @@ static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainMigrateSetMaxDowntime+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
  * to set the maximum downtime desired for live migration.
  */
-static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv,
+                                                  VALUE s) {
     VALUE downtime, flags;
-    int ret;
 
     rb_scan_args(argc, argv, "11", &downtime, &flags);
 
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    ret = virDomainMigrateSetMaxDowntime(domain_get(s), NUM2ULL(downtime),
-                                         NUM2UINT(flags));
-
-    _E(ret < 0, create_error(e_Error, "virDomainMigrateSetMaxDowntime",
-                             conn(s)));
-
-    return Qnil;
+    gen_call_void(virDomainMigrateSetMaxDowntime, conn(s), domain_get(s),
+                  NUM2ULL(downtime), NUM2UINT(flags));
 }
 #endif
 
@@ -1346,18 +1336,14 @@ static VALUE libvirt_dom_has_current_snapshot_p(int argc, VALUE *argv, VALUE d) 
  */
 static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d) {
     VALUE snap, flags;
-    int r;
 
     rb_scan_args(argc, argv, "11", &snap, &flags);
 
     if (NIL_P(flags))
         flags = INT2FIX(0);
 
-    r = virDomainRevertToSnapshot(domain_snapshot_get(snap), NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virDomainRevertToSnapshot",
-                           conn(d)));
-
-    return Qnil;
+    gen_call_void(virDomainRevertToSnapshot, conn(d),
+                  domain_snapshot_get(snap), NUM2UINT(flags));
 }
 
 /*

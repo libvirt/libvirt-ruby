@@ -107,10 +107,8 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s) {
  * to set a new value in this secret.
  */
 static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
-    virSecretPtr secret = secret_get(s);
     VALUE flags;
     VALUE value;
-    int r;
 
     rb_scan_args(argc, argv, "11", &value, &flags);
 
@@ -119,12 +117,9 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
 
     StringValue(value);
 
-    r = virSecretSetValue(secret, (unsigned char *)RSTRING_PTR(value),
-                          RSTRING_LEN(value), NUM2UINT(flags));
-
-    _E(r < 0, create_error(e_RetrieveError, "virSecretSetValue", conn(s)));
-
-    return Qnil;
+    gen_call_void(virSecretSetValue, conn(s), secret_get(s),
+                  (unsigned char *)RSTRING_PTR(value), RSTRING_LEN(value),
+                  NUM2UINT(flags));
 }
 
 /*
