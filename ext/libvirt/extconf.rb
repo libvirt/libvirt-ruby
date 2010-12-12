@@ -111,6 +111,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DUMP_LIVE',
                    'VIR_DOMAIN_DEVICE_MODIFY_CURRENT',
                    'VIR_DOMAIN_DEVICE_MODIFY_CONFIG',
+                   'VIR_DOMAIN_DEVICE_MODIFY_FORCE',
                    'VIR_INTERFACE_XML_INACTIVE',
                    'VIR_STORAGE_POOL_INACCESSIBLE',
                  ]

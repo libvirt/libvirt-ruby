@@ -2113,6 +2113,10 @@ void init_domain()
     rb_define_const(c_domain, "DEVICE_MODIFY_CONFIG",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CONFIG));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_FORCE
+    rb_define_const(c_domain, "DEVICE_MODIFY_FORCE",
+                    INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_FORCE));
+#endif
     rb_define_method(c_domain, "attach_device", libvirt_dom_attach_device, -1);
     rb_define_method(c_domain, "detach_device", libvirt_dom_detach_device, -1);
 #if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
