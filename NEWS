@@ -1,3 +1,31 @@
+2010-11-10
+  * Gem for version 0.2.0 pushed to rubygems.org
+
+2010-07-01 0.2.0
+  * Updated Storage class, implementing pool.active?, pool.persistent?,
+    pool.vol_create_xml_from.
+  * Updated Connect class, implementing conn.node_free_memory,
+    conn.node_cells_free_memory, conn.node_get_security_model, conn.encrypted?,
+    conn.libversion, and conn.secure?
+  * Updated Network class, implementing network.active? and network.persistent?
+  * Update Domain class, implementing conn.domain_xml_from_native,
+    conn.domain_xml_to_native, dom.migrate_to_uri,
+    dom.migrate_set_max_downtime, dom.managed_save, dom.has_managed_save?,
+    dom.managed_save_remove, dom.security_label, dom.block_stats,
+    dom.memory_stats, dom.blockinfo, dom.block_peek, dom.memory_peek,
+    dom.active?, dom.persistent?, dom.snapshot_create_xml,
+    dom.num_of_snapshots, dom.list_snapshots, dom.lookup_snapshot_by_name,
+    dom.has_current_snapshot?, dom.revert_to_snapshot, dom.current_snapshot,
+    snapshot.xml_desc, snapshot.delete, dom.job_info, and dom.abort_job.
+  * Implementation of the NodeDevice class.
+  * Implementation of the Secret class.
+  * Implementation of the NWFilter class.
+  * Implementation of the Interface class.
+  * Conversion of the development tree to git.
+  * New maintainer (Chris Lalancette). David Lutterkort has agreed to transfer
+    maintainership since he is not actively involved in their development
+    anymore.
+
 2008-11-18 0.1.0
   * Add binding for virConnectFindStoragePoolSources (clalance)
   * Fix dom_migrate (clalance)
