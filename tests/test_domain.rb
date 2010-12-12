@@ -32,7 +32,7 @@ new_dom_xml = <<EOF
   <uuid>#{UUID}</uuid>
   <memory>1048576</memory>
   <currentMemory>1048576</currentMemory>
-  <vcpu>1</vcpu>
+  <vcpu>2</vcpu>
   <os>
     <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>
@@ -418,7 +418,6 @@ expect_fail(newdom, Libvirt::Error, "of shut-off domain", "core_dump", "/var/lib
 
 newdom.undefine
 
-
 # TESTGROUP: Libvirt::Domain::restore
 newdom = conn.define_domain_xml(new_dom_xml)
 newdom.create
@@ -441,34 +440,13 @@ expect_success(Libvirt::Domain, "2 args", "restore", conn, "/var/lib/libvirt/ima
 newdom.destroy
 newdom.undefine
 
-# TESTGROUP: dom.restore
-newdom = conn.define_domain_xml(new_dom_xml)
-newdom.create
-sleep 1
-
-newdom.save("/var/lib/libvirt/images/ruby-libvirt-test.save")
-
-expect_too_few_args(newdom, "restore")
-expect_too_many_args(newdom, "restore", 1, 2)
-expect_invalid_arg_type(newdom, "restore", 1)
-expect_fail(newdom, Libvirt::Error, "invalid path", "restore", "/this/path/does/not/exist")
-`touch /tmp/foo`
-expect_fail(newdom, Libvirt::Error, "invalid save file", "restore", "/tmp/foo")
-`rm -f /tmp/foo`
-
-# FIXME: why doesn't this work?
-#expect_success(newdom, "path arg", "restore", "/var/lib/libvirt/images/ruby-libvirt-test.save")
-
-#newdom.destroy
-newdom.undefine
-
 # TESTGROUP: dom.info
 newdom = conn.create_domain_xml(new_dom_xml)
 sleep 1
 
 expect_too_many_args(newdom, "info", 1)
 
-expect_success(newdom, "no args", "info") {|x| x.state == Libvirt::Domain::RUNNING and x.max_mem == 1048576 and x.memory == 1048576 and x.nr_virt_cpu == 1}
+expect_success(newdom, "no args", "info") {|x| x.state == Libvirt::Domain::RUNNING and x.max_mem == 1048576 and x.memory == 1048576 and x.nr_virt_cpu == 2}
 
 newdom.destroy
 
@@ -568,7 +546,7 @@ sleep 1
 
 expect_too_many_args(newdom, "get_vcpus", 1)
 
-expect_success(newdom, "no args", "get_vcpus") {|x| x.length == 1}
+expect_success(newdom, "no args", "get_vcpus") {|x| x.length == 2}
 
 newdom.destroy
 
