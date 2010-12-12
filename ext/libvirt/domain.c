@@ -338,6 +338,7 @@ static VALUE libvirt_dom_info(VALUE s) {
     rb_iv_set(result, "@memory", ULONG2NUM(info.memory));
     rb_iv_set(result, "@nr_virt_cpu", INT2FIX((int) info.nrVirtCpu));
     rb_iv_set(result, "@cpu_time", ULL2NUM(info.cpuTime));
+
     return result;
 }
 
