@@ -311,6 +311,379 @@ do_cleanup:
     return connect_new(conn);
 }
 
+static VALUE add_handle, update_handle, remove_handle;
+static VALUE add_timeout, update_timeout, remove_timeout;
+
+/*
+ * call-seq:
+ *   Libvirt::event_invoke_handle_callback(handle, fd, events, opaque) -> Qnil
+ *
+ * Unlike most of the other functions in the ruby-libvirt bindings, this one
+ * does not directly correspond to a libvirt API function.  Instead, this
+ * module method (and event_invoke_timeout_callback) are meant to be called
+ * when there is an event of interest to libvirt on one of the file descriptors
+ * that libvirt uses.  The application is notified of the file descriptors
+ * that libvirt uses via the callbacks from Libvirt::event_register_impl.  When
+ * there is an event of interest, the application must call
+ * event_invoke_timeout_callback to ensure proper operation.
+ *
+ * Libvirt::event_invoke_handle_callback takes 4 arguments:
+ *
+ * handle
+ *          an application specific handle ID.  This can be any integer, but
+ *          must be unique from all other libvirt handles in the application.
+ * fd
+ *          the file descriptor of interest.  This was given to the application
+ *          as a callback to add_handle of Libvirt::event_register_impl
+ * events
+ *          the events that have occured on the fd.  Note that the events are
+ *          libvirt specific, and are some combination of
+ *          Libvirt::EVENT_HANDLE_READABLE, Libvirt::EVENT_HANDLE_WRITABLE,
+ *          Libvirt::EVENT_HANDLE_ERROR, Libvirt::EVENT_HANDLE_HANGUP.  To
+ *          notify libvirt of more than one event at a time, these values should
+ *          be logically OR'ed together.
+ * opaque
+ *          the opaque data passed from libvirt during the
+ *          Libvirt::event_register_impl add_handle callback.  To ensure proper
+ *          operation this data must be passed through to
+ *          event_invoke_handle_callback without modification.
+ */
+static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
+                                                  VALUE fd, VALUE events,
+                                                  VALUE opaque) {
+    virEventHandleCallback cb;
+    void *op;
+    VALUE libvirt_cb;
+    VALUE libvirt_opaque;
+
+    if (TYPE(opaque) != T_HASH)
+        rb_raise(rb_eTypeError,
+                 "wrong event callback argument type (expected Hash)");
+
+    libvirt_cb = rb_hash_aref(opaque, rb_str_new2("libvirt_cb"));
+
+    /* This is equivalent to Data_Get_Struct; I reproduce it here because
+     * I don't want the additional type-cast that Data_Get_Struct does
+     */
+    Check_Type(libvirt_cb, T_DATA);
+    cb = DATA_PTR(libvirt_cb);
+
+    if (cb) {
+        libvirt_opaque = rb_hash_aref(opaque, rb_str_new2("opaque"));
+        Data_Get_Struct(libvirt_opaque, void *, op);
+        cb(NUM2INT(handle), NUM2INT(fd), NUM2INT(events), op);
+    }
+
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   Libvirt::event_invoke_timeout_callback(timer, opaque) -> Qnil
+ *
+ * Unlike most of the other functions in the ruby-libvirt bindings, this one
+ * does not directly correspond to a libvirt API function.  Instead, this
+ * module method (and event_invoke_handle_callback) are meant to be called
+ * when there is a timeout of interest to libvirt.  The application is
+ * notified of the timers that libvirt uses via the callbacks from
+ * Libvirt::event_register_impl.  When a timeout expires, the application must
+ * call event_invoke_timeout_callback to ensure proper operation.
+ *
+ * Libvirt::event_invoke_timeout_callback takes 2 arguments:
+ *
+ * handle
+ *          an application specific timer ID.  This can be any integer, but
+ *          must be unique from all other libvirt timers in the application.
+ * opaque
+ *          the opaque data passed from libvirt during the
+ *          Libvirt::event_register_impl add_handle callback.  To ensure proper
+ *          operation this data must be passed through to
+ *          event_invoke_handle_callback without modification.
+ */
+static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
+                                                   VALUE opaque) {
+    virEventTimeoutCallback cb;
+    void *op;
+    VALUE libvirt_cb;
+    VALUE libvirt_opaque;
+
+    if (TYPE(opaque) != T_HASH)
+        rb_raise(rb_eTypeError,
+                 "wrong event callback argument type (expected Hash)");
+
+    libvirt_cb = rb_hash_aref(opaque, rb_str_new2("libvirt_cb"));
+
+    /* This is equivalent to Data_Get_Struct; I reproduce it here because
+     * I don't want the additional type-cast that Data_Get_Struct does
+     */
+    Check_Type(libvirt_cb, T_DATA);
+    cb = DATA_PTR(libvirt_cb);
+
+    if (cb) {
+        libvirt_opaque = rb_hash_aref(opaque, rb_str_new2("opaque"));
+        Data_Get_Struct(libvirt_opaque, void *, op);
+        cb(NUM2INT(timer), op);
+    }
+
+    return Qnil;
+}
+
+static int internal_add_handle_func(int fd, int events,
+                                    virEventHandleCallback cb, void *opaque,
+                                    virFreeCallback ff) {
+    VALUE rubyargs;
+    VALUE res;
+
+    rubyargs = rb_hash_new();
+    rb_hash_aset(rubyargs, rb_str_new2("libvirt_cb"),
+                 Data_Wrap_Struct(rb_class_of(add_handle), NULL, NULL, cb));
+    rb_hash_aset(rubyargs, rb_str_new2("opaque"),
+                 Data_Wrap_Struct(rb_class_of(add_handle), NULL, NULL, opaque));
+    rb_hash_aset(rubyargs, rb_str_new2("free_func"),
+                 Data_Wrap_Struct(rb_class_of(add_handle), NULL, NULL, ff));
+
+    /* call out to the ruby object */
+    if (strcmp(rb_obj_classname(add_handle), "Symbol") == 0)
+        res = rb_funcall(rb_class_of(add_handle), rb_to_id(add_handle), 3,
+                         INT2FIX(fd), INT2FIX(events), rubyargs);
+    else if (strcmp(rb_obj_classname(add_handle), "Proc") == 0)
+        res = rb_funcall(add_handle, rb_intern("call"), 3, INT2FIX(fd),
+                         INT2FIX(events), rubyargs);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong add handle callback argument type (expected Symbol or Proc)");
+
+    if (TYPE(res) != T_FIXNUM)
+        rb_raise(rb_eTypeError,
+                 "expected integer return from add_handle callback");
+
+    return NUM2INT(res);
+}
+
+static void internal_update_handle_func(int watch, int event) {
+    /* call out to the ruby object */
+    if (strcmp(rb_obj_classname(update_handle), "Symbol") == 0)
+        rb_funcall(rb_class_of(update_handle), rb_to_id(update_handle), 2,
+                   INT2FIX(watch), INT2FIX(event));
+    else if (strcmp(rb_obj_classname(update_handle), "Proc") == 0)
+        rb_funcall(update_handle, rb_intern("call"), 2, INT2FIX(watch),
+                   INT2FIX(event));
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong update handle callback argument type (expected Symbol or Proc)");
+}
+
+static int internal_remove_handle_func(int watch) {
+    VALUE res;
+    virFreeCallback ff_cb;
+    void *op;
+    VALUE libvirt_opaque;
+    VALUE ff;
+
+    /* call out to the ruby object */
+    if (strcmp(rb_obj_classname(remove_handle), "Symbol") == 0)
+        res = rb_funcall(rb_class_of(remove_handle), rb_to_id(remove_handle),
+                         1, INT2FIX(watch));
+    else if (strcmp(rb_obj_classname(remove_handle), "Proc") == 0)
+        res = rb_funcall(remove_handle, rb_intern("call"), 1, INT2FIX(watch));
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong remove handle callback argument type (expected Symbol or Proc)");
+
+    if (TYPE(res) != T_HASH)
+        rb_raise(rb_eTypeError,
+                 "expected opaque hash returned from remove_handle callback");
+
+    ff = rb_hash_aref(res, rb_str_new2("free_func"));
+    if (!NIL_P(ff)) {
+        /* This is equivalent to Data_Get_Struct; I reproduce it here because
+         * I don't want the additional type-cast that Data_Get_Struct does
+         */
+        Check_Type(ff, T_DATA);
+        ff_cb = DATA_PTR(ff);
+        if (ff_cb) {
+            libvirt_opaque = rb_hash_aref(res, rb_str_new2("opaque"));
+            Data_Get_Struct(libvirt_opaque, void *, op);
+
+            (*ff_cb)(op);
+        }
+    }
+
+    return 0;
+}
+
+static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
+                                     void *opaque, virFreeCallback ff) {
+    VALUE rubyargs;
+    VALUE res;
+
+    rubyargs = rb_hash_new();
+
+    rb_hash_aset(rubyargs, rb_str_new2("libvirt_cb"),
+                 Data_Wrap_Struct(rb_class_of(add_timeout), NULL, NULL, cb));
+    rb_hash_aset(rubyargs, rb_str_new2("opaque"),
+                 Data_Wrap_Struct(rb_class_of(add_timeout), NULL, NULL,
+                                  opaque));
+    rb_hash_aset(rubyargs, rb_str_new2("free_func"),
+                 Data_Wrap_Struct(rb_class_of(add_timeout), NULL, NULL, ff));
+
+    /* call out to the ruby object */
+    if (strcmp(rb_obj_classname(add_timeout), "Symbol") == 0)
+        res = rb_funcall(rb_class_of(add_timeout), rb_to_id(add_timeout), 2,
+                         INT2FIX(interval), rubyargs);
+    else if (strcmp(rb_obj_classname(add_timeout), "Proc") == 0)
+        res = rb_funcall(add_timeout, rb_intern("call"), 2, INT2FIX(interval),
+                         rubyargs);
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong add timeout callback argument type (expected Symbol or Proc)");
+
+    if (TYPE(res) != T_FIXNUM)
+        rb_raise(rb_eTypeError,
+                 "expected integer return from add_timeout callback");
+
+    return NUM2INT(res);
+}
+
+static void internal_update_timeout_func(int timer, int timeout) {
+    /* call out to the ruby object */
+    if (strcmp(rb_obj_classname(update_timeout), "Symbol") == 0)
+        rb_funcall(rb_class_of(update_timeout), rb_to_id(update_timeout), 2,
+                   INT2FIX(timer), INT2FIX(timeout));
+    else if (strcmp(rb_obj_classname(update_timeout), "Proc") == 0)
+        rb_funcall(update_timeout, rb_intern("call"), 2, INT2FIX(timer),
+                   INT2FIX(timeout));
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong update timeout callback argument type (expected Symbol or Proc)");
+}
+
+static int internal_remove_timeout_func(int timer) {
+    VALUE res;
+    virFreeCallback ff_cb;
+    void *op;
+    VALUE libvirt_opaque;
+    VALUE ff;
+
+    /* call out to the ruby object */
+    if (strcmp(rb_obj_classname(remove_timeout), "Symbol") == 0)
+        res = rb_funcall(rb_class_of(remove_timeout), rb_to_id(remove_timeout),
+                         1, INT2FIX(timer));
+    else if (strcmp(rb_obj_classname(remove_timeout), "Proc") == 0)
+        res = rb_funcall(remove_timeout, rb_intern("call"), 1, INT2FIX(timer));
+    else
+        rb_raise(rb_eTypeError,
+                 "wrong remove timeout callback argument type (expected Symbol or Proc)");
+
+    if (TYPE(res) != T_HASH)
+        rb_raise(rb_eTypeError,
+                 "expected opaque hash returned from remove_timeout callback");
+
+    ff = rb_hash_aref(res, rb_str_new2("free_func"));
+    if (!NIL_P(ff)) {
+        /* This is equivalent to Data_Get_Struct; I reproduce it here because
+         * I don't want the additional type-cast that Data_Get_Struct does
+         */
+        Check_Type(ff, T_DATA);
+        ff_cb = DATA_PTR(ff);
+        if (ff_cb) {
+            libvirt_opaque = rb_hash_aref(res, rb_str_new2("opaque"));
+            Data_Get_Struct(libvirt_opaque, void *, op);
+
+            (*ff_cb)(op);
+        }
+    }
+
+    return 0;
+}
+
+#define set_event_func_or_null(type)                \
+    do {                                            \
+        if (NIL_P(type))                            \
+            type##_temp = NULL;                     \
+        else                                        \
+            type##_temp = internal_##type##_func;   \
+    } while(0)
+
+static int is_symbol_proc_or_nil(VALUE handle) {
+    if (NIL_P(handle))
+        return 1;
+    return is_symbol_or_proc(handle);
+}
+
+/*
+ * call-seq:
+ *   Libvirt::event_register_impl(add_handle=nil, update_handle=nil, remove_handle=nil, add_timeout=nil, update_timeout=nil, remove_timeout=nil) -> Qnil
+ *
+ * Call
+ * +virEventRegisterImpl+[http://www.libvirt.org/html/libvirt-libvirt.html#virEventRegisterImpl]
+ * to register callback handlers for handles and timeouts.  These handles and
+ * timeouts are used as part of the libvirt infrastructure for generating
+ * domain events.  Each callback must be a Symbol (that is the name of a
+ * method to callback), a Proc, or nil (to disable the callback).  In the
+ * end-user application program, these callbacks are typically used to track
+ * the file descriptors or timers that libvirt is interested in (and is intended
+ * to be integrated into the "main loop" of a UI program).  The individual
+ * callbacks will be given a certain number of arguments, and must return
+ * certain values.  Those arguments and return types are:
+ *
+ * add_handle(fd, events, opaque) => Fixnum
+ *
+ * update_handle(handleID, event) => nil
+ *
+ * remove_handle(handleID) => opaque data from add_handle
+ *
+ * add_timeout(interval, opaque) => Fixnum
+ *
+ * update_timeout(timerID, timeout) => nil
+ *
+ * remove_timeout(timerID) => opaque data from add_timeout
+ *
+ * Any arguments marked as "opaque" must be accepted from the library and saved
+ * without modification.  The values passed to the callbacks are meant to be
+ * passed to the event_invoke_handle_callback and event_invoke_timeout_callback
+ * module methods; see the documentation for those methods for more details.
+ */
+static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c) {
+    virEventAddHandleFunc add_handle_temp;
+    virEventUpdateHandleFunc update_handle_temp;
+    virEventRemoveHandleFunc remove_handle_temp;
+    virEventAddTimeoutFunc add_timeout_temp;
+    virEventUpdateTimeoutFunc update_timeout_temp;
+    virEventRemoveTimeoutFunc remove_timeout_temp;
+
+    /*
+     * subtle; we put the arguments (callbacks) directly into the global
+     * add_handle, update_handle, etc. variables.  Then we register the
+     * internal functions as the callbacks with virEventRegisterImpl
+     */
+    rb_scan_args(argc, argv, "06", &add_handle, &update_handle, &remove_handle,
+                 &add_timeout, &update_timeout, &remove_timeout);
+
+    if (!is_symbol_proc_or_nil(add_handle) ||
+        !is_symbol_proc_or_nil(update_handle) ||
+        !is_symbol_proc_or_nil(remove_handle) ||
+        !is_symbol_proc_or_nil(add_timeout) ||
+        !is_symbol_proc_or_nil(update_timeout) ||
+        !is_symbol_proc_or_nil(remove_timeout))
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Symbol, Proc, or nil)");
+
+    set_event_func_or_null(add_handle);
+    set_event_func_or_null(update_handle);
+    set_event_func_or_null(remove_handle);
+    set_event_func_or_null(add_timeout);
+    set_event_func_or_null(update_timeout);
+    set_event_func_or_null(remove_timeout);
+
+    /* virEventRegisterImpl returns void, so no error checking here */
+    virEventRegisterImpl(add_handle_temp, update_handle_temp,
+                         remove_handle_temp, add_timeout_temp,
+                         update_timeout_temp, remove_timeout_temp);
+
+    return Qnil;
+}
+
 /*
  * Module Libvirt
  */
@@ -355,6 +728,30 @@ void Init__libvirt() {
 	rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, -1);
     rb_define_module_function(m_libvirt, "open_auth", libvirt_open_auth, -1);
+
+    rb_define_const(m_libvirt, "EVENT_HANDLE_READABLE",
+                    INT2NUM(VIR_EVENT_HANDLE_READABLE));
+    rb_define_const(m_libvirt, "EVENT_HANDLE_WRITABLE",
+                    INT2NUM(VIR_EVENT_HANDLE_WRITABLE));
+    rb_define_const(m_libvirt, "EVENT_HANDLE_ERROR",
+                    INT2NUM(VIR_EVENT_HANDLE_ERROR));
+    rb_define_const(m_libvirt, "EVENT_HANDLE_HANGUP",
+                    INT2NUM(VIR_EVENT_HANDLE_HANGUP));
+
+    /* since we are using globals, we have to register with the gc */
+    rb_global_variable(&add_handle);
+    rb_global_variable(&update_handle);
+    rb_global_variable(&remove_handle);
+    rb_global_variable(&add_timeout);
+    rb_global_variable(&update_timeout);
+    rb_global_variable(&remove_timeout);
+
+    rb_define_module_function(m_libvirt, "event_register_impl",
+                              libvirt_conn_event_register_impl, -1);
+    rb_define_module_function(m_libvirt, "event_invoke_handle_callback",
+                              libvirt_event_invoke_handle_callback, 4);
+    rb_define_module_function(m_libvirt, "event_invoke_timeout_callback",
+                              libvirt_event_invoke_timeout_callback, 2);
 
     init_connect();
     init_storage();

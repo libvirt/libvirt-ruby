@@ -148,6 +148,11 @@ VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
     return result;
 }
 
+int is_symbol_or_proc(VALUE handle) {
+    return ((strcmp(rb_obj_classname(handle), "Symbol") == 0) ||
+            (strcmp(rb_obj_classname(handle), "Proc") == 0));
+}
+
 /* this is an odd function, because it has massive side-effects.  The first
  * tip that something is weird here should be the triple-starred list.
  * The intended usage of this function is after a list has been collected

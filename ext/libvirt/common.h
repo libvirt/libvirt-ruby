@@ -138,6 +138,8 @@ VALUE gen_list(int num, char ***list);
 #define _E(cond, excep) \
     do { if (cond) rb_exc_raise(excep); } while(0)
 
+int is_symbol_or_proc(VALUE handle);
+
 extern VALUE e_RetrieveError;
 extern VALUE e_Error;
 extern VALUE e_DefinitionError;

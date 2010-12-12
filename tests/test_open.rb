@@ -123,4 +123,81 @@ rescue => e
   $FAIL = $FAIL + 1
 end
 
+# TESTGROUP: Libvirt::event_register_impl
+expect_too_many_args(Libvirt, "event_register_impl", 1, 2, 3, 4, 5, 6, 7)
+expect_invalid_arg_type(Libvirt, "event_register_impl", 1)
+
+# symbol callbacks
+def virEventAddHandleImpl(fd, events, opaque)
+end
+def virEventUpdateHandleImpl(watch, event)
+end
+def virEventRemoveHandleImpl(handleID)
+end
+def virEventAddTimerImpl(interval, opaque)
+end
+def virEventUpdateTimerImpl(timer, timeout)
+end
+def virEventRemoveTimerImpl(timerID)
+end
+
+# proc callbacks
+virEventAddHandleProc = lambda {|fd, events, opaque|
+}
+virEventUpdateHandleProc = lambda {|watch, event|
+}
+virEventRemoveHandleProc = lambda {|handleID|
+}
+virEventAddTimerProc = lambda {|interval, opaque|
+}
+virEventUpdateTimerProc = lambda {|timer, timeout|
+}
+virEventRemoveTimerProc = lambda {|timerID|
+}
+
+expect_success(Libvirt, "all Symbol callbacks", "event_register_impl", :virEventAddHandleImpl, :virEventUpdateHandleImpl, :virEventRemoveHandleImpl, :virEventAddTimerImpl, :virEventUpdateTimerImpl, :virEventRemoveTimerImpl)
+expect_success(Libvirt, "unregister all callbacks", "event_register_impl", nil, nil, nil, nil, nil, nil)
+expect_success(Libvirt, "all Proc callbacks", "event_register_impl", virEventAddHandleProc, virEventUpdateHandleProc, virEventRemoveHandleProc, virEventAddTimerProc, virEventUpdateTimerProc, virEventRemoveTimerProc)
+expect_success(Libvirt, "unregister all callbacks", "event_register_impl")
+
+# TESTGROUP: Libvirt::event_invoke_handle_callback
+conn = Libvirt::open("qemu:///system")
+
+expect_too_many_args(Libvirt, "event_invoke_handle_callback", 1, 2, 3, 4, 5)
+expect_too_few_args(Libvirt, "event_invoke_handle_callback")
+expect_too_few_args(Libvirt, "event_invoke_handle_callback", 1)
+expect_too_few_args(Libvirt, "event_invoke_handle_callback", 1, 2)
+expect_too_few_args(Libvirt, "event_invoke_handle_callback", 1, 2, 3)
+# this is a bit bizarre; I am constructing a bogus hash to pass as the 4th
+# parameter to event_invoke_handle_callback.  In a real situation, I would
+# have been given this hash from libvirt earlier, and just pass it on.  I
+# don't want all of that complexity here, though, so I create the bogus hash.
+# One caveat; the data inside the hash *must* be of type T_DATA, so I pass in
+# a fake conn object just to appease the type checker (so I can test out the
+# other arguments properly)
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", "hello", 1, 1, { "libvirt_cb" => conn, "opaque" => conn })
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", 1, "hello", 1, { "libvirt_cb" => conn, "opaque" => conn })
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", 1, 1, "hello", { "libvirt_cb" => conn, "opaque" => conn })
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", 1, 1, 1, { "libvirt_cb" => "hello", "opaque" => conn })
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", 1, 1, 1, { "libvirt_cb" => conn, "opaque" => "hello" })
+conn.close
+
+# TESTGROUP: Libvirt::event_invoke_timeout_callback
+conn = Libvirt::open("qemu:///system")
+
+expect_too_many_args(Libvirt, "event_invoke_timeout_callback", 1, 2, 3)
+expect_too_few_args(Libvirt, "event_invoke_timeout_callback")
+expect_too_few_args(Libvirt, "event_invoke_timeout_callback", 1)
+# this is a bit bizarre; I am constructing a bogus hash to pass as the 4th
+# parameter to event_invoke_handle_callback.  In a real situation, I would
+# have been given this hash from libvirt earlier, and just pass it on.  I
+# don't want all of that complexity here, though, so I create the bogus hash.
+# One caveat; the data inside the hash *must* be of type T_DATA, so I pass in
+# a fake conn object just to appease the type checker (so I can test out the
+# other arguments properly)
+expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", "hello", { "libvirt_cb" => conn, "opaque" => conn })
+expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", 1, { "libvirt_cb" => "hello", "opaque" => conn })
+expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", 1, { "libvirt_cb" => conn, "opaque" => "hello" })
+conn.close
+
 finish_tests
