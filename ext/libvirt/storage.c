@@ -50,88 +50,8 @@ static virStoragePoolPtr pool_get(VALUE s) {
     generic_get(StoragePool, s);
 }
 
-static VALUE pool_new(virStoragePoolPtr n, VALUE conn) {
+VALUE pool_new(virStoragePoolPtr n, VALUE conn) {
     return generic_new(c_storage_pool, n, conn, pool_free);
-}
-
-/*
- * call-seq:
- *   conn.list_storage_pools -> list
- *
- * Call +virConnectListStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListStoragePools]
- * to retrieve a list of active storage pool names on this connection.
- */
-static VALUE libvirt_conn_list_storage_pools(VALUE s) {
-    gen_conn_list_names(s, StoragePools);
-}
-
-/*
- * call-seq:
- *   conn.num_of_storage_pools -> fixnum
- *
- * Call +virConnectNumOfStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfStoragePools]
- * to retrieve the number of active storage pools on this connection.
- */
-static VALUE libvirt_conn_num_of_storage_pools(VALUE s) {
-    gen_conn_num_of(s, StoragePools);
-}
-
-/*
- * call-seq:
- *   conn.list_defined_storage_pools -> list
- *
- * Call +virConnectListDefinedStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedStoragePools]
- * to retrieve a list of inactive storage pool names on this connection.
- */
-static VALUE libvirt_conn_list_defined_storage_pools(VALUE s) {
-    gen_conn_list_names(s, DefinedStoragePools);
-}
-
-/*
- * call-seq:
- *   conn.num_of_defined_storage_pools -> fixnum
- *
- * Call +virConnectNumOfDefinedStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedStoragePools]
- * to retrieve the number of inactive storage pools on this connection.
- */
-static VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
-    gen_conn_num_of(s, DefinedStoragePools);
-}
-
-/*
- * call-seq:
- *   conn.lookup_storage_pool_by_name(name) -> Libvirt::StoragePool
- *
- * Call +virStoragePoolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByName]
- * to retrieve a storage pool object by name.
- */
-static VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name) {
-    virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
-
-    pool = virStoragePoolLookupByName(conn, StringValueCStr(name));
-    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByName",
-                                  conn));
-
-    return pool_new(pool, c);
-}
-
-/*
- * call-seq:
- *   conn.lookup_storage_pool_by_uuid(uuid) -> Libvirt::StoragePool
- *
- * Call +virStoragePoolLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByUUIDString]
- * to retrieve a storage pool object by uuid.
- */
-static VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid) {
-    virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
-
-    pool = virStoragePoolLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByUUID",
-                                  conn));
-
-    return pool_new(pool, c);
 }
 
 /*
@@ -149,73 +69,6 @@ static VALUE libvirt_vol_get_pool(VALUE v) {
                                   "virStoragePoolLookupByVolume", conn(v)));
 
     return pool_new(pool, conn_attr(v));
-}
-
-/*
- * call-seq:
- *   conn.create_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
- *
- * Call +virStoragePoolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreateXML]
- * to start a new transient storage pool from xml.
- */
-static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
-    virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
-    VALUE xml, flags;
-
-    rb_scan_args(argc, argv, "11", &xml, &flags);
-
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    pool = virStoragePoolCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", conn));
-
-    return pool_new(pool, c);
-}
-
-/*
- * call-seq:
- *   conn.define_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
- *
- * Call +virStoragePoolDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDefineXML]
- * to define a permanent storage pool from xml.
- */
-static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
-    virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
-    VALUE xml, flags;
-
-    rb_scan_args(argc, argv, "11", &xml, &flags);
-
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
-                                  conn));
-
-    return pool_new(pool, c);
-}
-
-/*
- * call-seq:
- *   conn.discover_storage_pool_sources(type, srcSpec=nil, flags=0) -> string
- *
- * Call +virConnectFindStoragePoolSources+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
- * to find the storage pool sources corresponding to type.
- */
-static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv, VALUE c) {
-    VALUE type, srcSpec_val, flags;
-
-    rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
-
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
-                    connect_get(c), StringValueCStr(type),
-                    get_string_or_nil(srcSpec_val), NUM2UINT(flags));
 }
 
 /*
@@ -788,26 +641,6 @@ void init_storage(void) {
                     INT2NUM(VIR_STORAGE_POOL_DELETE_NORMAL));
     rb_define_const(c_storage_pool, "DELETE_ZEROED",
                     INT2NUM(VIR_STORAGE_POOL_DELETE_ZEROED));
-
-    /* StoragePool lookup/creation methods */
-    rb_define_method(c_connect, "num_of_storage_pools",
-                     libvirt_conn_num_of_storage_pools, 0);
-    rb_define_method(c_connect, "list_storage_pools",
-                     libvirt_conn_list_storage_pools, 0);
-    rb_define_method(c_connect, "num_of_defined_storage_pools",
-                     libvirt_conn_num_of_defined_storage_pools, 0);
-    rb_define_method(c_connect, "list_defined_storage_pools",
-                     libvirt_conn_list_defined_storage_pools, 0);
-    rb_define_method(c_connect, "lookup_storage_pool_by_name",
-                     libvirt_conn_lookup_pool_by_name, 1);
-    rb_define_method(c_connect, "lookup_storage_pool_by_uuid",
-                     libvirt_conn_lookup_pool_by_uuid, 1);
-    rb_define_method(c_connect, "create_storage_pool_xml",
-                     libvirt_conn_create_pool_xml, -1);
-    rb_define_method(c_connect, "define_storage_pool_xml",
-                     libvirt_conn_define_pool_xml, -1);
-    rb_define_method(c_connect, "discover_storage_pool_sources",
-                     libvirt_conn_find_storage_pool_sources, -1);
 
     /* Creating/destroying pools */
     rb_define_method(c_storage_pool, "build", libvirt_pool_build, -1);

@@ -24,8 +24,14 @@
 #include "extconf.h"
 #include "common.h"
 #include "domain.h"
+#include "interface.h"
+#include "network.h"
+#include "nodedevice.h"
+#include "nwfilter.h"
+#include "secret.h"
+#include "storage.h"
 
-VALUE c_connect;
+static VALUE c_connect;
 static VALUE c_node_security_model;
 static VALUE c_node_info;
 
@@ -852,6 +858,911 @@ static VALUE libvirt_conn_domain_event_deregister(VALUE c) {
 }
 
 /*
+ * call-seq:
+ *   conn.num_of_domains -> fixnum
+ *
+ * Call +virConnectNumOfDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDomains]
+ * to retrieve the number of active domains on this connection.
+ */
+static VALUE libvirt_conn_num_of_domains(VALUE s) {
+    gen_conn_num_of(s, Domains);
+}
+
+/*
+ * call-seq:
+ *   conn.list_domains -> list
+ *
+ * Call +virConnectListDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDomains]
+ * to retrieve a list of active domain IDs on this connection.
+ */
+static VALUE libvirt_conn_list_domains(VALUE s) {
+    int i, r, num, *ids;
+    virConnectPtr conn = connect_get(s);
+    VALUE result;
+    int exception = 0;
+    struct rb_ary_push_arg args;
+
+    num = virConnectNumOfDomains(conn);
+    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains", conn));
+    if (num == 0) {
+        result = rb_ary_new2(num);
+        return result;
+    }
+
+    ids = ALLOC_N(int, num);
+    r = virConnectListDomains(conn, ids, num);
+    if (r < 0) {
+        xfree(ids);
+        rb_exc_raise(create_error(e_RetrieveError, "virConnectListDomains",
+                                  conn));
+    }
+
+    result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
+    if (exception) {
+        xfree(ids);
+        rb_jump_tag(exception);
+    }
+
+    for (i = 0; i < num; i++) {
+        args.arr = result;
+        args. value = INT2NUM(ids[i]);
+        rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            xfree(ids);
+            rb_jump_tag(exception);
+        }
+    }
+    xfree(ids);
+    return result;
+}
+
+/*
+ * call-seq:
+ *   conn.num_of_defined_domains -> fixnum
+ *
+ * Call +virConnectNumOfDefinedDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedDomains]
+ * to retrieve the number of inactive domains on this connection.
+ */
+static VALUE libvirt_conn_num_of_defined_domains(VALUE s) {
+    gen_conn_num_of(s, DefinedDomains);
+}
+
+/*
+ * call-seq:
+ *   conn.list_defined_domains -> list
+ *
+ * Call +virConnectListDefinedDomains+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedDomains]
+ * to retrieve a list of inactive domain names on this connection.
+ */
+static VALUE libvirt_conn_list_defined_domains(VALUE s) {
+    gen_conn_list_names(s, DefinedDomains);
+}
+
+/*
+ * call-seq:
+ *   conn.create_domain_linux(xml, flags=0) -> Libvirt::Domain
+ *
+ * Call +virDomainCreateLinux+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateLinux]
+ * to start a transient domain from the given XML.  Deprecated; use
+ * dom.create_xml instead.
+ */
+static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+    VALUE flags, xml;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    dom = virDomainCreateLinux(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", conn));
+
+    return domain_new(dom, c);
+}
+
+#if HAVE_VIRDOMAINCREATEXML
+/*
+ * call-seq:
+ *   conn.create_domain_xml(xml, flags=0) -> Libvirt::Domain
+ *
+ * Call +virDomainCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateXML]
+ * to start a transient domain from the given XML.
+ */
+static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+    VALUE flags, xml;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    dom = virDomainCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", conn));
+
+    return domain_new(dom, c);
+}
+#endif
+
+/*
+ * call-seq:
+ *   conn.lookup_domain_by_name(name) -> Libvirt::Domain
+ *
+ * Call +virDomainLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByName]
+ * to retrieve a domain object for name.
+ */
+static VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+
+    dom = virDomainLookupByName(conn, StringValueCStr(name));
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName",
+                                 conn));
+
+    return domain_new(dom, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_domain_by_id(id) -> Libvirt::Domain
+ *
+ * Call +virDomainLookupByID+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByID]
+ * to retrieve a domain object for id.
+ */
+static VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+
+    dom = virDomainLookupByID(conn, NUM2INT(id));
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID",
+                                 conn));
+
+    return domain_new(dom, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_domain_by_uuid(uuid) -> Libvirt::Domain
+ *
+ * Call +virDomainLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLookupByUUIDString]
+ * to retrieve a domain object for uuid.
+ */
+static VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+
+    dom = virDomainLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID",
+                                 conn));
+
+    return domain_new(dom, c);
+}
+
+/*
+ * call-seq:
+ *   conn.define_domain_xml(xml) -> Libvirt::Domain
+ *
+ * Call +virDomainDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDefineXML]
+ * to define a permanent domain on this connection.
+ */
+static VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
+    virDomainPtr dom;
+    virConnectPtr conn = connect_get(c);
+
+    dom = virDomainDefineXML(conn, StringValueCStr(xml));
+    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML",
+                                 conn));
+
+    return domain_new(dom, c);
+}
+
+#if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
+/*
+ * call-seq:
+ *   conn.domain_xml_from_native(nativeFormat, xml, flags=0) -> string
+ *
+ * Call +virConnectDomainXMLFromNative+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLFromNative]
+ * to convert a native hypervisor domain representation to libvirt XML.
+ */
+static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv, VALUE s) {
+    VALUE nativeFormat, xml, flags;
+    char *ret;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    ret = virConnectDomainXMLFromNative(conn(s), StringValueCStr(nativeFormat),
+                                        StringValueCStr(xml), NUM2UINT(flags));
+    _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLFromNative",
+                                 conn(s)));
+
+    result = rb_str_new2(ret);
+
+    free(ret);
+
+    return result;
+}
+#endif
+
+#if HAVE_VIRCONNECTDOMAINXMLTONATIVE
+/*
+ * call-seq:
+ *   conn.domain_xml_to_native(nativeFormat, xml, flags=0) -> string
+ *
+ * Call +virConnectDomainXMLToNative+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLToNative]
+ * to convert libvirt XML to a native domain hypervisor representation.
+ */
+static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s) {
+    VALUE nativeFormat, xml, flags;
+    char *ret;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    ret = virConnectDomainXMLToNative(conn(s), StringValueCStr(nativeFormat),
+                                      StringValueCStr(xml), NUM2UINT(flags));
+    _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLToNative",
+                                 conn(s)));
+
+    result = rb_str_new2(ret);
+
+    free(ret);
+
+    return result;
+}
+#endif
+
+/*
+ * call-seq:
+ *   conn.num_of_interfaces -> fixnum
+ *
+ * Call +virConnectNumOfInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfInterfaces]
+ * to retrieve the number of active interfaces on this connection.
+ */
+static VALUE libvirt_conn_num_of_interfaces(VALUE s) {
+    gen_conn_num_of(s, Interfaces);
+}
+
+/*
+ * call-seq:
+ *   conn.list_interfaces -> list
+ *
+ * Call +virConnectListInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListInterfaces]
+ * to retrieve a list of active interface names on this connection.
+ */
+static VALUE libvirt_conn_list_interfaces(VALUE s) {
+    gen_conn_list_names(s, Interfaces);
+}
+
+/*
+ * call-seq:
+ *   conn.num_of_defined_interfaces -> fixnum
+ *
+ * Call +virConnectNumOfDefinedInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedInterfaces]
+ * to retrieve the number of inactive interfaces on this connection.
+ */
+static VALUE libvirt_conn_num_of_defined_interfaces(VALUE s) {
+    gen_conn_num_of(s, DefinedInterfaces);
+}
+
+/*
+ * call-seq:
+ *   conn.list_defined_interfaces -> list
+ *
+ * Call +virConnectListDefinedInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedInterfaces]
+ * to retrieve a list of inactive interface names on this connection.
+ */
+static VALUE libvirt_conn_list_defined_interfaces(VALUE s) {
+    gen_conn_list_names(s, DefinedInterfaces);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_interface_by_name(name) -> Libvirt::Interface
+ *
+ * Call +virInterfaceLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceLookupByName]
+ * to retrieve an interface object by name.
+ */
+static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name) {
+    virInterfacePtr iface;
+    virConnectPtr conn = connect_get(c);
+
+    iface = virInterfaceLookupByName(conn, StringValueCStr(name));
+    _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName",
+                                   conn));
+
+    return interface_new(iface, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_interface_by_mac(mac) -> Libvirt::Interface
+ *
+ * Call +virInterfaceLookupByMACString+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceLookupByMACString]
+ * to retrieve an interface object by MAC address.
+ */
+static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac) {
+    virInterfacePtr iface;
+    virConnectPtr conn = connect_get(c);
+
+    iface = virInterfaceLookupByMACString(conn, StringValueCStr(mac));
+    _E(iface == NULL, create_error(e_RetrieveError,
+                                   "virInterfaceLookupByMACString", conn));
+
+    return interface_new(iface, c);
+}
+
+/*
+ * call-seq:
+ *   conn.define_interface_xml(xml, flags=0) -> Libvirt::Interface
+ *
+ * Call +virInterfaceDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDefineXML]
+ * to define a new interface from xml.
+ */
+static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
+    virInterfacePtr iface;
+    virConnectPtr conn = connect_get(c);
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
+                                   conn));
+
+    return interface_new(iface, c);
+}
+
+/*
+ * call-seq:
+ *   conn.num_of_networks -> fixnum
+ *
+ * Call +virConnectNumOfNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNetworks]
+ * to retrieve the number of active networks on this connection.
+ */
+static VALUE libvirt_conn_num_of_networks(VALUE s) {
+    gen_conn_num_of(s, Networks);
+}
+
+/*
+ * call-seq:
+ *   conn.list_networks -> list
+ *
+ * Call +virConnectListNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListNetworks]
+ * to retrieve a list of active network names on this connection.
+ */
+static VALUE libvirt_conn_list_networks(VALUE s) {
+    gen_conn_list_names(s, Networks);
+}
+
+/*
+ * call-seq:
+ *   conn.num_of_defined_networks -> fixnum
+ *
+ * Call +virConnectNumOfDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedNetworks]
+ * to retrieve the number of inactive networks on this connection.
+ */
+static VALUE libvirt_conn_num_of_defined_networks(VALUE s) {
+    gen_conn_num_of(s, DefinedNetworks);
+}
+
+/*
+ * call-seq:
+ *   conn.list_of_defined_networks -> list
+ *
+ * Call +virConnectListDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedNetworks]
+ * to retrieve a list of inactive network names on this connection.
+ */
+static VALUE libvirt_conn_list_defined_networks(VALUE s) {
+    gen_conn_list_names(s, DefinedNetworks);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_network_by_name(name) -> Libvirt::Network
+ *
+ * Call +virNetworkLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByName]
+ * to retrieve a network object by name.
+ */
+static VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkLookupByName(conn, StringValueCStr(name));
+    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName",
+                                  conn));
+
+    return network_new(netw, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_network_by_uuid(uuid) -> Libvirt::Network
+ *
+ * Call +virNetworkLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByUUIDString]
+ * to retrieve a network object by UUID.
+ */
+static VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID",
+                                  conn));
+
+    return network_new(netw, c);
+}
+
+/*
+ * call-seq:
+ *   conn.create_network_xml(xml) -> Libvirt::Network
+ *
+ * Call +virNetworkCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreateXML]
+ * to start a new transient network from xml.
+ */
+static VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkCreateXML(conn, StringValueCStr(xml));
+    _E(netw == NULL, create_error(e_Error, "virNetworkCreateXML", conn));
+
+    return network_new(netw, c);
+}
+
+/*
+ * call-seq:
+ *   conn.define_network_xml(xml) -> Libvirt::Network
+ *
+ * Call +virNetworkDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDefineXML]
+ * to define a new permanent network from xml.
+ */
+static VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
+    virNetworkPtr netw;
+    virConnectPtr conn = connect_get(c);
+
+    netw = virNetworkDefineXML(conn, StringValueCStr(xml));
+    _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML",
+                                  conn));
+
+    return network_new(netw, c);
+}
+
+#if HAVE_TYPE_VIRNODEDEVICEPTR
+/*
+ * call-seq:
+ *   conn.num_of_nodedevices(cap=nil, flags=0) -> fixnum
+ *
+ * Call +virNodeNumOfDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeNumOfDevices]
+ * to retrieve the number of node devices on this connection.
+ */
+static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
+    int result;
+    virConnectPtr conn = connect_get(c);
+    VALUE cap, flags;
+
+    rb_scan_args(argc, argv, "02", &cap, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    result = virNodeNumOfDevices(conn, get_string_or_nil(cap), NUM2UINT(flags));
+    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
+
+    return INT2NUM(result);
+}
+
+/*
+ * call-seq:
+ *   conn.list_nodedevices(cap=nil, flags=0) -> list
+ *
+ * Call +virNodeListDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeListDevices]
+ * to retrieve a list of node device names on this connection.
+ */
+static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
+    int r, num;
+    virConnectPtr conn = connect_get(c);
+    VALUE cap, flags_val;
+    char *capstr;
+    char **names;
+    unsigned int flags;
+
+    rb_scan_args(argc, argv, "02", &cap, &flags_val);
+
+    if (NIL_P(flags_val))
+        flags = 0;
+    else
+        flags = NUM2UINT(flags_val);
+
+    capstr = get_string_or_nil(cap);
+
+    num = virNodeNumOfDevices(conn, capstr, 0);
+    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
+    if (num == 0)
+        /* if num is 0, don't call virNodeListDevices function */
+        return rb_ary_new2(num);
+
+    names = ALLOC_N(char *, num);
+    r = virNodeListDevices(conn, capstr, names, num, flags);
+    if (r < 0) {
+        xfree(names);
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices", conn));
+    }
+
+    return gen_list(num, &names);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_nodedevice_by_name(name) -> Libvirt::NodeDevice
+ *
+ * Call +virNodeDeviceLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceLookupByName]
+ * to retrieve a nodedevice object by name.
+ */
+static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name) {
+    virNodeDevicePtr nodedev;
+    virConnectPtr conn = connect_get(c);
+
+    nodedev = virNodeDeviceLookupByName(conn, StringValueCStr(name));
+    _E(nodedev == NULL, create_error(e_RetrieveError,
+                                     "virNodeDeviceLookupByName", conn));
+
+    return nodedevice_new(nodedev, c);
+
+}
+
+#if HAVE_VIRNODEDEVICECREATEXML
+/*
+ * call-seq:
+ *   conn.create_nodedevice_xml(xml, flags=0) -> Libvirt::NodeDevice
+ *
+ * Call +virNodeDeviceCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceCreateXML]
+ * to create a new node device from xml.
+ */
+static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) {
+    virNodeDevicePtr nodedev;
+    virConnectPtr conn = connect_get(c);
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    nodedev = virNodeDeviceCreateXML(conn, StringValueCStr(xml),
+                                     NUM2UINT(flags));
+    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML", conn));
+
+    return nodedevice_new(nodedev, c);
+}
+#endif
+#endif
+
+#if HAVE_TYPE_VIRNWFILTERPTR
+/*
+ * call-seq:
+ *   conn.num_of_nwfilters -> fixnum
+ *
+ * Call +virConnectNumOfNWFilters+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNWFilters]
+ * to retrieve the number of network filters on this connection.
+ */
+static VALUE libvirt_conn_num_of_nwfilters(VALUE s) {
+    gen_conn_num_of(s, NWFilters);
+}
+
+/*
+ * call-seq:
+ *   conn.list_nwfilters -> list
+ *
+ * Call +virConnectListNWFilters+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListNWFilters]
+ * to retrieve a list of network filter names on this connection.
+ */
+static VALUE libvirt_conn_list_nwfilters(VALUE s) {
+    gen_conn_list_names(s, NWFilters);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_nwfilter_by_name(name) -> Libvirt::NWFilter
+ *
+ * Call +virNWFilterLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterLookupByName]
+ * to retrieve a network filter object by name.
+ */
+static VALUE libvirt_conn_lookup_nwfilter_by_name(VALUE c, VALUE name) {
+    virNWFilterPtr nwfilter;
+    virConnectPtr conn = connect_get(c);
+
+    nwfilter = virNWFilterLookupByName(conn, StringValueCStr(name));
+    _E(nwfilter == NULL, create_error(e_RetrieveError,
+                                      "virNWFilterLookupByName", conn));
+
+    return nwfilter_new(nwfilter, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_nwfilter_by_uuid(uuid) -> Libvirt::NWFilter
+ *
+ * Call +virNWFilterLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterLookupByUUIDString]
+ * to retrieve a network filter object by UUID.
+ */
+static VALUE libvirt_conn_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid) {
+    virNWFilterPtr nwfilter;
+    virConnectPtr conn = connect_get(c);
+
+    nwfilter = virNWFilterLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(nwfilter == NULL, create_error(e_RetrieveError,
+                                      "virNWFilterLookupByUUIDString", conn));
+
+    return nwfilter_new(nwfilter, c);
+}
+
+/*
+ * call-seq:
+ *   conn.define_nwfilter_xml(xml) -> Libvirt::NWFilter
+ *
+ * Call +virNWFilterDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterDefineXML]
+ * to define a new network filter from xml.
+ */
+static VALUE libvirt_conn_define_nwfilter_xml(VALUE c, VALUE xml) {
+    virNWFilterPtr nwfilter;
+    virConnectPtr conn = connect_get(c);
+
+    nwfilter = virNWFilterDefineXML(conn, StringValueCStr(xml));
+    _E(nwfilter == NULL, create_error(e_DefinitionError, "virNWFilterDefineXML",
+                                      conn));
+
+    return nwfilter_new(nwfilter, c);
+}
+#endif
+
+#if HAVE_TYPE_VIRSECRETPTR
+/*
+ * call-seq:
+ *   conn.num_of_secrets -> fixnum
+ *
+ * Call +virConnectNumOfSecrets+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfSecrets]
+ * to retrieve the number of secrets on this connection.
+ */
+static VALUE libvirt_conn_num_of_secrets(VALUE s) {
+    gen_conn_num_of(s, Secrets);
+}
+
+/*
+ * call-seq:
+ *   conn.list_secrets -> list
+ *
+ * Call +virConnectListSecrets+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListSecrets]
+ * to retrieve a list of secret UUIDs on this connection.
+ */
+static VALUE libvirt_conn_list_secrets(VALUE s) {
+    gen_conn_list_names(s, Secrets);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_secret_by_uuid(uuid) -> Libvirt::Secret
+ *
+ * Call +virSecretLookupByUUID+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretLookupByUUID]
+ * to retrieve a network object from uuid.
+ */
+static VALUE libvirt_conn_lookup_secret_by_uuid(VALUE c, VALUE uuid) {
+    virSecretPtr secret;
+    virConnectPtr conn = connect_get(c);
+
+    secret = virSecretLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUUID",
+                                    conn));
+
+    return secret_new(secret, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_secret_by_usage(usagetype, usageID) -> Libvirt::Secret
+ *
+ * Call +virSecretLookupByUsage+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretLookupByUsage]
+ * to retrieve a secret by usagetype.
+ */
+static VALUE libvirt_conn_lookup_secret_by_usage(VALUE c, VALUE usagetype, VALUE usageID) {
+    virSecretPtr secret;
+    virConnectPtr conn = connect_get(c);
+
+    secret = virSecretLookupByUsage(conn, NUM2UINT(usagetype),
+                                    StringValueCStr(usageID));
+    _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUsage",
+                                    conn));
+
+    return secret_new(secret, c);
+}
+
+/*
+ * call-seq:
+ *   conn.define_secret_xml(xml, flags=0) -> Libvirt::Secret
+ *
+ * Call +virSecretDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretDefineXML]
+ * to define a new secret from xml.
+ */
+static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c) {
+    virSecretPtr secret;
+    virConnectPtr conn = connect_get(c);
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    secret = virSecretDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(secret == NULL, create_error(e_DefinitionError, "virSecretDefineXML",
+                                    conn));
+
+    return secret_new(secret, c);
+}
+#endif
+
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
+/*
+ * call-seq:
+ *   conn.list_storage_pools -> list
+ *
+ * Call +virConnectListStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListStoragePools]
+ * to retrieve a list of active storage pool names on this connection.
+ */
+static VALUE libvirt_conn_list_storage_pools(VALUE s) {
+    gen_conn_list_names(s, StoragePools);
+}
+
+/*
+ * call-seq:
+ *   conn.num_of_storage_pools -> fixnum
+ *
+ * Call +virConnectNumOfStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfStoragePools]
+ * to retrieve the number of active storage pools on this connection.
+ */
+static VALUE libvirt_conn_num_of_storage_pools(VALUE s) {
+    gen_conn_num_of(s, StoragePools);
+}
+
+/*
+ * call-seq:
+ *   conn.list_defined_storage_pools -> list
+ *
+ * Call +virConnectListDefinedStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedStoragePools]
+ * to retrieve a list of inactive storage pool names on this connection.
+ */
+static VALUE libvirt_conn_list_defined_storage_pools(VALUE s) {
+    gen_conn_list_names(s, DefinedStoragePools);
+}
+
+/*
+ * call-seq:
+ *   conn.num_of_defined_storage_pools -> fixnum
+ *
+ * Call +virConnectNumOfDefinedStoragePools+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedStoragePools]
+ * to retrieve the number of inactive storage pools on this connection.
+ */
+static VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s) {
+    gen_conn_num_of(s, DefinedStoragePools);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_storage_pool_by_name(name) -> Libvirt::StoragePool
+ *
+ * Call +virStoragePoolLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByName]
+ * to retrieve a storage pool object by name.
+ */
+static VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+
+    pool = virStoragePoolLookupByName(conn, StringValueCStr(name));
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByName",
+                                  conn));
+
+    return pool_new(pool, c);
+}
+
+/*
+ * call-seq:
+ *   conn.lookup_storage_pool_by_uuid(uuid) -> Libvirt::StoragePool
+ *
+ * Call +virStoragePoolLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByUUIDString]
+ * to retrieve a storage pool object by uuid.
+ */
+static VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+
+    pool = virStoragePoolLookupByUUIDString(conn, StringValueCStr(uuid));
+    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByUUID",
+                                  conn));
+
+    return pool_new(pool, c);
+}
+
+/*
+ * call-seq:
+ *   conn.create_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
+ *
+ * Call +virStoragePoolCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolCreateXML]
+ * to start a new transient storage pool from xml.
+ */
+static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    pool = virStoragePoolCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", conn));
+
+    return pool_new(pool, c);
+}
+
+/*
+ * call-seq:
+ *   conn.define_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
+ *
+ * Call +virStoragePoolDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolDefineXML]
+ * to define a permanent storage pool from xml.
+ */
+static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
+    virStoragePoolPtr pool;
+    virConnectPtr conn = connect_get(c);
+    VALUE xml, flags;
+
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
+                                  conn));
+
+    return pool_new(pool, c);
+}
+
+/*
+ * call-seq:
+ *   conn.discover_storage_pool_sources(type, srcSpec=nil, flags=0) -> string
+ *
+ * Call +virConnectFindStoragePoolSources+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
+ * to find the storage pool sources corresponding to type.
+ */
+static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv, VALUE c) {
+    VALUE type, srcSpec_val, flags;
+
+    rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
+                    connect_get(c), StringValueCStr(type),
+                    get_string_or_nil(srcSpec_val), NUM2UINT(flags));
+}
+#endif
+
+/*
  * Class Libvirt::Connect
  */
 void init_connect()
@@ -1029,4 +1940,133 @@ void init_connect()
                      libvirt_conn_domain_event_register_any, -1);
     rb_define_method(c_connect, "domain_event_deregister_any",
                      libvirt_conn_domain_event_deregister_any, 1);
+
+    /* Domain creation/lookup */
+    rb_define_method(c_connect, "num_of_domains",
+                     libvirt_conn_num_of_domains, 0);
+    rb_define_method(c_connect, "list_domains", libvirt_conn_list_domains, 0);
+    rb_define_method(c_connect, "num_of_defined_domains",
+                     libvirt_conn_num_of_defined_domains, 0);
+    rb_define_method(c_connect, "list_defined_domains",
+                     libvirt_conn_list_defined_domains, 0);
+    rb_define_method(c_connect, "create_domain_linux",
+                     libvirt_conn_create_linux, -1);
+#if HAVE_VIRDOMAINCREATEXML
+    rb_define_method(c_connect, "create_domain_xml",
+                     libvirt_conn_create_xml, -1);
+#endif
+    rb_define_method(c_connect, "lookup_domain_by_name",
+                     libvirt_conn_lookup_domain_by_name, 1);
+    rb_define_method(c_connect, "lookup_domain_by_id",
+                     libvirt_conn_lookup_domain_by_id, 1);
+    rb_define_method(c_connect, "lookup_domain_by_uuid",
+                     libvirt_conn_lookup_domain_by_uuid, 1);
+    rb_define_method(c_connect, "define_domain_xml",
+                     libvirt_conn_define_domain_xml, 1);
+
+#if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
+    rb_define_method(c_connect, "domain_xml_from_native",
+                     libvirt_conn_domain_xml_from_native, -1);
+#endif
+#if HAVE_VIRCONNECTDOMAINXMLTONATIVE
+    rb_define_method(c_connect, "domain_xml_to_native",
+                     libvirt_conn_domain_xml_to_native, -1);
+#endif
+
+    /* Interface lookup/creation methods */
+    rb_define_method(c_connect, "num_of_interfaces",
+                     libvirt_conn_num_of_interfaces, 0);
+    rb_define_method(c_connect, "list_interfaces",
+                     libvirt_conn_list_interfaces, 0);
+    rb_define_method(c_connect, "num_of_defined_interfaces",
+                     libvirt_conn_num_of_defined_interfaces, 0);
+    rb_define_method(c_connect, "list_defined_interfaces",
+                     libvirt_conn_list_defined_interfaces, 0);
+    rb_define_method(c_connect, "lookup_interface_by_name",
+                     libvirt_conn_lookup_interface_by_name, 1);
+    rb_define_method(c_connect, "lookup_interface_by_mac",
+                     libvirt_conn_lookup_interface_by_mac, 1);
+    rb_define_method(c_connect, "define_interface_xml",
+                     libvirt_conn_define_interface_xml, -1);
+
+    /* Network lookup/creation methods */
+    rb_define_method(c_connect, "num_of_networks",
+                     libvirt_conn_num_of_networks, 0);
+    rb_define_method(c_connect, "list_networks", libvirt_conn_list_networks, 0);
+    rb_define_method(c_connect, "num_of_defined_networks",
+                     libvirt_conn_num_of_defined_networks, 0);
+    rb_define_method(c_connect, "list_defined_networks",
+                     libvirt_conn_list_defined_networks, 0);
+    rb_define_method(c_connect, "lookup_network_by_name",
+                     libvirt_conn_lookup_network_by_name, 1);
+    rb_define_method(c_connect, "lookup_network_by_uuid",
+                     libvirt_conn_lookup_network_by_uuid, 1);
+    rb_define_method(c_connect, "create_network_xml",
+                     libvirt_conn_create_network_xml, 1);
+    rb_define_method(c_connect, "define_network_xml",
+                     libvirt_conn_define_network_xml, 1);
+
+    /* Node device lookup/creation methods */
+#if HAVE_TYPE_VIRNODEDEVICEPTR
+    rb_define_method(c_connect, "num_of_nodedevices",
+                     libvirt_conn_num_of_nodedevices, -1);
+    rb_define_method(c_connect, "list_nodedevices",
+                     libvirt_conn_list_nodedevices, -1);
+    rb_define_method(c_connect, "lookup_nodedevice_by_name",
+                     libvirt_conn_lookup_nodedevice_by_name, 1);
+#if HAVE_VIRNODEDEVICECREATEXML
+    rb_define_method(c_connect, "create_nodedevice_xml",
+                     libvirt_conn_create_nodedevice_xml, -1);
+#endif
+#endif
+
+#if HAVE_TYPE_VIRNWFILTERPTR
+    /* NWFilter lookup/creation methods */
+    rb_define_method(c_connect, "num_of_nwfilters",
+                     libvirt_conn_num_of_nwfilters, 0);
+    rb_define_method(c_connect, "list_nwfilters",
+                     libvirt_conn_list_nwfilters, 0);
+    rb_define_method(c_connect, "lookup_nwfilter_by_name",
+                     libvirt_conn_lookup_nwfilter_by_name, 1);
+    rb_define_method(c_connect, "lookup_nwfilter_by_uuid",
+                     libvirt_conn_lookup_nwfilter_by_uuid, 1);
+    rb_define_method(c_connect, "define_nwfilter_xml",
+                     libvirt_conn_define_nwfilter_xml, 1);
+#endif
+
+#if HAVE_TYPE_VIRSECRETPTR
+    /* Secret lookup/creation methods */
+    rb_define_method(c_connect, "num_of_secrets",
+                     libvirt_conn_num_of_secrets, 0);
+    rb_define_method(c_connect, "list_secrets",
+                     libvirt_conn_list_secrets, 0);
+    rb_define_method(c_connect, "lookup_secret_by_uuid",
+                     libvirt_conn_lookup_secret_by_uuid, 1);
+    rb_define_method(c_connect, "lookup_secret_by_usage",
+                     libvirt_conn_lookup_secret_by_usage, 2);
+    rb_define_method(c_connect, "define_secret_xml",
+                     libvirt_conn_define_secret_xml, -1);
+#endif
+
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
+    /* StoragePool lookup/creation methods */
+    rb_define_method(c_connect, "num_of_storage_pools",
+                     libvirt_conn_num_of_storage_pools, 0);
+    rb_define_method(c_connect, "list_storage_pools",
+                     libvirt_conn_list_storage_pools, 0);
+    rb_define_method(c_connect, "num_of_defined_storage_pools",
+                     libvirt_conn_num_of_defined_storage_pools, 0);
+    rb_define_method(c_connect, "list_defined_storage_pools",
+                     libvirt_conn_list_defined_storage_pools, 0);
+    rb_define_method(c_connect, "lookup_storage_pool_by_name",
+                     libvirt_conn_lookup_pool_by_name, 1);
+    rb_define_method(c_connect, "lookup_storage_pool_by_uuid",
+                     libvirt_conn_lookup_pool_by_uuid, 1);
+    rb_define_method(c_connect, "create_storage_pool_xml",
+                     libvirt_conn_create_pool_xml, -1);
+    rb_define_method(c_connect, "define_storage_pool_xml",
+                     libvirt_conn_define_pool_xml, -1);
+    rb_define_method(c_connect, "discover_storage_pool_sources",
+                     libvirt_conn_find_storage_pool_sources, -1);
+#endif
 }

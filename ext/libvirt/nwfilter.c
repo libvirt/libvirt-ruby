@@ -36,84 +36,8 @@ static virNWFilterPtr nwfilter_get(VALUE nw) {
     generic_get(NWFilter, nw);
 }
 
-static VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn) {
+VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn) {
     return generic_new(c_nwfilter, nw, conn, nwfilter_free);
-}
-
-/*
- * call-seq:
- *   conn.num_of_nwfilters -> fixnum
- *
- * Call +virConnectNumOfNWFilters+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNWFilters]
- * to retrieve the number of network filters on this connection.
- */
-static VALUE libvirt_conn_num_of_nwfilters(VALUE s) {
-    gen_conn_num_of(s, NWFilters);
-}
-
-/*
- * call-seq:
- *   conn.list_nwfilters -> list
- *
- * Call +virConnectListNWFilters+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListNWFilters]
- * to retrieve a list of network filter names on this connection.
- */
-static VALUE libvirt_conn_list_nwfilters(VALUE s) {
-    gen_conn_list_names(s, NWFilters);
-}
-
-/*
- * call-seq:
- *   conn.lookup_nwfilter_by_name(name) -> Libvirt::NWFilter
- *
- * Call +virNWFilterLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterLookupByName]
- * to retrieve a network filter object by name.
- */
-static VALUE libvirt_conn_lookup_nwfilter_by_name(VALUE c, VALUE name) {
-    virNWFilterPtr nwfilter;
-    virConnectPtr conn = connect_get(c);
-
-    nwfilter = virNWFilterLookupByName(conn, StringValueCStr(name));
-    _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByName", conn));
-
-    return nwfilter_new(nwfilter, c);
-}
-
-/*
- * call-seq:
- *   conn.lookup_nwfilter_by_uuid(uuid) -> Libvirt::NWFilter
- *
- * Call +virNWFilterLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterLookupByUUIDString]
- * to retrieve a network filter object by UUID.
- */
-static VALUE libvirt_conn_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid) {
-    virNWFilterPtr nwfilter;
-    virConnectPtr conn = connect_get(c);
-
-    nwfilter = virNWFilterLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByUUIDString", conn));
-
-    return nwfilter_new(nwfilter, c);
-}
-
-/*
- * call-seq:
- *   conn.define_nwfilter_xml(xml) -> Libvirt::NWFilter
- *
- * Call +virNWFilterDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterDefineXML]
- * to define a new network filter from xml.
- */
-static VALUE libvirt_conn_define_nwfilter_xml(VALUE c, VALUE xml) {
-    virNWFilterPtr nwfilter;
-    virConnectPtr conn = connect_get(c);
-
-    nwfilter = virNWFilterDefineXML(conn, StringValueCStr(xml));
-    _E(nwfilter == NULL, create_error(e_DefinitionError, "virNWFilterDefineXML",
-                                      conn));
-
-    return nwfilter_new(nwfilter, c);
 }
 
 /*
@@ -198,18 +122,6 @@ void init_nwfilter()
 #if HAVE_TYPE_VIRNWFILTERPTR
     c_nwfilter = rb_define_class_under(m_libvirt, "NWFilter", rb_cObject);
     rb_define_attr(c_nwfilter, "connection", 1, 0);
-
-    /* NWFilter lookup/creation methods */
-    rb_define_method(c_connect, "num_of_nwfilters",
-                     libvirt_conn_num_of_nwfilters, 0);
-    rb_define_method(c_connect, "list_nwfilters",
-                     libvirt_conn_list_nwfilters, 0);
-    rb_define_method(c_connect, "lookup_nwfilter_by_name",
-                     libvirt_conn_lookup_nwfilter_by_name, 1);
-    rb_define_method(c_connect, "lookup_nwfilter_by_uuid",
-                     libvirt_conn_lookup_nwfilter_by_uuid, 1);
-    rb_define_method(c_connect, "define_nwfilter_xml",
-                     libvirt_conn_define_nwfilter_xml, 1);
 
     /* NWFilter object methods */
     rb_define_method(c_nwfilter, "undefine", libvirt_nwfilter_undefine, 0);

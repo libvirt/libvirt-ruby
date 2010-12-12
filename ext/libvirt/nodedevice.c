@@ -36,117 +36,9 @@ static virNodeDevicePtr nodedevice_get(VALUE s) {
     generic_get(NodeDevice, s);
 }
 
-static VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn) {
+VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn) {
     return generic_new(c_nodedevice, s, conn, nodedevice_free);
 }
-
-/*
- * call-seq:
- *   conn.num_of_nodedevices(cap=nil, flags=0) -> fixnum
- *
- * Call +virNodeNumOfDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeNumOfDevices]
- * to retrieve the number of node devices on this connection.
- */
-static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
-    int result;
-    virConnectPtr conn = connect_get(c);
-    VALUE cap, flags;
-
-    rb_scan_args(argc, argv, "02", &cap, &flags);
-
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    result = virNodeNumOfDevices(conn, get_string_or_nil(cap), NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
-
-    return INT2NUM(result);
-}
-
-/*
- * call-seq:
- *   conn.list_nodedevices(cap=nil, flags=0) -> list
- *
- * Call +virNodeListDevices+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeListDevices]
- * to retrieve a list of node device names on this connection.
- */
-static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c) {
-    int r, num;
-    virConnectPtr conn = connect_get(c);
-    VALUE cap, flags_val;
-    char *capstr;
-    char **names;
-    unsigned int flags;
-
-    rb_scan_args(argc, argv, "02", &cap, &flags_val);
-
-    if (NIL_P(flags_val))
-        flags = 0;
-    else
-        flags = NUM2UINT(flags_val);
-
-    capstr = get_string_or_nil(cap);
-
-    num = virNodeNumOfDevices(conn, capstr, 0);
-    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
-    if (num == 0)
-        /* if num is 0, don't call virNodeListDevices function */
-        return rb_ary_new2(num);
-
-    names = ALLOC_N(char *, num);
-    r = virNodeListDevices(conn, capstr, names, num, flags);
-    if (r < 0) {
-        xfree(names);
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices", conn));
-    }
-
-    return gen_list(num, &names);
-}
-
-/*
- * call-seq:
- *   conn.lookup_nodedevice_by_name(name) -> Libvirt::NodeDevice
- *
- * Call +virNodeDeviceLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceLookupByName]
- * to retrieve a nodedevice object by name.
- */
-static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name) {
-    virNodeDevicePtr nodedev;
-    virConnectPtr conn = connect_get(c);
-
-    nodedev = virNodeDeviceLookupByName(conn, StringValueCStr(name));
-    _E(nodedev == NULL, create_error(e_RetrieveError,
-                                     "virNodeDeviceLookupByName", conn));
-
-    return nodedevice_new(nodedev, c);
-
-}
-
-#if HAVE_VIRNODEDEVICECREATEXML
-/*
- * call-seq:
- *   conn.create_nodedevice_xml(xml, flags=0) -> Libvirt::NodeDevice
- *
- * Call +virNodeDeviceCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceCreateXML]
- * to create a new node device from xml.
- */
-static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) {
-    virNodeDevicePtr nodedev;
-    virConnectPtr conn = connect_get(c);
-    VALUE xml, flags;
-
-    rb_scan_args(argc, argv, "11", &xml, &flags);
-
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    nodedev = virNodeDeviceCreateXML(conn, StringValueCStr(xml),
-                                     NUM2UINT(flags));
-    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML", conn));
-
-    return nodedevice_new(nodedev, c);
-}
-#endif
 
 /*
  * call-seq:
@@ -313,16 +205,6 @@ void init_nodedevice()
 {
 #if HAVE_TYPE_VIRNODEDEVICEPTR
     c_nodedevice = rb_define_class_under(m_libvirt, "NodeDevice", rb_cObject);
-    rb_define_method(c_connect, "num_of_nodedevices",
-                     libvirt_conn_num_of_nodedevices, -1);
-    rb_define_method(c_connect, "list_nodedevices",
-                     libvirt_conn_list_nodedevices, -1);
-    rb_define_method(c_connect, "lookup_nodedevice_by_name",
-                     libvirt_conn_lookup_nodedevice_by_name, 1);
-#if HAVE_VIRNODEDEVICECREATEXML
-    rb_define_method(c_connect, "create_nodedevice_xml",
-                     libvirt_conn_create_nodedevice_xml, -1);
-#endif
 
     rb_define_method(c_nodedevice, "name", libvirt_nodedevice_name, 0);
     rb_define_method(c_nodedevice, "parent", libvirt_nodedevice_parent, 0);

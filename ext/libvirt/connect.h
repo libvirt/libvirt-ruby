@@ -1,7 +1,6 @@
 #ifndef CONNECT_H
 #define CONNECT_H
 
-extern VALUE c_connect;
 void init_connect();
 
 virConnectPtr conn(VALUE s);

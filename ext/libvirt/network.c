@@ -36,123 +36,8 @@ static virNetworkPtr network_get(VALUE s) {
     generic_get(Network, s);
 }
 
-static VALUE network_new(virNetworkPtr n, VALUE conn) {
+VALUE network_new(virNetworkPtr n, VALUE conn) {
     return generic_new(c_network, n, conn, network_free);
-}
-
-/*
- * call-seq:
- *   conn.num_of_networks -> fixnum
- *
- * Call +virConnectNumOfNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNetworks]
- * to retrieve the number of active networks on this connection.
- */
-static VALUE libvirt_conn_num_of_networks(VALUE s) {
-    gen_conn_num_of(s, Networks);
-}
-
-/*
- * call-seq:
- *   conn.list_networks -> list
- *
- * Call +virConnectListNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListNetworks]
- * to retrieve a list of active network names on this connection.
- */
-static VALUE libvirt_conn_list_networks(VALUE s) {
-    gen_conn_list_names(s, Networks);
-}
-
-/*
- * call-seq:
- *   conn.num_of_defined_networks -> fixnum
- *
- * Call +virConnectNumOfDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedNetworks]
- * to retrieve the number of inactive networks on this connection.
- */
-static VALUE libvirt_conn_num_of_defined_networks(VALUE s) {
-    gen_conn_num_of(s, DefinedNetworks);
-}
-
-/*
- * call-seq:
- *   conn.list_of_defined_networks -> list
- *
- * Call +virConnectListDefinedNetworks+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedNetworks]
- * to retrieve a list of inactive network names on this connection.
- */
-static VALUE libvirt_conn_list_defined_networks(VALUE s) {
-    gen_conn_list_names(s, DefinedNetworks);
-}
-
-/*
- * call-seq:
- *   conn.lookup_network_by_name(name) -> Libvirt::Network
- *
- * Call +virNetworkLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByName]
- * to retrieve a network object by name.
- */
-static VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name) {
-    virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
-
-    netw = virNetworkLookupByName(conn, StringValueCStr(name));
-    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName",
-                                  conn));
-
-    return network_new(netw, c);
-}
-
-/*
- * call-seq:
- *   conn.lookup_network_by_uuid(uuid) -> Libvirt::Network
- *
- * Call +virNetworkLookupByUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkLookupByUUIDString]
- * to retrieve a network object by UUID.
- */
-static VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid) {
-    virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
-
-    netw = virNetworkLookupByUUIDString(conn, StringValueCStr(uuid));
-    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID",
-                                  conn));
-
-    return network_new(netw, c);
-}
-
-/*
- * call-seq:
- *   conn.create_network_xml(xml) -> Libvirt::Network
- *
- * Call +virNetworkCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreateXML]
- * to start a new transient network from xml.
- */
-static VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml) {
-    virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
-
-    netw = virNetworkCreateXML(conn, StringValueCStr(xml));
-    _E(netw == NULL, create_error(e_Error, "virNetworkCreateXML", conn));
-
-    return network_new(netw, c);
-}
-
-/*
- * call-seq:
- *   conn.define_network_xml(xml) -> Libvirt::Network
- *
- * Call +virNetworkDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDefineXML]
- * to define a new permanent network from xml.
- */
-static VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
-    virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
-
-    netw = virNetworkDefineXML(conn, StringValueCStr(xml));
-    _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML",
-                                  conn));
-
-    return network_new(netw, c);
 }
 
 /*
@@ -328,22 +213,6 @@ void init_network()
 #if HAVE_TYPE_VIRNETWORKPTR
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
     rb_define_attr(c_network, "connection", 1, 0);
-
-    rb_define_method(c_connect, "num_of_networks",
-                     libvirt_conn_num_of_networks, 0);
-    rb_define_method(c_connect, "list_networks", libvirt_conn_list_networks, 0);
-    rb_define_method(c_connect, "num_of_defined_networks",
-                     libvirt_conn_num_of_defined_networks, 0);
-    rb_define_method(c_connect, "list_defined_networks",
-                     libvirt_conn_list_defined_networks, 0);
-    rb_define_method(c_connect, "lookup_network_by_name",
-                     libvirt_conn_lookup_network_by_name, 1);
-    rb_define_method(c_connect, "lookup_network_by_uuid",
-                     libvirt_conn_lookup_network_by_uuid, 1);
-    rb_define_method(c_connect, "create_network_xml",
-                     libvirt_conn_create_network_xml, 1);
-    rb_define_method(c_connect, "define_network_xml",
-                     libvirt_conn_define_network_xml, 1);
 
     rb_define_method(c_network, "undefine", libvirt_netw_undefine, 0);
     rb_define_method(c_network, "create", libvirt_netw_create, 0);

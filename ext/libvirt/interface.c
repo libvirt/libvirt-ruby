@@ -36,112 +36,8 @@ static virInterfacePtr interface_get(VALUE s) {
     generic_get(Interface, s);
 }
 
-static VALUE interface_new(virInterfacePtr i, VALUE conn) {
+VALUE interface_new(virInterfacePtr i, VALUE conn) {
     return generic_new(c_interface, i, conn, interface_free);
-}
-
-/*
- * call-seq:
- *   conn.num_of_interfaces -> fixnum
- *
- * Call +virConnectNumOfInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfInterfaces]
- * to retrieve the number of active interfaces on this connection.
- */
-static VALUE libvirt_conn_num_of_interfaces(VALUE s) {
-    gen_conn_num_of(s, Interfaces);
-}
-
-/*
- * call-seq:
- *   conn.list_interfaces -> list
- *
- * Call +virConnectListInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListInterfaces]
- * to retrieve a list of active interface names on this connection.
- */
-static VALUE libvirt_conn_list_interfaces(VALUE s) {
-    gen_conn_list_names(s, Interfaces);
-}
-
-/*
- * call-seq:
- *   conn.num_of_defined_interfaces -> fixnum
- *
- * Call +virConnectNumOfDefinedInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedInterfaces]
- * to retrieve the number of inactive interfaces on this connection.
- */
-static VALUE libvirt_conn_num_of_defined_interfaces(VALUE s) {
-    gen_conn_num_of(s, DefinedInterfaces);
-}
-
-/*
- * call-seq:
- *   conn.list_defined_interfaces -> list
- *
- * Call +virConnectListDefinedInterfaces+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListDefinedInterfaces]
- * to retrieve a list of inactive interface names on this connection.
- */
-static VALUE libvirt_conn_list_defined_interfaces(VALUE s) {
-    gen_conn_list_names(s, DefinedInterfaces);
-}
-
-/*
- * call-seq:
- *   conn.lookup_interface_by_name(name) -> Libvirt::Interface
- *
- * Call +virInterfaceLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceLookupByName]
- * to retrieve an interface object by name.
- */
-static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name) {
-    virInterfacePtr iface;
-    virConnectPtr conn = connect_get(c);
-
-    iface = virInterfaceLookupByName(conn, StringValueCStr(name));
-    _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName",
-                                   conn));
-
-    return interface_new(iface, c);
-}
-
-/*
- * call-seq:
- *   conn.lookup_interface_by_mac(mac) -> Libvirt::Interface
- *
- * Call +virInterfaceLookupByMACString+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceLookupByMACString]
- * to retrieve an interface object by MAC address.
- */
-static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac) {
-    virInterfacePtr iface;
-    virConnectPtr conn = connect_get(c);
-
-    iface = virInterfaceLookupByMACString(conn, StringValueCStr(mac));
-    _E(iface == NULL, create_error(e_RetrieveError,
-                                   "virInterfaceLookupByMACString", conn));
-
-    return interface_new(iface, c);
-}
-
-/*
- * call-seq:
- *   conn.define_interface_xml(xml, flags=0) -> Libvirt::Interface
- *
- * Call +virInterfaceDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDefineXML]
- * to define a new interface from xml.
- */
-static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
-    virInterfacePtr iface;
-    virConnectPtr conn = connect_get(c);
-    VALUE xml, flags;
-
-    rb_scan_args(argc, argv, "11", &xml, &flags);
-
-    if (NIL_P(flags))
-        flags = INT2FIX(0);
-
-    iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
-                                   conn));
-
-    return interface_new(iface, c);
 }
 
 /*
@@ -269,22 +165,6 @@ void init_interface()
                     INT2NUM(VIR_INTERFACE_XML_INACTIVE));
 #endif
     rb_define_attr(c_interface, "connection", 1, 0);
-
-    /* Interface lookup/creation methods */
-    rb_define_method(c_connect, "num_of_interfaces",
-                     libvirt_conn_num_of_interfaces, 0);
-    rb_define_method(c_connect, "list_interfaces",
-                     libvirt_conn_list_interfaces, 0);
-    rb_define_method(c_connect, "num_of_defined_interfaces",
-                     libvirt_conn_num_of_defined_interfaces, 0);
-    rb_define_method(c_connect, "list_defined_interfaces",
-                     libvirt_conn_list_defined_interfaces, 0);
-    rb_define_method(c_connect, "lookup_interface_by_name",
-                     libvirt_conn_lookup_interface_by_name, 1);
-    rb_define_method(c_connect, "lookup_interface_by_mac",
-                     libvirt_conn_lookup_interface_by_mac, 1);
-    rb_define_method(c_connect, "define_interface_xml",
-                     libvirt_conn_define_interface_xml, -1);
 
     /* Interface object methods */
     rb_define_method(c_interface, "name", libvirt_interface_name, 0);
