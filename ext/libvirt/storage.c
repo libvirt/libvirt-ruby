@@ -283,7 +283,7 @@ static VALUE libvirt_pool_num_of_volumes(VALUE s) {
     _E(n < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
                            conn(s)));
 
-    return INT2FIX(n);
+    return INT2NUM(n);
 }
 
 /*
