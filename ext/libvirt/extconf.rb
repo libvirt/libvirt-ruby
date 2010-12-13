@@ -10,22 +10,8 @@ def have_libvirt_types(types)
     types.each { |t| have_type(t, "libvirt/libvirt.h") }
 end
 
-def libvirt_checking_message(target, place = nil, opt = nil)
-  [["in", place], ["with", opt]].inject("#{target}") do |msg, (pre, noun)|
-    if noun
-      [[:to_str], [:join, ","], [:to_s]].each do |meth, *args|
-        if noun.respond_to?(meth)
-          break noun = noun.send(meth, *args)
-        end
-      end
-      msg << " #{pre} #{noun}" unless noun.empty?
-    end
-    msg
-  end
-end
-
 def have_const(const, headers = nil, opt = "", &b)
-  checking_for libvirt_checking_message(const, headers, opt) do
+  checking_for checking_message(const, headers, opt) do
     headers = cpp_include(headers)
     if try_compile(<<"SRC", opt, &b)
 #{COMMON_HEADERS}
@@ -136,7 +122,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
 have_libvirt_types(libvirt_types)
 have_libvirt_funcs(libvirt_funcs)
 if find_header("libvirt/libvirt-qemu.h")
-    have_func("virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
+  have_library("virt-qemu", "virDomainQemuMonitorCommand")
+  have_func("virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
 end
 
 have_libvirt_consts(libvirt_consts)

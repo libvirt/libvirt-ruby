@@ -1684,11 +1684,12 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
  */
 static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d) {
     VALUE cmd, flags;
-    virDomainPtr dom;
     char *result;
     VALUE ret;
     int exception;
     virConnectPtr c;
+    const char *type;
+    int r;
 
     rb_scan_args(argc, argv, "11", &cmd, &flags);
 
@@ -1699,15 +1700,15 @@ static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d) {
     type = virConnectGetType(c);
     _E(type == NULL, create_error(e_Error, "virConnectGetType", c));
     if (strcmp(type, "QEMU") != 0)
-        rb_raise(rb_TypeError, "Tried to use virDomainQemuMonitor command on %s connection", type);
+        rb_raise(rb_eTypeError,
+                 "Tried to use virDomainQemuMonitor command on %s connection",
+                 type);
 
-    dom = domain_get(d);
-
-    r = virDomainQemuMonitorCommand(dom, StringValueCStr(cmd), &result,
-                                    NUM2UINT(flags));
+    r = virDomainQemuMonitorCommand(domain_get(d), StringValueCStr(cmd),
+                                    &result, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainQemuMonitorCommand", c));
 
-    ret = rb_protect(rb_str_new2_wrap, &result, &exception);
+    ret = rb_protect(rb_str_new2_wrap, (VALUE)&result, &exception);
     free(result);
     if (exception)
         rb_jump_tag(exception);

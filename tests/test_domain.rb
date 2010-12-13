@@ -1078,6 +1078,53 @@ expect_invalid_arg_type(newdom, "scheduler_parameters=", 0)
 
 newdom.undefine
 
+# TESTGROUP: dom.qemu_monitor_command
+new_test_xml = <<EOF
+<domain type='test'>
+  <name>fc4</name>
+  <uuid>EF86180145B911CB88E3AFBFE5370493</uuid>
+  <os>
+    <type>xen</type>
+    <kernel>/boot/vmlinuz-2.6.15-1.43_FC5guest</kernel>
+    <initrd>/boot/initrd-2.6.15-1.43_FC5guest.img</initrd>
+    <root>/dev/sda1</root>
+    <cmdline> ro selinux=0 3</cmdline>
+  </os>
+  <memory>261072</memory>
+  <currentMemory>131072</currentMemory>
+  <vcpu>1</vcpu>
+  <devices>
+    <disk type='file'>
+      <source file='/u/fc4.img'/>
+      <target dev='sda1'/>
+    </disk>
+    <interface type='bridge'>
+      <source bridge='xenbr0'/>
+      <mac address='aa:00:00:00:00:11'/>
+      <script path='/etc/xen/scripts/vif-bridge'/>
+    </interface>
+    <console tty='/dev/pts/5'/>
+  </devices>
+</domain>
+EOF
+
+newdom = conn.create_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "qemu_monitor_command", 1, 2, 3)
+expect_too_few_args(newdom, "qemu_monitor_command")
+expect_invalid_arg_type(newdom, "qemu_monitor_command", 1)
+expect_invalid_arg_type(newdom, "qemu_monitor_command", "foo", "bar")
+testconn = Libvirt::open("test:///default")
+fakedom = testconn.create_domain_xml(new_test_xml)
+expect_invalid_arg_type(fakedom, "qemu_monitor_command", "foo")
+fakedom.destroy
+testconn.close
+expect_fail(newdom, Libvirt::RetrieveError, "invalid command", "qemu_monitor_command", "foo")
+
+expect_success(newdom, "monitor command", "qemu_monitor_command", "info cpus")
+
+newdom.destroy
+
 # TESTGROUP: dom.num_vcpus
 newdom = conn.define_domain_xml(new_dom_xml)
 
