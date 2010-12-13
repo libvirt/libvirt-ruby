@@ -125,6 +125,7 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
     return internal_open(argc, argv, m, 1);
 }
 
+#if HAVE_VIRCONNECTOPENAUTH
 static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
                                          unsigned int ncred, void *cbdata) {
     VALUE userdata;
@@ -314,7 +315,9 @@ do_cleanup:
 
     return connect_new(conn);
 }
+#endif
 
+#if HAVE_VIREVENTREGISTERIMPL
 static VALUE add_handle, update_handle, remove_handle;
 static VALUE add_timeout, update_timeout, remove_timeout;
 
@@ -687,17 +690,17 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c) {
 
     return Qnil;
 }
+#endif
 
 /*
  * Module Libvirt
  */
 void Init__libvirt() {
-    int r;
-
     m_libvirt = rb_define_module("Libvirt");
     c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
                                               rb_cObject);
 
+#if HAVE_VIRCONNECTOPENAUTH
     rb_define_const(m_libvirt, "CONNECT_RO", INT2NUM(VIR_CONNECT_RO));
 
     rb_define_const(m_libvirt, "CRED_USERNAME", INT2NUM(VIR_CRED_USERNAME));
@@ -709,6 +712,7 @@ void Init__libvirt() {
     rb_define_const(m_libvirt, "CRED_NOECHOPROMPT", INT2NUM(VIR_CRED_NOECHOPROMPT));
     rb_define_const(m_libvirt, "CRED_REALM", INT2NUM(VIR_CRED_REALM));
     rb_define_const(m_libvirt, "CRED_EXTERNAL", INT2NUM(VIR_CRED_EXTERNAL));
+#endif
 
     /*
      * Libvirt Errors
@@ -728,11 +732,14 @@ void Init__libvirt() {
     rb_define_attr(e_Error, "libvirt_message", 1, 0);
 
     rb_define_module_function(m_libvirt, "version", libvirt_version, -1);
-	rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
-	rb_define_module_function(m_libvirt, "open_read_only",
+    rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
+    rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, -1);
+#if HAVE_VIRCONNECTOPENAUTH
     rb_define_module_function(m_libvirt, "open_auth", libvirt_open_auth, -1);
+#endif
 
+#if HAVE_VIREVENTREGISTERIMPL
     rb_define_const(m_libvirt, "EVENT_HANDLE_READABLE",
                     INT2NUM(VIR_EVENT_HANDLE_READABLE));
     rb_define_const(m_libvirt, "EVENT_HANDLE_WRITABLE",
@@ -756,6 +763,7 @@ void Init__libvirt() {
                               libvirt_event_invoke_handle_callback, 4);
     rb_define_module_function(m_libvirt, "event_invoke_timeout_callback",
                               libvirt_event_invoke_timeout_callback, 2);
+#endif
 
     init_connect();
     init_storage();
@@ -768,7 +776,6 @@ void Init__libvirt() {
 
     virSetErrorFunc(NULL, rubyLibvirtErrorFunc);
 
-    r = virInitialize();
-    if (r < 0)
+    if (virInitialize() < 0)
         rb_raise(rb_eSystemCallError, "virInitialize failed");
 }

@@ -443,6 +443,7 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
 }
 #endif
 
+#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY || HAVE_VIRCONNECTDOMAINEVENTREGISTER
 static int domain_event_lifecycle_callback(virConnectPtr conn,
                                            virDomainPtr dom, int event,
                                            int detail, void *opaque) {
@@ -472,7 +473,9 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
 
     return 0;
 }
+#endif
 
+#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
 static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
                                         void *opaque) {
     VALUE passthrough = (VALUE)opaque;
@@ -780,7 +783,9 @@ static VALUE libvirt_conn_domain_event_deregister_any(VALUE c,
     gen_call_void(virConnectDomainEventDeregisterAny, conn(c), connect_get(c),
                   NUM2INT(callbackID));
 }
+#endif
 
+#if HAVE_VIRCONNECTDOMAINEVENTREGISTER
 /*
  * this is a bit of silliness.  Because libvirt internals track the address
  * of the function pointer, trying to use domain_event_lifecycle_callback
@@ -838,6 +843,7 @@ static VALUE libvirt_conn_domain_event_deregister(VALUE c) {
     gen_call_void(virConnectDomainEventDeregister, conn(c), connect_get(c),
                   domain_event_callback);
 }
+#endif
 
 /*
  * call-seq:
@@ -1103,6 +1109,7 @@ static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s) {
 }
 #endif
 
+#if HAVE_TYPE_VIRINTERFACEPTR
 /*
  * call-seq:
  *   conn.num_of_interfaces -> fixnum
@@ -1147,6 +1154,7 @@ static VALUE libvirt_conn_list_defined_interfaces(VALUE s) {
     gen_conn_list_names(s, DefinedInterfaces);
 }
 
+extern VALUE interface_new(virInterfacePtr i, VALUE conn);
 /*
  * call-seq:
  *   conn.lookup_interface_by_name(name) -> Libvirt::Interface
@@ -1206,6 +1214,7 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
 
     return interface_new(iface, c);
 }
+#endif
 
 /*
  * call-seq:
@@ -1323,6 +1332,8 @@ static VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml) {
 }
 
 #if HAVE_TYPE_VIRNODEDEVICEPTR
+extern VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn);
+
 /*
  * call-seq:
  *   conn.num_of_nodedevices(cap=nil, flags=0) -> fixnum
@@ -1433,6 +1444,8 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) 
 #endif
 
 #if HAVE_TYPE_VIRNWFILTERPTR
+extern VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn);
+
 /*
  * call-seq:
  *   conn.num_of_nwfilters -> fixnum
@@ -1511,6 +1524,8 @@ static VALUE libvirt_conn_define_nwfilter_xml(VALUE c, VALUE xml) {
 #endif
 
 #if HAVE_TYPE_VIRSECRETPTR
+extern VALUE secret_new(virSecretPtr s, VALUE conn);
+
 /*
  * call-seq:
  *   conn.num_of_secrets -> fixnum
@@ -1596,6 +1611,9 @@ static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c) {
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
+
+VALUE pool_new(virStoragePoolPtr n, VALUE conn);
+
 /*
  * call-seq:
  *   conn.list_storage_pools -> list
@@ -1817,6 +1835,16 @@ void init_connect()
     rb_define_method(c_connect, "baseline_cpu", libvirt_conn_baseline_cpu, -1);
 #endif
 
+    /* In the libvirt development history, the events were
+     * first defined in commit 1509b8027fd0b73c30aeab443f81dd5a18d80544,
+     * then ADDED and REMOVED were renamed to DEFINED and UNDEFINED at
+     * the same time that the details were added
+     * (d3d54d2fc92e350f250eda26cee5d0342416a9cf).  What this means is that
+     * if we have to check for HAVE_CONST_VIR_DOMAIN_EVENT_DEFINED and
+     * HAVE_CONST_VIR_DOMAIN_EVENT_STARTED to untangle these, and then we
+     * can make a decision for many of the events based on that.
+     */
+#if HAVE_CONST_VIR_DOMAIN_EVENT_DEFINED
     rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED",
                     INT2NUM(VIR_DOMAIN_EVENT_DEFINED));
     rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_ADDED",
@@ -1827,34 +1855,20 @@ void init_connect()
                     INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED));
     rb_define_const(c_connect, "DOMAIN_EVENT_UNDEFINED_REMOVED",
                     INT2NUM(VIR_DOMAIN_EVENT_UNDEFINED_REMOVED));
-    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED",
-                    INT2NUM(VIR_DOMAIN_EVENT_STARTED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_BOOTED",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED_BOOTED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_MIGRATED",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED_MIGRATED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_RESTORED",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED_RESTORED));
-    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT",
-                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT));
-    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED",
-                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED));
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_PAUSED",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_PAUSED));
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_MIGRATED",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_MIGRATED));
-    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR",
-                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR));
-    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_WATCHDOG",
-                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_WATCHDOG));
-    rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED",
-                    INT2NUM(VIR_DOMAIN_EVENT_RESUMED));
     rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_UNPAUSED",
                     INT2NUM(VIR_DOMAIN_EVENT_RESUMED_UNPAUSED));
     rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_MIGRATED",
                     INT2NUM(VIR_DOMAIN_EVENT_RESUMED_MIGRATED));
-    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED",
-                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_SHUTDOWN",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SHUTDOWN));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_DESTROYED",
@@ -1867,8 +1881,32 @@ void init_connect()
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SAVED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FAILED",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FAILED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_STARTED
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED",
+                    INT2NUM(VIR_DOMAIN_EVENT_RESUMED));
+    rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED",
+                    INT2NUM(VIR_DOMAIN_EVENT_STOPPED));
+#endif
+#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_IOERROR
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR));
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_WATCHDOG",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_WATCHDOG));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_WATCHDOG
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_WATCHDOG",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_WATCHDOG));
     rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_NONE",
                     INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_NONE));
     rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_PAUSE",
@@ -1881,12 +1919,20 @@ void init_connect()
                     INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_SHUTDOWN));
     rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_DEBUG",
                     INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_DEBUG));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_IO_ERROR
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR));
     rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_NONE",
                     INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_NONE));
     rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_PAUSE",
                     INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_PAUSE));
     rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_REPORT",
                     INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_REPORT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_GRAPHICS
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_GRAPHICS",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_GRAPHICS));
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_CONNECT",
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_CONNECT));
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_INITIALIZE",
@@ -1897,31 +1943,37 @@ void init_connect()
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4));
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6",
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6));
-
+#endif
+#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_LIFECYCLE",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_LIFECYCLE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_REBOOT
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_REBOOT",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_REBOOT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_RTC_CHANGE
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_RTC_CHANGE",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_RTC_CHANGE));
-    rb_define_const(c_connect, "DOMAIN_EVENT_ID_WATCHDOG",
-                    INT2NUM(VIR_DOMAIN_EVENT_ID_WATCHDOG));
-    rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR",
-                    INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR_REASON",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON));
-    rb_define_const(c_connect, "DOMAIN_EVENT_ID_GRAPHICS",
-                    INT2NUM(VIR_DOMAIN_EVENT_ID_GRAPHICS));
+#endif
 
+#if HAVE_VIRCONNECTDOMAINEVENTREGISTER
     rb_define_method(c_connect, "domain_event_register",
                      libvirt_conn_domain_event_register, -1);
     rb_define_method(c_connect, "domain_event_deregister",
                      libvirt_conn_domain_event_deregister, 0);
+#endif
 
+#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
     rb_define_method(c_connect, "domain_event_register_any",
                      libvirt_conn_domain_event_register_any, -1);
     rb_define_method(c_connect, "domain_event_deregister_any",
                      libvirt_conn_domain_event_deregister_any, 1);
+#endif
 
     /* Domain creation/lookup */
     rb_define_method(c_connect, "num_of_domains",
@@ -1955,6 +2007,7 @@ void init_connect()
                      libvirt_conn_domain_xml_to_native, -1);
 #endif
 
+#if HAVE_TYPE_VIRINTERFACEPTR
     /* Interface lookup/creation methods */
     rb_define_method(c_connect, "num_of_interfaces",
                      libvirt_conn_num_of_interfaces, 0);
@@ -1970,6 +2023,7 @@ void init_connect()
                      libvirt_conn_lookup_interface_by_mac, 1);
     rb_define_method(c_connect, "define_interface_xml",
                      libvirt_conn_define_interface_xml, -1);
+#endif
 
     /* Network lookup/creation methods */
     rb_define_method(c_connect, "num_of_networks",

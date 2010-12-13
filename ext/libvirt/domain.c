@@ -476,6 +476,7 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKPEEK
 /*
  * call-seq:
  *   dom.block_peek(path, offset, size, flags=0) -> string
@@ -527,7 +528,9 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
 
     return ret;
 }
+#endif
 
+#if HAVE_VIRDOMAINMEMORYPEEK
 /*
  * call-seq:
  *   dom.memory_peek(start, size, flags=Libvirt::Domain::MEMORY_VIRTUAL) -> string
@@ -576,6 +579,7 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
 
     return ret;
 }
+#endif
 
 /* call-seq:
  *   dom.get_vcpus -> [ Libvirt::Domain::VCPUInfo ]
@@ -943,6 +947,7 @@ static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
     gen_call_void(virDomainSetVcpus, conn(s), domain_get(s), NUM2UINT(nvcpus));
 }
 
+#if HAVE_VIRDOMAINSETVCPUSFLAGS
 /*
  * call-seq:
  *   dom.vcpus_flags = Fixnum,flags
@@ -968,6 +973,7 @@ static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus) {
     gen_call_void(virDomainSetVcpusFlags, conn(s), domain_get(s),
                   NUM2UINT(nvcpus), NUM2UINT(flags));
 }
+#endif
 
 /*
  * call-seq:
@@ -1764,7 +1770,9 @@ void init_domain()
     rb_define_const(c_domain, "DOMAIN_XML_UPDATE_CPU",
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
 #endif
+#if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_const(c_domain, "MEMORY_VIRTUAL", INT2NUM(VIR_MEMORY_VIRTUAL));
+#endif
 #if HAVE_CONST_VIR_MEMORY_PHYSICAL
     rb_define_const(c_domain, "MEMORY_PHYSICAL", INT2NUM(VIR_MEMORY_PHYSICAL));
 #endif
@@ -1816,7 +1824,9 @@ void init_domain()
     rb_define_method(c_domain, "memory=", libvirt_dom_memory_set, 1);
     rb_define_method(c_domain, "max_vcpus", libvirt_dom_max_vcpus, 0);
     rb_define_method(c_domain, "vcpus=", libvirt_dom_vcpus_set, 1);
+#if HAVE_VIRDOMAINSETVCPUSFLAGS
     rb_define_method(c_domain, "vcpus_flags=", libvirt_dom_vcpus_set_flags, 1);
+#endif
     rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, 2);
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
@@ -1869,11 +1879,15 @@ void init_domain()
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
     rb_define_method(c_domain, "memory_stats", libvirt_dom_memory_stats, -1);
 #endif
+#if HAVE_VIRDOMAINBLOCKPEEK
     rb_define_method(c_domain, "block_peek", libvirt_dom_block_peek, -1);
+#endif
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
     rb_define_method(c_domain, "blockinfo", libvirt_dom_block_info, -1);
 #endif
+#if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_method(c_domain, "memory_peek", libvirt_dom_memory_peek, -1);
+#endif
     rb_define_method(c_domain, "get_vcpus", libvirt_dom_get_vcpus, 0);
 #if HAVE_VIRDOMAINISACTIVE
     rb_define_method(c_domain, "active?", libvirt_dom_active_p, 0);

@@ -96,6 +96,12 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectBaselineCPU',
                   'virDomainSetVcpusFlags',
                   'virDomainGetVcpusFlags',
+                  'virConnectDomainEventRegisterAny',
+                  'virConnectDomainEventRegister',
+                  'virDomainBlockPeek',
+                  'virDomainMemoryPeek',
+                  'virConnectOpenAuth',
+                  'virEventRegisterImpl',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -116,6 +122,15 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_DEVICE_MODIFY_FORCE',
                    'VIR_INTERFACE_XML_INACTIVE',
                    'VIR_STORAGE_POOL_INACCESSIBLE',
+                   'VIR_DOMAIN_EVENT_DEFINED',
+                   'VIR_DOMAIN_EVENT_STARTED',
+                   'VIR_DOMAIN_EVENT_SUSPENDED_IOERROR',
+                   'VIR_DOMAIN_EVENT_ID_WATCHDOG',
+                   'VIR_DOMAIN_EVENT_ID_IO_ERROR',
+                   'VIR_DOMAIN_EVENT_ID_GRAPHICS',
+                   'VIR_DOMAIN_EVENT_ID_REBOOT',
+                   'VIR_DOMAIN_EVENT_ID_RTC_CHANGE',
+                   'VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON',
                  ]
 
 have_libvirt_types(libvirt_types)
