@@ -1074,7 +1074,14 @@ expect_too_many_args(newdom, "scheduler_parameters=", 1, 2)
 expect_too_few_args(newdom, "scheduler_parameters=")
 expect_invalid_arg_type(newdom, "scheduler_parameters=", 0)
 
-# FIXME: set scheduler_parameters here
+begin
+  newdom.scheduler_parameters={"cpu_shares"=>512}
+rescue NoMethodError
+  puts_skipped "dom.scheduler_parameters= does not exist"
+rescue Libvirt::RetrieveError
+  # this may not be supported (if cgroups aren't configured), so skip it
+  puts_ok "dom.scheduler_parameters= not supported"
+end
 
 newdom.undefine
 

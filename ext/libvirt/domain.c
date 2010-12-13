@@ -1429,6 +1429,24 @@ static VALUE libvirt_dom_abort_job(VALUE d) {
 
 #endif
 
+struct create_sched_type_args {
+    char *type;
+    int nparams;
+};
+
+static VALUE create_sched_type_array(VALUE input) {
+    struct create_sched_type_args *args;
+    VALUE result;
+
+    args = (struct create_sched_type_args *)input;
+
+    result = rb_ary_new();
+    rb_ary_push(result, rb_str_new2(args->type));
+    rb_ary_push(result, INT2NUM(args->nparams));
+
+    return result;
+}
+
 /*
  * call-seq:
  *   dom.scheduler_type -> [type, #params]
@@ -1441,39 +1459,60 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
     char *type;
     VALUE result;
     int exception = 0;
-    struct rb_ary_push_arg args;
+    struct create_sched_type_args args;
 
     type = virDomainGetSchedulerType(domain_get(d), &nparams);
 
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
                                   conn(d)));
 
-    result = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
+    result = rb_protect(create_sched_type_array, (VALUE)&args, &exception);
     if (exception) {
         free(type);
         rb_jump_tag(exception);
     }
-
-    args.arr = result;
-    args.value = rb_protect(rb_str_new2_wrap, (VALUE)&type, &exception);
-    if (exception) {
-        free(type);
-        rb_jump_tag(exception);
-    }
-    rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
-    if (exception) {
-        free(type);
-        rb_jump_tag(exception);
-    }
-
-    args.arr = result;
-    args.value = INT2FIX(nparams);
-    rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
-    free(type);
-    if (exception)
-        rb_jump_tag(exception);
 
     return result;
+}
+
+#define field_to_value(type, fieldtype, fieldvalue, fieldname, result) do { \
+        VALUE val;                                                      \
+        switch(fieldtype) {                                             \
+        case VIR_DOMAIN_##type##_INT:                                   \
+            val = INT2FIX(fieldvalue.i);                                \
+            break;                                                      \
+        case VIR_DOMAIN_##type##_UINT:                                  \
+            val = UINT2NUM(fieldvalue.ui);                              \
+            break;                                                      \
+        case VIR_DOMAIN_##type##_LLONG:                                 \
+            val = LL2NUM(fieldvalue.l);                                 \
+            break;                                                      \
+        case VIR_DOMAIN_##type##_ULLONG:                                \
+            val = ULL2NUM(fieldvalue.ul);                               \
+            break;                                                      \
+        case VIR_DOMAIN_##type##_DOUBLE:                                \
+            val = rb_float_new(fieldvalue.d);                           \
+            break;                                                      \
+        case VIR_DOMAIN_##type##_BOOLEAN:                               \
+            val = (fieldvalue.b == 0) ? Qfalse : Qtrue;                 \
+            break;                                                      \
+        default:                                                        \
+            rb_raise(rb_eArgError, "Invalid parameter type");           \
+        }                                                               \
+        rb_hash_aset(result, rb_str_new2(fieldname), val);              \
+    } while(0)
+
+struct sched_param_passthrough {
+    virSchedParameterPtr sched;
+    VALUE result;
+};
+
+static VALUE sched_field_to_value(VALUE input) {
+    struct sched_param_passthrough *pp = (struct sched_param_passthrough *)input;
+
+    field_to_value(SCHED_FIELD, pp->sched->type, pp->sched->value,
+                   pp->sched->field, pp->result);
+    return Qnil;
 }
 
 /*
@@ -1492,7 +1531,8 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
     virDomainPtr dom;
     int r;
     int i;
-    VALUE val;
+    int exception;
+    struct sched_param_passthrough pp;
 
     dom = domain_get(d);
 
@@ -1503,6 +1543,11 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
 
     xfree(type);
 
+    result = rb_hash_new();
+
+    if (nparams == 0)
+        return result;
+
     params = ALLOC_N(virSchedParameter, nparams);
 
     r = virDomainGetSchedulerParameters(dom, params, &nparams);
@@ -1512,41 +1557,67 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
                                   "virDomainGetSchedulerParameters", conn(d)));
     }
 
-    /* just to shut the compiler up */
-    val = Qnil;
-
-    result = rb_hash_new();
     for (i = 0; i < nparams; i++) {
-        switch(params[i].type) {
-        case VIR_DOMAIN_SCHED_FIELD_INT:
-            val = INT2FIX(params[i].value.i);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_UINT:
-            val = UINT2NUM(params[i].value.ui);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_LLONG:
-            val = LL2NUM(params[i].value.l);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_ULLONG:
-            val = ULL2NUM(params[i].value.ul);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_DOUBLE:
-            val = rb_float_new(params[i].value.d);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_BOOLEAN:
-            val = (params[i].value.b == 0) ? Qfalse : Qtrue;
-            break;
-        default:
+        pp.sched = &(params[i]);
+        pp.result = result;
+        rb_protect(sched_field_to_value, (VALUE)&pp, &exception);
+        if (exception) {
             xfree(params);
-            rb_raise(rb_eArgError, "Invalid parameter type");
+            rb_jump_tag(exception);
         }
-
-        rb_hash_aset(result, rb_str_new2(params[i].field), val);
     }
 
     xfree(params);
 
     return result;
+}
+
+#define val_to_field(sched_or_mem, param, paramtype, val) do {          \
+        param->type = paramtype;                                        \
+        switch(paramtype) {                                             \
+        case VIR_DOMAIN_##sched_or_mem##_INT:                           \
+            param->value.i = NUM2INT(val);                              \
+        case VIR_DOMAIN_##sched_or_mem##_UINT:                          \
+            param->value.ui = NUM2UINT(val);                            \
+            break;                                                      \
+        case VIR_DOMAIN_##sched_or_mem##_LLONG:                         \
+            param->value.l = NUM2LL(val);                               \
+            break;                                                      \
+        case VIR_DOMAIN_##sched_or_mem##_ULLONG:                        \
+            param->value.ul = NUM2ULL(val);                             \
+            break;                                                      \
+        case VIR_DOMAIN_##sched_or_mem##_DOUBLE:                        \
+            param->value.d = NUM2DBL(val);                              \
+            break;                                                      \
+        case VIR_DOMAIN_##sched_or_mem##_BOOLEAN:                       \
+            param->value.b = (val == Qtrue) ? 1 : 0;                    \
+            break;                                                      \
+        default:                                                        \
+            rb_raise(rb_eArgError, "Invalid parameter type");           \
+        }                                                               \
+    } while(0)
+
+struct sched_set_params_struct {
+    int nparams;
+    VALUE input;
+    virSchedParameterPtr params;
+};
+
+static VALUE sched_set_params(VALUE in) {
+    struct sched_set_params_struct *args = (struct sched_set_params_struct *)in;
+    int i;
+    VALUE val;
+
+    for (i = 0; i < args->nparams; i++) {
+        val = rb_hash_aref(args->input, rb_str_new2((args->params)[i].field));
+        if (NIL_P(val))
+            continue;
+
+        val_to_field(SCHED_FIELD, (args->params + i), (args->params)[i].type,
+                     val);
+    }
+
+    return Qnil;
 }
 
 /*
@@ -1555,30 +1626,36 @@ static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
  *
  * Call +virDomainSetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
  * to set the scheduler parameters for this domain.  The keys and values in
- * the input hash are hypervisor specific.
+ * the input hash are hypervisor specific.  If an empty hash is given, no
+ * changes are made (and no error is raised).
  */
 static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
     int nparams;
-    char *type;
     virSchedParameterPtr params;
-    virDomainPtr dom;
+    virDomainPtr dom = domain_get(d);
     int r;
-    int i;
-    VALUE val;
+    int exception;
+    char *type;
+    struct sched_set_params_struct args;
 
     Check_Type(input, T_HASH);
+    if (RHASH_SIZE(input) == 0)
+        return Qnil;
 
-    dom = domain_get(d);
+    /* ug, complicated.  This all stems from the fact that we have no way
+     * to discover what type each parameter should be based on the input.
+     * Instead, we ask libvirt to give us the current parameters and types,
+     * and then we replace the values with the new values.  That way we find
+     * out what the old types were, and if the new types don't match, libvirt
+     * will throw an error
+     */
 
     type = virDomainGetSchedulerType(dom, &nparams);
-
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
                                   conn(d)));
-
     xfree(type);
 
     params = ALLOC_N(virSchedParameter, nparams);
-
     r = virDomainGetSchedulerParameters(dom, params, &nparams);
     if (r < 0) {
         xfree(params);
@@ -1586,35 +1663,17 @@ static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
                                   "virDomainGetSchedulerParameters", conn(d)));
     }
 
-    for (i = 0; i < nparams; i++) {
-        val = rb_hash_aref(input, rb_str_new2(params[i].field));
+    args.nparams = nparams;
+    args.input = input;
+    args.params = params;
 
-        switch(params[i].type) {
-        case VIR_DOMAIN_SCHED_FIELD_INT:
-            params[i].value.i = NUM2INT(val);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_UINT:
-            params[i].value.ui = NUM2UINT(val);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_LLONG:
-            params[i].value.l = NUM2LL(val);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_ULLONG:
-            params[i].value.ul = NUM2ULL(val);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_DOUBLE:
-            params[i].value.d = NUM2DBL(val);
-            break;
-        case VIR_DOMAIN_SCHED_FIELD_BOOLEAN:
-            params[i].value.b = (val == Qtrue) ? 1 : 0;
-            break;
-        default:
-            xfree(params);
-            rb_raise(rb_eArgError, "Invalid parameter type");
-        }
+    rb_protect(sched_set_params, (VALUE)&args, &exception);
+    if (exception) {
+        xfree(params);
+        rb_jump_tag(exception);
     }
 
-    r = virDomainSetSchedulerParameters(dom, params, nparams);
+    r = virDomainSetSchedulerParameters(domain_get(d), params, nparams);
     if (r < 0) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
