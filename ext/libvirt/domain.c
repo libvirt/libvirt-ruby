@@ -1731,6 +1731,18 @@ static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINISUPDATED
+/*
+ * call-seq:
+ *   dom.updated? ->  [True|False]
+ * Call +virDomainIsUpdated+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsUpdated]
+ * to determine whether the definition for this domain has been updated.
+ */
+static VALUE libvirt_dom_is_updated(VALUE d) {
+    gen_call_truefalse(virDomainIsUpdated, conn(d), domain_get(d));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2073,5 +2085,9 @@ void init_domain()
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
     rb_define_method(c_domain, "num_vcpus", libvirt_dom_num_vcpus, 1);
+#endif
+
+#if HAVE_VIRDOMAINISUPDATED
+    rb_define_method(c_domain, "updated?", libvirt_dom_is_updated, 0);
 #endif
 }
