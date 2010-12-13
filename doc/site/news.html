@@ -40,6 +40,7 @@
       <div id="content">
 	<h1>News</h1>
 	<ul>
+	  <li>December 12, 2010 - Release 0.3.0</li>
 	  <li>November 10, 2010 - Gem for version 0.2.0 pushed to
 	  rubygems.org</li>
 	  <li>July 1, 2010 - Release 0.2.0</li>
@@ -52,37 +53,59 @@
 	  <li>November 19, 2007 - Release 0.0.1</li>
 	</ul>
 	<h1>Releases</h1>
+	<h3>0.3.0: Dec 12, 2010</h3>
+	<ul>
+	  <li>Implementation of Libvirt::open_auth, Libvirt::event_register_impl</li>
+	  <li>Updated Connect class, implementing conn.compare_cpu,
+	    conn.baseline_cpu, conn.domain_event_register_any,
+	    conn.domain_event_deregister_any,
+	    conn.domain_event_register, conn.domain_event_deregister,
+	    and conn.create_domain_xml.</li>
+	  <li>Updated Domain class, implementing dom.get_vcpus,
+	    dom.update_device, dom.scheduler_type,
+	    dom.scheduler_parameters, dom.scheduler_parameters=,
+	    dom.num_vcpus, dom.vcpus_flags=, and dom.qemu_monitor_command.</li>
+	  <li>Updated Interface class, implementing interface.free</li>
+	  <li>Many potential memory leaks have been fixed.</li>
+	  <li>Many bugfixes.</li>
+	  <li>Documentation update of many methods, including all of
+	    the lookup methods that were missing before.</li>
+	</ul>
 	<h3>0.2.0: July 1 2010</h3>
 	<ul>
-	  <li>Updated Storage class, implementing pool.active?, pool.persistent?,
-	  pool.vol_create_xml_from.</li>
+	  <li>Updated Storage class, implementing pool.active?,
+	    pool.persistent?, pool.vol_create_xml_from.</li>
 	  <li>Updated Connect class, implementing conn.node_free_memory,
-	  conn.node_cells_free_memory, conn.node_get_security_model, conn.encrypted?,
-	  conn.libversion, and conn.secure?</li>
-	  <li>Updated Network class, implementing network.active? and network.persistent?</li>
+	    conn.node_cells_free_memory, conn.node_get_security_model,
+	    conn.encrypted?, conn.libversion, and conn.secure?</li>
+	  <li>Updated Network class, implementing network.active? and
+	    network.persistent?</li>
 	  <li>Update Domain class, implementing conn.domain_xml_from_native,
-	  conn.domain_xml_to_native, dom.migrate_to_uri, dom.migrate_set_max_downtime,
-	  dom.managed_save, dom.has_managed_save?, dom.managed_save_remove,
-	  dom.security_label, dom.block_stats, dom.memory_stats, dom.blockinfo,
-	  dom.block_peek, dom.memory_peek, dom.active?, dom.persistent?,
-	  dom.snapshot_create_xml, dom.num_of_snapshots, dom.list_snapshots,
-	  dom.lookup_snapshot_by_name, dom.has_current_snapshot?,
-	  dom.revert_to_snapshot, dom.current_snapshot, snapshot.xml_desc,
-	  snapshot.delete, dom.job_info, and dom.abort_job.</li>
+	    conn.domain_xml_to_native, dom.migrate_to_uri,
+	    dom.migrate_set_max_downtime, dom.managed_save,
+	    dom.has_managed_save?, dom.managed_save_remove,
+	    dom.security_label, dom.block_stats, dom.memory_stats,
+	    dom.blockinfo, dom.block_peek, dom.memory_peek,
+	    dom.active?, dom.persistent?, dom.snapshot_create_xml,
+	    dom.num_of_snapshots, dom.list_snapshots,
+	    dom.lookup_snapshot_by_name, dom.has_current_snapshot?,
+	    dom.revert_to_snapshot, dom.current_snapshot, snapshot.xml_desc,
+	    snapshot.delete, dom.job_info, and dom.abort_job.</li>
 	  <li>Implementation of the NodeDevice class.</li>
 	  <li>Implementation of the Secret class.</li>
 	  <li>Implementation of the NWFilter class.</li>
 	  <li>Implementation of the Interface class.</li>
 	  <li>Conversion of the development tree to git.</li>
-	  <li>New maintainer (Chris Lalancette).  David Lutterkort has agreed to transfer maintainership
-	  since he is not actively involved in their development anymore.</li>
+	  <li>New maintainer (Chris Lalancette).  David Lutterkort has
+	    agreed to transfer maintainership since he is not actively
+	    involved in their development anymore.</li>
 	</ul>
 	<h3>0.1.0: November 18 2008</h3>
 	<ul>
 	  <li>Short-circuit calls to list functions for empty lists.
-	  As an optimizaton (and workaround for a bug in 0.4.3), do not call
-	  virConnectList* functions if the coresponding virConnectNumOf* call
-	  returned 0. Return an empty list instead.</li>
+	    As an optimizaton (and workaround for a bug in 0.4.3), do not call
+	    virConnectList* functions if the coresponding virConnectNumOf* call
+	    returned 0. Return an empty list instead.</li>
 	  <li>Add the MIGRATE_LIVE (enum virDomainMigrateFlags)
 	    flag.</li>
 	  <li>Fix dom_migrate: (1) allow passing nil for dname and uri,
@@ -100,14 +123,14 @@
 	<h3>0.0.5: April 2 2008</h3>
 	<ul>
 	  <li>Add free methods to the various objects.
-	    It is sometimes necessary to free a virXXX object explicitly instead of
-	    waiting for the garbage collector to come and do it. This adds explicit
-	    free methods that call the underlying virXXXFree functions
-	    to do that.</li>
+	    It is sometimes necessary to free a virXXX object
+	    explicitly instead of waiting for the garbage collector to
+	    come and do it. This adds explicit free methods that call
+	    the underlying virXXXFree functions to do that.</li>
 	  <li>More finegrained exceptions.
-	    Errors from libvirt are now translated in not just one but four different
-	    kinds of exceptions, and the error message from libvirt's virError
-	    structure is returned.</li>
+	    Errors from libvirt are now translated in not just one but
+	    four different kinds of exceptions, and the error message
+	    from libvirt's virError structure is returned.</li>
 	</ul>
 	<h3>0.0.4: April 1 2008</h3>
 	<ul>

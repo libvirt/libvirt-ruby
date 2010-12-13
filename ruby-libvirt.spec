@@ -47,6 +47,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 12 2010 Chris Lalancette <clalance@redhat.com> - 0.3.0-1
+- Updated bindings to implement most libvirt methods up to 0.8.6
+- Updated rdoc documentation
+- Bumped package version to 0.3.0
+
 * Fri Jun 25 2010 Chris Lalancette <clalance@redhat.com> - 0.2.0-1
 - Updated bindings to have many of the new libvirt methods implemented
 - Bumped package version to 0.2.0

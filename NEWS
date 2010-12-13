@@ -1,3 +1,18 @@
+2010-12-12 0.3.0
+  * Implementation of Libvirt::open_auth, Libvirt::event_register_impl
+  * Updated Connect class, implementing conn.compare_cpu, conn.baseline_cpu,
+    conn.domain_event_register_any, conn.domain_event_deregister_any,
+    conn.domain_event_register, conn.domain_event_deregister, and
+    conn.create_domain_xml.
+  * Updated Domain class, implementing dom.get_vcpus, dom.update_device,
+    dom.scheduler_type, dom.scheduler_parameters, dom.scheduler_parameters=,
+    dom.num_vcpus, dom.vcpus_flags=, and dom.qemu_monitor_command.
+  * Updated Interface class, implementing interface.free
+  * Many potential memory leaks have been fixed.
+  * Many bugfixes.
+  * Documentation update of many methods, including all of the lookup methods
+    that were missing before.
+
 2010-11-10
   * Gem for version 0.2.0 pushed to rubygems.org
 
