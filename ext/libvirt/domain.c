@@ -19,6 +19,7 @@
  */
 
 #include <ruby.h>
+#include <st.h>
 #include <libvirt/libvirt.h>
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 #include <libvirt/libvirt-qemu.h>
@@ -1743,6 +1744,184 @@ static VALUE libvirt_dom_is_updated(VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
+struct memory_set_params_struct {
+    virMemoryParameterPtr params;
+    int *nparams;
+};
+
+static int memory_set_param(VALUE key, VALUE value, VALUE in) {
+    struct memory_set_params_struct *args = (struct memory_set_params_struct *)in;
+    virMemoryParameterPtr thisparam;
+    char *fieldname;
+
+    thisparam = &(args->params[*(args->nparams)]);
+
+    fieldname = StringValueCStr(key);
+    strncpy(thisparam->field, fieldname, VIR_DOMAIN_MEMORY_FIELD_LENGTH);
+
+    val_to_field(MEMORY_PARAM, thisparam, VIR_DOMAIN_MEMORY_PARAM_ULLONG,
+                 value);
+    (*(args->nparams))++;
+
+    return ST_CONTINUE;
+}
+
+struct hash_foreach_struct {
+    virMemoryParameterPtr params;
+    int *nparams;
+    VALUE input;
+};
+
+static VALUE rb_hash_foreach_wrap(VALUE input) {
+    struct hash_foreach_struct *args = (struct hash_foreach_struct *)input;
+    struct memory_set_params_struct newargs;
+
+    newargs.params = args->params;
+    newargs.nparams = args->nparams;
+    rb_hash_foreach(args->input, memory_set_param, (VALUE)&newargs);
+
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   dom.memory_parameters = Hash,flags=0
+ *
+ * Call +virDomainSetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
+ * to set the memory parameters for this domain.  The keys and values in
+ * the input hash are hypervisor specific.
+ */
+static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
+    virMemoryParameterPtr params;
+    int r;
+    VALUE input;
+    VALUE flags;
+    int exception;
+    int nparams;
+    struct hash_foreach_struct args;
+
+    if (TYPE(in) == T_HASH) {
+        input = in;
+        flags = Qnil;
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2)
+            rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
+                     RARRAY_LEN(in));
+        input = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else
+        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    Check_Type(input, T_HASH);
+    if (RHASH_SIZE(input) == 0)
+        return Qnil;
+
+    params = ALLOC_N(virMemoryParameter, RHASH_SIZE(input));
+
+    args.params = params;
+    nparams = 0;
+    args.nparams = &nparams;
+    args.input = input;
+
+    rb_protect(rb_hash_foreach_wrap, (VALUE)&args, &exception);
+    if (exception) {
+        xfree(params);
+        rb_jump_tag(exception);
+    }
+
+    r = virDomainSetMemoryParameters(domain_get(d), params, RHASH_SIZE(input),
+                                     NUM2UINT(flags));
+    if (r < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainSetMemoryParameters", conn(d)));
+    }
+
+    xfree(params);
+
+    return Qnil;
+}
+
+struct mem_param_passthrough {
+    virMemoryParameterPtr mem;
+    VALUE result;
+};
+
+static VALUE memory_parameter_to_value(VALUE input) {
+    struct mem_param_passthrough *pp;
+
+    pp = (struct mem_param_passthrough *)input;
+    field_to_value(MEMORY_PARAM, pp->mem->type, pp->mem->value,
+                   pp->mem->field, pp->result);
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   dom.memory_parameters(flags=0) -> Hash
+ *
+ * Call +virDomainGetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMemoryParameters]
+ * to retrieve all of the memory parameters for this domain.  The keys and
+ * values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d) {
+    VALUE flags;
+    int nparams = 0;
+    virMemoryParameterPtr params = NULL;
+    int i;
+    VALUE result;
+    struct mem_param_passthrough pp;
+    int exception;
+    int ret;
+    virDomainPtr dom = domain_get(d);
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2FIX(0);
+
+    /* first step is to find out how many parameters we need for this call */
+    ret = virDomainGetMemoryParameters(dom, NULL, &nparams, NUM2UINT(flags));
+    _E(ret < 0, create_error(e_RetrieveError, "virDomainGetMemoryParameters",
+                             conn(d)));
+
+    result = rb_hash_new();
+
+    if (nparams == 0)
+        /* no results to return, so return empty hash */
+        return result;
+
+    params = ALLOC_N(virMemoryParameter, nparams);
+
+    ret = virDomainGetMemoryParameters(dom, params, &nparams, NUM2UINT(flags));
+    if (ret < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainGetMemoryParameters", conn(d)));
+    }
+
+    for (i = 0; i < nparams; i++) {
+        pp.mem = &(params[i]);
+        pp.result = result;
+        rb_protect(memory_parameter_to_value, (VALUE)&pp, &exception);
+        if (exception) {
+            xfree(params);
+            rb_jump_tag(exception);
+        }
+    }
+
+    xfree(params);
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2089,5 +2268,12 @@ void init_domain()
 
 #if HAVE_VIRDOMAINISUPDATED
     rb_define_method(c_domain, "updated?", libvirt_dom_is_updated, 0);
+#endif
+
+#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
+    rb_define_method(c_domain, "memory_parameters=",
+                     libvirt_dom_set_memory_parameters, 1);
+    rb_define_method(c_domain, "memory_parameters",
+                     libvirt_dom_get_memory_parameters, -1);
 #endif
 }

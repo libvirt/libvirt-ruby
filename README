@@ -34,8 +34,6 @@ with the following exceptions:
 - virConnectRef
 - virDomainGetConnect
 - virDomainRef
-- virDomainSetMemoryParameters
-- virDomainGetMemoryParameters
 - virDomainOpenConsole
 - virNetworkGetConnect
 - virNetworkRef

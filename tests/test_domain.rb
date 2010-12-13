@@ -1179,6 +1179,41 @@ expect_fail(newdom, Libvirt::Error, "too many vcpus", "vcpus_flags=", [4, Libvir
 
 newdom.destroy
 
+# TESTGROUP: dom.memory_parameters
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "memory_parameters", 1, 2)
+
+begin
+  newdom.memory_parameters
+  puts_ok "dom.memory_parameters succeeded"
+rescue NoMethodError
+  puts_skipped "dom.memory_parameters does not exist"
+rescue Libvirt::RetrieveError
+  # this may not be supported (if cgroups aren't configured), so skip it
+  puts_ok "dom.memory_parameters not supported"
+end
+
+newdom.undefine
+
+# TESTGROUP: dom.memory_parameters=
+newdom = conn.define_domain_xml(new_dom_xml)
+
+expect_too_many_args(newdom, "memory_parameters=", 1, 2, 3)
+expect_too_few_args(newdom, "memory_parameters=")
+expect_invalid_arg_type(newdom, "memory_parameters=", 0)
+
+begin
+  newdom.memory_parameters={"soft_limit"=>9007199254740999, "swap_hard_limit"=>9007199254740999}
+rescue NoMethodError
+  puts_skipped "dom.memory_parameters= does not exist"
+rescue Libvirt::RetrieveError
+  # this may not be supported (if cgroups aren't configured), so skip it
+  puts_ok "dom.memory_parameters= not supported"
+end
+
+newdom.undefine
+
 conn.close
 
 finish_tests
