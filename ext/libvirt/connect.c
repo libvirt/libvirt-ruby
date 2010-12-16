@@ -1816,6 +1816,33 @@ static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c) {
 }
 #endif
 
+#if HAVE_TYPE_VIRSTREAMPTR
+extern VALUE stream_new(virStreamPtr s, VALUE conn);
+
+/*
+ * call-seq:
+ *   conn.stream(flags=0) -> Libvirt::Stream
+ *
+ * Call +virStreamNew+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamNew]
+ * to create a new stream.
+ */
+static VALUE libvirt_conn_stream(int argc, VALUE *argv, VALUE c) {
+    VALUE flags;
+    virStreamPtr stream;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    stream = virStreamNew(connect_get(c), NUM2UINT(flags));
+
+    _E(stream == NULL, create_error(e_RetrieveError, "virStreamNew", conn(c)));
+
+    return stream_new(stream, c);
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2162,5 +2189,8 @@ void init_connect()
 
 #if HAVE_VIRCONNECTGETSYSINFO
     rb_define_method(c_connect, "sys_info", libvirt_conn_get_sys_info, -1);
+#endif
+#if HAVE_TYPE_VIRSTREAMPTR
+    rb_define_method(c_connect, "stream", libvirt_conn_stream, -1);
 #endif
 }

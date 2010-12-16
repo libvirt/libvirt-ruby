@@ -25,3 +25,4 @@ The various *Ptr types in Libvirt map loosely to the following Ruby classes:
 [virStorageVolInfoPtr] Libvirt::StorageVolInfo
 [virSecretPtr] Libvirt::Secret
 [virInterfacePtr] Libvirt::Interface
+[virStreamPtr] Libvirt::Stream

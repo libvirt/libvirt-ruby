@@ -33,6 +33,7 @@
 #include "nwfilter.h"
 #include "interface.h"
 #include "domain.h"
+#include "stream.h"
 
 static VALUE c_libvirt_version;
 
@@ -1000,6 +1001,7 @@ void Init__libvirt() {
     init_nwfilter();
     init_interface();
     init_domain();
+    init_stream();
 
     virSetErrorFunc(NULL, rubyLibvirtErrorFunc);
 
