@@ -932,7 +932,7 @@ static VALUE libvirt_conn_list_defined_domains(VALUE s) {
  *
  * Call +virDomainCreateLinux+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateLinux]
  * to start a transient domain from the given XML.  Deprecated; use
- * dom.create_xml instead.
+ * conn.create_domain_xml instead.
  */
 static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
     virDomainPtr dom;
