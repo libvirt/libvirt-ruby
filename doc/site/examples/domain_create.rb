@@ -59,28 +59,36 @@ new_dom_xml = <<EOF
 </domain>
 EOF
 
+puts "Connecting to libvirt"
 conn = Libvirt::open('qemu:///system')
 
 # create the domain from the XML above.  This actually defines the domain
 # and starts it at the same time.  Domains created this way are transient;
 # once they are stopped, libvirt forgets about them.
-dom = conn.create_xml(new_dom_xml)
+puts "Creating transient domain ruby-libvirt-tester"
+dom = conn.create_domain_xml(new_dom_xml)
 
 # stop the domain.  Because this is a transient domain, libvirt will no longer
 # remember this domain after this call
+puts "Destroying transient domain ruby-libvirt-tester"
 dom.destroy
 
 # define the domain from the XML above.  Note that defining a domain just
 # makes libvirt aware of the domain as a persistent entity; it does not start
 # or otherwise change the domain
+puts "Defining permanent domain ruby-libvirt-tester"
 dom = conn.define_domain_xml(new_dom_xml)
 
 # start the domain
+puts "Starting permanent domain ruby-libvirt-tester"
 dom.create
+
+sleep 2
 
 begin
   # undefine the domain.  Oops!  This raises an exception since it is not legal
   # to undefine a running domain
+  puts "Trying to undefine running domain ruby-libvirt-tester"
   dom.undefine
 rescue => e
   puts e
@@ -88,9 +96,11 @@ end
 
 # stop the domain.  Because this is a permanent domain, libvirt will stop the
 # execution of the domain, but will remember the domain for next time
+puts "Destroying running domain ruby-libvirt-tester"
 dom.destroy
 
 # undefine the domain; the dom object is no longer valid after this operation
+puts "Undefining permanent domain ruby-libvirt-tester"
 dom.undefine
 
 conn.close
