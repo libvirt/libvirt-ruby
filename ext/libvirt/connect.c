@@ -1840,7 +1840,7 @@ void init_connect()
      * then ADDED and REMOVED were renamed to DEFINED and UNDEFINED at
      * the same time that the details were added
      * (d3d54d2fc92e350f250eda26cee5d0342416a9cf).  What this means is that
-     * if we have to check for HAVE_CONST_VIR_DOMAIN_EVENT_DEFINED and
+     * we have to check for HAVE_CONST_VIR_DOMAIN_EVENT_DEFINED and
      * HAVE_CONST_VIR_DOMAIN_EVENT_STARTED to untangle these, and then we
      * can make a decision for many of the events based on that.
      */
