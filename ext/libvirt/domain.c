@@ -581,6 +581,46 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
 }
 #endif
 
+struct create_vcpu_array_args {
+    virVcpuInfoPtr cpuinfo;
+    unsigned char *cpumap;
+    int nr_virt_cpu;
+    int maxcpus;
+};
+
+static VALUE create_vcpu_array(VALUE input) {
+    struct create_vcpu_array_args *args;
+    VALUE result;
+    int i;
+    VALUE vcpuinfo;
+    VALUE p2vcpumap;
+    int j;
+
+    args = (struct create_vcpu_array_args *)input;
+
+    result = rb_ary_new();
+
+    for (i = 0; i < args->nr_virt_cpu; i++) {
+        vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
+        rb_iv_set(vcpuinfo, "@number", UINT2NUM((args->cpuinfo)[i].number));
+        rb_iv_set(vcpuinfo, "@state", INT2NUM((args->cpuinfo)[i].state));
+        rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM((args->cpuinfo)[i].cpuTime));
+        rb_iv_set(vcpuinfo, "@cpu", INT2NUM((args->cpuinfo)[i].cpu));
+
+        p2vcpumap = rb_ary_new();
+
+        for (j = 0; j < args->maxcpus; j++)
+            rb_ary_push(p2vcpumap,
+                        (VIR_CPU_USABLE(args->cpumap,
+                                        VIR_CPU_MAPLEN(args->maxcpus), i, j)) ? Qtrue : Qfalse);
+        rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
+
+        rb_ary_push(result, vcpuinfo);
+    }
+
+    return result;
+}
+
 /* call-seq:
  *   dom.get_vcpus -> [ Libvirt::Domain::VCPUInfo ]
  *
@@ -594,14 +634,10 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
     virVcpuInfoPtr cpuinfo;
     unsigned char *cpumap;
     int cpumaplen;
-    int r, i, j;
-    VALUE vcpuinfo;
-    VALUE p2vcpumap;
+    int r;
     VALUE result;
     int exception = 0;
-    struct rb_ary_push_arg args;
-    struct rb_iv_set_arg iv_args;
-    struct rb_class_new_instance_arg klass_args;
+    struct create_vcpu_array_args args;
 
     r = virNodeGetInfo(conn(s), &nodeinfo);
     _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn(s)));
@@ -630,95 +666,15 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
                                   conn(s)));
     }
 
-    result = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
+    args.cpuinfo = cpuinfo;
+    args.cpumap = cpumap;
+    args.nr_virt_cpu = dominfo.nrVirtCpu;
+    args.maxcpus = VIR_NODEINFO_MAXCPUS(nodeinfo);
+    result = rb_protect(create_vcpu_array, (VALUE)&args, &exception);
     if (exception) {
         xfree(cpuinfo);
         free(cpumap);
         rb_jump_tag(exception);
-    }
-
-    for (i = 0; i < dominfo.nrVirtCpu; i++) {
-        klass_args.argc = 0;
-        klass_args.argv = NULL;
-        klass_args.klass = c_domain_vcpuinfo;
-        vcpuinfo = rb_protect(rb_class_new_instance_wrap, (VALUE)&klass_args,
-                              &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-
-        iv_args.klass = vcpuinfo;
-        iv_args.member = "@number";
-        iv_args.value = UINT2NUM(cpuinfo[i].number);
-        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-        iv_args.member = "@state";
-        iv_args.value = INT2NUM(cpuinfo[i].state);
-        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-        iv_args.member = "@cpu_time";
-        iv_args.value = ULL2NUM(cpuinfo[i].cpuTime);
-        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-        iv_args.member = "@cpu";
-        iv_args.value = INT2NUM(cpuinfo[i].cpu);
-        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-
-        p2vcpumap = rb_protect(rb_ary_new_wrap, (VALUE)NULL, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-
-        for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++) {
-            args.arr = p2vcpumap;
-            args.value = (VIR_CPU_USABLE(cpumap, cpumaplen, i, j)) ? Qtrue : Qfalse;
-            rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
-            if (exception) {
-                xfree(cpuinfo);
-                free(cpumap);
-                rb_jump_tag(exception);
-            }
-        }
-
-        iv_args.klass = vcpuinfo;
-        iv_args.member = "@cpumap";
-        iv_args.value = p2vcpumap;
-        rb_protect(rb_iv_set_wrap, (VALUE)&iv_args, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
-
-        args.arr = result;
-        args.value = vcpuinfo;
-        rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
-        if (exception) {
-            xfree(cpuinfo);
-            free(cpumap);
-            rb_jump_tag(exception);
-        }
     }
 
     free(cpumap);
