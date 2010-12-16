@@ -16,11 +16,14 @@ require 'libvirt'
 conn = Libvirt::open_auth("qemu+tcp://localhost/system",
                           [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE],
                           "my data") do |cred|
-  puts "Type: #{cred["type"]}"
-  puts "Prompt: #{cred["prompt"]}"
-  puts "Challenge: #{cred["challenge"]}"
-  puts "Default result: #{cred["defresult"]}"
-  puts "User data: #{cred["userdata"]}"
+  puts "Credential information:"
+  puts "  Type: #{cred["type"]}"
+  puts "  Prompt: #{cred["prompt"]}"
+  puts "  Challenge: #{cred["challenge"]}"
+  puts "  Default result: #{cred["defresult"]}"
+  puts "  User data: #{cred["userdata"]}\n\n"
+
+  print "#{cred['prompt']}: "
 
   if cred["type"] == Libvirt::CRED_AUTHNAME
     res = gets
