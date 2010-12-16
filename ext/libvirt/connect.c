@@ -24,12 +24,7 @@
 #include "extconf.h"
 #include "common.h"
 #include "domain.h"
-#include "interface.h"
 #include "network.h"
-#include "nodedevice.h"
-#include "nwfilter.h"
-#include "secret.h"
-#include "storage.h"
 
 static VALUE c_connect;
 static VALUE c_node_security_model;
@@ -247,7 +242,8 @@ static VALUE libvirt_conn_node_free_memory(VALUE s) {
  * to retrieve the amount of free memory in each NUMA cell on the host for
  * this connection.
  */
-static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
+                                                 VALUE s) {
     int r;
     virConnectPtr conn = connect_get(s);
     VALUE cells;
@@ -1055,7 +1051,8 @@ static VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml) {
  * Call +virConnectDomainXMLFromNative+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLFromNative]
  * to convert a native hypervisor domain representation to libvirt XML.
  */
-static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv,
+                                                 VALUE s) {
     VALUE nativeFormat, xml, flags;
     char *ret;
     VALUE result;
@@ -1424,7 +1421,8 @@ static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name) {
  * Call +virNodeDeviceCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceCreateXML]
  * to create a new node device from xml.
  */
-static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv, VALUE c) {
+static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv,
+                                                VALUE c) {
     virNodeDevicePtr nodedev;
     virConnectPtr conn = connect_get(c);
     VALUE xml, flags;
@@ -1573,7 +1571,8 @@ static VALUE libvirt_conn_lookup_secret_by_uuid(VALUE c, VALUE uuid) {
  * Call +virSecretLookupByUsage+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretLookupByUsage]
  * to retrieve a secret by usagetype.
  */
-static VALUE libvirt_conn_lookup_secret_by_usage(VALUE c, VALUE usagetype, VALUE usageID) {
+static VALUE libvirt_conn_lookup_secret_by_usage(VALUE c, VALUE usagetype,
+                                                 VALUE usageID) {
     virSecretPtr secret;
     virConnectPtr conn = connect_get(c);
 
@@ -1748,7 +1747,8 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
  * Call +virConnectFindStoragePoolSources+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
  * to find the storage pool sources corresponding to type.
  */
-static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv, VALUE c) {
+static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
+                                                    VALUE c) {
     VALUE type, srcSpec_val, flags;
 
     rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
