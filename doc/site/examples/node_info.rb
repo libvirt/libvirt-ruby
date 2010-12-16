@@ -21,10 +21,14 @@ puts " Cores:         #{nodeinfo.cores}"
 puts " Threads:       #{nodeinfo.threads}"
 
 # print the amount of free memory in every NUMA node on the hypervisor
-cellsmem = conn.node_cells_free_memory
-puts "Hypervisor NUMA node free memory:"
-cellsmem.each_with_index do |cell,index|
-  puts " Node #{index}: #{cell}"
+begin
+  cellsmem = conn.node_cells_free_memory
+  puts "Hypervisor NUMA node free memory:"
+  cellsmem.each_with_index do |cell,index|
+    puts " Node #{index}: #{cell}"
+  end
+rescue
+  # this call may not be supported; if so, just ignore
 end
 
 # print the type of the connection.  This will be "QEMU" for qemu, "XEN" for
@@ -41,7 +45,11 @@ puts "Hypervisor Hostname: #{conn.hostname}"
 # canonicalize the URI
 puts "Hypervisor URI: #{conn.uri}"
 # print the amount of free memory on the hypervisor
-puts "Hypervisor Free Memory: #{conn.node_free_memory}"
+begin
+  puts "Hypervisor Free Memory: #{conn.node_free_memory}"
+rescue
+  # this call may not be supported; if so, just ignore
+end
 
 # print the security model in use on the hypervisor
 secmodel = conn.node_get_security_model
