@@ -7,4 +7,12 @@ require 'libvirt'
 # parameters, libvirt attempts to auto-connect to a hypervisor for you (not
 # recommended).  If a parameter is passed, it must be a valid libvirt URI
 conn = Libvirt::open("qemu:///system")
+
+# check to see if the connection is closed (it shouldn't be)
+puts "After open, connection closed?: #{conn.closed?}"
+
+# close the connection
 conn.close
+
+# after close, the closed? should return true
+puts "After close, connection closed?: #{conn.closed?}"
