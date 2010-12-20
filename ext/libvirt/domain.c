@@ -28,7 +28,7 @@
 #include "connect.h"
 #include "extconf.h"
 
-VALUE c_domain;
+static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
 static VALUE c_domain_security_label;
@@ -47,7 +47,7 @@ static VALUE c_domain_job_info;
 #endif
 static VALUE c_domain_vcpuinfo;
 
-void domain_free(void *d) {
+static void domain_free(void *d) {
     generic_free(Domain, d);
 }
 
