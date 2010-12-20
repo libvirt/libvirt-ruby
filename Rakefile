@@ -56,6 +56,10 @@ end
 desc "Build the native library"
 task :build => LIBVIRT_MODULE
 
+#
+# Test task
+#
+
 Rake::TestTask.new(:test) do |t|
     t.test_files = [ 'tests/test_conn.rb', 'tests/test_domain.rb', 'tests/test_interface.rb', 'tests/test_network.rb', 'tests/test_nodedevice.rb', 'tests/test_nwfilter.rb', 'tests/test_open.rb', 'tests/test_secret.rb', 'tests/test_storage.rb' ]
     t.libs = [ 'lib', 'ext/libvirt' ]
@@ -66,6 +70,19 @@ Rake::RDocTask.new do |rd|
     rd.main = "README.rdoc"
     rd.rdoc_dir = "doc/site/api"
     rd.rdoc_files.include("README.rdoc", "lib/libvirt.rb", ["ext/libvirt/_libvirt.c", "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c", "ext/libvirt/network.c", "ext/libvirt/nodedevice.c", "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c"])
+end
+
+#
+# Splint task
+#
+
+task :splint => [ MAKEFILE ] do |t|
+    Dir::chdir(File::dirname(EXT_CONF)) do
+        unless sh "splint -I /usr/lib/ruby/1.8/i386-linux *.c"
+            $stderr.puts "Failed to run splint"
+            break
+        end
+    end
 end
 
 #
