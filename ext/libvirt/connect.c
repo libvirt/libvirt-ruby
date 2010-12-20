@@ -452,6 +452,10 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
         rb_raise(rb_eTypeError,
                  "wrong domain event lifecycle callback argument type (expected Array)");
 
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
+
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
@@ -483,6 +487,10 @@ static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
         rb_raise(rb_eTypeError,
                  "wrong domain event reboot callback argument type (expected Array)");
 
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
+
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
@@ -511,6 +519,10 @@ static int domain_event_rtc_callback(virConnectPtr conn, virDomainPtr dom,
         rb_raise(rb_eTypeError,
                  "wrong domain event rtc callback argument type (expected Array)");
 
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
+
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
@@ -538,6 +550,10 @@ static int domain_event_watchdog_callback(virConnectPtr conn, virDomainPtr dom,
     if (TYPE(passthrough) != T_ARRAY)
         rb_raise(rb_eTypeError,
                  "wrong domain event watchdog callback argument type (expected Array)");
+
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
@@ -569,6 +585,10 @@ static int domain_event_io_error_callback(virConnectPtr conn, virDomainPtr dom,
     if (TYPE(passthrough) != T_ARRAY)
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error callback argument type (expected Array)");
+
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
@@ -604,6 +624,10 @@ static int domain_event_io_error_reason_callback(virConnectPtr conn,
     if (TYPE(passthrough) != T_ARRAY)
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error reason callback argument type (expected Array)");
+
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
@@ -645,6 +669,10 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
     if (TYPE(passthrough) != T_ARRAY)
         rb_raise(rb_eTypeError,
                  "wrong domain event graphics callback argument type (expected Array)");
+
+    if (RARRAY_LEN(passthrough) != 2)
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+                 RARRAY_LEN(passthrough));
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
