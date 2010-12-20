@@ -730,6 +730,7 @@ void Init__libvirt() {
 
     rb_define_attr(e_Error, "libvirt_function_name", 1, 0);
     rb_define_attr(e_Error, "libvirt_message", 1, 0);
+    rb_define_attr(e_Error, "libvirt_code", 1, 0);
 
     rb_define_module_function(m_libvirt, "version", libvirt_version, -1);
     rb_define_module_function(m_libvirt, "open", libvirt_open, -1);

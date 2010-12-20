@@ -121,7 +121,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn) {
     rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
 
     if (err != NULL) {
-        rb_iv_set(ruby_errinfo, "@libvirt_code", INT2FIX(err->code));
+        rb_iv_set(ruby_errinfo, "@libvirt_code", INT2NUM(err->code));
         if (err->message != NULL)
             rb_iv_set(ruby_errinfo, "@libvirt_message",
                       rb_str_new2(err->message));
