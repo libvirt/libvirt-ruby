@@ -117,6 +117,10 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_EVENT_ID_REBOOT',
                    'VIR_DOMAIN_EVENT_ID_RTC_CHANGE',
                    'VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON',
+                   'VIR_FROM_VMWARE',
+                   'VIR_FROM_AUDIT',
+                   'VIR_FROM_SYSINFO',
+                   'VIR_FROM_STREAMS',
                  ]
 
 have_libvirt_types(libvirt_types)
