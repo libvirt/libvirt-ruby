@@ -614,6 +614,8 @@ void init_storage(void) {
     c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool",
                                            rb_cObject);
 
+    rb_define_attr(c_storage_pool, "connection", 1, 0);
+
     /* virStoragePoolState */
     rb_define_const(c_storage_pool, "INACTIVE",
                     INT2NUM(VIR_STORAGE_POOL_INACTIVE));

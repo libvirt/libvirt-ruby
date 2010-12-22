@@ -200,6 +200,8 @@ void init_nodedevice()
 #if HAVE_TYPE_VIRNODEDEVICEPTR
     c_nodedevice = rb_define_class_under(m_libvirt, "NodeDevice", rb_cObject);
 
+    rb_define_attr(c_nodedevice, "connection", 1, 0);
+
     rb_define_method(c_nodedevice, "name", libvirt_nodedevice_name, 0);
     rb_define_method(c_nodedevice, "parent", libvirt_nodedevice_parent, 0);
     rb_define_method(c_nodedevice, "num_of_caps",
