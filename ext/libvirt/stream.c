@@ -32,7 +32,7 @@ static void stream_free(void *s) {
     generic_free(Stream, s);
 }
 
-static virStreamPtr stream_get(VALUE s) {
+virStreamPtr stream_get(VALUE s) {
     generic_get(Stream, s);
 }
 

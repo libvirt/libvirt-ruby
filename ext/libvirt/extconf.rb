@@ -110,6 +110,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSetBlkioParameters',
                   'virDomainSetMemoryFlags',
                   'virDomainGetState',
+                  'virDomainOpenConsole',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

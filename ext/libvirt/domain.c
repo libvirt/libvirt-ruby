@@ -29,6 +29,7 @@
 #include "common.h"
 #include "connect.h"
 #include "extconf.h"
+#include "stream.h"
 
 static VALUE c_domain;
 static VALUE c_domain_info;
@@ -2163,6 +2164,27 @@ static VALUE libvirt_dom_get_state(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINOPENCONSOLE
+/*
+ * call-seq:
+ *   dom.open_console(device, stream, flags=0) -> nil
+ *
+ * Call +virDomainOpenConsole+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenConsole]
+ * to open up a console to device over stream.
+ */
+static VALUE libvirt_dom_open_console(int argc, VALUE *argv, VALUE d) {
+    VALUE dev, st, flags;
+
+    rb_scan_args(argc, argv, "21", &dev, &st, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virDomainOpenConsole, conn(d), domain_get(d),
+                  StringValueCStr(dev), stream_get(st), NUM2INT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2595,5 +2617,9 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
 
     rb_define_method(c_domain, "state", libvirt_dom_get_state, -1);
+#endif
+
+#if HAVE_VIRDOMAINOPENCONSOLE
+    rb_define_method(c_domain, "open_console", libvirt_dom_open_console, -1);
 #endif
 }

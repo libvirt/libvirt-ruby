@@ -1076,6 +1076,21 @@ end
 
 newdom.undefine
 
+# TESTGROUP: dom.open_console
+newdom = conn.create_domain_xml(new_dom_xml)
+stream = conn.stream
+
+expect_too_many_args(newdom, "open_console", 1, 2, 3, 4)
+expect_too_few_args(newdom, "open_console")
+expect_too_few_args(newdom, "open_console", 1)
+expect_invalid_arg_type(newdom, "open_console", 1, stream)
+expect_invalid_arg_type(newdom, "open_console", "pty", 1)
+expect_invalid_arg_type(newdom, "open_console", "pty", stream, "wow")
+
+expect_success(newdom, "device and stream args", "open_console", "pty", stream)
+
+newdom.destroy
+
 conn.close
 
 finish_tests
