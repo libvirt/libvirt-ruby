@@ -72,6 +72,13 @@ Rake::RDocTask.new do |rd|
     rd.rdoc_files.include("README.rdoc", "lib/libvirt.rb", ["ext/libvirt/_libvirt.c", "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c", "ext/libvirt/network.c", "ext/libvirt/nodedevice.c", "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c"])
 end
 
+Rake::RDocTask.new(:ri) do |rd|
+    rd.main = "README.rdoc"
+    rd.rdoc_dir = "doc/ri"
+    rd.options << "--ri-system"
+    rd.rdoc_files.include("README.rdoc", "lib/libvirt.rb", ["ext/libvirt/_libvirt.c", "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c", "ext/libvirt/network.c", "ext/libvirt/nodedevice.c", "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c"])
+end
+
 #
 # Splint task
 #
@@ -112,9 +119,7 @@ SPEC = Gem::Specification.new do |s|
     s.extensions = "ext/libvirt/extconf.rb"
     s.author = "David Lutterkort, Chris Lalancette"
     s.rubyforge_project = "None"
-    s.description = <<EOF
-Provides bindings for libvirt.
-EOF
+    s.description = "Ruby bindings for libvirt."
 end
 
 Rake::GemPackageTask.new(SPEC) do |pkg|
