@@ -116,7 +116,7 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_string(virNetworkGetXMLDesc, conn(s), 1, network_get(s),
                     NUM2UINT(flags));

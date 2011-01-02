@@ -141,7 +141,7 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
     for (i = 0; i < ncred; i++) {
         newcred = rb_hash_new();
 
-        rb_hash_aset(newcred, rb_str_new2("type"), INT2FIX(cred[i].type));
+        rb_hash_aset(newcred, rb_str_new2("type"), INT2NUM(cred[i].type));
         rb_hash_aset(newcred, rb_str_new2("prompt"),
                      rb_str_new2(cred[i].prompt));
         if (cred[i].challenge)
@@ -452,10 +452,10 @@ static int internal_add_handle_func(int fd, int events,
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(add_handle), "Symbol") == 0)
         res = rb_funcall(rb_class_of(add_handle), rb_to_id(add_handle), 3,
-                         INT2FIX(fd), INT2FIX(events), rubyargs);
+                         INT2NUM(fd), INT2NUM(events), rubyargs);
     else if (strcmp(rb_obj_classname(add_handle), "Proc") == 0)
-        res = rb_funcall(add_handle, rb_intern("call"), 3, INT2FIX(fd),
-                         INT2FIX(events), rubyargs);
+        res = rb_funcall(add_handle, rb_intern("call"), 3, INT2NUM(fd),
+                         INT2NUM(events), rubyargs);
     else
         rb_raise(rb_eTypeError,
                  "wrong add handle callback argument type (expected Symbol or Proc)");
@@ -471,10 +471,10 @@ static void internal_update_handle_func(int watch, int event) {
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(update_handle), "Symbol") == 0)
         rb_funcall(rb_class_of(update_handle), rb_to_id(update_handle), 2,
-                   INT2FIX(watch), INT2FIX(event));
+                   INT2NUM(watch), INT2NUM(event));
     else if (strcmp(rb_obj_classname(update_handle), "Proc") == 0)
-        rb_funcall(update_handle, rb_intern("call"), 2, INT2FIX(watch),
-                   INT2FIX(event));
+        rb_funcall(update_handle, rb_intern("call"), 2, INT2NUM(watch),
+                   INT2NUM(event));
     else
         rb_raise(rb_eTypeError,
                  "wrong update handle callback argument type (expected Symbol or Proc)");
@@ -490,9 +490,9 @@ static int internal_remove_handle_func(int watch) {
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(remove_handle), "Symbol") == 0)
         res = rb_funcall(rb_class_of(remove_handle), rb_to_id(remove_handle),
-                         1, INT2FIX(watch));
+                         1, INT2NUM(watch));
     else if (strcmp(rb_obj_classname(remove_handle), "Proc") == 0)
-        res = rb_funcall(remove_handle, rb_intern("call"), 1, INT2FIX(watch));
+        res = rb_funcall(remove_handle, rb_intern("call"), 1, INT2NUM(watch));
     else
         rb_raise(rb_eTypeError,
                  "wrong remove handle callback argument type (expected Symbol or Proc)");
@@ -537,9 +537,9 @@ static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(add_timeout), "Symbol") == 0)
         res = rb_funcall(rb_class_of(add_timeout), rb_to_id(add_timeout), 2,
-                         INT2FIX(interval), rubyargs);
+                         INT2NUM(interval), rubyargs);
     else if (strcmp(rb_obj_classname(add_timeout), "Proc") == 0)
-        res = rb_funcall(add_timeout, rb_intern("call"), 2, INT2FIX(interval),
+        res = rb_funcall(add_timeout, rb_intern("call"), 2, INT2NUM(interval),
                          rubyargs);
     else
         rb_raise(rb_eTypeError,
@@ -556,10 +556,10 @@ static void internal_update_timeout_func(int timer, int timeout) {
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(update_timeout), "Symbol") == 0)
         rb_funcall(rb_class_of(update_timeout), rb_to_id(update_timeout), 2,
-                   INT2FIX(timer), INT2FIX(timeout));
+                   INT2NUM(timer), INT2NUM(timeout));
     else if (strcmp(rb_obj_classname(update_timeout), "Proc") == 0)
-        rb_funcall(update_timeout, rb_intern("call"), 2, INT2FIX(timer),
-                   INT2FIX(timeout));
+        rb_funcall(update_timeout, rb_intern("call"), 2, INT2NUM(timer),
+                   INT2NUM(timeout));
     else
         rb_raise(rb_eTypeError,
                  "wrong update timeout callback argument type (expected Symbol or Proc)");
@@ -575,9 +575,9 @@ static int internal_remove_timeout_func(int timer) {
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(remove_timeout), "Symbol") == 0)
         res = rb_funcall(rb_class_of(remove_timeout), rb_to_id(remove_timeout),
-                         1, INT2FIX(timer));
+                         1, INT2NUM(timer));
     else if (strcmp(rb_obj_classname(remove_timeout), "Proc") == 0)
-        res = rb_funcall(remove_timeout, rb_intern("call"), 1, INT2FIX(timer));
+        res = rb_funcall(remove_timeout, rb_intern("call"), 1, INT2NUM(timer));
     else
         rb_raise(rb_eTypeError,
                  "wrong remove timeout callback argument type (expected Symbol or Proc)");

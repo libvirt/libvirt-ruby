@@ -362,7 +362,7 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s) {
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_int(virConnectCompareCPU, conn(s), connect_get(s),
                  StringValueCStr(xml), NUM2UINT(flags));
@@ -462,11 +462,11 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
     newc = connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 5, newc,
-                   domain_new(dom, newc), INT2FIX(event), INT2FIX(detail),
+                   domain_new(dom, newc), INT2NUM(event), INT2NUM(detail),
                    cb_opaque);
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
         rb_funcall(cb, rb_intern("call"), 5, newc, domain_new(dom, newc),
-                   INT2FIX(event), INT2FIX(detail), cb_opaque);
+                   INT2NUM(event), INT2NUM(detail), cb_opaque);
     else
         rb_raise(rb_eTypeError,
                  "wrong domain event lifecycle callback (expected Symbol or Proc)");
@@ -561,10 +561,10 @@ static int domain_event_watchdog_callback(virConnectPtr conn, virDomainPtr dom,
     newc = connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
-                   domain_new(dom, newc), INT2FIX(action), cb_opaque);
+                   domain_new(dom, newc), INT2NUM(action), cb_opaque);
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
         rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
-                   INT2FIX(action), cb_opaque);
+                   INT2NUM(action), cb_opaque);
     else
         rb_raise(rb_eTypeError,
                  "wrong domain event watchdog callback (expected Symbol or Proc)");
@@ -597,11 +597,11 @@ static int domain_event_io_error_callback(virConnectPtr conn, virDomainPtr dom,
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 6, newc,
                    domain_new(dom, newc), rb_str_new2(src_path),
-                   rb_str_new2(dev_alias), INT2FIX(action), cb_opaque);
+                   rb_str_new2(dev_alias), INT2NUM(action), cb_opaque);
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
         rb_funcall(cb, rb_intern("call"), 6, newc, domain_new(dom, newc),
                    rb_str_new2(src_path), rb_str_new2(dev_alias),
-                   INT2FIX(action), cb_opaque);
+                   INT2NUM(action), cb_opaque);
     else
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error callback (expected Symbol or Proc)");
@@ -636,12 +636,12 @@ static int domain_event_io_error_reason_callback(virConnectPtr conn,
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 7, newc,
                    domain_new(dom, newc), rb_str_new2(src_path),
-                   rb_str_new2(dev_alias), INT2FIX(action),
+                   rb_str_new2(dev_alias), INT2NUM(action),
                    rb_str_new2(reason), cb_opaque);
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
         rb_funcall(cb, rb_intern("call"), 7, newc, domain_new(dom, newc),
                    rb_str_new2(src_path), rb_str_new2(dev_alias),
-                   INT2FIX(action), rb_str_new2(reason), cb_opaque);
+                   INT2NUM(action), rb_str_new2(reason), cb_opaque);
     else
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error reason callback (expected Symbol or Proc)");
@@ -678,13 +678,13 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     local_hash = rb_hash_new();
-    rb_hash_aset(local_hash, rb_str_new2("family"), INT2FIX(local->family));
+    rb_hash_aset(local_hash, rb_str_new2("family"), INT2NUM(local->family));
     rb_hash_aset(local_hash, rb_str_new2("node"), rb_str_new2(local->node));
     rb_hash_aset(local_hash, rb_str_new2("service"),
                  rb_str_new2(local->service));
 
     remote_hash = rb_hash_new();
-    rb_hash_aset(remote_hash, rb_str_new2("family"), INT2FIX(remote->family));
+    rb_hash_aset(remote_hash, rb_str_new2("family"), INT2NUM(remote->family));
     rb_hash_aset(remote_hash, rb_str_new2("node"), rb_str_new2(remote->node));
     rb_hash_aset(remote_hash, rb_str_new2("service"),
                  rb_str_new2(remote->service));
@@ -701,12 +701,12 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
     newc = connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 8, newc,
-                   domain_new(dom, newc), INT2FIX(phase), local_hash,
+                   domain_new(dom, newc), INT2NUM(phase), local_hash,
                    remote_hash, rb_str_new2(authScheme), subject_array,
                    cb_opaque);
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
         rb_funcall(cb, rb_intern("call"), 8, newc, domain_new(dom, newc),
-                   INT2FIX(phase), local_hash, remote_hash,
+                   INT2NUM(phase), local_hash, remote_hash,
                    rb_str_new2(authScheme), subject_array, cb_opaque);
     else
         rb_raise(rb_eTypeError,
@@ -966,7 +966,7 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     dom = virDomainCreateLinux(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", conn));
@@ -990,7 +990,7 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     dom = virDomainCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", conn));
@@ -1088,7 +1088,7 @@ static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv,
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     ret = virConnectDomainXMLFromNative(conn(s), StringValueCStr(nativeFormat),
                                         StringValueCStr(xml), NUM2UINT(flags));
@@ -1119,7 +1119,7 @@ static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s) {
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     ret = virConnectDomainXMLToNative(conn(s), StringValueCStr(nativeFormat),
                                       StringValueCStr(xml), NUM2UINT(flags));
@@ -1231,7 +1231,7 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
@@ -1374,7 +1374,7 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "02", &cap, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     result = virNodeNumOfDevices(conn, get_string_or_nil(cap), NUM2UINT(flags));
     _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
@@ -1458,7 +1458,7 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv,
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     nodedev = virNodeDeviceCreateXML(conn, StringValueCStr(xml),
                                      NUM2UINT(flags));
@@ -1627,7 +1627,7 @@ static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     secret = virSecretDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(secret == NULL, create_error(e_DefinitionError, "virSecretDefineXML",
@@ -1736,7 +1736,7 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     pool = virStoragePoolCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", conn));
@@ -1759,7 +1759,7 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
@@ -1782,7 +1782,7 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
     rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
                     connect_get(c), StringValueCStr(type),

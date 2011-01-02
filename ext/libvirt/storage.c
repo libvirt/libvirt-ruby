@@ -84,7 +84,7 @@ static VALUE libvirt_pool_build(int argc, VALUE *argv, VALUE p) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_void(virStoragePoolBuild, conn(p), pool_get(p), NUM2UINT(flags));
 }
@@ -113,7 +113,7 @@ static VALUE libvirt_pool_create(int argc, VALUE *argv, VALUE p) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_void(virStoragePoolCreate, conn(p), pool_get(p), NUM2UINT(flags));
 }
@@ -143,7 +143,7 @@ static VALUE libvirt_pool_delete(int argc, VALUE *argv, VALUE p) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_void(virStoragePoolDelete, conn(p), pool_get(p), NUM2UINT(flags));
 }
@@ -161,7 +161,7 @@ static VALUE libvirt_pool_refresh(int argc, VALUE *argv, VALUE p) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_void(virStoragePoolRefresh, conn(p), pool_get(p), NUM2UINT(flags));
 }
@@ -211,7 +211,7 @@ static VALUE libvirt_pool_info(VALUE s) {
     _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetInfo", conn(s)));
 
     result = rb_class_new_instance(0, NULL, c_storage_pool_info);
-    rb_iv_set(result, "@state", INT2FIX(info.state));
+    rb_iv_set(result, "@state", INT2NUM(info.state));
     rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
     rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
     rb_iv_set(result, "@available", ULL2NUM(info.available));
@@ -232,7 +232,7 @@ static VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE s) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_string(virStoragePoolGetXMLDesc, conn(s), 1, pool_get(s),
                     NUM2UINT(flags));
@@ -433,7 +433,7 @@ static VALUE libvirt_pool_vol_create_xml(int argc, VALUE *argv, VALUE p) {
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     vol = virStorageVolCreateXML(pool_get(p), StringValueCStr(xml),
                                  NUM2UINT(flags));
@@ -459,7 +459,7 @@ static VALUE libvirt_pool_vol_create_xml_from(int argc, VALUE *argv, VALUE p) {
     rb_scan_args(argc, argv, "21", &xml, &cloneval, &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     vol = virStorageVolCreateXMLFrom(pool_get(p), StringValueCStr(xml),
                                      vol_get(cloneval), NUM2UINT(flags));
@@ -508,7 +508,7 @@ static VALUE libvirt_vol_delete(int argc, VALUE *argv, VALUE v) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_void(virStorageVolDelete, conn(v), vol_get(v), NUM2UINT(flags));
 }
@@ -527,7 +527,7 @@ static VALUE libvirt_vol_wipe(int argc, VALUE *argv, VALUE v) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_void(virStorageVolWipe, conn(v), vol_get(v), NUM2UINT(flags));
 }
@@ -569,7 +569,7 @@ static VALUE libvirt_vol_xml_desc(int argc, VALUE *argv, VALUE v) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_string(virStorageVolGetXMLDesc, conn(v), 1, vol_get(v),
                     NUM2UINT(flags));

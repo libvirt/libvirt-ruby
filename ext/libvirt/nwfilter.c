@@ -94,7 +94,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s) {
     rb_scan_args(argc, argv, "01", &flags);
 
     if (NIL_P(flags))
-        flags = INT2FIX(0);
+        flags = INT2NUM(0);
 
     gen_call_string(virNWFilterGetXMLDesc, conn(s), 1, nwfilter_get(s),
                     NUM2UINT(flags));
