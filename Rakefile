@@ -66,17 +66,29 @@ Rake::TestTask.new(:test) do |t|
 end
 task :test => :build
 
+#
+# Documentation tasks
+#
+
+RDOC_FILES = FileList[
+  "README.rdoc", "lib/libvirt.rb", "ext/libvirt/_libvirt.c",
+  "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c",
+  "ext/libvirt/network.c", "ext/libvirt/nodedevice.c",
+  "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c",
+  "ext/libvirt/stream.c"
+]
+
 Rake::RDocTask.new do |rd|
     rd.main = "README.rdoc"
     rd.rdoc_dir = "doc/site/api"
-    rd.rdoc_files.include("README.rdoc", "lib/libvirt.rb", ["ext/libvirt/_libvirt.c", "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c", "ext/libvirt/network.c", "ext/libvirt/nodedevice.c", "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c"])
+    rd.rdoc_files.include(RDOC_FILES)
 end
 
 Rake::RDocTask.new(:ri) do |rd|
     rd.main = "README.rdoc"
     rd.rdoc_dir = "doc/ri"
     rd.options << "--ri-system"
-    rd.rdoc_files.include("README.rdoc", "lib/libvirt.rb", ["ext/libvirt/_libvirt.c", "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c", "ext/libvirt/network.c", "ext/libvirt/nodedevice.c", "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c"])
+    rd.rdoc_files.include(RDOC_FILES)
 end
 
 #
