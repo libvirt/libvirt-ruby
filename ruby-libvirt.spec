@@ -3,7 +3,7 @@
 
 Name:           ruby-libvirt
 Version:        @VERSION@
-Release:        1%{?dist}
+Release:        1%{?dist}%{?extra_release}
 Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
