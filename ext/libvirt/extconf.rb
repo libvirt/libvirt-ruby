@@ -28,7 +28,7 @@ SRC
 end
 
 def have_libvirt_consts(consts)
-  consts.each { |c| have_const(c, "libvirt/libvirt.h") }
+  consts.each { |c| have_const(c, ["libvirt/libvirt.h", "libvirt/virterror.h"]) }
 end
 
 extension_name = '_libvirt'
@@ -123,6 +123,9 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_FROM_AUDIT',
                    'VIR_FROM_SYSINFO',
                    'VIR_FROM_STREAMS',
+                   'VIR_FROM_XENAPI',
+                   'VIR_FROM_HOOK',
+                   'VIR_ERR_HOOK_SCRIPT_FAILED',
                  ]
 
 have_libvirt_types(libvirt_types)

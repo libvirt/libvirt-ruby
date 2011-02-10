@@ -770,11 +770,19 @@ void Init__libvirt() {
     rb_define_const(e_Error, "FROM_PHYP", INT2NUM(VIR_FROM_PHYP));
     rb_define_const(e_Error, "FROM_SECRET", INT2NUM(VIR_FROM_SECRET));
     rb_define_const(e_Error, "FROM_CPU", INT2NUM(VIR_FROM_CPU));
+#if HAVE_CONST_VIR_FROM_XENAPI
     rb_define_const(e_Error, "FROM_XENAPI", INT2NUM(VIR_FROM_XENAPI));
+#endif
+#if HAVE_TYPE_VIRNWFILTERPTR
     rb_define_const(e_Error, "FROM_NWFILTER", INT2NUM(VIR_FROM_NWFILTER));
+#endif
+#if HAVE_CONST_VIR_FROM_HOOK
     rb_define_const(e_Error, "FROM_HOOK", INT2NUM(VIR_FROM_HOOK));
+#endif
+#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
     rb_define_const(e_Error, "FROM_DOMAIN_SNAPSHOT",
                     INT2NUM(VIR_FROM_DOMAIN_SNAPSHOT));
+#endif
 #if HAVE_CONST_VIR_FROM_AUDIT
     rb_define_const(e_Error, "FROM_AUDIT", INT2NUM(VIR_FROM_AUDIT));
 #endif
@@ -862,12 +870,14 @@ void Init__libvirt() {
                     INT2NUM(VIR_ERR_INVALID_INTERFACE));
     rb_define_const(e_Error, "ERR_MULTIPLE_INTERFACES",
                     INT2NUM(VIR_ERR_MULTIPLE_INTERFACES));
+#if HAVE_TYPE_VIRNWFILTERPTR
     rb_define_const(e_Error, "WAR_NO_NWFILTER", INT2NUM(VIR_WAR_NO_NWFILTER));
     rb_define_const(e_Error, "ERR_INVALID_NWFILTER",
                     INT2NUM(VIR_ERR_INVALID_NWFILTER));
     rb_define_const(e_Error, "ERR_NO_NWFILTER", INT2NUM(VIR_ERR_NO_NWFILTER));
     rb_define_const(e_Error, "ERR_BUILD_FIREWALL",
                     INT2NUM(VIR_ERR_BUILD_FIREWALL));
+#endif
     rb_define_const(e_Error, "WAR_NO_SECRET", INT2NUM(VIR_WAR_NO_SECRET));
     rb_define_const(e_Error, "ERR_INVALID_SECRET",
                     INT2NUM(VIR_ERR_INVALID_SECRET));
@@ -878,12 +888,16 @@ void Init__libvirt() {
                     INT2NUM(VIR_ERR_OPERATION_TIMEOUT));
     rb_define_const(e_Error, "ERR_MIGRATE_PERSIST_FAILED",
                     INT2NUM(VIR_ERR_MIGRATE_PERSIST_FAILED));
+#if HAVE_CONST_VIR_ERR_HOOK_SCRIPT_FAILED
     rb_define_const(e_Error, "ERR_HOOK_SCRIPT_FAILED",
                     INT2NUM(VIR_ERR_HOOK_SCRIPT_FAILED));
+#endif
+#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
     rb_define_const(e_Error, "ERR_INVALID_DOMAIN_SNAPSHOT",
                     INT2NUM(VIR_ERR_INVALID_DOMAIN_SNAPSHOT));
     rb_define_const(e_Error, "ERR_NO_DOMAIN_SNAPSHOT",
                     INT2NUM(VIR_ERR_NO_DOMAIN_SNAPSHOT));
+#endif
 
     /* libvirt levels */
     rb_define_const(e_Error, "LEVEL_NONE", INT2NUM(VIR_ERR_NONE));
