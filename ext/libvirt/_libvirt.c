@@ -753,23 +753,57 @@ void Init__libvirt() {
 #if HAVE_CONST_VIR_FROM_VMWARE
     rb_define_const(e_Error, "FROM_VMWARE", INT2NUM(VIR_FROM_VMWARE));
 #endif
+#if HAVE_CONST_VIR_FROM_XENXM
     rb_define_const(e_Error, "FROM_XENXM", INT2NUM(VIR_FROM_XENXM));
+#endif
+#if HAVE_CONST_VIR_FROM_STATS_LINUX
     rb_define_const(e_Error, "FROM_STATS_LINUX", INT2NUM(VIR_FROM_STATS_LINUX));
+#endif
+#if HAVE_TYPE_VIR_FROM_LXC
     rb_define_const(e_Error, "FROM_LXC", INT2NUM(VIR_FROM_LXC));
+#endif
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     rb_define_const(e_Error, "FROM_STORAGE", INT2NUM(VIR_FROM_STORAGE));
+#endif
+#if HAVE_CONST_VIR_FROM_NETWORK
     rb_define_const(e_Error, "FROM_NETWORK", INT2NUM(VIR_FROM_NETWORK));
+#endif
+#if HAVE_CONST_VIR_FROM_DOMAIN
     rb_define_const(e_Error, "FROM_DOMAIN", INT2NUM(VIR_FROM_DOMAIN));
+#endif
+#if HAVE_CONST_VIR_FROM_UML
     rb_define_const(e_Error, "FROM_UML", INT2NUM(VIR_FROM_UML));
+#endif
+#if HAVE_TYPE_VIRNODEDEVICEPTR
     rb_define_const(e_Error, "FROM_NODEDEV", INT2NUM(VIR_FROM_NODEDEV));
+#endif
+#if HAVE_CONST_VIR_FROM_XEN_INOTIFY
     rb_define_const(e_Error, "FROM_XEN_INOTIFY", INT2NUM(VIR_FROM_XEN_INOTIFY));
+#endif
+#if HAVE_CONST_VIR_FROM_SECURITY
     rb_define_const(e_Error, "FROM_SECURITY", INT2NUM(VIR_FROM_SECURITY));
+#endif
+#if HAVE_CONST_VIR_FROM_VBOX
     rb_define_const(e_Error, "FROM_VBOX", INT2NUM(VIR_FROM_VBOX));
+#endif
+#if HAVE_TYPE_VIRINTERFACEPTR
     rb_define_const(e_Error, "FROM_INTERFACE", INT2NUM(VIR_FROM_INTERFACE));
+#endif
+#if HAVE_CONST_VIR_FROM_ONE
     rb_define_const(e_Error, "FROM_ONE", INT2NUM(VIR_FROM_ONE));
+#endif
+#if HAVE_CONST_VIR_FROM_ESX
     rb_define_const(e_Error, "FROM_ESX", INT2NUM(VIR_FROM_ESX));
+#endif
+#if HAVE_CONST_VIR_FROM_PHYP
     rb_define_const(e_Error, "FROM_PHYP", INT2NUM(VIR_FROM_PHYP));
+#endif
+#if HAVE_TYPE_VIRSECRETPTR
     rb_define_const(e_Error, "FROM_SECRET", INT2NUM(VIR_FROM_SECRET));
+#endif
+#if HAVE_VIRCONNECTCOMPARECPU
     rb_define_const(e_Error, "FROM_CPU", INT2NUM(VIR_FROM_CPU));
+#endif
 #if HAVE_CONST_VIR_FROM_XENAPI
     rb_define_const(e_Error, "FROM_XENAPI", INT2NUM(VIR_FROM_XENAPI));
 #endif
@@ -845,7 +879,10 @@ void Init__libvirt() {
     rb_define_const(e_Error, "ERR_NO_DOMAIN", INT2NUM(VIR_ERR_NO_DOMAIN));
     rb_define_const(e_Error, "ERR_NO_NETWORK", INT2NUM(VIR_ERR_NO_NETWORK));
     rb_define_const(e_Error, "ERR_INVALID_MAC", INT2NUM(VIR_ERR_INVALID_MAC));
+#if HAVE_CONST_VIR_ERR_AUTH_FAILED
     rb_define_const(e_Error, "ERR_AUTH_FAILED", INT2NUM(VIR_ERR_AUTH_FAILED));
+#endif
+#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     rb_define_const(e_Error, "ERR_INVALID_STORAGE_POOL",
                     INT2NUM(VIR_ERR_INVALID_STORAGE_POOL));
     rb_define_const(e_Error, "ERR_INVALID_STORAGE_VOL",
@@ -855,21 +892,30 @@ void Init__libvirt() {
                     INT2NUM(VIR_ERR_NO_STORAGE_POOL));
     rb_define_const(e_Error, "ERR_NO_STORAGE_VOL",
                     INT2NUM(VIR_ERR_NO_STORAGE_VOL));
+#endif
+#if HAVE_TYPE_VIRNODEDEVICEPTR
     rb_define_const(e_Error, "WAR_NO_NODE", INT2NUM(VIR_WAR_NO_NODE));
     rb_define_const(e_Error, "ERR_INVALID_NODE_DEVICE",
                     INT2NUM(VIR_ERR_INVALID_NODE_DEVICE));
     rb_define_const(e_Error, "ERR_NO_NODE_DEVICE",
                     INT2NUM(VIR_ERR_NO_NODE_DEVICE));
+#endif
+#if HAVE_CONST_VIR_ERR_NO_SECURITY_MODEL
     rb_define_const(e_Error, "ERR_NO_SECURITY_MODEL",
                     INT2NUM(VIR_ERR_NO_SECURITY_MODEL));
+#endif
+#if HAVE_CONST_VIR_ERR_OPERATION_INVALID
     rb_define_const(e_Error, "ERR_OPERATION_INVALID",
                     INT2NUM(VIR_ERR_OPERATION_INVALID));
+#endif
+#if HAVE_TYPE_VIRINTERFACEPTR
     rb_define_const(e_Error, "WAR_NO_INTERFACE", INT2NUM(VIR_WAR_NO_INTERFACE));
     rb_define_const(e_Error, "ERR_NO_INTERFACE", INT2NUM(VIR_ERR_NO_INTERFACE));
     rb_define_const(e_Error, "ERR_INVALID_INTERFACE",
                     INT2NUM(VIR_ERR_INVALID_INTERFACE));
     rb_define_const(e_Error, "ERR_MULTIPLE_INTERFACES",
                     INT2NUM(VIR_ERR_MULTIPLE_INTERFACES));
+#endif
 #if HAVE_TYPE_VIRNWFILTERPTR
     rb_define_const(e_Error, "WAR_NO_NWFILTER", INT2NUM(VIR_WAR_NO_NWFILTER));
     rb_define_const(e_Error, "ERR_INVALID_NWFILTER",
@@ -878,16 +924,24 @@ void Init__libvirt() {
     rb_define_const(e_Error, "ERR_BUILD_FIREWALL",
                     INT2NUM(VIR_ERR_BUILD_FIREWALL));
 #endif
+#if HAVE_TYPE_VIRSECRETPTR
     rb_define_const(e_Error, "WAR_NO_SECRET", INT2NUM(VIR_WAR_NO_SECRET));
     rb_define_const(e_Error, "ERR_INVALID_SECRET",
                     INT2NUM(VIR_ERR_INVALID_SECRET));
     rb_define_const(e_Error, "ERR_NO_SECRET", INT2NUM(VIR_ERR_NO_SECRET));
+#endif
+#if HAVE_CONST_VIR_ERR_CONFIG_UNSUPPORTED
     rb_define_const(e_Error, "ERR_CONFIG_UNSUPPORTED",
                     INT2NUM(VIR_ERR_CONFIG_UNSUPPORTED));
+#endif
+#if HAVE_CONST_VIR_ERR_OPERATION_TIMEOUT
     rb_define_const(e_Error, "ERR_OPERATION_TIMEOUT",
                     INT2NUM(VIR_ERR_OPERATION_TIMEOUT));
+#endif
+#if HAVE_CONST_VIR_ERR_MIGRATE_PERSIST_FAILED
     rb_define_const(e_Error, "ERR_MIGRATE_PERSIST_FAILED",
                     INT2NUM(VIR_ERR_MIGRATE_PERSIST_FAILED));
+#endif
 #if HAVE_CONST_VIR_ERR_HOOK_SCRIPT_FAILED
     rb_define_const(e_Error, "ERR_HOOK_SCRIPT_FAILED",
                     INT2NUM(VIR_ERR_HOOK_SCRIPT_FAILED));
