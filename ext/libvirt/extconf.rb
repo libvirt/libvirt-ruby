@@ -10,8 +10,23 @@ def have_libvirt_types(types)
     types.each { |t| have_type(t, "libvirt/libvirt.h") }
 end
 
+# older mkmf does not have checking_message, so implement our own here
+def libvirt_checking_message(target, place = nil, opt = nil)
+  [["in", place], ["with", opt]].inject("#{target}") do |msg, (pre, noun)|
+    if noun
+      [[:to_str], [:join, ","], [:to_s]].each do |meth, *args|
+        if noun.respond_to?(meth)
+          break noun = noun.send(meth, *args)
+        end
+      end
+      msg << " #{pre} #{noun}" unless noun.empty?
+    end
+    msg
+  end
+end
+
 def have_const(const, headers = nil, opt = "", &b)
-  checking_for checking_message(const, headers, opt) do
+  checking_for libvirt_checking_message(const, headers, opt) do
     headers = cpp_include(headers)
     if try_compile(<<"SRC", opt, &b)
 #{COMMON_HEADERS}
