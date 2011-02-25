@@ -105,6 +105,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virEventRegisterImpl',
                   'virDomainIsUpdated',
                   'virDomainSetMemoryParameters',
+                  'virConnectGetSysinfo',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

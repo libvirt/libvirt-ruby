@@ -1790,6 +1790,28 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
 }
 #endif
 
+#if HAVE_VIRCONNECTGETSYSINFO
+/*
+ * call-seq:
+ *   conn.sys_info(flags=0) -> string
+ *
+ * Call +virConnectGetSysinfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetSysinfo]
+ * to get machine-specific information about the hypervisor.  This may include
+ * data such as the host UUID, the BIOS version, etc.
+ */
+static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_string(virConnectGetSysinfo, conn(c), 1, connect_get(c),
+                    NUM2UINT(flags))
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2132,5 +2154,9 @@ void init_connect()
                      libvirt_conn_define_pool_xml, -1);
     rb_define_method(c_connect, "discover_storage_pool_sources",
                      libvirt_conn_find_storage_pool_sources, -1);
+#endif
+
+#if HAVE_VIRCONNECTGETSYSINFO
+    rb_define_method(c_connect, "sys_info", libvirt_conn_get_sys_info, -1);
 #endif
 }
