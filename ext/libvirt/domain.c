@@ -2270,6 +2270,11 @@ void init_domain()
     rb_define_method(c_domain, "updated?", libvirt_dom_is_updated, 0);
 #endif
 
+#ifdef VIR_DOMAIN_MEMORY_PARAM_UNLIMITED
+    rb_define_const(c_domain, "MEMORY_PARAM_UNLIMITED",
+                    VIR_DOMAIN_MEMORY_PARAM_UNLIMITED);
+#endif
+
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
     rb_define_method(c_domain, "memory_parameters=",
                      libvirt_dom_set_memory_parameters, 1);
