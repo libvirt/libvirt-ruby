@@ -1808,7 +1808,7 @@ static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c) {
         flags = INT2NUM(0);
 
     gen_call_string(virConnectGetSysinfo, conn(c), 1, connect_get(c),
-                    NUM2UINT(flags))
+                    NUM2UINT(flags));
 }
 #endif
 
