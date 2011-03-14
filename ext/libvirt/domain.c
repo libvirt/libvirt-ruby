@@ -1746,41 +1746,25 @@ static VALUE libvirt_dom_is_updated(VALUE d) {
 #endif
 
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-struct memory_set_params_struct {
-    virMemoryParameterPtr params;
-    int *nparams;
-};
-
-static int memory_set_param(VALUE key, VALUE value, VALUE in) {
-    struct memory_set_params_struct *args = (struct memory_set_params_struct *)in;
-    virMemoryParameterPtr thisparam;
-    char *fieldname;
-
-    thisparam = &(args->params[*(args->nparams)]);
-
-    fieldname = StringValueCStr(key);
-    strncpy(thisparam->field, fieldname, VIR_DOMAIN_MEMORY_FIELD_LENGTH);
-
-    val_to_field(MEMORY_PARAM, thisparam, VIR_DOMAIN_MEMORY_PARAM_ULLONG,
-                 value);
-    (*(args->nparams))++;
-
-    return ST_CONTINUE;
-}
-
-struct hash_foreach_struct {
-    virMemoryParameterPtr params;
-    int *nparams;
+struct mem_set_params_struct {
+    int nparams;
     VALUE input;
+    virMemoryParameterPtr params;
 };
 
-static VALUE rb_hash_foreach_wrap(VALUE input) {
-    struct hash_foreach_struct *args = (struct hash_foreach_struct *)input;
-    struct memory_set_params_struct newargs;
+static VALUE mem_set_params(VALUE in) {
+    struct mem_set_params_struct *args = (struct mem_set_params_struct *)in;
+    int i;
+    VALUE val;
 
-    newargs.params = args->params;
-    newargs.nparams = args->nparams;
-    rb_hash_foreach(args->input, memory_set_param, (VALUE)&newargs);
+    for (i = 0; i < args->nparams; i++) {
+        val = rb_hash_aref(args->input, rb_str_new2((args->params)[i].field));
+        if (NIL_P(val))
+            continue;
+
+        val_to_field(MEMORY_PARAM, (args->params + i), (args->params)[i].type,
+                     val);
+    }
 
     return Qnil;
 }
@@ -1794,13 +1778,15 @@ static VALUE rb_hash_foreach_wrap(VALUE input) {
  * the input hash are hypervisor specific.
  */
 static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
+    virDomainPtr dom = domain_get(d);
+    virMemoryParameter dummy;
     virMemoryParameterPtr params;
     int r;
     VALUE input;
     VALUE flags;
     int exception;
     int nparams;
-    struct hash_foreach_struct args;
+    struct mem_set_params_struct args;
 
     if (TYPE(in) == T_HASH) {
         input = in;
@@ -1823,21 +1809,38 @@ static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
     if (RHASH_SIZE(input) == 0)
         return Qnil;
 
-    params = ALLOC_N(virMemoryParameter, RHASH_SIZE(input));
+    /* ug, complicated.  This all stems from the fact that we have no way
+     * to discover what type each parameter should be based on the input.
+     * Instead, we ask libvirt to give us the current parameters and types,
+     * and then we replace the values with the new values.  That way we find
+     * out what the old types were, and if the new types don't match, libvirt
+     * will throw an error
+     */
 
-    args.params = params;
     nparams = 0;
-    args.nparams = &nparams;
-    args.input = input;
+    r = virDomainGetMemoryParameters(dom, &dummy, &nparams, 0);
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetMemoryParameters",
+                           conn(d)));
 
-    rb_protect(rb_hash_foreach_wrap, (VALUE)&args, &exception);
+    params = ALLOC_N(virMemoryParameter, nparams);
+    r = virDomainGetMemoryParameters(dom, params, &nparams, 0);
+    if (r < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainGetMemoryParameters", conn(d)));
+    }
+
+    args.nparams = nparams;
+    args.input = input;
+    args.params = params;
+
+    rb_protect(mem_set_params, (VALUE)&args, &exception);
     if (exception) {
         xfree(params);
         rb_jump_tag(exception);
     }
 
-    r = virDomainSetMemoryParameters(domain_get(d), params, RHASH_SIZE(input),
-                                     NUM2UINT(flags));
+    r = virDomainSetMemoryParameters(dom, params, nparams, NUM2UINT(flags));
     if (r < 0) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
