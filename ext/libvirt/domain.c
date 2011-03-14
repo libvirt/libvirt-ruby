@@ -1926,6 +1926,187 @@ static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
+struct blkio_set_params_struct {
+    int nparams;
+    VALUE input;
+    virBlkioParameterPtr params;
+};
+
+static VALUE blkio_set_params(VALUE in) {
+    struct blkio_set_params_struct *args = (struct blkio_set_params_struct *)in;
+    int i;
+    VALUE val;
+
+    for (i = 0; i < args->nparams; i++) {
+        val = rb_hash_aref(args->input, rb_str_new2((args->params)[i].field));
+        if (NIL_P(val))
+            continue;
+
+        val_to_field(BLKIO_PARAM, (args->params + i), (args->params)[i].type,
+                     val);
+    }
+
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   dom.blkio_parameters = Hash,flags=0
+ *
+ * Call +virDomainSetBlkioParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
+ * to set the blkio parameters for this domain.  The keys and values in
+ * the input hash are hypervisor specific.
+ */
+static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
+    virDomainPtr dom = domain_get(d);
+    virBlkioParameter dummy;
+    virBlkioParameterPtr params;
+    int r;
+    VALUE input;
+    VALUE flags;
+    int exception;
+    int nparams;
+    struct blkio_set_params_struct args;
+
+    if (TYPE(in) == T_HASH) {
+        input = in;
+        flags = Qnil;
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2)
+            rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
+                     RARRAY_LEN(in));
+        input = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else
+        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    Check_Type(input, T_HASH);
+    if (RHASH_SIZE(input) == 0)
+        return Qnil;
+
+    /* ug, complicated.  This all stems from the fact that we have no way
+     * to discover what type each parameter should be based on the input.
+     * Instead, we ask libvirt to give us the current parameters and types,
+     * and then we replace the values with the new values.  That way we find
+     * out what the old types were, and if the new types don't match, libvirt
+     * will throw an error
+     */
+
+    nparams = 0;
+    r = virDomainGetBlkioParameters(dom, &dummy, &nparams, 0);
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlkioParameters",
+                           conn(d)));
+
+    params = ALLOC_N(virBlkioParameter, nparams);
+    r = virDomainGetBlkioParameters(dom, params, &nparams, 0);
+    if (r < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainGetBlkioParameters", conn(d)));
+    }
+
+    args.nparams = nparams;
+    args.input = input;
+    args.params = params;
+
+    rb_protect(blkio_set_params, (VALUE)&args, &exception);
+    if (exception) {
+        xfree(params);
+        rb_jump_tag(exception);
+    }
+
+    r = virDomainSetBlkioParameters(dom, params, nparams, NUM2UINT(flags));
+    if (r < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainSetBlkioParameters", conn(d)));
+    }
+
+    xfree(params);
+
+    return Qnil;
+}
+
+struct blkio_param_passthrough {
+    virBlkioParameterPtr blkio;
+    VALUE result;
+};
+
+static VALUE blkio_parameter_to_value(VALUE input) {
+    struct blkio_param_passthrough *pp;
+
+    pp = (struct blkio_param_passthrough *)input;
+    field_to_value(BLKIO_PARAM, pp->blkio->type, pp->blkio->value,
+                   pp->blkio->field, pp->result);
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   dom.blkio_parameters(flags=0) -> Hash
+ *
+ * Call +virDomainGetBlkioParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlkioParameters]
+ * to retrieve all of the blkio parameters for this domain.  The keys and
+ * values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d) {
+    VALUE flags;
+    int nparams = 0;
+    virBlkioParameterPtr params = NULL;
+    int i;
+    VALUE result;
+    struct blkio_param_passthrough pp;
+    int exception;
+    int ret;
+    virDomainPtr dom = domain_get(d);
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    /* first step is to find out how many parameters we need for this call */
+    ret = virDomainGetBlkioParameters(dom, NULL, &nparams, NUM2UINT(flags));
+    _E(ret < 0, create_error(e_RetrieveError, "virDomainGetBlkioParameters",
+                             conn(d)));
+
+    result = rb_hash_new();
+
+    if (nparams == 0)
+        /* no results to return, so return empty hash */
+        return result;
+
+    params = ALLOC_N(virBlkioParameter, nparams);
+
+    ret = virDomainGetBlkioParameters(dom, params, &nparams, NUM2UINT(flags));
+    if (ret < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError,
+                                  "virDomainGetBlkioParameters", conn(d)));
+    }
+
+    for (i = 0; i < nparams; i++) {
+        pp.blkio = &(params[i]);
+        pp.result = result;
+        rb_protect(blkio_parameter_to_value, (VALUE)&pp, &exception);
+        if (exception) {
+            xfree(params);
+            rb_jump_tag(exception);
+        }
+    }
+
+    xfree(params);
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2284,5 +2465,12 @@ void init_domain()
                      libvirt_dom_set_memory_parameters, 1);
     rb_define_method(c_domain, "memory_parameters",
                      libvirt_dom_get_memory_parameters, -1);
+#endif
+
+#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
+    rb_define_method(c_domain, "blkio_parameters=",
+                     libvirt_dom_set_blkio_parameters, 1);
+    rb_define_method(c_domain, "blkio_parameters",
+                     libvirt_dom_get_blkio_parameters, -1);
 #endif
 }

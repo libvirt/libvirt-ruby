@@ -27,8 +27,8 @@ toplevel of your source checkout):
 
 Notes
 -----
-As of February 25, 2011, the ruby-libvirt bindings support all of the libvirt
-APIs up to libvirt commit hash 33191b419c8c8b17af7c6100997e64ed18bd5f62
+As of March 14, 2011, the ruby-libvirt bindings support all of the libvirt
+APIs up to libvirt commit hash 013427e6e733f7a662f4e8a9c11f7dad4cd65e3f
 with the following exceptions:
 
 - virConnectRef
@@ -59,3 +59,6 @@ with the following exceptions:
 - virStreamAbort
 - virStreamFree
 - virNWFilterRef
+- virDomainSetMemoryFlags
+- virEventRegisterDefaultImpl
+- virEventRunDefaultImpl
