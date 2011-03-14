@@ -59,6 +59,5 @@ with the following exceptions:
 - virStreamAbort
 - virStreamFree
 - virNWFilterRef
-- virDomainSetMemoryFlags
 - virEventRegisterDefaultImpl
 - virEventRunDefaultImpl

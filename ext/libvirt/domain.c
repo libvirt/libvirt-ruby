@@ -850,19 +850,43 @@ static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
 
 /*
  * call-seq:
- *   dom.memory = Fixnum
+ *   dom.memory = Fixnum,flags=0
  *
  * Call +virDomainSetMemory+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemory]
  * to set the amount of memory (in kilobytes) this domain should currently
  * have.  Note this will only succeed if both the hypervisor and the domain on
  * this connection support ballooning.
  */
-static VALUE libvirt_dom_memory_set(VALUE s, VALUE memory) {
+static VALUE libvirt_dom_memory_set(VALUE s, VALUE in) {
+    VALUE memory;
+    VALUE flags;
     virDomainPtr dom = domain_get(s);
     int r;
 
+    if (TYPE(in) == T_HASH) {
+        memory = in;
+        flags = Qnil;
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2)
+            rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
+                     RARRAY_LEN(in));
+        memory = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else
+        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
+
+#if HAVE_VIRDOMAINSETMEMORYFLAGS
+    r = virDomainSetMemoryFlags(dom, NUM2ULONG(memory), NUM2UINT(flags));
+    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemoryFlags",
+                           conn(s)));
+#else
+    if (NUM2UINT(flags) != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
     r = virDomainSetMemory(dom, NUM2ULONG(memory));
     _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory", conn(s)));
+#endif
 
     return ULONG2NUM(memory);
 }
@@ -1019,7 +1043,8 @@ static VALUE libvirt_dom_create(int argc, VALUE *argv, VALUE s) {
         flags = INT2NUM(0);
 
 #if HAVE_VIRDOMAINCREATEWITHFLAGS
-    gen_call_void(virDomainCreateWithFlags, conn(s), domain_get(s), NUM2UINT(flags));
+    gen_call_void(virDomainCreateWithFlags, conn(s), domain_get(s),
+                  NUM2UINT(flags));
 #else
     if (NUM2UINT(flags) != 0)
         rb_raise(e_NoSupportError, "Non-zero flags not supported");
@@ -2472,5 +2497,11 @@ void init_domain()
                      libvirt_dom_set_blkio_parameters, 1);
     rb_define_method(c_domain, "blkio_parameters",
                      libvirt_dom_get_blkio_parameters, -1);
+#endif
+
+#if HAVE_VIRDOMAINSETMEMORYFLAGS
+    rb_define_const(c_domain, "DOMAIN_MEM_LIVE", INT2NUM(VIR_DOMAIN_MEM_LIVE));
+    rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
+                    INT2NUM(VIR_DOMAIN_MEM_CONFIG));
 #endif
 }
