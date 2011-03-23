@@ -66,6 +66,8 @@ class VirEventLoop
     # cause the select loop in "run_once" to wakeup and recalculate the
     # polling arrays and timers based on the new information.
     @rdpipe, @wrpipe = IO.pipe
+    @pending_wakeup = false
+    @running_poll = false
     @quit = false
 
     @timers = []
@@ -119,6 +121,7 @@ class VirEventLoop
     puts "PROG: VirEventLoop.run_once"
 
     sleep = -1
+    @running_poll = true
     nexttimer = next_timeout
     puts "PROG: Next timeout at #{nexttimer}"
 
@@ -143,6 +146,7 @@ class VirEventLoop
       puts "PROG: after poll, 0 #{events[0]}, 1 #{events[1]}, 2 #{events[2]}"
       (events[0] + events[1] + events[2]).each do |io|
         if io.fileno == @rdpipe.fileno
+          @pending_wakeup = false
           pipe = @rdpipe.read(1)
           next
         end
@@ -175,6 +179,8 @@ class VirEventLoop
         t.dispatch
       end
     end
+
+    @running_poll = false
   end
 
   def run_loop
@@ -189,7 +195,10 @@ class VirEventLoop
     # write a byte to the internal pipe to wake up "run_once" for recalculation.
     # See initialize for more information about the internal pipe
     puts "PROG: VirEventLoop.interrupt"
-    @wrpipe.write('c')
+    if @running_poll and not @pending_wakeup
+      @pending_wakeup = true
+      @wrpipe.write('c')
+    end
   end
 
   def register_fd(fd, events)
