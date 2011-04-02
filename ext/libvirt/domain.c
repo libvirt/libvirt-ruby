@@ -1809,26 +1809,31 @@ static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
     virMemoryParameterPtr params;
     int r;
     VALUE input;
-    VALUE flags;
+    VALUE flags_val;
+    unsigned int flags;
     int exception;
     int nparams;
     struct mem_set_params_struct args;
 
     if (TYPE(in) == T_HASH) {
         input = in;
-        flags = INT2NUM(0);
+        flags_val = INT2NUM(0);
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2)
             rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
                      RARRAY_LEN(in));
         input = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
+        flags_val = rb_ary_entry(in, 1);
     }
     else
         rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
 
     Check_Type(input, T_HASH);
+
+    /* we do this up-front so that we have proper argument error checking */
+    flags = NUM2UINT(flags_val);
+
     if (RHASH_SIZE(input) == 0)
         return Qnil;
 
@@ -1863,7 +1868,7 @@ static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
         rb_jump_tag(exception);
     }
 
-    r = virDomainSetMemoryParameters(dom, params, nparams, NUM2UINT(flags));
+    r = virDomainSetMemoryParameters(dom, params, nparams, flags);
     if (r < 0) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError,
