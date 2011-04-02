@@ -380,22 +380,20 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s) {
  * given host CPUs.
  */
 static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
-    VALUE xmlcpus, flags_val;
+    VALUE xmlcpus, flags;
     virConnectPtr conn = connect_get(s);
     char *r;
     VALUE retval;
-    unsigned int ncpus, flags;
+    unsigned int ncpus;
     VALUE entry;
     const char **xmllist;
     int i;
     int exception = 0;
     struct rb_ary_entry_arg arg;
 
-    rb_scan_args(argc, argv, "11", &xmlcpus, &flags_val);
-    if (NIL_P(flags_val))
-        flags = 0;
-    else
-        flags = NUM2UINT(flags_val);
+    rb_scan_args(argc, argv, "11", &xmlcpus, &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
 
     Check_Type(xmlcpus, T_ARRAY);
 
@@ -423,7 +421,7 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s) {
         }
     }
 
-    r = virConnectBaselineCPU(conn, xmllist, ncpus, flags);
+    r = virConnectBaselineCPU(conn, xmllist, ncpus, NUM2UINT(flags));
     xfree(xmllist);
     _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU", conn));
 
