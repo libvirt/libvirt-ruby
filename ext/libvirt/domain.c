@@ -863,9 +863,9 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE in) {
     virDomainPtr dom = domain_get(s);
     int r;
 
-    if (TYPE(in) == T_HASH) {
+    if (TYPE(in) == T_FIXNUM) {
         memory = in;
-        flags = Qnil;
+        flags = INT2NUM(0);
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2)
@@ -875,7 +875,8 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE in) {
         flags = rb_ary_entry(in, 1);
     }
     else
-        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
 
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
     r = virDomainSetMemoryFlags(dom, NUM2ULONG(memory), NUM2UINT(flags));
