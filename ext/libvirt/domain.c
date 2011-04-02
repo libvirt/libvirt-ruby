@@ -1994,7 +1994,7 @@ static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
 
     if (TYPE(in) == T_HASH) {
         input = in;
-        flags = Qnil;
+        flags = INT2NUM(0);
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2)
@@ -2005,9 +2005,6 @@ static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
     }
     else
         rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
-
-    if (NIL_P(flags))
-        flags = INT2NUM(0);
 
     Check_Type(input, T_HASH);
     if (RHASH_SIZE(input) == 0)
