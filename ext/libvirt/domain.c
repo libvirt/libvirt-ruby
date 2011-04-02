@@ -946,7 +946,7 @@ static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus) {
     Check_Type(vcpus, T_ARRAY);
 
     if (RARRAY_LEN(vcpus) != 2)
-        rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)",
+        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
                  RARRAY_LEN(vcpus));
 
     nvcpus = rb_ary_entry(vcpus, 0);
