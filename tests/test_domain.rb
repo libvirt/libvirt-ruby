@@ -1128,7 +1128,7 @@ fakedom.destroy
 testconn.close
 expect_fail(newdom, Libvirt::RetrieveError, "invalid command", "qemu_monitor_command", "foo")
 
-expect_success(newdom, "monitor command", "qemu_monitor_command", "info cpus")
+expect_success(newdom, "monitor command", "qemu_monitor_command", '{"execute":"query-cpus"}')
 
 newdom.destroy
 
