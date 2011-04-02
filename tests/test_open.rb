@@ -80,15 +80,12 @@ begin
     res
   end
 
-  puts "OK: open_auth uri, creds, userdata, auth block succeeded"
-  $SUCCESS = $SUCCESS + 1
+  puts_ok "open_auth uri, creds, userdata, auth block succeeded"
   conn.close
 rescue NoMethodError
-  puts "SKIPPED: open_auth does not exist"
-  $SKIPPED = $SKIPPED + 1
+  puts_skipped "open_auth does not exist"
 rescue => e
-  puts "FAIL: open_auth uri, creds, userdata, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
-  $FAIL = $FAIL + 1
+  puts_fail "open_auth uri, creds, userdata, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
 end
 
 # equivalent to "expect_success"
@@ -112,53 +109,13 @@ begin
     res
   end
 
-  puts "OK: open_auth uri, creds, userdata, R/O flag, auth block succeeded"
-  $SUCCESS = $SUCCESS + 1
+  puts_ok "open_auth uri, creds, userdata, R/O flag, auth block succeeded"
   conn.close
 rescue NoMethodError
-  puts "SKIPPED: open_auth does not exist"
-  $SKIPPED = $SKIPPED + 1
+  puts_skipped "open_auth does not exist"
 rescue => e
-  puts "FAIL: open_auth uri, creds, userdata, R/O flag, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
-  $FAIL = $FAIL + 1
+  puts_fail "open_auth uri, creds, userdata, R/O flag, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
 end
-
-# TESTGROUP: Libvirt::event_register_impl
-expect_too_many_args(Libvirt, "event_register_impl", 1, 2, 3, 4, 5, 6, 7)
-expect_invalid_arg_type(Libvirt, "event_register_impl", 1)
-
-# symbol callbacks
-def virEventAddHandleImpl(fd, events, opaque)
-end
-def virEventUpdateHandleImpl(watch, event)
-end
-def virEventRemoveHandleImpl(handleID)
-end
-def virEventAddTimerImpl(interval, opaque)
-end
-def virEventUpdateTimerImpl(timer, timeout)
-end
-def virEventRemoveTimerImpl(timerID)
-end
-
-# proc callbacks
-virEventAddHandleProc = lambda {|fd, events, opaque|
-}
-virEventUpdateHandleProc = lambda {|watch, event|
-}
-virEventRemoveHandleProc = lambda {|handleID|
-}
-virEventAddTimerProc = lambda {|interval, opaque|
-}
-virEventUpdateTimerProc = lambda {|timer, timeout|
-}
-virEventRemoveTimerProc = lambda {|timerID|
-}
-
-expect_success(Libvirt, "all Symbol callbacks", "event_register_impl", :virEventAddHandleImpl, :virEventUpdateHandleImpl, :virEventRemoveHandleImpl, :virEventAddTimerImpl, :virEventUpdateTimerImpl, :virEventRemoveTimerImpl)
-expect_success(Libvirt, "unregister all callbacks", "event_register_impl", nil, nil, nil, nil, nil, nil)
-expect_success(Libvirt, "all Proc callbacks", "event_register_impl", virEventAddHandleProc, virEventUpdateHandleProc, virEventRemoveHandleProc, virEventAddTimerProc, virEventUpdateTimerProc, virEventRemoveTimerProc)
-expect_success(Libvirt, "unregister all callbacks", "event_register_impl")
 
 # TESTGROUP: Libvirt::event_invoke_handle_callback
 conn = Libvirt::open("qemu:///system")
@@ -199,5 +156,42 @@ expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", "hello", { "li
 expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", 1, { "libvirt_cb" => "hello", "opaque" => conn })
 expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", 1, { "libvirt_cb" => conn, "opaque" => "hello" })
 conn.close
+
+# TESTGROUP: Libvirt::event_register_impl
+expect_too_many_args(Libvirt, "event_register_impl", 1, 2, 3, 4, 5, 6, 7)
+expect_invalid_arg_type(Libvirt, "event_register_impl", 1)
+
+# symbol callbacks
+def virEventAddHandleImpl(fd, events, opaque)
+end
+def virEventUpdateHandleImpl(watch, event)
+end
+def virEventRemoveHandleImpl(handleID)
+end
+def virEventAddTimerImpl(interval, opaque)
+end
+def virEventUpdateTimerImpl(timer, timeout)
+end
+def virEventRemoveTimerImpl(timerID)
+end
+
+# proc callbacks
+virEventAddHandleProc = lambda {|fd, events, opaque|
+}
+virEventUpdateHandleProc = lambda {|watch, event|
+}
+virEventRemoveHandleProc = lambda {|handleID|
+}
+virEventAddTimerProc = lambda {|interval, opaque|
+}
+virEventUpdateTimerProc = lambda {|timer, timeout|
+}
+virEventRemoveTimerProc = lambda {|timerID|
+}
+
+expect_success(Libvirt, "all Symbol callbacks", "event_register_impl", :virEventAddHandleImpl, :virEventUpdateHandleImpl, :virEventRemoveHandleImpl, :virEventAddTimerImpl, :virEventUpdateTimerImpl, :virEventRemoveTimerImpl)
+expect_success(Libvirt, "unregister all callbacks", "event_register_impl", nil, nil, nil, nil, nil, nil)
+expect_success(Libvirt, "all Proc callbacks", "event_register_impl", virEventAddHandleProc, virEventUpdateHandleProc, virEventRemoveHandleProc, virEventAddTimerProc, virEventUpdateTimerProc, virEventRemoveTimerProc)
+expect_success(Libvirt, "unregister all callbacks", "event_register_impl")
 
 finish_tests

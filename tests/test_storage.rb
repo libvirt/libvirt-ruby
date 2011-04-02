@@ -7,8 +7,6 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
-UUID = "33a5c045-645a-2c00-e56b-927cdf34e17a"
-
 conn = Libvirt::open("qemu:///system")
 
 begin
@@ -20,17 +18,7 @@ rescue
 end
 
 # test setup
-`rm -rf /tmp/ruby-libvirt-tester; mkdir /tmp/ruby-libvirt-tester`
-
-new_storage_pool_xml = <<EOF
-<pool type="dir">
-  <name>ruby-libvirt-tester</name>
-  <uuid>#{UUID}</uuid>
-  <target>
-    <path>/tmp/ruby-libvirt-tester</path>
-  </target>
-</pool>
-EOF
+`rm -rf #{$POOL_PATH}; mkdir #{$POOL_PATH} ; echo $?`
 
 new_storage_vol_xml = <<EOF
 <volume>
@@ -54,58 +42,8 @@ new_storage_vol_xml_2 = <<EOF
 </volume>
 EOF
 
-# TESTGROUP: conn.list_storage_pools
-expect_too_many_args(conn, "list_storage_pools", 1)
-expect_success(conn, "no args", "list_storage_pools")
-
-# TESTGROUP: conn.num_of_storage_pools
-expect_too_many_args(conn, "num_of_storage_pools", 1)
-expect_success(conn, "no args", "num_of_storage_pools")
-
-# TESTGROUP: conn.list_defined_storage_pools
-expect_too_many_args(conn, "list_defined_storage_pools", 1)
-expect_success(conn, "no args", "list_defined_storage_pools")
-
-# TESTGROUP: conn.num_of_defined_storage_pools
-expect_too_many_args(conn, "num_of_defined_storage_pools", 1)
-expect_success(conn, "no args", "num_of_defined_storage_pools")
-
-# TESTGROUP: conn.lookup_storage_pool_by_name
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
-
-expect_too_many_args(conn, "lookup_storage_pool_by_name", 1, 2)
-expect_too_few_args(conn, "lookup_storage_pool_by_name")
-expect_invalid_arg_type(conn, "lookup_storage_pool_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_storage_pool_by_name", "foobarbazsucker")
-
-expect_success(conn, "name arg", "lookup_storage_pool_by_name", "ruby-libvirt-tester")
-
-newpool.destroy
-
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
-expect_success(conn, "name arg", "lookup_storage_pool_by_name", "ruby-libvirt-tester")
-newpool.undefine
-
-# TESTGROUP: conn.lookup_storage_pool_by_uuid
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
-
-expect_too_many_args(conn, "lookup_storage_pool_by_uuid", 1, 2)
-expect_too_few_args(conn, "lookup_storage_pool_by_uuid")
-expect_invalid_arg_type(conn, "lookup_storage_pool_by_uuid", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent uuid arg", "lookup_storage_pool_by_uuid", "foobarbazsucker")
-
-expect_success(conn, "uuid arg", "lookup_storage_pool_by_uuid", UUID)
-
-newpool.destroy
-
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
-
-expect_success(conn, "uuid arg", "lookup_storage_pool_by_uuid", UUID)
-
-newpool.undefine
-
 # TESTGROUP: vol.pool
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
@@ -117,45 +55,8 @@ newvol.delete
 
 newpool.destroy
 
-# TESTGROUP: conn.create_storage_pool_xml
-expect_too_many_args(conn, "create_storage_pool_xml", new_storage_pool_xml, 0, 1)
-expect_too_few_args(conn, "create_storage_pool_xml")
-expect_invalid_arg_type(conn, "create_storage_pool_xml", nil)
-expect_invalid_arg_type(conn, "create_storage_pool_xml", 1)
-expect_invalid_arg_type(conn, "create_storage_pool_xml", new_storage_pool_xml, "foo")
-expect_fail(conn, Libvirt::Error, "invalid xml", "create_storage_pool_xml", "hello")
-
-expect_success(conn, "storage pool XML", "create_storage_pool_xml", new_storage_pool_xml)
-
-expect_fail(conn, Libvirt::Error, "already existing domain", "create_storage_pool_xml", new_storage_pool_xml)
-
-newpool.destroy
-
-# TESTGROUP: conn.define_storage_pool_xml
-expect_too_many_args(conn, "define_storage_pool_xml", new_storage_pool_xml, 0, 1)
-expect_too_few_args(conn, "define_storage_pool_xml")
-expect_invalid_arg_type(conn, "define_storage_pool_xml", nil)
-expect_invalid_arg_type(conn, "define_storage_pool_xml", 1)
-expect_invalid_arg_type(conn, "define_storage_pool_xml", new_storage_pool_xml, "foo")
-expect_fail(conn, Libvirt::Error, "invalid xml", "define_storage_pool_xml", "hello")
-
-expect_success(conn, "storage pool XML", "define_storage_pool_xml", new_storage_pool_xml)
-
-newpool.undefine
-
-# TESTGROUP: conn.discover_storage_pool_sources
-expect_too_many_args(conn, "discover_storage_pool_sources", 1, 2, 3, 4)
-expect_too_few_args(conn, "discover_storage_pool_sources")
-expect_invalid_arg_type(conn, "discover_storage_pool_sources", 1)
-expect_invalid_arg_type(conn, "discover_storage_pool_sources", "foo", 1)
-expect_invalid_arg_type(conn, "discover_storage_pool_sources", "foo", "bar", "baz")
-
-expect_fail(conn, Libvirt::Error, "invalid pool type", "discover_storage_pool_sources", "foo")
-
-expect_success(conn, "pool type", "discover_storage_pool_sources", "logical")
-
 # TESTGROUP: pool.build
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "build", 1, 2)
 expect_invalid_arg_type(newpool, "build", 'foo')
@@ -165,14 +66,14 @@ expect_success(newpool, "no args", "build")
 newpool.undefine
 
 # TESTGROUP: pool.undefine
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "undefine", 1)
 
 expect_success(newpool, "no args", "undefine")
 
 # TESTGROUP: pool.create
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "create", 1, 2)
 expect_invalid_arg_type(newpool, "create", 'foo')
@@ -183,14 +84,14 @@ newpool.destroy
 newpool.undefine
 
 # TESTGROUP: pool.destroy
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "destroy", 1)
 
 expect_success(newpool, "no args", "destroy")
 
 # TESTGROUP: pool.delete
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "delete", 1, 2)
 expect_invalid_arg_type(newpool, "delete", 'foo')
@@ -202,7 +103,7 @@ expect_success(newpool, "no args", "delete")
 newpool.undefine
 
 # TESTGROUP: pool.refresh
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "refresh", 1, 2)
 expect_invalid_arg_type(newpool, "refresh", 'foo')
@@ -212,7 +113,7 @@ expect_success(newpool, "no args", "refresh")
 newpool.destroy
 
 # TESTGROUP: pool.name
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "name", 1)
 
@@ -221,16 +122,16 @@ expect_success(newpool, "no args", "name") {|x| x == "ruby-libvirt-tester"}
 newpool.destroy
 
 # TESTGROUP: pool.uuid
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "uuid", 1)
 
-expect_success(newpool, "no args", "uuid") {|x| x == UUID}
+expect_success(newpool, "no args", "uuid") {|x| x == $POOL_UUID}
 
 newpool.destroy
 
 # TESTGROUP: pool.info
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "info", 1)
 
@@ -239,7 +140,7 @@ expect_success(newpool, "no args", "info")
 newpool.destroy
 
 # TESTGROUP: pool.xml_desc
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "xml_desc", 1, 2)
 expect_invalid_arg_type(newpool, "xml_desc", "foo")
@@ -249,7 +150,7 @@ expect_success(newpool, "no args", "xml_desc")
 newpool.destroy
 
 # TESTGROUP: pool.autostart?
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "autostart?", 1)
 
@@ -262,7 +163,7 @@ expect_success(newpool, "no args", "autostart?") {|x| x == true}
 newpool.undefine
 
 # TESTGROUP: pool.autostart=
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "autostart=", 1, 2)
 expect_invalid_arg_type(newpool, "autostart=", 'foo')
@@ -286,7 +187,7 @@ end
 newpool.undefine
 
 # TESTGROUP: pool.num_of_volumes
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "num_of_volumes", 1)
 
@@ -295,7 +196,7 @@ expect_success(newpool, "no args", "num_of_volumes") {|x| x == 0}
 newpool.destroy
 
 # TESTGROUP: pool.list_volumes
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "list_volumes", 1)
 
@@ -304,14 +205,14 @@ expect_success(newpool, "no args", "list_volumes")
 newpool.destroy
 
 # TESTGROUP: pool.free
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 newpool.undefine
 expect_too_many_args(newpool, "free", 1)
 
 expect_success(newpool, "no args", "free")
 
 # TESTGROUP: pool.lookup_volume_by_name
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newpool, "lookup_volume_by_name", 1, 2)
@@ -326,7 +227,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: pool.lookup_volume_by_key
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newpool, "lookup_volume_by_key", 1, 2)
@@ -341,7 +242,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: pool.lookup_volume_by_path
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newpool, "lookup_volume_by_path", 1, 2)
@@ -356,7 +257,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: vol.name
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "name", 1)
@@ -367,7 +268,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: vol.key
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "key", 1)
@@ -378,7 +279,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: pool.create_volume_xml
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "create_volume_xml", new_storage_vol_xml, 0, 1)
 expect_too_few_args(newpool, "create_volume_xml")
@@ -395,7 +296,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: pool.create_volume_xml_from
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newpool, "create_volume_xml_from", new_storage_vol_xml_2, 0, 1, 2)
@@ -414,7 +315,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: pool.active?
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "active?", 1)
 
@@ -422,7 +323,7 @@ expect_success(newpool, "no args", "active?") {|x| x == true}
 
 newpool.destroy
 
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_success(newpool, "no args", "active?") {|x| x == false}
 
@@ -434,7 +335,7 @@ newpool.destroy
 newpool.undefine
 
 # TESTGROUP: pool.persistent?
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 sleep 1
 
 expect_too_many_args(newpool, "persistent?", 1)
@@ -443,14 +344,14 @@ expect_success(newpool, "no args", "persistent?") {|x| x == false}
 
 newpool.destroy
 
-newpool = conn.define_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
 
 expect_success(newpool, "no args", "persistent?") {|x| x == true}
 
 newpool.undefine
 
 # TESTGROUP: vol.delete
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "delete", 1, 2)
@@ -461,7 +362,7 @@ expect_success(newvol, "no args", "delete")
 newpool.destroy
 
 # TESTGROUP: vol.wipe
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "wipe", 1, 2)
@@ -473,7 +374,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: vol.info
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "info", 1)
@@ -484,7 +385,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: vol.xml_desc
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "xml_desc", 1, 2)
@@ -496,7 +397,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: vol.path
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 
 expect_too_many_args(newvol, "path", 1)
@@ -507,7 +408,7 @@ newvol.delete
 newpool.destroy
 
 # TESTGROUP: vol.free
-newpool = conn.create_storage_pool_xml(new_storage_pool_xml)
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
 newvol.delete
 

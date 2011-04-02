@@ -9,37 +9,6 @@ require 'test_utils.rb'
 
 conn = Libvirt::open("qemu:///system")
 
-# TESTGROUP: conn.num_of_nodedevices
-expect_too_many_args(conn, "num_of_nodedevices", 1, 2, 3)
-expect_invalid_arg_type(conn, "num_of_nodedevices", 1)
-expect_invalid_arg_type(conn, "num_of_nodedevices", 'foo', 'bar')
-expect_success(conn, "no args", "num_of_nodedevices")
-
-# TESTGROUP: conn.list_nodedevices
-expect_too_many_args(conn, "list_nodedevices", 1, 2, 3)
-expect_invalid_arg_type(conn, "list_nodedevices", 1)
-expect_invalid_arg_type(conn, "list_nodedevices", 'foo', 'bar')
-expect_success(conn, "no args", "list_nodedevices")
-
-# TESTGROUP: conn.lookup_nodedevice_by_name
-testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
-
-expect_too_many_args(conn, "lookup_nodedevice_by_name", 1, 2)
-expect_too_few_args(conn, "lookup_nodedevice_by_name")
-expect_invalid_arg_type(conn, "lookup_nodedevice_by_name", 1)
-expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_nodedevice_by_name", "foobarbazsucker")
-
-expect_success(conn, "name arg", "lookup_nodedevice_by_name", testnode.name)
-
-# TESTGROUP: conn.create_nodedevice_xml
-expect_too_many_args(conn, "create_nodedevice_xml", 1, 2, 3)
-expect_too_few_args(conn, "create_nodedevice_xml")
-expect_invalid_arg_type(conn, "create_nodedevice_xml", 1)
-expect_invalid_arg_type(conn, "create_nodedevice_xml", "foo", 'bar')
-expect_fail(conn, Libvirt::Error, "invalid XML", "create_nodedevice_xml", "hello")
-
-#expect_success(conn, "nodedevice XML", "create_nodedevice_xml", "<nodedevice/>")
-
 # TESTGROUP: nodedevice.name
 testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
 
