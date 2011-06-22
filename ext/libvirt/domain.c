@@ -2132,6 +2132,37 @@ static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINGETSTATE
+/*
+ * call-seq:
+ *   dom.state(flags=0) -> state, reason
+ *
+ * Call +virDomainGetState+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetState]
+ * to get the current state of the domain.
+ */
+static VALUE libvirt_dom_get_state(int argc, VALUE *argv, VALUE d) {
+    VALUE flags;
+    int state, reason;
+    VALUE result;
+    int retval;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    retval = virDomainGetState(domain_get(d), &state, &reason, NUM2INT(flags));
+    _E(retval < 0, create_error(e_Error, "virDomainGetState", conn(d)));
+
+    result = rb_ary_new();
+
+    rb_ary_push(result, INT2NUM(state));
+    rb_ary_push(result, INT2NUM(reason));
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2503,5 +2534,66 @@ void init_domain()
     rb_define_const(c_domain, "DOMAIN_MEM_LIVE", INT2NUM(VIR_DOMAIN_MEM_LIVE));
     rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
                     INT2NUM(VIR_DOMAIN_MEM_CONFIG));
+#endif
+
+#if HAVE_VIRDOMAINGETSTATE
+    rb_define_const(c_domain, "DOMAIN_RUNNING_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_RUNNING_UNKNOWN));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_BOOTED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_BOOTED));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_MIGRATED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_MIGRATED));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_RESTORED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_RESTORED));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_RUNNING_FROM_SNAPSHOT));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_UNPAUSED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_UNPAUSED));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_MIGRATION_CANCELED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_MIGRATION_CANCELED));
+    rb_define_const(c_domain, "DOMAIN_RUNNING_SAVE_CANCELED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_SAVE_CANCELED));
+    rb_define_const(c_domain, "DOMAIN_BLOCKED_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_BLOCKED_UNKNOWN));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_PAUSED_UNKNOWN));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_USER",
+                    INT2NUM(VIR_DOMAIN_PAUSED_USER));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_MIGRATION",
+                    INT2NUM(VIR_DOMAIN_PAUSED_MIGRATION));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_SAVE",
+                    INT2NUM(VIR_DOMAIN_PAUSED_SAVE));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_DUMP",
+                    INT2NUM(VIR_DOMAIN_PAUSED_DUMP));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_IOERROR",
+                    INT2NUM(VIR_DOMAIN_PAUSED_IOERROR));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_WATCHDOG",
+                    INT2NUM(VIR_DOMAIN_PAUSED_WATCHDOG));
+    rb_define_const(c_domain, "DOMAIN_PAUSED_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_PAUSED_FROM_SNAPSHOT));
+    rb_define_const(c_domain, "DOMAIN_SHUTDOWN_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_UNKNOWN));
+    rb_define_const(c_domain, "DOMAIN_SHUTDOWN_USER",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_USER));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_UNKNOWN));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_SHUTDOWN",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_SHUTDOWN));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_DESTROYED",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_DESTROYED));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_CRASHED",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_CRASHED));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_MIGRATED",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_MIGRATED));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_SAVED",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_SAVED));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_FAILED",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_FAILED));
+    rb_define_const(c_domain, "DOMAIN_SHUTOFF_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_SHUTOFF_FROM_SNAPSHOT));
+    rb_define_const(c_domain, "DOMAIN_CRASHED_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
+
+    rb_define_method(c_domain, "state", libvirt_dom_get_state, -1);
 #endif
 }
