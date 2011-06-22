@@ -2619,6 +2619,15 @@ void init_domain()
     rb_define_method(c_domain, "state", libvirt_dom_get_state, -1);
 #endif
 
+#if HAVE_CONST_VIR_DOMAIN_AFFECT_CURRENT
+    rb_define_const(c_domain, "DOMAIN_AFFECT_CURRENT",
+                    INT2NUM(VIR_DOMAIN_AFFECT_CURRENT));
+    rb_define_const(c_domain, "DOMAIN_AFFECT_LIVE",
+                    INT2NUM(VIR_DOMAIN_AFFECT_LIVE));
+    rb_define_const(c_domain, "DOMAIN_AFFECT_CONFIG",
+                    INT2NUM(VIR_DOMAIN_AFFECT_CONFIG));
+#endif
+
 #if HAVE_VIRDOMAINOPENCONSOLE
     rb_define_method(c_domain, "open_console", libvirt_dom_open_console, -1);
 #endif
