@@ -66,6 +66,7 @@ libvirt_types = [ 'virNetworkPtr',
                   'virDomainJobInfoPtr',
                   'virNodeDevicePtr',
                   'virStreamPtr',
+                  'virTypedParameterPtr',
                 ]
 
 libvirt_funcs = [ 'virStorageVolWipe',

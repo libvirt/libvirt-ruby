@@ -31,6 +31,32 @@
 #include "extconf.h"
 #include "stream.h"
 
+#ifndef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+#define VIR_TYPED_PARAM_INT VIR_DOMAIN_SCHED_FIELD_INT
+#define VIR_TYPED_PARAM_UINT VIR_DOMAIN_SCHED_FIELD_UINT
+#define VIR_TYPED_PARAM_LLONG VIR_DOMAIN_SCHED_FIELD_LLONG
+#define VIR_TYPED_PARAM_ULLONG VIR_DOMAIN_SCHED_FIELD_ULLONG
+#define VIR_TYPED_PARAM_DOUBLE VIR_DOMAIN_SCHED_FIELD_DOUBLE
+#define VIR_TYPED_PARAM_BOOLEAN VIR_DOMAIN_SCHED_FIELD_BOOLEAN
+
+#define VIR_TYPED_PARAM_FIELD_LENGTH 80
+typedef struct _virTypedParameter virTypedParameter;
+struct _virTypedParameter {
+    char field[VIR_TYPED_PARAM_FIELD_LENGTH];  /* parameter name */
+    int type;   /* parameter type, virTypedParameterType */
+    union {
+        int i;                      /* type is INT */
+        unsigned int ui;            /* type is UINT */
+        long long int l;            /* type is LLONG */
+        unsigned long long int ul;  /* type is ULLONG */
+        double d;                   /* type is DOUBLE */
+        char b;                     /* type is BOOLEAN */
+    } value; /* parameter value */
+};
+typedef virTypedParameter *virTypedParameterPtr;
+
+#endif
+
 static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
@@ -1504,216 +1530,6 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
     return result;
 }
 
-#define field_to_value(type, fieldtype, fieldvalue, fieldname, result) do { \
-        VALUE val;                                                      \
-        switch(fieldtype) {                                             \
-        case VIR_DOMAIN_##type##_INT:                                   \
-            val = INT2NUM(fieldvalue.i);                                \
-            break;                                                      \
-        case VIR_DOMAIN_##type##_UINT:                                  \
-            val = UINT2NUM(fieldvalue.ui);                              \
-            break;                                                      \
-        case VIR_DOMAIN_##type##_LLONG:                                 \
-            val = LL2NUM(fieldvalue.l);                                 \
-            break;                                                      \
-        case VIR_DOMAIN_##type##_ULLONG:                                \
-            val = ULL2NUM(fieldvalue.ul);                               \
-            break;                                                      \
-        case VIR_DOMAIN_##type##_DOUBLE:                                \
-            val = rb_float_new(fieldvalue.d);                           \
-            break;                                                      \
-        case VIR_DOMAIN_##type##_BOOLEAN:                               \
-            val = (fieldvalue.b == 0) ? Qfalse : Qtrue;                 \
-            break;                                                      \
-        default:                                                        \
-            rb_raise(rb_eArgError, "Invalid parameter type");           \
-        }                                                               \
-        rb_hash_aset(result, rb_str_new2(fieldname), val);              \
-    } while(0)
-
-struct sched_param_passthrough {
-    virSchedParameterPtr sched;
-    VALUE result;
-};
-
-static VALUE sched_field_to_value(VALUE input) {
-    struct sched_param_passthrough *pp = (struct sched_param_passthrough *)input;
-
-    field_to_value(SCHED_FIELD, pp->sched->type, pp->sched->value,
-                   pp->sched->field, pp->result);
-    return Qnil;
-}
-
-/*
- * call-seq:
- *   dom.scheduler_parameters -> Hash
- *
- * Call +virDomainGetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerParameters]
- * to retrieve all of the scheduler parameters for this domain.  The keys and
- * values in the hash that is returned are hypervisor specific.
- */
-static VALUE libvirt_dom_scheduler_parameters(VALUE d) {
-    int nparams;
-    char *type;
-    virSchedParameterPtr params;
-    VALUE result;
-    virDomainPtr dom;
-    int r;
-    int i;
-    int exception;
-    struct sched_param_passthrough pp;
-
-    dom = domain_get(d);
-
-    type = virDomainGetSchedulerType(dom, &nparams);
-
-    _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
-                                  conn(d)));
-
-    xfree(type);
-
-    result = rb_hash_new();
-
-    if (nparams == 0)
-        return result;
-
-    params = ALLOC_N(virSchedParameter, nparams);
-
-    r = virDomainGetSchedulerParameters(dom, params, &nparams);
-    if (r < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetSchedulerParameters", conn(d)));
-    }
-
-    for (i = 0; i < nparams; i++) {
-        pp.sched = &(params[i]);
-        pp.result = result;
-        rb_protect(sched_field_to_value, (VALUE)&pp, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
-    }
-
-    xfree(params);
-
-    return result;
-}
-
-#define val_to_field(sched_or_mem, param, paramtype, val) do {          \
-        param->type = paramtype;                                        \
-        switch(paramtype) {                                             \
-        case VIR_DOMAIN_##sched_or_mem##_INT:                           \
-            param->value.i = NUM2INT(val);                              \
-        case VIR_DOMAIN_##sched_or_mem##_UINT:                          \
-            param->value.ui = NUM2UINT(val);                            \
-            break;                                                      \
-        case VIR_DOMAIN_##sched_or_mem##_LLONG:                         \
-            param->value.l = NUM2LL(val);                               \
-            break;                                                      \
-        case VIR_DOMAIN_##sched_or_mem##_ULLONG:                        \
-            param->value.ul = NUM2ULL(val);                             \
-            break;                                                      \
-        case VIR_DOMAIN_##sched_or_mem##_DOUBLE:                        \
-            param->value.d = NUM2DBL(val);                              \
-            break;                                                      \
-        case VIR_DOMAIN_##sched_or_mem##_BOOLEAN:                       \
-            param->value.b = (val == Qtrue) ? 1 : 0;                    \
-            break;                                                      \
-        default:                                                        \
-            rb_raise(rb_eArgError, "Invalid parameter type");           \
-        }                                                               \
-    } while(0)
-
-struct sched_set_params_struct {
-    int nparams;
-    VALUE input;
-    virSchedParameterPtr params;
-};
-
-static VALUE sched_set_params(VALUE in) {
-    struct sched_set_params_struct *args = (struct sched_set_params_struct *)in;
-    int i;
-    VALUE val;
-
-    for (i = 0; i < args->nparams; i++) {
-        val = rb_hash_aref(args->input, rb_str_new2((args->params)[i].field));
-        if (NIL_P(val))
-            continue;
-
-        val_to_field(SCHED_FIELD, (args->params + i), (args->params)[i].type,
-                     val);
-    }
-
-    return Qnil;
-}
-
-/*
- * call-seq:
- *   dom.scheduler_parameters = Hash
- *
- * Call +virDomainSetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
- * to set the scheduler parameters for this domain.  The keys and values in
- * the input hash are hypervisor specific.  If an empty hash is given, no
- * changes are made (and no error is raised).
- */
-static VALUE libvirt_dom_scheduler_parameters_set(VALUE d, VALUE input) {
-    int nparams;
-    virSchedParameterPtr params;
-    virDomainPtr dom = domain_get(d);
-    int r;
-    int exception;
-    char *type;
-    struct sched_set_params_struct args;
-
-    Check_Type(input, T_HASH);
-    if (RHASH_SIZE(input) == 0)
-        return Qnil;
-
-    /* ug, complicated.  This all stems from the fact that we have no way
-     * to discover what type each parameter should be based on the input.
-     * Instead, we ask libvirt to give us the current parameters and types,
-     * and then we replace the values with the new values.  That way we find
-     * out what the old types were, and if the new types don't match, libvirt
-     * will throw an error
-     */
-
-    type = virDomainGetSchedulerType(dom, &nparams);
-    _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
-                                  conn(d)));
-    xfree(type);
-
-    params = ALLOC_N(virSchedParameter, nparams);
-    r = virDomainGetSchedulerParameters(dom, params, &nparams);
-    if (r < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetSchedulerParameters", conn(d)));
-    }
-
-    args.nparams = nparams;
-    args.input = input;
-    args.params = params;
-
-    rb_protect(sched_set_params, (VALUE)&args, &exception);
-    if (exception) {
-        xfree(params);
-        rb_jump_tag(exception);
-    }
-
-    r = virDomainSetSchedulerParameters(domain_get(d), params, nparams);
-    if (r < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainSetSchedulerParameters", conn(d)));
-    }
-
-    xfree(params);
-
-    return Qnil;
-}
-
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 /*
  * call-seq:
@@ -1772,49 +1588,156 @@ static VALUE libvirt_dom_is_updated(VALUE d) {
 }
 #endif
 
-#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-struct mem_set_params_struct {
-    int nparams;
-    VALUE input;
-    virMemoryParameterPtr params;
+struct field_to_value {
+    VALUE result;
+    virTypedParameterPtr param;
 };
 
-static VALUE mem_set_params(VALUE in) {
-    struct mem_set_params_struct *args = (struct mem_set_params_struct *)in;
-    int i;
+static VALUE typed_field_to_value(VALUE input) {
+    struct field_to_value *ftv = (struct field_to_value *)input;
     VALUE val;
 
-    for (i = 0; i < args->nparams; i++) {
-        val = rb_hash_aref(args->input, rb_str_new2((args->params)[i].field));
-        if (NIL_P(val))
-            continue;
+    switch(ftv->param->type) {
+    case VIR_TYPED_PARAM_INT:
+        val = INT2NUM(ftv->param->value.i);
+        break;
+    case VIR_TYPED_PARAM_UINT:
+        val = UINT2NUM(ftv->param->value.ui);
+        break;
+    case VIR_TYPED_PARAM_LLONG:
+        val = LL2NUM(ftv->param->value.l);
+        break;
+    case VIR_TYPED_PARAM_ULLONG:
+        val = ULL2NUM(ftv->param->value.ul);
+        break;
+    case VIR_TYPED_PARAM_DOUBLE:
+        val = rb_float_new(ftv->param->value.d);
+        break;
+    case VIR_TYPED_PARAM_BOOLEAN:
+        val = (ftv->param->value.b == 0) ? Qfalse : Qtrue;
+        break;
+    default:
+        rb_raise(rb_eArgError, "Invalid parameter type");
+    }
 
-        val_to_field(MEMORY_PARAM, (args->params + i), (args->params)[i].type,
-                     val);
+    rb_hash_aset(ftv->result, rb_str_new2(ftv->param->field), val);
+
+    return Qnil;
+}
+
+static VALUE internal_get_parameters(int argc, VALUE *argv, VALUE d,
+                                     int (*nparams_cb)(VALUE d,
+                                                       unsigned int flags),
+                                     char *(*get_cb)(VALUE d,
+                                                     unsigned int flags,
+                                                     virTypedParameterPtr params,
+                                                     int *nparams)) {
+    int nparams;
+    virTypedParameterPtr params;
+    VALUE result;
+    int i;
+    int exception;
+    char *errname;
+    struct field_to_value ftv;
+    unsigned int flags;
+    VALUE flags_val;
+
+    rb_scan_args(argc, argv, "01", &flags_val);
+
+    if (NIL_P(flags_val))
+        flags = 0;
+    else
+        flags = NUM2UINT(flags_val);
+
+    nparams = nparams_cb(d, flags);
+
+    result = rb_hash_new();
+
+    if (nparams == 0)
+        return result;
+
+    params = ALLOC_N(virTypedParameter, nparams);
+
+    errname = get_cb(d, flags, params, &nparams);
+    if (errname != NULL) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError, errname, conn(d)));
+    }
+
+    for (i = 0; i < nparams; i++) {
+        ftv.result = result;
+        ftv.param = &params[i];
+        rb_protect(typed_field_to_value, (VALUE)&ftv, &exception);
+        if (exception) {
+            xfree(params);
+            rb_jump_tag(exception);
+        }
+    }
+
+    xfree(params);
+
+    return result;
+}
+
+struct value_to_field {
+    virTypedParameterPtr param;
+    VALUE input;
+};
+
+static VALUE typed_value_to_field(VALUE in) {
+    struct value_to_field *vtf = (struct value_to_field *)in;
+    VALUE val;
+
+    val = rb_hash_aref(vtf->input, rb_str_new2(vtf->param->field));
+    if (NIL_P(val))
+        return Qnil;
+
+    switch(vtf->param->type) {
+    case VIR_TYPED_PARAM_INT:
+        vtf->param->value.i = NUM2INT(val);
+        break;
+    case VIR_TYPED_PARAM_UINT:
+        vtf->param->value.ui = NUM2UINT(val);
+        break;
+    case VIR_TYPED_PARAM_LLONG:
+        vtf->param->value.l = NUM2LL(val);
+        break;
+    case VIR_TYPED_PARAM_ULLONG:
+        vtf->param->value.ul = NUM2ULL(val);
+        break;
+    case VIR_TYPED_PARAM_DOUBLE:
+        vtf->param->value.d = NUM2DBL(val);
+        break;
+    case VIR_TYPED_PARAM_BOOLEAN:
+        vtf->param->value.b = (val == Qtrue) ? 1 : 0;
+        break;
+    default:
+        rb_raise(rb_eArgError, "Invalid parameter type");
     }
 
     return Qnil;
 }
 
-/*
- * call-seq:
- *   dom.memory_parameters = Hash,flags=0
- *
- * Call +virDomainSetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
- * to set the memory parameters for this domain.  The keys and values in
- * the input hash are hypervisor specific.
- */
-static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
-    virDomainPtr dom = domain_get(d);
-    virMemoryParameter dummy;
-    virMemoryParameterPtr params;
-    int r;
+static VALUE internal_set_parameters(VALUE d, VALUE in,
+                                     int (*nparams_cb)(VALUE d,
+                                                       unsigned int flags),
+                                     char *(*get_cb)(VALUE d,
+                                                     unsigned int flags,
+                                                     virTypedParameterPtr params,
+                                                     int *nparams),
+                                     char *(*set_cb)(VALUE d,
+                                                     unsigned int flags,
+                                                     virTypedParameterPtr params,
+                                                     int nparams)) {
+    int nparams;
+    virTypedParameterPtr params;
+    int exception;
+    int i;
+    char *errname;
+    struct value_to_field vtf;
     VALUE input;
     VALUE flags_val;
     unsigned int flags;
-    int exception;
-    int nparams;
-    struct mem_set_params_struct args;
 
     if (TYPE(in) == T_HASH) {
         input = in;
@@ -1832,48 +1755,45 @@ static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
 
     Check_Type(input, T_HASH);
 
-    /* we do this up-front so that we have proper argument error checking */
+    /* we do this up-front for proper argument error checking */
     flags = NUM2UINT(flags_val);
 
     if (RHASH_SIZE(input) == 0)
         return Qnil;
 
-    /* ug, complicated.  This all stems from the fact that we have no way
-     * to discover what type each parameter should be based on the input.
-     * Instead, we ask libvirt to give us the current parameters and types,
-     * and then we replace the values with the new values.  That way we find
-     * out what the old types were, and if the new types don't match, libvirt
-     * will throw an error
+    /* Complicated.  The below all stems from the fact that we have no way to
+     * have no way to discover what type each parameter should be based on the
+     * be based on the input.  Instead, we ask libvirt to give us the current
+     * us the current parameters and types, and then we replace the values with
+     * the values with the new values.  That way we find out what the old types
+     * what the old types were, and if the new types don't match, libvirt will
+     * throw an error.
      */
 
-    nparams = 0;
-    r = virDomainGetMemoryParameters(dom, &dummy, &nparams, 0);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetMemoryParameters",
-                           conn(d)));
+    nparams = nparams_cb(d, flags);
 
-    params = ALLOC_N(virMemoryParameter, nparams);
-    r = virDomainGetMemoryParameters(dom, params, &nparams, 0);
-    if (r < 0) {
+    params = ALLOC_N(virTypedParameter, nparams);
+
+    errname = get_cb(d, flags, params, &nparams);
+    if (errname != NULL) {
         xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetMemoryParameters", conn(d)));
+        rb_exc_raise(create_error(e_RetrieveError, errname, conn(d)));
     }
 
-    args.nparams = nparams;
-    args.input = input;
-    args.params = params;
-
-    rb_protect(mem_set_params, (VALUE)&args, &exception);
-    if (exception) {
-        xfree(params);
-        rb_jump_tag(exception);
+    for (i = 0; i < nparams; i++) {
+        vtf.param = &params[i];
+        vtf.input = input;
+        rb_protect(typed_value_to_field, (VALUE)&vtf, &exception);
+        if (exception) {
+            xfree(params);
+            rb_jump_tag(exception);
+        }
     }
 
-    r = virDomainSetMemoryParameters(dom, params, nparams, flags);
-    if (r < 0) {
+    errname = set_cb(d, flags, params, nparams);
+    if (errname != NULL) {
         xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainSetMemoryParameters", conn(d)));
+        rb_exc_raise(create_error(e_RetrieveError, errname, conn(d)));
     }
 
     xfree(params);
@@ -1881,18 +1801,120 @@ static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
     return Qnil;
 }
 
-struct mem_param_passthrough {
-    virMemoryParameterPtr mem;
-    VALUE result;
-};
+static int scheduler_nparams(VALUE d, unsigned int flags) {
+    int nparams;
+    char *type;
 
-static VALUE memory_parameter_to_value(VALUE input) {
-    struct mem_param_passthrough *pp;
+    type = virDomainGetSchedulerType(domain_get(d), &nparams);
+    _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
+                                  conn(d)));
+    xfree(type);
 
-    pp = (struct mem_param_passthrough *)input;
-    field_to_value(MEMORY_PARAM, pp->mem->type, pp->mem->value,
-                   pp->mem->field, pp->result);
-    return Qnil;
+    return nparams;
+}
+
+static char *scheduler_get(VALUE d, unsigned int flags,
+                           virTypedParameterPtr params, int *nparams) {
+#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    if (virDomainGetSchedulerParametersFlags(domain_get(d), params, nparams,
+                                             flags) < 0)
+        return "virDomainGetSchedulerParameters";
+#else
+    if (flags != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    if (virDomainGetSchedulerParameters(domain_get(d),
+                                        (virSchedParameterPtr)params,
+                                        nparams) < 0)
+        return "virDomainGetSchedulerParameters";
+#endif
+
+    return NULL;
+}
+
+static char *scheduler_set(VALUE d, unsigned int flags,
+                           virTypedParameterPtr params, int nparams) {
+#if HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    if (virDomainSetSchedulerParametersFlags(domain_get(d), params, nparams,
+                                             flags) < 0)
+        return "virDomainSetSchedulerParameters";
+#else
+    if (flags != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    if (virDomainSetSchedulerParameters(domain_get(d),
+                                        (virSchedParameterPtr)params,
+                                        nparams) < 0)
+        return "virDomainSetSchedulerParameters";
+#endif
+
+    return NULL;
+}
+
+/*
+ * call-seq:
+ *   dom.scheduler_parameters(flags=0) -> Hash
+ *
+ * Call +virDomainGetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerParameters]
+ * to retrieve all of the scheduler parameters for this domain.  The keys and
+ * values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_dom_get_scheduler_parameters(int argc, VALUE *argv,
+                                                  VALUE d) {
+    return internal_get_parameters(argc, argv, d, scheduler_nparams,
+                                   scheduler_get);
+}
+
+/*
+ * call-seq:
+ *   dom.scheduler_parameters = Hash,flags=0
+ *
+ * Call +virDomainSetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
+ * to set the scheduler parameters for this domain.  The keys and values in
+ * the input hash are hypervisor specific.  If an empty hash is given, no
+ * changes are made (and no error is raised).
+ */
+static VALUE libvirt_dom_set_scheduler_parameters(VALUE d, VALUE input) {
+    return internal_set_parameters(d, input, scheduler_nparams, scheduler_get,
+                                   scheduler_set);
+}
+
+#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
+static int memory_nparams(VALUE d, unsigned int flags) {
+    int nparams = 0;
+    int ret;
+
+    ret = virDomainGetMemoryParameters(domain_get(d), NULL, &nparams, flags);
+    _E(ret < 0, create_error(e_RetrieveError, "virDomainGetMemoryParameters",
+                             conn(d)));
+
+    return nparams;
+}
+
+static char *memory_get(VALUE d, unsigned int flags,
+                        virTypedParameterPtr params, int *nparams) {
+#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    if (virDomainGetMemoryParameters(domain_get(d), params, nparams, flags) < 0)
+#else
+    if (virDomainGetMemoryParameters(domain_get(d),
+                                     (virMemoryParameterPtr)params, nparams,
+                                     flags) < 0)
+#endif
+        return "virDomainGetMemoryParameters";
+
+    return NULL;
+}
+
+static char *memory_set(VALUE d, unsigned int flags,
+                        virTypedParameterPtr params, int nparams) {
+#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    if (virDomainSetMemoryParameters(domain_get(d), params, nparams, flags) < 0)
+#else
+    if (virDomainSetMemoryParameters(domain_get(d),
+                                     (virMemoryParameterPtr)params, nparams,
+                                     flags) < 0)
+#endif
+        return "virDomainSetMemoryParameters";
+
+    return NULL;
 }
 
 /*
@@ -1904,173 +1926,61 @@ static VALUE memory_parameter_to_value(VALUE input) {
  * values in the hash that is returned are hypervisor specific.
  */
 static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d) {
-    VALUE flags;
-    int nparams = 0;
-    virMemoryParameterPtr params = NULL;
-    int i;
-    VALUE result;
-    struct mem_param_passthrough pp;
-    int exception;
-    int ret;
-    virDomainPtr dom = domain_get(d);
-
-    rb_scan_args(argc, argv, "01", &flags);
-
-    if (NIL_P(flags))
-        flags = INT2NUM(0);
-
-    /* first step is to find out how many parameters we need for this call */
-    ret = virDomainGetMemoryParameters(dom, NULL, &nparams, NUM2UINT(flags));
-    _E(ret < 0, create_error(e_RetrieveError, "virDomainGetMemoryParameters",
-                             conn(d)));
-
-    result = rb_hash_new();
-
-    if (nparams == 0)
-        /* no results to return, so return empty hash */
-        return result;
-
-    params = ALLOC_N(virMemoryParameter, nparams);
-
-    ret = virDomainGetMemoryParameters(dom, params, &nparams, NUM2UINT(flags));
-    if (ret < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetMemoryParameters", conn(d)));
-    }
-
-    for (i = 0; i < nparams; i++) {
-        pp.mem = &(params[i]);
-        pp.result = result;
-        rb_protect(memory_parameter_to_value, (VALUE)&pp, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
-    }
-
-    xfree(params);
-
-    return result;
-}
-#endif
-
-#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-struct blkio_set_params_struct {
-    int nparams;
-    VALUE input;
-    virBlkioParameterPtr params;
-};
-
-static VALUE blkio_set_params(VALUE in) {
-    struct blkio_set_params_struct *args = (struct blkio_set_params_struct *)in;
-    int i;
-    VALUE val;
-
-    for (i = 0; i < args->nparams; i++) {
-        val = rb_hash_aref(args->input, rb_str_new2((args->params)[i].field));
-        if (NIL_P(val))
-            continue;
-
-        val_to_field(BLKIO_PARAM, (args->params + i), (args->params)[i].type,
-                     val);
-    }
-
-    return Qnil;
+    return internal_get_parameters(argc, argv, d, memory_nparams, memory_get);
 }
 
 /*
  * call-seq:
- *   dom.blkio_parameters = Hash,flags=0
+ *   dom.memory_parameters = Hash,flags=0
  *
- * Call +virDomainSetBlkioParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
- * to set the blkio parameters for this domain.  The keys and values in
+ * Call +virDomainSetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
+ * to set the memory parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
-static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
-    virDomainPtr dom = domain_get(d);
-    virBlkioParameter dummy;
-    virBlkioParameterPtr params;
-    int r;
-    VALUE input;
-    VALUE flags;
-    int exception;
-    int nparams;
-    struct blkio_set_params_struct args;
+static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
+    return internal_set_parameters(d, in, memory_nparams, memory_get,
+                                   memory_set);
+}
+#endif
 
-    if (TYPE(in) == T_HASH) {
-        input = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2)
-            rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
-                     RARRAY_LEN(in));
-        input = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else
-        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
+#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
+static int blkio_nparams(VALUE d, unsigned int flags) {
+    int nparams = 0;
+    int ret;
 
-    Check_Type(input, T_HASH);
-    if (RHASH_SIZE(input) == 0)
-        return Qnil;
+    ret = virDomainGetBlkioParameters(domain_get(d), NULL, &nparams, flags);
+    _E(ret < 0, create_error(e_RetrieveError, "virDomainGetBlkioParameters",
+                             conn(d)));
 
-    /* ug, complicated.  This all stems from the fact that we have no way
-     * to discover what type each parameter should be based on the input.
-     * Instead, we ask libvirt to give us the current parameters and types,
-     * and then we replace the values with the new values.  That way we find
-     * out what the old types were, and if the new types don't match, libvirt
-     * will throw an error
-     */
-
-    nparams = 0;
-    r = virDomainGetBlkioParameters(dom, &dummy, &nparams, 0);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainGetBlkioParameters",
-                           conn(d)));
-
-    params = ALLOC_N(virBlkioParameter, nparams);
-    r = virDomainGetBlkioParameters(dom, params, &nparams, 0);
-    if (r < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetBlkioParameters", conn(d)));
-    }
-
-    args.nparams = nparams;
-    args.input = input;
-    args.params = params;
-
-    rb_protect(blkio_set_params, (VALUE)&args, &exception);
-    if (exception) {
-        xfree(params);
-        rb_jump_tag(exception);
-    }
-
-    r = virDomainSetBlkioParameters(dom, params, nparams, NUM2UINT(flags));
-    if (r < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainSetBlkioParameters", conn(d)));
-    }
-
-    xfree(params);
-
-    return Qnil;
+    return nparams;
 }
 
-struct blkio_param_passthrough {
-    virBlkioParameterPtr blkio;
-    VALUE result;
-};
+static char *blkio_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
+                       int *nparams) {
+#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    if (virDomainGetBlkioParameters(domain_get(d), params, nparams, flags) < 0)
+#else
+    if (virDomainGetBlkioParameters(domain_get(d),
+                                    (virBlkioParameterPtr)params, nparams,
+                                    flags) < 0)
+#endif
+        return "virDomainGetBlkioParameters";
 
-static VALUE blkio_parameter_to_value(VALUE input) {
-    struct blkio_param_passthrough *pp;
+    return NULL;
+}
 
-    pp = (struct blkio_param_passthrough *)input;
-    field_to_value(BLKIO_PARAM, pp->blkio->type, pp->blkio->value,
-                   pp->blkio->field, pp->result);
-    return Qnil;
+static char *blkio_set(VALUE d, unsigned int flags, virTypedParameterPtr params,
+                       int nparams) {
+#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    if (virDomainSetBlkioParameters(domain_get(d), params, nparams, flags) < 0)
+#else
+    if (virDomainSetBlkioParameters(domain_get(d),
+                                    (virBlkioParameterPtr)params, nparams,
+                                    flags) < 0)
+#endif
+        return "virDomainSetBlkioParameters";
+
+    return NULL;
 }
 
 /*
@@ -2082,54 +1992,19 @@ static VALUE blkio_parameter_to_value(VALUE input) {
  * values in the hash that is returned are hypervisor specific.
  */
 static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d) {
-    VALUE flags;
-    int nparams = 0;
-    virBlkioParameterPtr params = NULL;
-    int i;
-    VALUE result;
-    struct blkio_param_passthrough pp;
-    int exception;
-    int ret;
-    virDomainPtr dom = domain_get(d);
+    return internal_get_parameters(argc, argv, d, blkio_nparams, blkio_get);
+}
 
-    rb_scan_args(argc, argv, "01", &flags);
-
-    if (NIL_P(flags))
-        flags = INT2NUM(0);
-
-    /* first step is to find out how many parameters we need for this call */
-    ret = virDomainGetBlkioParameters(dom, NULL, &nparams, NUM2UINT(flags));
-    _E(ret < 0, create_error(e_RetrieveError, "virDomainGetBlkioParameters",
-                             conn(d)));
-
-    result = rb_hash_new();
-
-    if (nparams == 0)
-        /* no results to return, so return empty hash */
-        return result;
-
-    params = ALLOC_N(virBlkioParameter, nparams);
-
-    ret = virDomainGetBlkioParameters(dom, params, &nparams, NUM2UINT(flags));
-    if (ret < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError,
-                                  "virDomainGetBlkioParameters", conn(d)));
-    }
-
-    for (i = 0; i < nparams; i++) {
-        pp.blkio = &(params[i]);
-        pp.result = result;
-        rb_protect(blkio_parameter_to_value, (VALUE)&pp, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
-    }
-
-    xfree(params);
-
-    return result;
+/*
+ * call-seq:
+ *   dom.memory_parameters = Hash,flags=0
+ *
+ * Call +virDomainSetBlkioParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
+ * to set the blkio parameters for this domain.  The keys and values in
+ * the input hash are hypervisor specific.
+ */
+static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
+    return internal_set_parameters(d, in, blkio_nparams, blkio_get, blkio_set);
 }
 #endif
 
@@ -2328,10 +2203,6 @@ void init_domain()
 #endif
 
     rb_define_method(c_domain, "scheduler_type", libvirt_dom_scheduler_type, 0);
-    rb_define_method(c_domain, "scheduler_parameters",
-                     libvirt_dom_scheduler_parameters, 0);
-    rb_define_method(c_domain, "scheduler_parameters=",
-                     libvirt_dom_scheduler_parameters_set, 1);
 
 #if HAVE_VIRDOMAINMANAGEDSAVE
     rb_define_method(c_domain, "managed_save", libvirt_dom_managed_save, -1);
@@ -2538,24 +2409,29 @@ void init_domain()
                     VIR_DOMAIN_MEMORY_PARAM_UNLIMITED);
 #endif
 
-#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-    rb_define_method(c_domain, "memory_parameters=",
-                     libvirt_dom_set_memory_parameters, 1);
-    rb_define_method(c_domain, "memory_parameters",
-                     libvirt_dom_get_memory_parameters, -1);
-#endif
-
-#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-    rb_define_method(c_domain, "blkio_parameters=",
-                     libvirt_dom_set_blkio_parameters, 1);
-    rb_define_method(c_domain, "blkio_parameters",
-                     libvirt_dom_get_blkio_parameters, -1);
-#endif
-
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
     rb_define_const(c_domain, "DOMAIN_MEM_LIVE", INT2NUM(VIR_DOMAIN_MEM_LIVE));
     rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
                     INT2NUM(VIR_DOMAIN_MEM_CONFIG));
+#endif
+
+    rb_define_method(c_domain, "scheduler_parameters",
+                     libvirt_dom_get_scheduler_parameters, -1);
+    rb_define_method(c_domain, "scheduler_parameters=",
+                     libvirt_dom_set_scheduler_parameters, 1);
+
+#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
+    rb_define_method(c_domain, "memory_parameters",
+                     libvirt_dom_get_memory_parameters, -1);
+    rb_define_method(c_domain, "memory_parameters=",
+                     libvirt_dom_set_memory_parameters, 1);
+#endif
+
+#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
+    rb_define_method(c_domain, "blkio_parameters",
+                     libvirt_dom_get_blkio_parameters, -1);
+    rb_define_method(c_domain, "blkio_parameters=",
+                     libvirt_dom_set_blkio_parameters, 1);
 #endif
 
 #if HAVE_VIRDOMAINGETSTATE
