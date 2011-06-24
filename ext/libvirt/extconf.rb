@@ -170,6 +170,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_FROM_XEN_INOTIFY',
                    'VIR_FROM_SECURITY',
                    'VIR_DOMAIN_AFFECT_CURRENT',
+                   'VIR_DOMAIN_MEM_CURRENT',
                  ]
 
 have_libvirt_types(libvirt_types)

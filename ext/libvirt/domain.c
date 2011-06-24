@@ -2519,6 +2519,12 @@ void init_domain()
     rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
                     INT2NUM(VIR_DOMAIN_MEM_CONFIG));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_MEM_CURRENT
+    rb_define_const(c_domain, "DOMAIN_MEM_CURRENT",
+                    INT2NUM(VIR_DOMAIN_MEM_CURRENT));
+    rb_define_const(c_domain, "DOMAIN_MEM_MAXIMUM",
+                    INT2NUM(VIR_DOMAIN_MEM_MAXIMUM));
+#endif
 
     rb_define_method(c_domain, "scheduler_parameters",
                      libvirt_dom_get_scheduler_parameters, -1);
