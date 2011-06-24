@@ -127,9 +127,9 @@ static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
  * libvirt URI is duri.
  */
 static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
-    VALUE flags, dname_val, bandwidth, duri_val;
+    VALUE duri, flags, dname, bandwidth;
 
-    rb_scan_args(argc, argv, "13", &duri_val, &flags, &dname_val, &bandwidth);
+    rb_scan_args(argc, argv, "13", &duri, &flags, &dname, &bandwidth);
 
     if (NIL_P(bandwidth))
         bandwidth = INT2NUM(0);
@@ -137,8 +137,8 @@ static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
         flags = INT2NUM(0);
 
     gen_call_void(virDomainMigrateToURI, conn(s), domain_get(s),
-                  StringValueCStr(duri_val), NUM2ULONG(flags),
-                  get_string_or_nil(dname_val), NUM2ULONG(bandwidth));
+                  StringValueCStr(duri), NUM2ULONG(flags),
+                  get_string_or_nil(dname), NUM2ULONG(bandwidth));
 }
 #endif
 
@@ -161,6 +161,82 @@ static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv,
 
     gen_call_void(virDomainMigrateSetMaxDowntime, conn(s), domain_get(s),
                   NUM2ULL(downtime), NUM2UINT(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINMIGRATE2
+/*
+ * call-seq:
+ *   dom.migrate2(dconn, dxml=nil, flags=0, dname=nil, uri=nil, bandwidth=0) -> Libvirt::Domain
+ *
+ * Call +virDomainMigrate2+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate2]
+ * to migrate a domain from the host on this connection to the connection
+ * referenced in dconn.
+ */
+static VALUE libvirt_dom_migrate2(int argc, VALUE *argv, VALUE s) {
+    VALUE dconn, dxml, flags, dname_val, uri_val, bandwidth;
+    virDomainPtr ddom = NULL;
+
+    rb_scan_args(argc, argv, "15", &dconn, &dxml, &flags, &dname_val, &uri_val,
+                 &bandwidth);
+
+    if (NIL_P(bandwidth))
+        bandwidth = INT2NUM(0);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    ddom = virDomainMigrate2(domain_get(s), conn(dconn),
+                             get_string_or_nil(dxml), NUM2ULONG(flags),
+                             get_string_or_nil(dname_val),
+                             get_string_or_nil(uri_val), NUM2ULONG(bandwidth));
+
+    _E(ddom == NULL, create_error(e_Error, "virDomainMigrate2", conn(s)));
+
+    return domain_new(ddom, dconn);
+}
+
+/*
+ * call-seq:
+ *   dom.migrate_to_uri2(duri=nil, migrate_uri=nil, dxml=nil, flags=0, dname=nil, bandwidth=0) -> nil
+ *
+ * Call +virDomainMigrateToURI2+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI2]
+ * to migrate a domain from the host on this connection to the host whose
+ * libvirt URI is duri.
+ */
+static VALUE libvirt_dom_migrate_to_uri2(int argc, VALUE *argv, VALUE s) {
+    VALUE duri, migrate_uri, dxml, flags, dname, bandwidth;
+
+    rb_scan_args(argc, argv, "06", &duri, &migrate_uri, &dxml, &flags, &dname,
+                 &bandwidth);
+
+    if (NIL_P(bandwidth))
+        bandwidth = INT2NUM(0);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virDomainMigrateToURI2, conn(s), domain_get(s),
+                  get_string_or_nil(duri), get_string_or_nil(migrate_uri),
+                  get_string_or_nil(dxml), NUM2ULONG(flags),
+                  get_string_or_nil(dname), NUM2ULONG(bandwidth));
+}
+
+/*
+ * call-seq:
+ *   dom.migrate_set_max_speed(bandwidth, flags=0) -> nil
+ *
+ * Call +virDomainMigrateSetMaxSpeed+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxSpeed]
+ * to set the maximum bandwidth allowed for live migration.
+ */
+static VALUE libvirt_dom_migrate_set_max_speed(int argc, VALUE *argv, VALUE s) {
+    VALUE bandwidth, flags;
+
+    rb_scan_args(argc, argv, "11", &bandwidth, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virDomainMigrateSetMaxSpeed, conn(s), domain_get(s),
+                  NUM2ULONG(bandwidth), NUM2UINT(flags));
 }
 #endif
 
@@ -2147,6 +2223,14 @@ void init_domain()
     rb_define_method(c_domain, "migrate_set_max_downtime",
                      libvirt_dom_migrate_set_max_downtime, -1);
 #endif
+#if HAVE_VIRDOMAINMIGRATE2
+    rb_define_method(c_domain, "migrate2", libvirt_dom_migrate2, -1);
+    rb_define_method(c_domain, "migrate_to_uri2",
+                     libvirt_dom_migrate_to_uri2, -1);
+    rb_define_method(c_domain, "migrate_set_max_speed",
+                     libvirt_dom_migrate_set_max_speed, -1);
+#endif
+
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
