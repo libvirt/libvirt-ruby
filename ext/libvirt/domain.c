@@ -2136,6 +2136,27 @@ static VALUE libvirt_dom_open_console(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINSCREENSHOT
+/*
+ * call-seq:
+ *   dom.screenshot(stream, screen, flags=0) -> nil
+ *
+ * Call +virDomainScreenshot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainScreenshot]
+ * to take a screenshot of the domain console as a stream.
+ */
+static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d) {
+    VALUE st, screen, flags;
+
+    rb_scan_args(argc, argv, "21", &st, &screen, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_string(virDomainScreenshot, conn(d), 1, domain_get(d),
+                    stream_get(st), NUM2UINT(screen), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2590,5 +2611,9 @@ void init_domain()
 
 #if HAVE_VIRDOMAINOPENCONSOLE
     rb_define_method(c_domain, "open_console", libvirt_dom_open_console, -1);
+#endif
+
+#if HAVE_VIRDOMAINSCREENSHOT
+    rb_define_method(c_domain, "screenshot", libvirt_dom_screenshot, -1);
 #endif
 }
