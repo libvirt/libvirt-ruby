@@ -39,18 +39,24 @@ CLOBBER.include [ "config.save", "ext/**/mkmf.log", "ext/**/extconf.h",
 #
 file MAKEFILE => EXT_CONF do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
-         unless sh "ruby #{File::basename(EXT_CONF)}"
-             $stderr.puts "Failed to run extconf"
-             break
-         end
+        extra = ""
+        args = ARGV.grep(/^--with-libvirt-include=/)
+        extra += args[0].chomp unless args.empty?
+        args = ARGV.grep(/^--with-libvirt-lib=/)
+        extra += " " + args[0].chomp unless args.empty?
+
+        unless sh "ruby #{File::basename(EXT_CONF)} #{extra}"
+            $stderr.puts "Failed to run extconf"
+            break
+        end
     end
 end
 file LIBVIRT_MODULE => LIBVIRT_SRC do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
-         unless sh "make"
-             $stderr.puts "make failed"
-             break
-         end
+        unless sh "make"
+            $stderr.puts "make failed"
+            break
+        end
      end
 end
 desc "Build the native library"

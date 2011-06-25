@@ -48,11 +48,42 @@ end
 
 extension_name = '_libvirt'
 
-dir_config(extension_name)
+# this is a poor-man's dir_config, but is a bit more flexible.  In particular,
+# it allows you to specify the exact location of the libvirt.so, as opposed
+# to requiring a lib/ subdirectory.  Note that due to the way include files
+# are done within ruby-libvirt, the libvirt header file(s) must be in a libvirt/
+# subdirectory.  Also note that if specifying the include directory, the
+# location of the library must also be specified.  Finally, note that if neither
+# the include nor the library are specified, the build will attempt to use
+# pkg-config to discover this information.
+#
+# Taking all of the above rules into account, the valid options are either:
+#   $ ruby extconf.rb --with-libvirt-include=/home/clalance/libvirt/include \
+#          --with-libvirt-lib=/home/clalance/libvirt/src/.libs
+#
+# To specify the location of the include files and the library, or:
+#   $ ruby extconf.rb
+#
+# to attempt to use pkg-config to do it automatically from the system files.
+include = with_config("libvirt-include")
+lib = with_config("libvirt-lib")
+if include and lib
+  $LIBPATH = [lib] | $LIBPATH
+  $CPPFLAGS += "-I" + include
+  have_library("virt", "virConnectOpen", "libvirt/libvirt.h")
 
-unless pkg_config("libvirt")
-    raise "libvirt not found"
+  # if we are using custom libvirt libraries, we have to suppress the default
+  # library path so have_func() only picks up the custom ones, not the installed
+  # ones
+  $DEFLIBPATH = []
+elsif (include and not lib) or (not include and lib)
+  raise "Must specify both --with-libvirt-include and --with-libvirt-lib, or neither"
+else
+  unless pkg_config("libvirt")
+    raise "libvirt library not found in default locations"
+  end
 end
+
 
 libvirt_types = [ 'virNetworkPtr',
                   'virStoragePoolPtr',

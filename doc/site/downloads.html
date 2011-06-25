@@ -82,10 +82,18 @@ git clone git://libvirt.org/ruby-libvirt.git
 	development libraries for both ruby and libvirt installed.
 	These are typically called something like ruby-devel and
 	libvirt-devel.  Once those are installed, the library can be
-	compiled using rake:
+	compiled using rake:</p>
 	<p><code>$ tar -zxvf ruby-libvirt-xxx.tar.gz</code></p>
 	<p><code>$ cd ruby-libvirt-xxx</code></p>
 	<p><code>$ rake build</code></p>
+	<p>If the libvirt development libraries are header files are
+	in a non-system location, the ruby-libvirt bindings can be
+	compiled against them by using:</p>
+	<p><code>$ rake build --
+	--with-libvirt-include=/home/clalance/upstream/libvirt/include
+	--with-libvirt-lib=/home/clalance/upstream/libvirt/src/.libs</code></p>
+	<p>(due to the way that rake parses command-line arguments,
+	the -- immediately after the build argument is required)</p>
       </div>
     </div>
     <div>
