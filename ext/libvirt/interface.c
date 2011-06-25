@@ -108,7 +108,7 @@ static VALUE libvirt_interface_active_p(VALUE p) {
  * to retrieve the name of this interface.
  */
 static VALUE libvirt_interface_name(VALUE s) {
-    gen_call_string(virInterfaceGetName, conn(s), 0, interface_get(s));
+    gen_call_string(virInterfaceGetName, conn(s), interface_get(s));
 }
 
 /*
@@ -119,7 +119,7 @@ static VALUE libvirt_interface_name(VALUE s) {
  * to retrieve the MAC address of this interface.
  */
 static VALUE libvirt_interface_mac(VALUE s) {
-    gen_call_string(virInterfaceGetMACString, conn(s), 0, interface_get(s));
+    gen_call_string(virInterfaceGetMACString, conn(s), interface_get(s));
 }
 
 /*
@@ -137,7 +137,7 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virInterfaceGetXMLDesc, conn(s), 1, interface_get(s),
+    gen_call_string(virInterfaceGetXMLDesc, conn(s), interface_get(s),
                     NUM2UINT(flags));
 }
 

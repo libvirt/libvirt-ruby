@@ -48,7 +48,7 @@ VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn) {
  * to retrieve the name of the node device.
  */
 static VALUE libvirt_nodedevice_name(VALUE c) {
-    gen_call_string(virNodeDeviceGetName, conn(c), 0, nodedevice_get(c));
+    gen_call_string(virNodeDeviceGetName, conn(c), nodedevice_get(c));
 }
 
 /*
@@ -61,7 +61,7 @@ static VALUE libvirt_nodedevice_name(VALUE c) {
 static VALUE libvirt_nodedevice_parent(VALUE c) {
     /* unfortunately we can't use gen_call_string() here because
      * virNodeDeviceGetParent() returns NULL as a valid value (when this
-     * device has no parent.  Hand-code it instead
+     * device has no parent).  Hand-code it instead.
      */
 
     const char *str;
@@ -129,8 +129,8 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virNodeDeviceGetXMLDesc, conn(s), 1,
-                    nodedevice_get(s), NUM2UINT(flags));
+    gen_call_string(virNodeDeviceGetXMLDesc, conn(s), nodedevice_get(s),
+                    NUM2UINT(flags));
 }
 
 /*

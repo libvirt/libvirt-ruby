@@ -81,7 +81,7 @@ static VALUE libvirt_netw_destroy(VALUE s) {
  * to retrieve the name of this network.
  */
 static VALUE libvirt_netw_name(VALUE s) {
-    gen_call_string(virNetworkGetName, conn(s), 0, network_get(s));
+    gen_call_string(virNetworkGetName, conn(s), network_get(s));
 }
 
 /*
@@ -118,7 +118,7 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virNetworkGetXMLDesc, conn(s), 1, network_get(s),
+    gen_call_string(virNetworkGetXMLDesc, conn(s), network_get(s),
                     NUM2UINT(flags));
 }
 
@@ -130,7 +130,7 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s) {
  * to retrieve the bridge name for this network.
  */
 static VALUE libvirt_netw_bridge_name(VALUE s) {
-    gen_call_string(virNetworkGetBridgeName, conn(s), 1, network_get(s));
+    gen_call_string(virNetworkGetBridgeName, conn(s), network_get(s));
 }
 
 /*

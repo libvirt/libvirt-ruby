@@ -174,7 +174,7 @@ static VALUE libvirt_pool_refresh(int argc, VALUE *argv, VALUE p) {
  * to retrieve the name of this storage pool.
  */
 static VALUE libvirt_pool_name(VALUE s) {
-    gen_call_string(virStoragePoolGetName, conn(s), 0, pool_get(s));
+    gen_call_string(virStoragePoolGetName, conn(s), pool_get(s));
 }
 
 /*
@@ -234,7 +234,7 @@ static VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virStoragePoolGetXMLDesc, conn(s), 1, pool_get(s),
+    gen_call_string(virStoragePoolGetXMLDesc, conn(s), pool_get(s),
                     NUM2UINT(flags));
 }
 
@@ -404,7 +404,7 @@ static VALUE libvirt_pool_lookup_vol_by_path(VALUE p, VALUE path) {
  * to retrieve the name of this storage volume.
  */
 static VALUE libvirt_vol_name(VALUE v) {
-    gen_call_string(virStorageVolGetName, conn(v), 0, vol_get(v));
+    gen_call_string(virStorageVolGetName, conn(v), vol_get(v));
 }
 
 /*
@@ -415,7 +415,7 @@ static VALUE libvirt_vol_name(VALUE v) {
  * to retrieve the key for this storage volume.
  */
 static VALUE libvirt_vol_key(VALUE v) {
-    gen_call_string(virStorageVolGetKey, conn(v), 0, vol_get(v));
+    gen_call_string(virStorageVolGetKey, conn(v), vol_get(v));
 }
 
 /*
@@ -571,7 +571,7 @@ static VALUE libvirt_vol_xml_desc(int argc, VALUE *argv, VALUE v) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virStorageVolGetXMLDesc, conn(v), 1, vol_get(v),
+    gen_call_string(virStorageVolGetXMLDesc, conn(v), vol_get(v),
                     NUM2UINT(flags));
 }
 
@@ -583,7 +583,7 @@ static VALUE libvirt_vol_xml_desc(int argc, VALUE *argv, VALUE v) {
  * to retrieve the path for this storage volume.
  */
 static VALUE libvirt_vol_path(VALUE v) {
-    gen_call_string(virStorageVolGetPath, conn(v), 1, vol_get(v));
+    gen_call_string(virStorageVolGetPath, conn(v), vol_get(v));
 }
 
 /*

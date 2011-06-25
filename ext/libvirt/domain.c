@@ -855,7 +855,7 @@ static VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
  * to retrieve the name of this domain.
  */
 static VALUE libvirt_dom_name(VALUE s) {
-    gen_call_string(virDomainGetName, conn(s), 0, domain_get(s));
+    gen_call_string(virDomainGetName, conn(s), domain_get(s));
 }
 
 /*
@@ -909,7 +909,7 @@ static VALUE libvirt_dom_uuid(VALUE s) {
  * whether this domain is fully virtualized, paravirtualized, or a container.
  */
 static VALUE libvirt_dom_os_type(VALUE s) {
-    gen_call_string(virDomainGetOSType, conn(s), 1, domain_get(s));
+    gen_call_string(virDomainGetOSType, conn(s), domain_get(s));
 }
 
 /*
@@ -1115,7 +1115,7 @@ static VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virDomainGetXMLDesc, conn(s), 1, domain_get(s),
+    gen_call_string(virDomainGetXMLDesc, conn(s), domain_get(s),
                     NUM2INT(flags));
 }
 
@@ -1477,7 +1477,7 @@ static VALUE libvirt_dom_snapshot_xml_desc(int argc, VALUE *argv, VALUE s) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virDomainSnapshotGetXMLDesc, conn(s), 1,
+    gen_call_string(virDomainSnapshotGetXMLDesc, conn(s),
                     domain_snapshot_get(s), NUM2UINT(flags));
 }
 
@@ -2152,7 +2152,7 @@ static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virDomainScreenshot, conn(d), 1, domain_get(d),
+    gen_call_string(virDomainScreenshot, conn(d), domain_get(d),
                     stream_get(st), NUM2UINT(screen), NUM2UINT(flags));
 }
 #endif
