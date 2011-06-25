@@ -2097,6 +2097,11 @@ void init_connect()
                     INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON));
 #endif
 
+#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_CONTROL_ERROR
+    rb_define_const(c_connect, "DOMAIN_EVENT_ID_CONTROL_ERROR",
+                    INT2NUM(VIR_DOMAIN_EVENT_ID_CONTROL_ERROR));
+#endif
+
 #if HAVE_VIRCONNECTDOMAINEVENTREGISTER
     rb_define_method(c_connect, "domain_event_register",
                      libvirt_conn_domain_event_register, -1);
