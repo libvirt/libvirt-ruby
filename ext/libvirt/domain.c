@@ -2157,6 +2157,26 @@ static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAININJECTNMI
+/*
+ * call-seq:
+ *   dom.inject_nmi(flags=0) -> nil
+ *
+ * Call +virDomainInjectNMI+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInjectNMI]
+ * to send an NMI to the guest.
+ */
+static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virDomainInjectNMI, conn(d), domain_get(d), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2621,5 +2641,9 @@ void init_domain()
 
 #if HAVE_VIRDOMAINSCREENSHOT
     rb_define_method(c_domain, "screenshot", libvirt_dom_screenshot, -1);
+#endif
+
+#if HAVE_VIRDOMAININJECTNMI
+    rb_define_method(c_domain, "inject_nmi", libvirt_dom_inject_nmi, -1);
 #endif
 }
