@@ -24,6 +24,7 @@
 #include "common.h"
 #include "connect.h"
 #include "extconf.h"
+#include "stream.h"
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR
 /* this has to be here (as opposed to below with the rest of the volume
@@ -599,6 +600,46 @@ static VALUE libvirt_vol_free(VALUE s) {
 }
 #endif
 
+#if HAVE_VIRSTORAGEVOLDOWNLOAD
+/*
+ * call-seq:
+ *   vol.download(stream, offset, length, flags=0) -> nil
+ *
+ * Call +virStorageVolDownload+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolDownload]
+ * to download the content of a volume as a stream.
+ */
+static VALUE libvirt_vol_download(int argc, VALUE *argv, VALUE v) {
+    VALUE st, offset, length, flags;
+
+    rb_scan_args(argc, argv, "31", &st, &offset, &length, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virStorageVolDownload, conn(v), vol_get(v), stream_get(st),
+                  NUM2ULL(offset), NUM2ULL(length), NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   vol.download(stream, offset, length, flags=0) -> nil
+ *
+ * Call +virStorageVolUpload+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolUpload]
+ * to upload new content to a volume from a stream.
+ */
+static VALUE libvirt_vol_upload(int argc, VALUE *argv, VALUE v) {
+    VALUE st, offset, length, flags;
+
+    rb_scan_args(argc, argv, "31", &st, &offset, &length, &flags);
+
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virStorageVolUpload, conn(v), vol_get(v), stream_get(st),
+                  NUM2ULL(offset), NUM2ULL(length), NUM2UINT(flags));
+}
+#endif
+
 void init_storage(void) {
     /*
      * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo
@@ -725,5 +766,11 @@ void init_storage(void) {
     rb_define_method(c_storage_vol, "xml_desc", libvirt_vol_xml_desc, -1);
     rb_define_method(c_storage_vol, "path", libvirt_vol_path, 0);
     rb_define_method(c_storage_vol, "free", libvirt_vol_free, 0);
+
+#if HAVE_VIRSTORAGEVOLDOWNLOAD
+    rb_define_method(c_storage_vol, "download", libvirt_vol_download, -1);
+    rb_define_method(c_storage_vol, "upload", libvirt_vol_upload, -1);
+#endif
+
 #endif
 }
