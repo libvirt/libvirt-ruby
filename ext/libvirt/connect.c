@@ -1843,6 +1843,61 @@ static VALUE libvirt_conn_stream(int argc, VALUE *argv, VALUE c) {
 }
 #endif
 
+#if HAVE_VIRINTERFACECHANGEBEGIN
+/*
+ * call-seq:
+ *   conn.interface_change_begin(flags=0) -> nil
+ *
+ * Call +virInterfaceChangeBegin+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceChangeBegin]
+ * to create a restore point for interface changes.  Once changes have been
+ * made, conn.interface_change_commit can be used to commit the result or
+ * conn.interface_change_rollback can be used to rollback to this restore point.
+ */
+static VALUE libvirt_conn_interface_change_begin(int argc, VALUE *argv,
+                                                 VALUE c) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    gen_call_void(virInterfaceChangeBegin, conn(c), connect_get(c),
+                  NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   conn.interface_change_commit(flags=0) -> nil
+ *
+ * Call +virInterfaceChangeCommit+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceChangeCommit]
+ * to commit the interface changes since the last conn.interface_change_begin.
+ */
+static VALUE libvirt_conn_interface_change_commit(int argc, VALUE *argv,
+                                                  VALUE c) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    gen_call_void(virInterfaceChangeCommit, conn(c), connect_get(c),
+                  NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   conn.interface_change_rollback(flags=0) -> nil
+ *
+ * Call +virInterfaceChangeRollback+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceChangeRollback]
+ * to rollback to the restore point saved by conn.interface_change_begin.
+ */
+static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
+                                                    VALUE c) {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    gen_call_void(virInterfaceChangeRollback, conn(c), connect_get(c),
+                  NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2192,5 +2247,14 @@ void init_connect()
 #endif
 #if HAVE_TYPE_VIRSTREAMPTR
     rb_define_method(c_connect, "stream", libvirt_conn_stream, -1);
+#endif
+
+#if HAVE_VIRINTERFACECHANGEBEGIN
+    rb_define_method(c_connect, "interface_change_begin",
+                     libvirt_conn_interface_change_begin, -1);
+    rb_define_method(c_connect, "interface_change_commit",
+                     libvirt_conn_interface_change_commit, -1);
+    rb_define_method(c_connect, "interface_change_rollback",
+                     libvirt_conn_interface_change_rollback, -1);
 #endif
 }
