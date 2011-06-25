@@ -13,6 +13,7 @@ require 'rake/clean'
 require 'rake/rdoctask'
 require 'rake/testtask'
 require 'rake/gempackagetask'
+require 'rbconfig'
 
 PKG_NAME='ruby-libvirt'
 PKG_VERSION='0.3.0'
@@ -67,7 +68,11 @@ task :build => LIBVIRT_MODULE
 #
 
 Rake::TestTask.new(:test) do |t|
-    t.test_files = [ 'tests/test_conn.rb', 'tests/test_domain.rb', 'tests/test_interface.rb', 'tests/test_network.rb', 'tests/test_nodedevice.rb', 'tests/test_nwfilter.rb', 'tests/test_open.rb', 'tests/test_secret.rb', 'tests/test_storage.rb' ]
+    t.test_files = [ 'tests/test_conn.rb', 'tests/test_domain.rb',
+                     'tests/test_interface.rb', 'tests/test_network.rb',
+                     'tests/test_nodedevice.rb', 'tests/test_nwfilter.rb',
+                     'tests/test_open.rb', 'tests/test_secret.rb',
+                     'tests/test_storage.rb' ]
     t.libs = [ 'lib', 'ext/libvirt' ]
 end
 task :test => :build
@@ -76,13 +81,12 @@ task :test => :build
 # Documentation tasks
 #
 
-RDOC_FILES = FileList[
-  "README.rdoc", "lib/libvirt.rb", "ext/libvirt/_libvirt.c",
-  "ext/libvirt/connect.c", "ext/libvirt/domain.c", "ext/libvirt/interface.c",
-  "ext/libvirt/network.c", "ext/libvirt/nodedevice.c",
-  "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c", "ext/libvirt/storage.c",
-  "ext/libvirt/stream.c"
-]
+RDOC_FILES = FileList[ "README.rdoc", "lib/libvirt.rb",
+                       "ext/libvirt/_libvirt.c", "ext/libvirt/connect.c",
+                       "ext/libvirt/domain.c", "ext/libvirt/interface.c",
+                       "ext/libvirt/network.c", "ext/libvirt/nodedevice.c",
+                       "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c",
+                       "ext/libvirt/storage.c", "ext/libvirt/stream.c" ]
 
 Rake::RDocTask.new do |rd|
     rd.main = "README.rdoc"
@@ -103,7 +107,7 @@ end
 
 task :splint => [ MAKEFILE ] do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
-        unless sh "splint -I /usr/lib/ruby/1.8/i386-linux *.c"
+        unless sh "splint -I" + Config::CONFIG['vendorarchdir'] + " *.c"
             $stderr.puts "Failed to run splint"
             break
         end
@@ -114,17 +118,14 @@ end
 # Package tasks
 #
 
-PKG_FILES = FileList[
-  "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
-  "lib/**/*.rb",
-  "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
-  "tests/**/*",
-  "spec/**/*"
-]
+PKG_FILES = FileList[ "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
+                      "lib/**/*.rb",
+                      "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
+                      "tests/**/*",
+                      "spec/**/*" ]
 
-DIST_FILES = FileList[
-  "pkg/*.src.rpm",  "pkg/*.gem",  "pkg/*.zip", "pkg/*.tgz"
-]
+DIST_FILES = FileList[ "pkg/*.src.rpm",  "pkg/*.gem",  "pkg/*.zip",
+                       "pkg/*.tgz" ]
 
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
