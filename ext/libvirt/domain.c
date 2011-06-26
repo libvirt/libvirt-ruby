@@ -1597,6 +1597,8 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
     _E(type == NULL, create_error(e_RetrieveError, "virDomainGetSchedulerType",
                                   conn(d)));
 
+    args.type = type;
+    args.nparams = nparams;
     result = rb_protect(create_sched_type_array, (VALUE)&args, &exception);
     if (exception) {
         free(type);
