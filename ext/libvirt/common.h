@@ -35,7 +35,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
  * function will return the string on success and throw an exception on
  * error. The string returned by FUNC is freed if dealloc is true.
  */
-#define gen_call_string(func, conn, args...)                            \
+#define gen_call_string(func, conn, dealloc, args...)                   \
     do {                                                                \
         const char *str;                                                \
         VALUE result;                                                   \
@@ -44,7 +44,8 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         _E(str == NULL, create_error(e_Error, # func, conn));           \
                                                                         \
         result = rb_str_new2(str);                                      \
-        xfree((void *) str);                                            \
+        if (dealloc)                                                    \
+            xfree((void *) str);                                        \
         return result;                                                  \
     } while(0)
 

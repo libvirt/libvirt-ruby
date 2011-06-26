@@ -105,7 +105,7 @@ static VALUE libvirt_conn_closed_p(VALUE s) {
  * to retrieve the type of hypervisor for this connection.
  */
 static VALUE libvirt_conn_type(VALUE s) {
-    gen_call_string(virConnectGetType, conn(s), connect_get(s));
+    gen_call_string(virConnectGetType, conn(s), 0, connect_get(s));
 }
 
 /*
@@ -154,7 +154,7 @@ static VALUE libvirt_conn_libversion(VALUE s) {
  * to retrieve the hostname of the hypervisor for this connection.
  */
 static VALUE libvirt_conn_hostname(VALUE s) {
-    gen_call_string(virConnectGetHostname, conn(s), connect_get(s));
+    gen_call_string(virConnectGetHostname, conn(s), 1, connect_get(s));
 }
 
 /*
@@ -165,7 +165,7 @@ static VALUE libvirt_conn_hostname(VALUE s) {
  * to retrieve the canonical URI for this connection.
  */
 static VALUE libvirt_conn_uri(VALUE s) {
-    gen_call_string(virConnectGetURI, conn(s), connect_get(s));
+    gen_call_string(virConnectGetURI, conn(s), 1, connect_get(s));
 }
 
 /*
@@ -344,7 +344,7 @@ static VALUE libvirt_conn_secure_p(VALUE s) {
  * to retrieve the capabilities XML for this connection.
  */
 static VALUE libvirt_conn_capabilities(VALUE s) {
-    gen_call_string(virConnectGetCapabilities, conn(s), connect_get(s));
+    gen_call_string(virConnectGetCapabilities, conn(s), 1, connect_get(s));
 }
 
 #if HAVE_VIRCONNECTCOMPARECPU
@@ -1788,9 +1788,9 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virConnectFindStoragePoolSources, conn(c), connect_get(c),
-                    StringValueCStr(type), get_string_or_nil(srcSpec_val),
-                    NUM2UINT(flags));
+    gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
+                    connect_get(c), StringValueCStr(type),
+                    get_string_or_nil(srcSpec_val), NUM2UINT(flags));
 }
 #endif
 
@@ -1811,7 +1811,7 @@ static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c) {
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    gen_call_string(virConnectGetSysinfo, conn(c), connect_get(c),
+    gen_call_string(virConnectGetSysinfo, conn(c), 1, connect_get(c),
                     NUM2UINT(flags));
 }
 #endif
