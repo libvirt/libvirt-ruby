@@ -40,6 +40,7 @@
       <div id="content">
 	<h1>News</h1>
 	<ul>
+	  <li>July 27, 2011 - Release 0.4.0</li>
 	  <li>December 12, 2010 - Release 0.3.0</li>
 	  <li>November 10, 2010 - Gem for version 0.2.0 pushed to
 	  rubygems.org</li>
@@ -53,6 +54,26 @@
 	  <li>November 19, 2007 - Release 0.0.1</li>
 	</ul>
 	<h1>Releases</h1>
+	<h3>0.4.0: July 27, 2011</h3>
+	<ul>
+	  <li>Updated Domain class, implementing dom.memory_parameters=,
+	    dom.memory_parameters, dom.updated?, dom.migrate2,
+	    dom.migrate_to_uri2, dom.migrate_set_max_speed,
+	    dom.qemu_monitor_command, dom.blkio_parameters,
+	    dom.blkio_parameters=, dom.state, dom.open_console, dom.screenshot,
+	    and dom.inject_nmi</li>
+	  <li>Implementation of the Stream class, which covers the
+	    libvirt virStream APIs</li>
+	  <li>Add the ability to build against non-system libvirt libraries</li>
+	  <li>Updated Error object, which now includes the libvirt
+	    code, component and level of the error, as well as all of
+	    the error constants from libvirt.h</li>
+	  <li>Updated Connect class, implementing conn.sys_info, conn.stream,
+	    conn.interface_change_begin, conn.interface_change_commit, and
+	    conn.interface_change_rollback</li>
+	  <li>Updated StorageVol class, implementing vol.download and vol.upload</li>
+	  <li>Various bugfixes</li>
+	</ul>
 	<h3>0.3.0: Dec 12, 2010</h3>
 	<ul>
 	  <li>Implementation of Libvirt::open_auth, Libvirt::event_register_impl</li>

@@ -16,7 +16,7 @@ require 'rake/gempackagetask'
 require 'rbconfig'
 
 PKG_NAME='ruby-libvirt'
-PKG_VERSION='0.3.0'
+PKG_VERSION='0.4.0'
 
 EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"

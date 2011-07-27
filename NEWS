@@ -1,3 +1,19 @@
+2011-07-27 0.4.0
+  * Updated Domain class, implementing dom.memory_parameters=,
+    dom.memory_parameters, dom.updated?, dom.migrate2, dom.migrate_to_uri2,
+    dom.migrate_set_max_speed, dom.qemu_monitor_command, dom.blkio_parameters,
+    dom.blkio_parameters=, dom.state, dom.open_console, dom.screenshot, and
+    dom.inject_nmi
+  * Implementation of the Stream class, which covers the libvirt virStream APIs
+  * Add the ability to build against non-system libvirt libraries
+  * Updated Error object, which now includes the libvirt code, component and
+    level of the error, as well as all of the error constants from libvirt.h
+  * Updated Connect class, implementing conn.sys_info, conn.stream,
+    conn.interface_change_begin, conn.interface_change_commit, and
+    conn.interface_change_rollback
+  * Updated StorageVol class, implementing vol.download and vol.upload
+  * Various bugfixes
+
 2010-12-12 0.3.0
   * Implementation of Libvirt::open_auth, Libvirt::event_register_impl
   * Updated Connect class, implementing conn.compare_cpu, conn.baseline_cpu,
