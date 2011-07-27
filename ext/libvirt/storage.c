@@ -622,7 +622,7 @@ static VALUE libvirt_vol_download(int argc, VALUE *argv, VALUE v) {
 
 /*
  * call-seq:
- *   vol.download(stream, offset, length, flags=0) -> nil
+ *   vol.upload(stream, offset, length, flags=0) -> nil
  *
  * Call +virStorageVolUpload+[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolUpload]
  * to upload new content to a volume from a stream.
