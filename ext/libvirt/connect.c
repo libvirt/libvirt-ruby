@@ -726,7 +726,7 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
  * Call +virConnectDomainEventRegisterAny+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventRegisterAny]
  * to register callback for eventID with libvirt.  The eventID must be one of
  * the Libvirt::Connect::DOMAIN_EVENT_ID_* constants.  The callback can either
- * by a Symbol (that is the name of a method to callback) or a Proc.  Note that
+ * be a Symbol (that is the name of a method to callback) or a Proc.  Note that
  * the callback must accept different numbers of arguments depending on the
  * eventID passed in.  The arguments are as follows:
  *
@@ -832,7 +832,7 @@ static int domain_event_callback(virConnectPtr conn,
  *
  * Call +virConnectDomainEventRegister+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventRegister]
  * to register callback for domain lifecycle events with libvirt.  The
- * callback can either by a Symbol (that is the name of a method to callback)
+ * callback can either be a Symbol (that is the name of a method to callback)
  * or a Proc.  The callback must accept 5 parameters: Libvirt::Connect,
  * Libvirt::Domain, event, detail, opaque.  The opaque parameter to
  * domain_event_register can be any valid ruby type, and will be passed into
