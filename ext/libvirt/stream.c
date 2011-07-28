@@ -243,6 +243,21 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque) {
                  "wrong stream event callback (expected Symbol or Proc)");
 }
 
+/*
+ * call-seq:
+ *   stream.event_add_callback(events, callback, opaque=nil) -> nil
+ *
+ * Call +virStreamEventAddCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventAddCallback]
+ * to register a callback to be notified when a stream becomes readable or
+ * writeable.  The events parameter is an integer representing the events the
+ * user is interested in; it should be one or more of EVENT_READABLE,
+ * EVENT_WRITABLE, EVENT_ERROR, and EVENT_HANGUP, ORed together.  The callback
+ * can either be a Symbol (that is the name of a method to callback) or a Proc.
+ * The callback should accept 3 parameters: a pointer to the Stream object
+ * itself, the integer that represents the events that actually occurred, and
+ * an opaque pointer that was (optionally) passed into
+ * stream.event_add_callback to begin with.
+ */
 static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s) {
     VALUE events;
     VALUE callback;
@@ -269,6 +284,16 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s) {
     return Qnil;
 }
 
+/*
+ * call-seq:
+ *   stream.event_update_callback(events) -> nil
+ *
+ * Call +virStreamEventUpdateCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventUpdateCallback]
+ * to change the events that the event callback is looking for.  The events
+ * parameter is an integer representing the events the user is interested in;
+ * it should be one or more of EVENT_READABLE, EVENT_WRITABLE, EVENT_ERROR,
+ * and EVENT_HANGUP, ORed together.
+ */
 static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events) {
     int ret;
 
@@ -279,6 +304,13 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events) {
     return Qnil;
 }
 
+/*
+ * call-seq:
+ *   stream.event_remove_callback -> nil
+ *
+ * Call +virStreamEventRemoveCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventRemoveCallback]
+ * to remove the event callback currently registered to this stream.
+ */
 static VALUE libvirt_stream_event_remove_callback(VALUE s) {
     int ret;
 
