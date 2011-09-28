@@ -2185,7 +2185,7 @@ static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d) {
 #if HAVE_VIRDOMAINGETCONTROLINFO
 /*
  * call-seq:
- *   dom.control_info(flags=0) -> nil
+ *   dom.control_info(flags=0) -> Libvirt::Domain::ControlInfo
  *
  * Call +virDomainGetControlInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetControlInfo]
  * to retrieve domain control interface information.
@@ -2198,10 +2198,12 @@ static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d) {
     VALUE result;
 
     rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
 
-    r = virDomainGetControlInfo(dom, &info);
+    r = virDomainGetControlInfo(dom, &info, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainGetControlInfo",
-                           conn(s)));
+                           conn(d)));
 
     result = rb_class_new_instance(0, NULL, c_domain_control_info);
     rb_iv_set(result, "@state", ULONG2NUM(info.state));
