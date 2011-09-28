@@ -1858,6 +1858,8 @@ static VALUE libvirt_conn_interface_change_begin(int argc, VALUE *argv,
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
 
     gen_call_void(virInterfaceChangeBegin, conn(c), connect_get(c),
                   NUM2UINT(flags));
@@ -1875,6 +1877,8 @@ static VALUE libvirt_conn_interface_change_commit(int argc, VALUE *argv,
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
 
     gen_call_void(virInterfaceChangeCommit, conn(c), connect_get(c),
                   NUM2UINT(flags));
@@ -1892,6 +1896,8 @@ static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
 
     gen_call_void(virInterfaceChangeRollback, conn(c), connect_get(c),
                   NUM2UINT(flags));
