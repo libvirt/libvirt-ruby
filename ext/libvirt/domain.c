@@ -2258,6 +2258,10 @@ void init_domain()
     rb_define_const(c_domain, "MIGRATE_NON_SHARED_INC",
                     INT2NUM(VIR_MIGRATE_NON_SHARED_INC));
 #endif
+#if HAVE_CONST_VIR_MIGRATE_CHANGE_PROTECTION
+    rb_define_const(c_domain, "MIGRATE_CHANGE_PROTECTION",
+                    INT2NUM(VIR_MIGRATE_CHANGE_PROTECTION));
+#endif
     rb_define_const(c_domain, "DOMAIN_XML_SECURE",
                     INT2NUM(VIR_DOMAIN_XML_SECURE));
     rb_define_const(c_domain, "DOMAIN_XML_INACTIVE",
