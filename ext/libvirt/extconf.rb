@@ -211,6 +211,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_START_AUTODESTROY',
                    'VIR_DOMAIN_START_BYPASS_CACHE',
                    'VIR_DOMAIN_START_FORCE_BOOT',
+                   'VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON',
                  ]
 
 have_libvirt_types(libvirt_types)

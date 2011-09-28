@@ -2491,6 +2491,10 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_UNUSED));
     rb_define_const(c_domain_memory_stats, "AVAILABLE",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_AVAILABLE));
+#if HAVE_CONST_VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON
+    rb_define_const(c_domain_memory_stats, "ACTUAL_BALLOON",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON));
+#endif
 #endif
 
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
