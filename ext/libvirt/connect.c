@@ -1904,6 +1904,85 @@ static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
 }
 #endif
 
+#if HAVE_VIRNODEGETCPUSTATS
+struct cpu_hash_field {
+    virNodeCPUStatsPtr param;
+    VALUE result;
+};
+
+static VALUE cpu_hash_aset(VALUE in) {
+    struct cpu_hash_field *hf = (struct cpu_hash_field *)in;
+
+    rb_hash_aset(hf->result, rb_str_new2(hf->param->field),
+                 ULL2NUM(hf->param->value));
+
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   conn.node_cpu_stats(cpuNum=-1, flags=0) -> Hash
+ *
+ * Call +virNodeGetCPUStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetCPUStats]
+ * to retrieve cpu statistics from the virtualization host.
+ */
+static VALUE libvirt_conn_node_cpu_stats(int argc, VALUE *argv, VALUE c) {
+    VALUE flags;
+    VALUE cpuNum;
+    int nparams;
+    int r;
+    VALUE result;
+    virNodeCPUStatsPtr params;
+    int i;
+    int exception;
+    struct cpu_hash_field hf;
+
+    rb_scan_args(argc, argv, "02", &cpuNum, &flags);
+    if (NIL_P(cpuNum))
+        cpuNum = INT2NUM(-1);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    /* we first call virNodeGetCPUStats with a NULL params and a 0 nparams
+     * to find out how many params we need
+     */
+    nparams = 0;
+    r = virNodeGetCPUStats(conn(c), NUM2INT(cpuNum), NULL, &nparams,
+                           NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetCPUStats", conn(c)));
+
+    result = rb_hash_new();
+
+    if (nparams == 0)
+        return result;
+
+    /* Now we allocate the params array */
+    params = ALLOC_N(virNodeCPUStats, nparams);
+
+    r = virNodeGetCPUStats(conn(c), NUM2INT(cpuNum), params, &nparams,
+                           NUM2UINT(flags));
+    if (r < 0) {
+        xfree(params);
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCPUStats",
+                                  conn(c)));
+    }
+
+    for (i = 0; i < nparams; i++) {
+        hf.param = &params[i];
+        hf.result = result;
+        rb_protect(cpu_hash_aset, (VALUE)&hf, &exception);
+        if (exception) {
+            xfree(params);
+            rb_jump_tag(exception);
+        }
+    }
+
+    xfree(params);
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2267,5 +2346,10 @@ void init_connect()
                      libvirt_conn_interface_change_commit, -1);
     rb_define_method(c_connect, "interface_change_rollback",
                      libvirt_conn_interface_change_rollback, -1);
+#endif
+
+#if HAVE_VIRNODEGETCPUSTATS
+    rb_define_method(c_connect, "node_cpu_stats", libvirt_conn_node_cpu_stats,
+                     -1);
 #endif
 }

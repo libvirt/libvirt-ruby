@@ -150,6 +150,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainInjectNMI',
                   'virDomainGetControlInfo',
                   'virDomainMigrateGetMaxSpeed',
+                  'virNodeGetCPUStats',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
