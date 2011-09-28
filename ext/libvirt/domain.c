@@ -276,13 +276,27 @@ static VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   dom.destroy -> nil
+ *   dom.destroy(flags=0) -> nil
  *
  * Call +virDomainDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDestroy]
  * to do a hard power-off of the domain.
  */
-static VALUE libvirt_dom_destroy(VALUE s) {
-    gen_call_void(virDomainDestroy, conn(s), domain_get(s));
+static VALUE libvirt_dom_destroy(int argc, VALUE *argv, VALUE d) {
+    virDomainPtr dom = domain_get(d);
+    virConnectPtr c = conn(d);
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+#if HAVE_VIRDOMAINDESTROYFLAGS
+    gen_call_void(virDomainDestroyFlags, c, dom, NUM2UINT(flags));
+#else
+    if (NUM2UINT(flags) != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    gen_call_void(virDomainDestroy, c, dom);
+#endif
 }
 
 /*
@@ -2359,7 +2373,7 @@ void init_domain()
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
-    rb_define_method(c_domain, "destroy", libvirt_dom_destroy, 0);
+    rb_define_method(c_domain, "destroy", libvirt_dom_destroy, -1);
     rb_define_method(c_domain, "suspend", libvirt_dom_suspend, 0);
     rb_define_method(c_domain, "resume", libvirt_dom_resume, 0);
     rb_define_method(c_domain, "save", libvirt_dom_save, 1);
