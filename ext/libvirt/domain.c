@@ -2298,6 +2298,9 @@ void init_domain()
 #if HAVE_CONST_VIR_DUMP_LIVE
     rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
 #endif
+#if HAVE_CONST_VIR_DUMP_BYPASS_CACHE
+    rb_define_const(c_domain, "BYPASS_CACHE", INT2NUM(VIR_DUMP_BYPASS_CACHE));
+#endif
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
     rb_define_const(c_domain, "VCPU_LIVE", INT2NUM(VIR_DOMAIN_VCPU_LIVE));
