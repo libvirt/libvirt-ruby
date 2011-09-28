@@ -2696,6 +2696,15 @@ void init_domain()
     rb_define_attr(c_domain_control_info, "details", 1, 0);
     rb_define_attr(c_domain_control_info, "stateTime", 1, 0);
 
+    rb_define_const(c_domain_control_info, "CONTROL_OK",
+                    INT2NUM(VIR_DOMAIN_CONTROL_OK));
+    rb_define_const(c_domain_control_info, "CONTROL_JOB",
+                    INT2NUM(VIR_DOMAIN_CONTROL_JOB));
+    rb_define_const(c_domain_control_info, "CONTROL_OCCUPIED",
+                    INT2NUM(VIR_DOMAIN_CONTROL_OCCUPIED));
+    rb_define_const(c_domain_control_info, "CONTROL_ERROR",
+                    INT2NUM(VIR_DOMAIN_CONTROL_ERROR));
+
     rb_define_method(c_domain, "control_info", libvirt_dom_control_info, -1);
 #endif
 }
