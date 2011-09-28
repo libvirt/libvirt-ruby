@@ -2287,6 +2287,11 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_START_BYPASS_CACHE));
 #endif
 
+#if HAVE_CONST_VIR_DOMAIN_START_FORCE_BOOT
+    rb_define_const(c_domain, "START_FORCE_BOOT",
+                    INT2NUM(VIR_DOMAIN_START_FORCE_BOOT));
+#endif
+
 #if HAVE_CONST_VIR_DUMP_CRASH
     rb_define_const(c_domain, "DUMP_CRASH", INT2NUM(VIR_DUMP_CRASH));
 #endif
