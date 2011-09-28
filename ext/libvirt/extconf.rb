@@ -153,6 +153,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeGetCPUStats',
                   'virNodeGetMemoryStats',
                   'virDomainDestroyFlags',
+                  'virDomainSaveFlags',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -218,6 +219,9 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON',
                    'VIR_DUMP_BYPASS_CACHE',
                    'VIR_MIGRATE_CHANGE_PROTECTION',
+                   'VIR_DOMAIN_SAVE_BYPASS_CACHE',
+                   'VIR_DOMAIN_SAVE_RUNNING',
+                   'VIR_DOMAIN_SAVE_PAUSED',
                  ]
 
 have_libvirt_types(libvirt_types)

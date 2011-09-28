@@ -325,14 +325,33 @@ static VALUE libvirt_dom_resume(VALUE s) {
 
 /*
  * call-seq:
- *   dom.save(filename) -> nil
+ *   dom.save(filename, dxml=nil, flags=0) -> nil
  *
  * Call +virDomainSave+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSave]
  * to save the domain state to filename.  After this call, the domain will no
  * longer be consuming any resources.
  */
-static VALUE libvirt_dom_save(VALUE s, VALUE to) {
-    gen_call_void(virDomainSave, conn(s), domain_get(s), StringValueCStr(to));
+static VALUE libvirt_dom_save(int argc, VALUE *argv, VALUE d) {
+    virDomainPtr dom = domain_get(d);
+    virConnectPtr c = conn(d);
+    VALUE flags;
+    VALUE to;
+    VALUE dxml;
+
+    rb_scan_args(argc, argv, "12", &to, &dxml, &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+#if HAVE_VIRDOMAINSAVEFLAGS
+    gen_call_void(virDomainSaveFlags, c, dom, StringValueCStr(to),
+                  get_string_or_nil(dxml), NUM2UINT(flags));
+#else
+    if (TYPE(dxml) != T_NIL)
+        rb_raise(e_NoSupportError, "Non-nil dxml not supported");
+    if (NUM2UINT(flags) != 0)
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    gen_call_void(virDomainSave, c, dom, StringValueCStr(to));
+#endif
 }
 
 #if HAVE_VIRDOMAINMANAGEDSAVE
@@ -2370,13 +2389,24 @@ void init_domain()
                      libvirt_dom_migrate_set_max_speed, -1);
 #endif
 
+#if HAVE_CONST_VIR_DOMAIN_SAVE_BYPASS_CACHE
+    rb_define_const(c_domain, "SAVE_BYPASS_CACHE",
+                    INT2NUM(VIR_DOMAIN_SAVE_BYPASS_CACHE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SAVE_RUNNING
+    rb_define_const(c_domain, "SAVE_RUNNING", INT2NUM(VIR_DOMAIN_SAVE_RUNNING));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SAVE_PAUSED
+    rb_define_const(c_domain, "SAVE_PAUSED", INT2NUM(VIR_DOMAIN_SAVE_PAUSED));
+#endif
+
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
     rb_define_method(c_domain, "destroy", libvirt_dom_destroy, -1);
     rb_define_method(c_domain, "suspend", libvirt_dom_suspend, 0);
     rb_define_method(c_domain, "resume", libvirt_dom_resume, 0);
-    rb_define_method(c_domain, "save", libvirt_dom_save, 1);
+    rb_define_method(c_domain, "save", libvirt_dom_save, -1);
     rb_define_singleton_method(c_domain, "restore", libvirt_dom_s_restore, 2);
     rb_define_method(c_domain, "restore", libvirt_dom_restore, 1);
     rb_define_method(c_domain, "core_dump", libvirt_dom_core_dump, -1);
