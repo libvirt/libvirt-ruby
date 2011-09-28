@@ -260,7 +260,8 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m) {
         else if (TYPE(credlist) == T_ARRAY)
             auth->ncredtype = RARRAY_LEN(credlist);
         else
-            rb_raise(rb_eTypeError, "wrong argument type (expected Array or nil)");
+            rb_raise(rb_eTypeError,
+                     "wrong argument type (expected Array or nil)");
         auth->credtype = NULL;
         if (auth->ncredtype > 0) {
             /* we don't use ALLOC_N here because that can throw an exception,
