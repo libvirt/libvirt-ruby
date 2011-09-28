@@ -2212,6 +2212,31 @@ static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
+/*
+ * call-seq:
+ *   dom.migrate_max_speed(flags=0) -> fixnum
+ *
+ * Call +virDomainMigrateGetMaxSpeed+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetMaxSpeed]
+ * to retrieve the maximum speed a migration can use.
+ */
+static VALUE libvirt_dom_migrate_max_speed(int argc, VALUE *argv, VALUE d) {
+    VALUE flags;
+    virDomainPtr dom = domain_get(d);
+    int r;
+    unsigned long bandwidth;
+
+    rb_scan_args(argc, argv, "01", &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    r = virDomainMigrateGetMaxSpeed(dom, &bandwidth, NUM2UINT(flags));
+    _E(r < 0, create_error(e_RetrieveError, "virDomainMigrateGetMaxSpeed",
+                           conn(d)));
+
+    return ULONG2NUM(bandwidth);
+}
+#endif
 /*
  * Class Libvirt::Domain
  */
@@ -2730,5 +2755,10 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_CONTROL_ERROR));
 
     rb_define_method(c_domain, "control_info", libvirt_dom_control_info, -1);
+#endif
+
+#if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
+    rb_define_method(c_domain, "migrate_max_speed",
+                     libvirt_dom_migrate_max_speed, -1);
 #endif
 }
