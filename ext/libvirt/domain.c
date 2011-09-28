@@ -75,6 +75,9 @@ static VALUE c_domain_snapshot;
 static VALUE c_domain_job_info;
 #endif
 static VALUE c_domain_vcpuinfo;
+#if HAVE_VIRDOMAINGETCONTROLINFO
+static VALUE c_domain_control_info;
+#endif
 
 static void domain_free(void *d) {
     generic_free(Domain, d);
@@ -2179,6 +2182,36 @@ static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINGETCONTROLINFO
+/*
+ * call-seq:
+ *   dom.control_info(flags=0) -> nil
+ *
+ * Call +virDomainGetControlInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetControlInfo]
+ * to retrieve domain control interface information.
+ */
+static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d) {
+    VALUE flags;
+    virDomainPtr dom = domain_get(d);
+    virDomainControlInfo info;
+    int r;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    r = virDomainGetControlInfo(dom, &info);
+    _E(r < 0, create_error(e_RetrieveError, "virDomainGetControlInfo",
+                           conn(s)));
+
+    result = rb_class_new_instance(0, NULL, c_domain_control_info);
+    rb_iv_set(result, "@state", ULONG2NUM(info.state));
+    rb_iv_set(result, "@details", ULONG2NUM(info.details));
+    rb_iv_set(result, "@stateTime", ULL2NUM(info.stateTime));
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2647,5 +2680,18 @@ void init_domain()
 
 #if HAVE_VIRDOMAININJECTNMI
     rb_define_method(c_domain, "inject_nmi", libvirt_dom_inject_nmi, -1);
+#endif
+
+#if HAVE_VIRDOMAINGETCONTROLINFO
+    /*
+     * Class Libvirt::Domain::ControlInfo
+     */
+    c_domain_control_info = rb_define_class_under(c_domain, "ControlInfo",
+                                                  rb_cObject);
+    rb_define_attr(c_domain_control_info, "state", 1, 0);
+    rb_define_attr(c_domain_control_info, "details", 1, 0);
+    rb_define_attr(c_domain_control_info, "stateTime", 1, 0);
+
+    rb_define_method(c_domain, "control_info", libvirt_dom_control_info, -1);
 #endif
 }
