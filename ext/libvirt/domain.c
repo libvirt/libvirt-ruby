@@ -2635,6 +2635,10 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_PAUSED_WATCHDOG));
     rb_define_const(c_domain, "DOMAIN_PAUSED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_PAUSED_FROM_SNAPSHOT));
+#if HAVE_CONST_VIR_DOMAIN_PAUSED_SHUTTING_DOWN
+    rb_define_const(c_domain, "DOMAIN_PAUSED_SHUTTING_DOWN",
+                    INT2NUM(VIR_DOMAIN_PAUSED_SHUTTING_DOWN));
+#endif
     rb_define_const(c_domain, "DOMAIN_SHUTDOWN_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_UNKNOWN));
     rb_define_const(c_domain, "DOMAIN_SHUTDOWN_USER",
