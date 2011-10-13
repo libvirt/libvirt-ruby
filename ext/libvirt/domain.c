@@ -435,18 +435,6 @@ static VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE s) {
 
 /*
  * call-seq:
- *   dom.restore(filename) -> nil
- *
- * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
- * to restore the domain from the filename.
- */
-static VALUE libvirt_dom_restore(VALUE s, VALUE from) {
-    gen_call_void(virDomainRestore, conn(s), connect_get(s),
-                  StringValueCStr(from));
-}
-
-/*
- * call-seq:
  *   Libvirt::Domain::restore(conn, filename) -> nil
  *
  * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
@@ -2409,7 +2397,6 @@ void init_domain()
     rb_define_method(c_domain, "resume", libvirt_dom_resume, 0);
     rb_define_method(c_domain, "save", libvirt_dom_save, -1);
     rb_define_singleton_method(c_domain, "restore", libvirt_dom_s_restore, 2);
-    rb_define_method(c_domain, "restore", libvirt_dom_restore, 1);
     rb_define_method(c_domain, "core_dump", libvirt_dom_core_dump, -1);
     rb_define_method(c_domain, "info", libvirt_dom_info, 0);
     rb_define_method(c_domain, "ifinfo", libvirt_dom_if_stats, 1);
