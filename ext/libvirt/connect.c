@@ -2055,6 +2055,48 @@ static VALUE libvirt_conn_node_memory_stats(int argc, VALUE *argv, VALUE c) {
 }
 #endif
 
+#if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC
+/*
+ * call-seq:
+ *   conn.save_image_xml_desc(filename, flags=0) -> string
+ *
+ * Call +virDomainSaveImageGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSaveImageGetXMLDesc]
+ * to get the XML corresponding to a save file.
+ */
+static VALUE libvirt_conn_save_image_xml_desc(int argc, VALUE *argv, VALUE c) {
+    VALUE filename;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "11", &filename, &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_string(virDomainSaveImageGetXMLDesc, conn(c), 1, connect_get(c),
+                    StringValueCStr(filename), NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   conn.define_save_image_xml(filename, newxml, flags=0) -> nil
+ *
+ * Call +virDomainSaveImageDefineXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSaveImageDefineXML]
+ * to define new XML for a saved image.
+ */
+static VALUE libvirt_conn_define_save_image_xml(int argc, VALUE *argv, VALUE c) {
+    VALUE filename;
+    VALUE newxml;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "21", &filename, &newxml, &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virDomainSaveImageDefineXML, conn(c), connect_get(c),
+                  StringValueCStr(filename), StringValueCStr(newxml),
+                  NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2427,5 +2469,12 @@ void init_connect()
 #if HAVE_VIRNODEGETMEMORYSTATS
     rb_define_method(c_connect, "node_memory_stats",
                      libvirt_conn_node_memory_stats, -1);
+#endif
+
+#if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC
+    rb_define_method(c_connect, "save_image_xml_desc",
+                     libvirt_conn_save_image_xml_desc, -1);
+    rb_define_method(c_connect, "define_save_image_xml",
+                     libvirt_conn_define_save_image_xml, -1);
 #endif
 }

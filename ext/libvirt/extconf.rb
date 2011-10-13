@@ -154,6 +154,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeGetMemoryStats',
                   'virDomainDestroyFlags',
                   'virDomainSaveFlags',
+                  'virDomainSaveImageGetXMLDesc',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
