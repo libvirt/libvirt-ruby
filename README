@@ -28,7 +28,7 @@ toplevel of your source checkout):
 Notes
 -----
 As of June 24, 2011, the ruby-libvirt bindings support all of the libvirt
-APIs up to libvirt commit hash 2c5ded6e8269463d2daab3dfa0ecae1477730ee2
+APIs up to libvirt commit hash 508de7eedb347b7369b97e1e08e6d30be590d80a
 with the following exceptions:
 
 - virConnectRef
@@ -50,3 +50,22 @@ with the following exceptions:
 - virNWFilterRef
 - virEventRegisterDefaultImpl
 - virEventRunDefaultImpl
+- virDomainRestoreFlags
+- virDomainGetControlInfo
+- virDomainBlockStatsFlags
+- VIR_DOMAIN_UNDEFINE_MANAGED_SAVE
+- VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
+- virDomainUndefineFlags
+- virDomainPinVcpuFlags
+- virDomainGetVcpuPinInfo
+- virDomainBlockJobAbort
+- virDomainGetBlockJobInfo
+- virDomainBlockJobSetSpeed
+- virDomainBlockPull
+- virDomainSendKey
+- virEventAddHandle
+- virEventUpdateHandle
+- virEventRemoveHandle
+- virEventAddTimeout
+- virEventUpdateTimeout
+- virEventRemoveTimeout
