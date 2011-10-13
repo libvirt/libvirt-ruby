@@ -1904,52 +1904,44 @@ static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
 }
 #endif
 
-#if HAVE_VIRNODEGETCPUSTATS
-struct cpu_hash_field {
-    virNodeCPUStatsPtr param;
+#if HAVE_VIRNODEGETCPUSTATS || HAVE_VIRNODEGETMEMORYSTATS
+struct hash_field {
+    void *params;
+    int i;
     VALUE result;
 };
 
-static VALUE cpu_hash_aset(VALUE in) {
-    struct cpu_hash_field *hf = (struct cpu_hash_field *)in;
-
-    rb_hash_aset(hf->result, rb_str_new2(hf->param->field),
-                 ULL2NUM(hf->param->value));
-
-    return Qnil;
-}
-
-/*
- * call-seq:
- *   conn.node_cpu_stats(cpuNum=-1, flags=0) -> Hash
- *
- * Call +virNodeGetCPUStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetCPUStats]
- * to retrieve cpu statistics from the virtualization host.
- */
-static VALUE libvirt_conn_node_cpu_stats(int argc, VALUE *argv, VALUE c) {
+static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
+                                char *(*get_stats)(virConnectPtr conn,
+                                                   int intparam, void *params,
+                                                   int *nparams,
+                                                   unsigned int flags),
+                                void *(*alloc_stats)(int nparams),
+                                VALUE (*hash_set)(VALUE in)) {
     VALUE flags;
-    VALUE cpuNum;
+    VALUE intparam;
     int nparams;
-    int r;
+    char *errname;
     VALUE result;
-    virNodeCPUStatsPtr params;
+    void *params;
     int i;
     int exception;
-    struct cpu_hash_field hf;
+    struct hash_field hf;
 
-    rb_scan_args(argc, argv, "02", &cpuNum, &flags);
-    if (NIL_P(cpuNum))
-        cpuNum = INT2NUM(-1);
+    rb_scan_args(argc, argv, "02", &intparam, &flags);
+    if (NIL_P(intparam))
+        intparam = INT2NUM(-1);
     if (NIL_P(flags))
         flags = INT2NUM(0);
 
-    /* we first call virNodeGetCPUStats with a NULL params and a 0 nparams
-     * to find out how many params we need
+    /* we first call out to the get_stats callback with NULL params and 0
+     * nparams to find out how many parameters we need
      */
     nparams = 0;
-    r = virNodeGetCPUStats(conn(c), NUM2INT(cpuNum), NULL, &nparams,
-                           NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetCPUStats", conn(c)));
+    errname = get_stats(conn(c), NUM2INT(intparam), NULL, &nparams,
+                        NUM2UINT(flags));
+    if (errname != NULL)
+        rb_exc_raise(create_error(e_RetrieveError, errname, conn(c)));
 
     result = rb_hash_new();
 
@@ -1957,20 +1949,20 @@ static VALUE libvirt_conn_node_cpu_stats(int argc, VALUE *argv, VALUE c) {
         return result;
 
     /* Now we allocate the params array */
-    params = ALLOC_N(virNodeCPUStats, nparams);
+    params = alloc_stats(nparams);
 
-    r = virNodeGetCPUStats(conn(c), NUM2INT(cpuNum), params, &nparams,
-                           NUM2UINT(flags));
-    if (r < 0) {
+    errname = get_stats(conn(c), NUM2INT(intparam), params, &nparams,
+                        NUM2UINT(flags));
+    if (errname != NULL) {
         xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCPUStats",
-                                  conn(c)));
+        rb_exc_raise(create_error(e_RetrieveError, errname, conn(c)));
     }
 
     for (i = 0; i < nparams; i++) {
-        hf.param = &params[i];
+        hf.params = params;
         hf.result = result;
-        rb_protect(cpu_hash_aset, (VALUE)&hf, &exception);
+        hf.i = i;
+        rb_protect(hash_set, (VALUE)&hf, &exception);
         if (exception) {
             xfree(params);
             rb_jump_tag(exception);
@@ -1983,19 +1975,71 @@ static VALUE libvirt_conn_node_cpu_stats(int argc, VALUE *argv, VALUE c) {
 }
 #endif
 
-#if HAVE_VIRNODEGETMEMORYSTATS
-struct memory_hash_field {
-    virNodeMemoryStatsPtr param;
-    VALUE result;
-};
+#if HAVE_VIRNODEGETCPUSTATS
+static void *cpu_alloc_stats(int nparams) {
+    virNodeCPUStatsPtr params;
 
-static VALUE memory_hash_aset(VALUE in) {
-    struct memory_hash_field *hf = (struct memory_hash_field *)in;
+    params = ALLOC_N(virNodeCPUStats, nparams);
 
-    rb_hash_aset(hf->result, rb_str_new2(hf->param->field),
-                 ULL2NUM(hf->param->value));
+    return (void *)params;
+}
+
+static VALUE cpu_hash_set(VALUE in) {
+    struct hash_field *hf = (struct hash_field *)in;
+    virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)hf->params;
+
+    rb_hash_aset(hf->result, rb_str_new2(params[hf->i].field),
+                 ULL2NUM(params[hf->i].value));
 
     return Qnil;
+}
+
+static char *cpu_get_stats(virConnectPtr conn, int intparam, void *params,
+                           int *nparams, unsigned int flags) {
+    if (virNodeGetCPUStats(conn, intparam, params, nparams, flags) < 0)
+        return "virNodeGetCPUStats";
+
+    return NULL;
+}
+
+/*
+ * call-seq:
+ *   conn.node_cpu_stats(cpuNum=-1, flags=0) -> Hash
+ *
+ * Call +virNodeGetCPUStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetCPUStats]
+ * to retrieve cpu statistics from the virtualization host.
+ */
+static VALUE libvirt_conn_node_cpu_stats(int argc, VALUE *argv, VALUE c) {
+    return internal_get_stats(c, argc, argv, cpu_get_stats, cpu_alloc_stats,
+                              cpu_hash_set);
+}
+#endif
+
+#if HAVE_VIRNODEGETMEMORYSTATS
+static void *memory_alloc_stats(int nparams) {
+    virNodeMemoryStatsPtr params;
+
+    params = ALLOC_N(virNodeMemoryStats, nparams);
+
+    return (void *)params;
+}
+
+static VALUE memory_hash_set(VALUE in) {
+    struct hash_field *hf = (struct hash_field *)in;
+    virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)hf->params;
+
+    rb_hash_aset(hf->result, rb_str_new2(params[hf->i].field),
+                 ULL2NUM(params[hf->i].value));
+
+    return Qnil;
+}
+
+static char *memory_get_stats(virConnectPtr conn, int intparam, void *params,
+                              int *nparams, unsigned int flags) {
+    if (virNodeGetMemoryStats(conn, intparam, params, nparams, flags) < 0)
+        return "virNodeGetMemoryStats";
+
+    return NULL;
 }
 
 /*
@@ -2006,59 +2050,8 @@ static VALUE memory_hash_aset(VALUE in) {
  * to retrieve memory statistics from the virtualization host.
  */
 static VALUE libvirt_conn_node_memory_stats(int argc, VALUE *argv, VALUE c) {
-    VALUE flags;
-    VALUE cellNum;
-    int nparams;
-    int r;
-    VALUE result;
-    virNodeMemoryStatsPtr params;
-    int i;
-    int exception;
-    struct memory_hash_field hf;
-
-    rb_scan_args(argc, argv, "02", &cellNum, &flags);
-    if (NIL_P(cellNum))
-        cellNum = INT2NUM(-1);
-    if (NIL_P(flags))
-        flags = INT2NUM(0);
-
-    /* we first call virNodeGetMemoryStats with a NULL params and a 0 nparams
-     * to find out how many params we need
-     */
-    nparams = 0;
-    r = virNodeGetMemoryStats(conn(c), NUM2INT(cellNum), NULL, &nparams,
-                              NUM2UINT(flags));
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetMemoryStats", conn(c)));
-
-    result = rb_hash_new();
-
-    if (nparams == 0)
-        return result;
-
-    /* Now we allocate the params array */
-    params = ALLOC_N(virNodeMemoryStats, nparams);
-
-    r = virNodeGetMemoryStats(conn(c), NUM2INT(cellNum), params, &nparams,
-                              NUM2UINT(flags));
-    if (r < 0) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeGetMemoryStats",
-                                  conn(c)));
-    }
-
-    for (i = 0; i < nparams; i++) {
-        hf.param = &params[i];
-        hf.result = result;
-        rb_protect(memory_hash_aset, (VALUE)&hf, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
-    }
-
-    xfree(params);
-
-    return result;
+    return internal_get_stats(c, argc, argv, memory_get_stats,
+                              memory_alloc_stats, memory_hash_set);
 }
 #endif
 

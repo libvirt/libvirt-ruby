@@ -2272,6 +2272,7 @@ static VALUE libvirt_dom_migrate_max_speed(int argc, VALUE *argv, VALUE d) {
     return ULONG2NUM(bandwidth);
 }
 #endif
+
 /*
  * Class Libvirt::Domain
  */
