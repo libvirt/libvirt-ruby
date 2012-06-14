@@ -10,9 +10,9 @@
 
 # Rakefile for ruby-rpm -*- ruby -*-
 require 'rake/clean'
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'rake/testtask'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 require 'rbconfig'
 
 PKG_NAME='ruby-libvirt'
@@ -141,7 +141,7 @@ SPEC = Gem::Specification.new do |s|
     s.description = "Ruby bindings for libvirt."
 end
 
-Rake::GemPackageTask.new(SPEC) do |pkg|
+Gem::PackageTask.new(SPEC) do |pkg|
     pkg.need_tar = true
     pkg.need_zip = true
 end

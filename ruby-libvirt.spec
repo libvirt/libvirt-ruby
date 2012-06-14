@@ -14,6 +14,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
 BuildRequires:  libvirt-devel >= 0.4.0
+BuildRequires:  rubygem-rdoc
 Requires:       ruby(abi) = 1.8
 Provides:       ruby(libvirt) = %{version}
 
