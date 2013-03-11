@@ -2,6 +2,7 @@
  * network.c: virNetwork methods
  *
  * Copyright (C) 2007,2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,15 +29,18 @@
 #if HAVE_TYPE_VIRNETWORKPTR
 static VALUE c_network;
 
-static void network_free(void *d) {
+static void network_free(void *d)
+{
     generic_free(Network, d);
 }
 
-static virNetworkPtr network_get(VALUE s) {
+static virNetworkPtr network_get(VALUE s)
+{
     generic_get(Network, s);
 }
 
-VALUE network_new(virNetworkPtr n, VALUE conn) {
+VALUE network_new(virNetworkPtr n, VALUE conn)
+{
     return generic_new(c_network, n, conn, network_free);
 }
 
@@ -47,7 +51,8 @@ VALUE network_new(virNetworkPtr n, VALUE conn) {
  * Call +virNetworkUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUndefine]
  * to undefine this network.
  */
-static VALUE libvirt_netw_undefine(VALUE s) {
+static VALUE libvirt_netw_undefine(VALUE s)
+{
     gen_call_void(virNetworkUndefine, conn(s), network_get(s));
 }
 
@@ -58,7 +63,8 @@ static VALUE libvirt_netw_undefine(VALUE s) {
  * Call +virNetworkCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreate]
  * to start this network.
  */
-static VALUE libvirt_netw_create(VALUE s) {
+static VALUE libvirt_netw_create(VALUE s)
+{
     gen_call_void(virNetworkCreate, conn(s), network_get(s));
 }
 
@@ -70,8 +76,8 @@ static VALUE libvirt_netw_create(VALUE s) {
  * to update this network.
  */
 static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
-                                 VALUE index, VALUE xml, VALUE flags) {
-
+                                 VALUE index, VALUE xml, VALUE flags)
+{
     gen_call_void(virNetworkUpdate, conn(s), network_get(s),
          NUM2UINT(command), NUM2UINT(section), NUM2INT(index),
          StringValuePtr(xml), NUM2UINT(flags));
@@ -83,7 +89,8 @@ static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
  * Call +virNetworkDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDestroy]
  * to shutdown this network.
  */
-static VALUE libvirt_netw_destroy(VALUE s) {
+static VALUE libvirt_netw_destroy(VALUE s)
+{
     gen_call_void(virNetworkDestroy, conn(s), network_get(s));
 }
 
@@ -94,7 +101,8 @@ static VALUE libvirt_netw_destroy(VALUE s) {
  * Call +virNetworkGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
  * to retrieve the name of this network.
  */
-static VALUE libvirt_netw_name(VALUE s) {
+static VALUE libvirt_netw_name(VALUE s)
+{
     gen_call_string(virNetworkGetName, conn(s), 0, network_get(s));
 }
 
@@ -105,7 +113,8 @@ static VALUE libvirt_netw_name(VALUE s) {
  * Call +virNetworkGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetUUIDString]
  * to retrieve the UUID of this network.
  */
-static VALUE libvirt_netw_uuid(VALUE s) {
+static VALUE libvirt_netw_uuid(VALUE s)
+{
     virNetworkPtr netw = network_get(s);
     char uuid[VIR_UUID_STRING_BUFLEN];
     int r;
@@ -124,7 +133,8 @@ static VALUE libvirt_netw_uuid(VALUE s) {
  * Call +virNetworkGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
  * to retrieve the XML for this network.
  */
-static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -143,7 +153,8 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s) {
  * Call +virNetworkGetBridgeName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
  * to retrieve the bridge name for this network.
  */
-static VALUE libvirt_netw_bridge_name(VALUE s) {
+static VALUE libvirt_netw_bridge_name(VALUE s)
+{
     gen_call_string(virNetworkGetBridgeName, conn(s), 1, network_get(s));
 }
 
@@ -154,7 +165,8 @@ static VALUE libvirt_netw_bridge_name(VALUE s) {
  * Call +virNetworkGetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetAutostart]
  * to determine if this network will be autostarted when libvirtd starts.
  */
-static VALUE libvirt_netw_autostart(VALUE s){
+static VALUE libvirt_netw_autostart(VALUE s)
+{
     virNetworkPtr netw = network_get(s);
     int r, autostart;
 
@@ -171,7 +183,8 @@ static VALUE libvirt_netw_autostart(VALUE s){
  * Call +virNetworkSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
  * to set this network to be autostarted when libvirtd starts.
  */
-static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
+static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart)
+{
     if (autostart != Qtrue && autostart != Qfalse)
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected TrueClass or FalseClass)");
@@ -187,7 +200,8 @@ static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart) {
  * Call +virNetworkFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkFree]
  * to free this network.  The object will no longer be valid after this call.
  */
-static VALUE libvirt_netw_free(VALUE s) {
+static VALUE libvirt_netw_free(VALUE s)
+{
     gen_call_free(Network, s);
 }
 
@@ -199,7 +213,8 @@ static VALUE libvirt_netw_free(VALUE s) {
  * Call +virNetworkIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsActive]
  * to determine if this network is currently active.
  */
-static VALUE libvirt_netw_active_p(VALUE s) {
+static VALUE libvirt_netw_active_p(VALUE s)
+{
     gen_call_truefalse(virNetworkIsActive, conn(s), network_get(s));
 }
 #endif
@@ -212,7 +227,8 @@ static VALUE libvirt_netw_active_p(VALUE s) {
  * Call +virNetworkIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsPersistent]
  * to determine if this network is persistent.
  */
-static VALUE libvirt_netw_persistent_p(VALUE s) {
+static VALUE libvirt_netw_persistent_p(VALUE s)
+{
     gen_call_truefalse(virNetworkIsPersistent, conn(s), network_get(s));
 }
 #endif

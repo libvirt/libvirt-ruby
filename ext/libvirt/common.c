@@ -2,6 +2,7 @@
  * common.c: Common utilities for the ruby libvirt bindings
  *
  * Copyright (C) 2007,2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,62 +33,73 @@ struct rb_exc_new2_arg {
     char *msg;
 };
 
-static VALUE rb_exc_new2_wrap(VALUE arg) {
+static VALUE rb_exc_new2_wrap(VALUE arg)
+{
     struct rb_exc_new2_arg *e = (struct rb_exc_new2_arg *)arg;
 
     return rb_exc_new2(e->error, e->msg);
 }
 
-VALUE rb_ary_new2_wrap(VALUE arg) {
+VALUE rb_ary_new2_wrap(VALUE arg)
+{
     return rb_ary_new2(*((int *)arg));
 }
 
-VALUE rb_ary_push_wrap(VALUE arg) {
+VALUE rb_ary_push_wrap(VALUE arg)
+{
     struct rb_ary_push_arg *e = (struct rb_ary_push_arg *)arg;
 
     return rb_ary_push(e->arr, e->value);
 }
 
-VALUE rb_str_new2_wrap(VALUE arg) {
+VALUE rb_str_new2_wrap(VALUE arg)
+{
     char **str = (char **)arg;
 
     return rb_str_new2(*str);
 }
 
-VALUE rb_ary_entry_wrap(VALUE arg) {
+VALUE rb_ary_entry_wrap(VALUE arg)
+{
     struct rb_ary_entry_arg *e = (struct rb_ary_entry_arg *)arg;
 
     return rb_ary_entry(e->arr, e->elem);
 }
 
-VALUE rb_ary_new_wrap(VALUE arg) {
+VALUE rb_ary_new_wrap(VALUE arg)
+{
     return rb_ary_new();
 }
 
-VALUE rb_str_new_wrap(VALUE arg) {
+VALUE rb_str_new_wrap(VALUE arg)
+{
     struct rb_str_new_arg *e = (struct rb_str_new_arg *)arg;
 
     return rb_str_new(e->val, e->size);
 }
 
-VALUE rb_iv_set_wrap(VALUE arg) {
+VALUE rb_iv_set_wrap(VALUE arg)
+{
     struct rb_iv_set_arg *e = (struct rb_iv_set_arg *)arg;
 
     return rb_iv_set(e->klass, e->member, e->value);
 }
 
-VALUE rb_class_new_instance_wrap(VALUE arg) {
+VALUE rb_class_new_instance_wrap(VALUE arg)
+{
     struct rb_class_new_instance_arg *e = (struct rb_class_new_instance_arg *)arg;
 
     return rb_class_new_instance(e->argc, e->argv, e->klass);
 }
 
-VALUE rb_string_value_cstr_wrap(VALUE arg) {
+VALUE rb_string_value_cstr_wrap(VALUE arg)
+{
     return (VALUE)rb_string_value_cstr((VALUE *)arg);
 }
 
 /* Error handling */
-VALUE create_error(VALUE error, const char* method, virConnectPtr conn) {
+VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
+{
     VALUE ruby_errinfo;
     virErrorPtr err;
     char *msg;
@@ -143,14 +155,16 @@ char *get_string_or_nil(VALUE arg)
 }
 
 VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
-                  RUBY_DATA_FUNC free_func) {
+                  RUBY_DATA_FUNC free_func)
+{
     VALUE result;
     result = Data_Wrap_Struct(klass, NULL, free_func, ptr);
     rb_iv_set(result, "@connection", conn);
     return result;
 }
 
-int is_symbol_or_proc(VALUE handle) {
+int is_symbol_or_proc(VALUE handle)
+{
     return ((strcmp(rb_obj_classname(handle), "Symbol") == 0) ||
             (strcmp(rb_obj_classname(handle), "Proc") == 0));
 }
@@ -165,7 +179,8 @@ int is_symbol_or_proc(VALUE handle) {
  * calls with rb_protect, it also frees every individual entry in list
  * along with list itself.
  */
-VALUE gen_list(int num, char ***list) {
+VALUE gen_list(int num, char ***list)
+{
     VALUE result;
     int exception = 0;
     int i, j;

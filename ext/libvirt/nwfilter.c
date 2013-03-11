@@ -2,6 +2,7 @@
  * nwfilter.c: virNWFilter methods
  *
  * Copyright (C) 2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,15 +29,18 @@
 #if HAVE_TYPE_VIRNWFILTERPTR
 static VALUE c_nwfilter;
 
-static void nwfilter_free(void *nw) {
+static void nwfilter_free(void *nw)
+{
     generic_free(NWFilter, nw);
 }
 
-static virNWFilterPtr nwfilter_get(VALUE nw) {
+static virNWFilterPtr nwfilter_get(VALUE nw)
+{
     generic_get(NWFilter, nw);
 }
 
-VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn) {
+VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn)
+{
     return generic_new(c_nwfilter, nw, conn, nwfilter_free);
 }
 
@@ -47,7 +51,8 @@ VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn) {
  * Call +virNWFilterUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterUndefine]
  * to undefine the network filter.
  */
-static VALUE libvirt_nwfilter_undefine(VALUE s) {
+static VALUE libvirt_nwfilter_undefine(VALUE s)
+{
     gen_call_void(virNWFilterUndefine, conn(s), nwfilter_get(s));
 }
 
@@ -58,7 +63,8 @@ static VALUE libvirt_nwfilter_undefine(VALUE s) {
  * Call +virNWFilterGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetName]
  * to retrieve the network filter name.
  */
-static VALUE libvirt_nwfilter_name(VALUE s) {
+static VALUE libvirt_nwfilter_name(VALUE s)
+{
     gen_call_string(virNWFilterGetName, conn(s), 0, nwfilter_get(s));
 }
 
@@ -69,7 +75,8 @@ static VALUE libvirt_nwfilter_name(VALUE s) {
  * Call +virNWFilterGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetUUIDString]
  * to retrieve the network filter UUID.
  */
-static VALUE libvirt_nwfilter_uuid(VALUE s) {
+static VALUE libvirt_nwfilter_uuid(VALUE s)
+{
     virNWFilterPtr nwfilter = nwfilter_get(s);
     int r;
     char uuid[VIR_UUID_STRING_BUFLEN];
@@ -88,7 +95,8 @@ static VALUE libvirt_nwfilter_uuid(VALUE s) {
  * Call +virNWFilterGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetXMLDesc]
  * to retrieve the XML for this network filter.
  */
-static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -108,7 +116,8 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s) {
  * to free this network filter.  After this call the network filter object is
  * no longer valid.
  */
-static VALUE libvirt_nwfilter_free(VALUE s) {
+static VALUE libvirt_nwfilter_free(VALUE s)
+{
     gen_call_free(NWFilter, s);
 }
 

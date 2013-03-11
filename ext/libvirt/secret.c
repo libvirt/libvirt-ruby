@@ -2,6 +2,7 @@
  * secret.c: virSecret methods
  *
  * Copyright (C) 2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,15 +29,18 @@
 #if HAVE_TYPE_VIRSECRETPTR
 static VALUE c_secret;
 
-static void secret_free(void *s) {
+static void secret_free(void *s)
+{
     generic_free(Secret, s);
 }
 
-static virSecretPtr secret_get(VALUE s) {
+static virSecretPtr secret_get(VALUE s)
+{
     generic_get(Secret, s);
 }
 
-VALUE secret_new(virSecretPtr s, VALUE conn) {
+VALUE secret_new(virSecretPtr s, VALUE conn)
+{
     return generic_new(c_secret, s, conn, secret_free);
 }
 
@@ -47,7 +51,8 @@ VALUE secret_new(virSecretPtr s, VALUE conn) {
  * Call +virSecretGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUUIDString]
  * to retrieve the UUID for this secret.
  */
-static VALUE libvirt_secret_uuid(VALUE s) {
+static VALUE libvirt_secret_uuid(VALUE s)
+{
     virSecretPtr secret = secret_get(s);
     int r;
     char uuid[VIR_UUID_STRING_BUFLEN];
@@ -65,7 +70,8 @@ static VALUE libvirt_secret_uuid(VALUE s) {
  * Call +virSecretGetUsageType+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageType]
  * to retrieve the usagetype for this secret.
  */
-static VALUE libvirt_secret_usagetype(VALUE s) {
+static VALUE libvirt_secret_usagetype(VALUE s)
+{
     gen_call_int(virSecretGetUsageType, conn(s), secret_get(s));
 }
 
@@ -76,7 +82,8 @@ static VALUE libvirt_secret_usagetype(VALUE s) {
  * Call +virSecretGetUsageID+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageID]
  * to retrieve the usageid for this secret.
  */
-static VALUE libvirt_secret_usageid(VALUE s) {
+static VALUE libvirt_secret_usageid(VALUE s)
+{
     gen_call_string(virSecretGetUsageID, conn(s), 0, secret_get(s));
 }
 
@@ -87,7 +94,8 @@ static VALUE libvirt_secret_usageid(VALUE s) {
  * Call +virSecretGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetXMLDesc]
  * to retrieve the XML for this secret.
  */
-static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -106,7 +114,8 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s) {
  * Call +virSecretSetValue+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
  * to set a new value in this secret.
  */
-static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
     VALUE value;
 
@@ -129,7 +138,8 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s) {
  * Call +virSecretGetValue+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetValue]
  * to retrieve the value from this secret.
  */
-static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
+{
     virSecretPtr secret = secret_get(s);
     VALUE flags;
     unsigned char *val;
@@ -168,7 +178,8 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s) {
  * Call +virSecretUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretUndefine]
  * to undefine this secret.
  */
-static VALUE libvirt_secret_undefine(VALUE s) {
+static VALUE libvirt_secret_undefine(VALUE s)
+{
     gen_call_void(virSecretUndefine, conn(s), secret_get(s));
 }
 
@@ -179,7 +190,8 @@ static VALUE libvirt_secret_undefine(VALUE s) {
  * Call +virSecretFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretFree]
  * to free this secret.  After this call the secret object is no longer valid.
  */
-static VALUE libvirt_secret_free(VALUE s) {
+static VALUE libvirt_secret_free(VALUE s)
+{
     gen_call_free(Secret, s);
 }
 

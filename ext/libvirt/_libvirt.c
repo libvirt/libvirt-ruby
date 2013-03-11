@@ -2,6 +2,7 @@
  * libvirt.c: Ruby bindings for libvirt
  *
  * Copyright (C) 2007,2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,7 +48,8 @@ VALUE e_Error;
 VALUE e_NoSupportError;
 
 /* custom error function to suppress libvirt printing to stderr */
-static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err){
+static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err)
+{
 }
 
 /*
@@ -58,7 +60,8 @@ static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err){
  * +virGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
  * to get the version of libvirt and of the hypervisor TYPE.
  */
-static VALUE libvirt_version(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
+{
     unsigned long libVer;
     VALUE type;
     unsigned long typeVer;
@@ -110,7 +113,8 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
  * +virConnectOpen+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
  * to open a connection to a URL.
  */
-static VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
+{
     return internal_open(argc, argv, m, 0);
 }
 
@@ -122,13 +126,15 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE m) {
  * +virConnectOpenReadOnly+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
  * to open a read-only connection to a URL.
  */
-static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m)
+{
     return internal_open(argc, argv, m, 1);
 }
 
 #if HAVE_VIRCONNECTOPENAUTH
 static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
-                                         unsigned int ncred, void *cbdata) {
+                                         unsigned int ncred, void *cbdata)
+{
     VALUE userdata;
     VALUE newcred;
     int i;
@@ -172,20 +178,21 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
     return 0;
 }
 
-
 struct wrap_callout {
     char *uri;
     virConnectAuthPtr auth;
     unsigned int flags;
 };
 
-static VALUE rb_open_auth_wrap(VALUE arg) {
+static VALUE rb_open_auth_wrap(VALUE arg)
+{
     struct wrap_callout *e = (struct wrap_callout *)arg;
 
     return (VALUE)virConnectOpenAuth(e->uri, e->auth, e->flags);
 }
 
-static VALUE rb_num2int_wrap(VALUE arg) {
+static VALUE rb_num2int_wrap(VALUE arg)
+{
     return NUM2INT(arg);
 }
 
@@ -224,7 +231,8 @@ static VALUE rb_num2int_wrap(VALUE arg) {
  * The authentication block should return the result of collecting the
  * information; these results will then be sent to libvirt for authentication.
  */
-static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m) {
+static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
+{
     virConnectAuthPtr auth;
     VALUE uri;
     VALUE credlist;
@@ -359,7 +367,8 @@ static VALUE add_timeout, update_timeout, remove_timeout;
  */
 static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
                                                   VALUE fd, VALUE events,
-                                                  VALUE opaque) {
+                                                  VALUE opaque)
+{
     virEventHandleCallback cb;
     void *op;
     VALUE libvirt_cb;
@@ -410,7 +419,8 @@ static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
  *          event_invoke_handle_callback without modification.
  */
 static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
-                                                   VALUE opaque) {
+                                                   VALUE opaque)
+{
     virEventTimeoutCallback cb;
     void *op;
     VALUE libvirt_cb;
@@ -439,7 +449,8 @@ static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
 
 static int internal_add_handle_func(int fd, int events,
                                     virEventHandleCallback cb, void *opaque,
-                                    virFreeCallback ff) {
+                                    virFreeCallback ff)
+{
     VALUE rubyargs;
     VALUE res;
 
@@ -469,7 +480,8 @@ static int internal_add_handle_func(int fd, int events,
     return NUM2INT(res);
 }
 
-static void internal_update_handle_func(int watch, int event) {
+static void internal_update_handle_func(int watch, int event)
+{
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(update_handle), "Symbol") == 0)
         rb_funcall(rb_class_of(update_handle), rb_to_id(update_handle), 2,
@@ -482,7 +494,8 @@ static void internal_update_handle_func(int watch, int event) {
                  "wrong update handle callback argument type (expected Symbol or Proc)");
 }
 
-static int internal_remove_handle_func(int watch) {
+static int internal_remove_handle_func(int watch)
+{
     VALUE res;
     virFreeCallback ff_cb;
     void *op;
@@ -522,7 +535,8 @@ static int internal_remove_handle_func(int watch) {
 }
 
 static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
-                                     void *opaque, virFreeCallback ff) {
+                                     void *opaque, virFreeCallback ff)
+{
     VALUE rubyargs;
     VALUE res;
 
@@ -554,7 +568,8 @@ static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
     return NUM2INT(res);
 }
 
-static void internal_update_timeout_func(int timer, int timeout) {
+static void internal_update_timeout_func(int timer, int timeout)
+{
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(update_timeout), "Symbol") == 0)
         rb_funcall(rb_class_of(update_timeout), rb_to_id(update_timeout), 2,
@@ -567,7 +582,8 @@ static void internal_update_timeout_func(int timer, int timeout) {
                  "wrong update timeout callback argument type (expected Symbol or Proc)");
 }
 
-static int internal_remove_timeout_func(int timer) {
+static int internal_remove_timeout_func(int timer)
+{
     VALUE res;
     virFreeCallback ff_cb;
     void *op;
@@ -614,7 +630,8 @@ static int internal_remove_timeout_func(int timer) {
             type##_temp = internal_##type##_func;   \
     } while(0)
 
-static int is_symbol_proc_or_nil(VALUE handle) {
+static int is_symbol_proc_or_nil(VALUE handle)
+{
     if (NIL_P(handle))
         return 1;
     return is_symbol_or_proc(handle);
@@ -653,7 +670,8 @@ static int is_symbol_proc_or_nil(VALUE handle) {
  * passed to the event_invoke_handle_callback and event_invoke_timeout_callback
  * module methods; see the documentation for those methods for more details.
  */
-static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c) {
+static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
+{
     virEventAddHandleFunc add_handle_temp;
     virEventUpdateHandleFunc update_handle_temp;
     virEventRemoveHandleFunc remove_handle_temp;
@@ -697,7 +715,8 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c) {
 /*
  * Module Libvirt
  */
-void Init__libvirt() {
+void Init__libvirt()
+{
     m_libvirt = rb_define_module("Libvirt");
     c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
                                               rb_cObject);

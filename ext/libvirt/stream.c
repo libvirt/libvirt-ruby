@@ -2,6 +2,7 @@
  * stream.c: virStream methods
  *
  * Copyright (C) 2007,2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,15 +29,18 @@
 #if HAVE_TYPE_VIRSTREAMPTR
 static VALUE c_stream;
 
-static void stream_free(void *s) {
+static void stream_free(void *s)
+{
     generic_free(Stream, s);
 }
 
-virStreamPtr stream_get(VALUE s) {
+virStreamPtr stream_get(VALUE s)
+{
     generic_get(Stream, s);
 }
 
-VALUE stream_new(virStreamPtr s, VALUE conn) {
+VALUE stream_new(virStreamPtr s, VALUE conn)
+{
     return generic_new(c_stream, s, conn, stream_free);
 }
 
@@ -50,7 +54,8 @@ VALUE stream_new(virStreamPtr s, VALUE conn) {
  * an error occurred, -1 is returned.  If the transmit buffers are full and the
  * stream is marked non-blocking, returns -2.
  */
-static VALUE libvirt_stream_send(VALUE s, VALUE buffer) {
+static VALUE libvirt_stream_send(VALUE s, VALUE buffer)
+{
     int ret;
 
     StringValue(buffer);
@@ -67,7 +72,8 @@ struct stream_recv_args {
     char *data;
 };
 
-static VALUE stream_recv_array(VALUE input) {
+static VALUE stream_recv_array(VALUE input)
+{
     VALUE result;
     struct stream_recv_args *args = (struct stream_recv_args *)input;
 
@@ -90,7 +96,8 @@ static VALUE stream_recv_array(VALUE input) {
  * return_value is set to -1.  If there is no data pending and the stream is
  * marked as non-blocking, return_value is set to -2.
  */
-static VALUE libvirt_stream_recv(VALUE s, VALUE bytes) {
+static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
+{
     char *data;
     int ret;
     int exception = 0;
@@ -118,7 +125,8 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes) {
 }
 
 static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
-                            void *opaque) {
+                            void *opaque)
+{
     VALUE result;
     VALUE retcode, buffer;
 
@@ -161,7 +169,8 @@ static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
  * (-1 for error, 0 otherwise), and the second element should be the data
  * that the block prepared to send.
  */
-static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
+{
     VALUE opaque;
     int ret;
 
@@ -177,7 +186,8 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s) {
 }
 
 static int internal_recvall(virStreamPtr st, const char *buf, size_t nbytes,
-                            void *opaque) {
+                            void *opaque)
+{
     VALUE result;
 
     result = rb_yield_values(2, rb_str_new(buf, nbytes), (VALUE)opaque);
@@ -198,7 +208,8 @@ static int internal_recvall(virStreamPtr st, const char *buf, size_t nbytes,
  * block yields the data received and the opaque data passed into the initial
  * call.  The block should return -1 if an error occurred and 0 otherwise.
  */
-static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
+{
     VALUE opaque;
     int ret;
 
@@ -213,7 +224,8 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s) {
     return Qnil;
 }
 
-static void stream_event_callback(virStreamPtr st, int events, void *opaque) {
+static void stream_event_callback(virStreamPtr st, int events, void *opaque)
+{
     VALUE passthrough = (VALUE)opaque;
     VALUE cb;
     VALUE cb_opaque;
@@ -258,7 +270,8 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque) {
  * an opaque pointer that was (optionally) passed into
  * stream.event_add_callback to begin with.
  */
-static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
+{
     VALUE events;
     VALUE callback;
     VALUE opaque;
@@ -294,7 +307,8 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s) {
  * it should be one or more of EVENT_READABLE, EVENT_WRITABLE, EVENT_ERROR,
  * and EVENT_HANGUP, ORed together.
  */
-static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events) {
+static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
+{
     int ret;
 
     ret = virStreamEventUpdateCallback(stream_get(s), NUM2INT(events));
@@ -311,7 +325,8 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events) {
  * Call +virStreamEventRemoveCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventRemoveCallback]
  * to remove the event callback currently registered to this stream.
  */
-static VALUE libvirt_stream_event_remove_callback(VALUE s) {
+static VALUE libvirt_stream_event_remove_callback(VALUE s)
+{
     int ret;
 
     ret = virStreamEventRemoveCallback(stream_get(s));
@@ -329,7 +344,8 @@ static VALUE libvirt_stream_event_remove_callback(VALUE s) {
  * to finish this stream.  Finish is typically used when the stream is no
  * longer needed and needs to be cleaned up.
  */
-static VALUE libvirt_stream_finish(VALUE s) {
+static VALUE libvirt_stream_finish(VALUE s)
+{
     gen_call_void(virStreamFinish, conn(s), stream_get(s));
 }
 
@@ -341,7 +357,8 @@ static VALUE libvirt_stream_finish(VALUE s) {
  * to abort this stream.  Abort is typically used when something on the stream
  * has failed, and the stream needs to be cleaned up.
  */
-static VALUE libvirt_stream_abort(VALUE s) {
+static VALUE libvirt_stream_abort(VALUE s)
+{
     gen_call_void(virStreamAbort, conn(s), stream_get(s));
 }
 
@@ -352,7 +369,8 @@ static VALUE libvirt_stream_abort(VALUE s) {
  * Call +virStreamFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamFree]
  * to free this stream.  The object will no longer be valid after this call.
  */
-static VALUE libvirt_stream_free(VALUE s) {
+static VALUE libvirt_stream_free(VALUE s)
+{
     gen_call_free(Stream, s);
 }
 #endif

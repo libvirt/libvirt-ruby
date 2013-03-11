@@ -2,6 +2,7 @@
  * domain.c: virDomain methods
  *
  * Copyright (C) 2007,2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,15 +80,18 @@ static VALUE c_domain_vcpuinfo;
 static VALUE c_domain_control_info;
 #endif
 
-static void domain_free(void *d) {
+static void domain_free(void *d)
+{
     generic_free(Domain, d);
 }
 
-VALUE domain_new(virDomainPtr d, VALUE conn) {
+VALUE domain_new(virDomainPtr d, VALUE conn)
+{
     return generic_new(c_domain, d, conn, domain_free);
 }
 
-virDomainPtr domain_get(VALUE s) {
+virDomainPtr domain_get(VALUE s)
+{
     generic_get(Domain, s);
 }
 
@@ -99,7 +103,8 @@ virDomainPtr domain_get(VALUE s) {
  * to migrate a domain from the host on this connection to the connection
  * referenced in dconn.
  */
-static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s)
+{
     VALUE dconn, flags, dname_val, uri_val, bandwidth;
     virDomainPtr ddom = NULL;
 
@@ -129,7 +134,8 @@ static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE s) {
  * to migrate a domain from the host on this connection to the host whose
  * libvirt URI is duri.
  */
-static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s)
+{
     VALUE duri, flags, dname, bandwidth;
 
     rb_scan_args(argc, argv, "13", &duri, &flags, &dname, &bandwidth);
@@ -154,7 +160,8 @@ static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE s) {
  * to set the maximum downtime desired for live migration.
  */
 static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv,
-                                                  VALUE s) {
+                                                  VALUE s)
+{
     VALUE downtime, flags;
 
     rb_scan_args(argc, argv, "11", &downtime, &flags);
@@ -176,7 +183,8 @@ static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv,
  * to migrate a domain from the host on this connection to the connection
  * referenced in dconn.
  */
-static VALUE libvirt_dom_migrate2(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_migrate2(int argc, VALUE *argv, VALUE s)
+{
     VALUE dconn, dxml, flags, dname_val, uri_val, bandwidth;
     virDomainPtr ddom = NULL;
 
@@ -206,7 +214,8 @@ static VALUE libvirt_dom_migrate2(int argc, VALUE *argv, VALUE s) {
  * to migrate a domain from the host on this connection to the host whose
  * libvirt URI is duri.
  */
-static VALUE libvirt_dom_migrate_to_uri2(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_migrate_to_uri2(int argc, VALUE *argv, VALUE s)
+{
     VALUE duri, migrate_uri, dxml, flags, dname, bandwidth;
 
     rb_scan_args(argc, argv, "06", &duri, &migrate_uri, &dxml, &flags, &dname,
@@ -230,7 +239,8 @@ static VALUE libvirt_dom_migrate_to_uri2(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainMigrateSetMaxSpeed+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxSpeed]
  * to set the maximum bandwidth allowed for live migration.
  */
-static VALUE libvirt_dom_migrate_set_max_speed(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_migrate_set_max_speed(int argc, VALUE *argv, VALUE s)
+{
     VALUE bandwidth, flags;
 
     rb_scan_args(argc, argv, "11", &bandwidth, &flags);
@@ -252,7 +262,8 @@ static VALUE libvirt_dom_migrate_set_max_speed(int argc, VALUE *argv, VALUE s) {
  * is hypervisor specific, and may require software running inside the domain
  * to succeed.
  */
-static VALUE libvirt_dom_shutdown(VALUE s) {
+static VALUE libvirt_dom_shutdown(VALUE s)
+{
     gen_call_void(virDomainShutdown, conn(s), domain_get(s));
 }
 
@@ -263,7 +274,8 @@ static VALUE libvirt_dom_shutdown(VALUE s) {
  * Call +virDomainReboot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReboot]
  * to do a reboot of the domain.
  */
-static VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -281,7 +293,8 @@ static VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDestroy]
  * to do a hard power-off of the domain.
  */
-static VALUE libvirt_dom_destroy(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_destroy(int argc, VALUE *argv, VALUE d)
+{
     virDomainPtr dom = domain_get(d);
     virConnectPtr c = conn(d);
     VALUE flags;
@@ -307,7 +320,8 @@ static VALUE libvirt_dom_destroy(int argc, VALUE *argv, VALUE d) {
  * to stop the domain from executing.  The domain will still continue to
  * consume memory, but will not take any CPU time.
  */
-static VALUE libvirt_dom_suspend(VALUE s) {
+static VALUE libvirt_dom_suspend(VALUE s)
+{
     gen_call_void(virDomainSuspend, conn(s), domain_get(s));
 }
 
@@ -319,7 +333,8 @@ static VALUE libvirt_dom_suspend(VALUE s) {
  * to resume a suspended domain.  After this call the domain will start
  * consuming CPU resources again.
  */
-static VALUE libvirt_dom_resume(VALUE s) {
+static VALUE libvirt_dom_resume(VALUE s)
+{
     gen_call_void(virDomainResume, conn(s), domain_get(s));
 }
 
@@ -331,7 +346,8 @@ static VALUE libvirt_dom_resume(VALUE s) {
  * to save the domain state to filename.  After this call, the domain will no
  * longer be consuming any resources.
  */
-static VALUE libvirt_dom_save(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_save(int argc, VALUE *argv, VALUE d)
+{
     virDomainPtr dom = domain_get(d);
     virConnectPtr c = conn(d);
     VALUE flags;
@@ -363,7 +379,8 @@ static VALUE libvirt_dom_save(int argc, VALUE *argv, VALUE d) {
  * to do a managed save of the domain.  The domain will be saved to a place
  * of libvirt's choosing.
  */
-static VALUE libvirt_dom_managed_save(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_managed_save(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -382,7 +399,8 @@ static VALUE libvirt_dom_managed_save(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainHasManagedSaveImage+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasManagedSaveImage]
  * to determine if a particular domain has a managed save image.
  */
-static VALUE libvirt_dom_has_managed_save(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_has_managed_save(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -401,7 +419,8 @@ static VALUE libvirt_dom_has_managed_save(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainManagedSaveRemove+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainManagedSaveRemove]
  * to remove the managed save image for a domain.
  */
-static VALUE libvirt_dom_managed_save_remove(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_managed_save_remove(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -421,7 +440,8 @@ static VALUE libvirt_dom_managed_save_remove(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainCoreDump+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
  * to do a full memory dump of the domain to filename.
  */
-static VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE s)
+{
     VALUE to, flags;
 
     rb_scan_args(argc, argv, "11", &to, &flags);
@@ -440,7 +460,8 @@ static VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainRestore+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
  * to restore the domain from the filename.
  */
-static VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
+static VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from)
+{
     gen_call_void(virDomainRestore, conn(c), connect_get(c),
                   StringValueCStr(from));
 }
@@ -452,7 +473,8 @@ static VALUE libvirt_dom_s_restore(VALUE klass, VALUE c, VALUE from) {
  * Call +virDomainGetInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
  * to retrieve domain information.
  */
-static VALUE libvirt_dom_info(VALUE s) {
+static VALUE libvirt_dom_info(VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     virDomainInfo info;
     int r;
@@ -479,7 +501,8 @@ static VALUE libvirt_dom_info(VALUE s) {
  * Call +virDomainGetSecurityLabel+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabel]
  * to retrieve the security label applied to this domain.
  */
-static VALUE libvirt_dom_security_label(VALUE s) {
+static VALUE libvirt_dom_security_label(VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     virSecurityLabel seclabel;
     int r;
@@ -504,7 +527,8 @@ static VALUE libvirt_dom_security_label(VALUE s) {
  * Call +virDomainBlockStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStats]
  * to retrieve statistics about domain block device path.
  */
-static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
+static VALUE libvirt_dom_block_stats(VALUE s, VALUE path)
+{
     virDomainPtr dom = domain_get(s);
     virDomainBlockStatsStruct stats;
     int r;
@@ -531,7 +555,8 @@ static VALUE libvirt_dom_block_stats(VALUE s, VALUE path) {
  * Call +virDomainMemoryStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryStats]
  * to retrieve statistics about the amount of memory consumed by a domain.
  */
-static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     virDomainMemoryStatStruct stats[6];
     int r;
@@ -579,7 +604,8 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainGetBlockInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockInfo]
  * to retrieve information about the backing file path for the domain.
  */
-static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     virDomainBlockInfo info;
     int r;
@@ -615,7 +641,8 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE s) {
  * file path.  Due to limitations of the libvirt remote protocol, the user
  * should never request more than 64k bytes.
  */
-static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     VALUE path_val, offset_val, size_val, flags_val;
     char *buffer;
@@ -669,7 +696,8 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s) {
  * Due to limitations of the libvirt remote protocol, the user
  * should never request more than 64k bytes.
  */
-static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     VALUE start_val, size_val, flags_val;
     char *buffer;
@@ -717,7 +745,8 @@ struct create_vcpu_array_args {
     int maxcpus;
 };
 
-static VALUE create_vcpu_array(VALUE input) {
+static VALUE create_vcpu_array(VALUE input)
+{
     struct create_vcpu_array_args *args;
     VALUE result;
     int i;
@@ -756,7 +785,8 @@ static VALUE create_vcpu_array(VALUE input) {
  * Call +virDomainGetVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpus]
  * to retrieve detailed information about the state of a domain's virtual CPUs.
  */
-static VALUE libvirt_dom_get_vcpus(VALUE s) {
+static VALUE libvirt_dom_get_vcpus(VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     virNodeInfo nodeinfo;
     virDomainInfo dominfo;
@@ -820,7 +850,8 @@ static VALUE libvirt_dom_get_vcpus(VALUE s) {
  * Call +virDomainIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsActive]
  * to determine if this domain is currently active.
  */
-static VALUE libvirt_dom_active_p(VALUE d) {
+static VALUE libvirt_dom_active_p(VALUE d)
+{
     gen_call_truefalse(virDomainIsActive, conn(d), domain_get(d));
 }
 #endif
@@ -833,7 +864,8 @@ static VALUE libvirt_dom_active_p(VALUE d) {
  * Call +virDomainIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsPersistent]
  * to determine if this is a persistent domain.
  */
-static VALUE libvirt_dom_persistent_p(VALUE d) {
+static VALUE libvirt_dom_persistent_p(VALUE d)
+{
     gen_call_truefalse(virDomainIsPersistent, conn(d), domain_get(d));
 }
 #endif
@@ -845,7 +877,8 @@ static VALUE libvirt_dom_persistent_p(VALUE d) {
  * Call +virDomainInterfaceStats+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInterfaceStats]
  * to retrieve statistics about domain interface if.
  */
-static VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
+static VALUE libvirt_dom_if_stats(VALUE s, VALUE sif)
+{
     virDomainPtr dom = domain_get(s);
     char *ifname = get_string_or_nil(sif);
     virDomainInterfaceStatsStruct ifinfo;
@@ -878,7 +911,8 @@ static VALUE libvirt_dom_if_stats(VALUE s, VALUE sif) {
  * Call +virDomainGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
  * to retrieve the name of this domain.
  */
-static VALUE libvirt_dom_name(VALUE s) {
+static VALUE libvirt_dom_name(VALUE s)
+{
     gen_call_string(virDomainGetName, conn(s), 0, domain_get(s));
 }
 
@@ -890,7 +924,8 @@ static VALUE libvirt_dom_name(VALUE s) {
  * to retrieve the ID of this domain.  If the domain isn't running, this will
  * be -1.
  */
-static VALUE libvirt_dom_id(VALUE s) {
+static VALUE libvirt_dom_id(VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     unsigned int id;
     int out;
@@ -913,7 +948,8 @@ static VALUE libvirt_dom_id(VALUE s) {
  * Call +virDomainGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetUUIDString]
  * to retrieve the UUID of this domain.
  */
-static VALUE libvirt_dom_uuid(VALUE s) {
+static VALUE libvirt_dom_uuid(VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     char uuid[VIR_UUID_STRING_BUFLEN];
     int r;
@@ -932,7 +968,8 @@ static VALUE libvirt_dom_uuid(VALUE s) {
  * to retrieve the os_type of this domain.  In libvirt terms, os_type determines
  * whether this domain is fully virtualized, paravirtualized, or a container.
  */
-static VALUE libvirt_dom_os_type(VALUE s) {
+static VALUE libvirt_dom_os_type(VALUE s)
+{
     gen_call_string(virDomainGetOSType, conn(s), 1, domain_get(s));
 }
 
@@ -945,7 +982,8 @@ static VALUE libvirt_dom_os_type(VALUE s) {
  * Note that the current amount of memory this domain is allowed to access may
  * be different (see dom.memory_set).
  */
-static VALUE libvirt_dom_max_memory(VALUE s) {
+static VALUE libvirt_dom_max_memory(VALUE s)
+{
     virDomainPtr dom = domain_get(s);
     unsigned long max_memory;
 
@@ -964,7 +1002,8 @@ static VALUE libvirt_dom_max_memory(VALUE s) {
  * to set the maximum amount of memory (in kilobytes) this domain should be
  * allowed to access.
  */
-static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
+static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory)
+{
     virDomainPtr dom = domain_get(s);
     int r;
 
@@ -984,7 +1023,8 @@ static VALUE libvirt_dom_max_memory_set(VALUE s, VALUE max_memory) {
  * have.  Note this will only succeed if both the hypervisor and the domain on
  * this connection support ballooning.
  */
-static VALUE libvirt_dom_memory_set(VALUE s, VALUE in) {
+static VALUE libvirt_dom_memory_set(VALUE s, VALUE in)
+{
     VALUE memory;
     VALUE flags;
     virDomainPtr dom = domain_get(s);
@@ -1026,7 +1066,8 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE in) {
  * Call +virDomainGetMaxVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxVcpus]
  * to retrieve the maximum number of virtual CPUs this domain can use.
  */
-static VALUE libvirt_dom_max_vcpus(VALUE s) {
+static VALUE libvirt_dom_max_vcpus(VALUE s)
+{
     gen_call_int(virDomainGetMaxVcpus, conn(s), domain_get(s));
 }
 
@@ -1037,7 +1078,8 @@ static VALUE libvirt_dom_max_vcpus(VALUE s) {
  * Call +virDomainGetVcpusFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpusFlags]
  * to retrieve the number of virtual CPUs assigned to this domain.
  */
-static VALUE libvirt_dom_num_vcpus(VALUE d, VALUE flags) {
+static VALUE libvirt_dom_num_vcpus(VALUE d, VALUE flags)
+{
     gen_call_int(virDomainGetVcpusFlags, conn(d), domain_get(d),
                  NUM2UINT(flags));
 }
@@ -1052,7 +1094,8 @@ static VALUE libvirt_dom_num_vcpus(VALUE d, VALUE flags) {
  * that this will only work if both the hypervisor and domain on this
  * connection support virtual CPU hotplug/hot-unplug.
  */
-static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
+static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus)
+{
     gen_call_void(virDomainSetVcpus, conn(s), domain_get(s), NUM2UINT(nvcpus));
 }
 
@@ -1066,7 +1109,8 @@ static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus) {
  * flags parameter controls whether the change is made to the running domain
  * the domain configuration, or both, and must not be 0.
  */
-static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus) {
+static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus)
+{
     VALUE nvcpus;
     VALUE flags;
 
@@ -1093,7 +1137,8 @@ static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus) {
  * cpulist should be an array of Fixnums representing the physical processors
  * this virtual CPU should be allowed to be scheduled on.
  */
-static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
+static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist)
+{
     virDomainPtr dom = domain_get(s);
     int r, i, len, maplen;
     unsigned char *cpumap;
@@ -1131,7 +1176,8 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist) {
  * Call +virDomainGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
  * to retrieve the XML describing this domain.
  */
-static VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1151,7 +1197,8 @@ static VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE s) {
  * to undefine the domain.  After this call, the domain object is no longer
  * valid.
  */
-static VALUE libvirt_dom_undefine(VALUE s) {
+static VALUE libvirt_dom_undefine(VALUE s)
+{
     gen_call_void(virDomainUndefine, conn(s), domain_get(s));
 }
 
@@ -1162,7 +1209,8 @@ static VALUE libvirt_dom_undefine(VALUE s) {
  * Call +virDomainCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreate]
  * to start an already defined domain.
  */
-static VALUE libvirt_dom_create(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_create(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1204,7 +1252,8 @@ static VALUE libvirt_dom_autostart(VALUE s){
  * Call +virDomainSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetAutostart]
  * to make this domain autostart when libvirtd starts up.
  */
-static VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
+static VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart)
+{
     if (autostart != Qtrue && autostart != Qfalse)
 		rb_raise(rb_eTypeError,
                  "wrong argument type (expected TrueClass or FalseClass)");
@@ -1220,7 +1269,8 @@ static VALUE libvirt_dom_autostart_set(VALUE s, VALUE autostart) {
  * Call +virDomainAttachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAttachDevice]
  * to attach the device described by the device_xml to the domain.
  */
-static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s)
+{
     VALUE xml;
     VALUE flags;
 
@@ -1247,7 +1297,8 @@ static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainDetachDevice+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
  * to detach the device described by the device_xml from the domain.
  */
-static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s)
+{
     VALUE xml;
     VALUE flags;
 
@@ -1275,7 +1326,8 @@ static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainUpdateDeviceFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUpdateDeviceFlags]
  * to update the device described by the device_xml.
  */
-static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE s)
+{
     VALUE xml;
     VALUE flags;
 
@@ -1296,23 +1348,27 @@ static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFree]
  * to free a domain object.
  */
-static VALUE libvirt_dom_free(VALUE s) {
+static VALUE libvirt_dom_free(VALUE s)
+{
     gen_call_free(Domain, s);
 }
 
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
-static void domain_snapshot_free(void *d) {
+static void domain_snapshot_free(void *d)
+{
     generic_free(DomainSnapshot, d);
 }
 
-static VALUE domain_snapshot_new(virDomainSnapshotPtr d, VALUE domain) {
+static VALUE domain_snapshot_new(virDomainSnapshotPtr d, VALUE domain)
+{
     VALUE result;
     result = Data_Wrap_Struct(c_domain_snapshot, NULL, domain_snapshot_free, d);
     rb_iv_set(result, "@domain", domain);
     return result;
 }
 
-static virDomainSnapshotPtr domain_snapshot_get(VALUE s) {
+static virDomainSnapshotPtr domain_snapshot_get(VALUE s)
+{
     generic_get(DomainSnapshot, s);
 }
 
@@ -1323,7 +1379,8 @@ static virDomainSnapshotPtr domain_snapshot_get(VALUE s) {
  * Call +virDomainSnapshotCreateXML+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotCreateXML]
  * to create a new snapshot based on snapshot_xml.
  */
-static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d)
+{
     VALUE xmlDesc, flags;
     virDomainSnapshotPtr ret;
 
@@ -1348,7 +1405,8 @@ static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainSnapshotNum+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotNum]
  * to retrieve the number of available snapshots for this domain.
  */
-static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1367,7 +1425,8 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainSnapshotListNames+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames]
  * to retrieve a list of snapshot names available for this domain.
  */
-static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags_val;
     int r;
     int num;
@@ -1407,7 +1466,8 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainSnapshotLookupByName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotLookupByName]
  * to retrieve a snapshot object corresponding to snapshot name.
  */
-static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
+{
     virDomainPtr dom = domain_get(d);
     virDomainSnapshotPtr snap;
     VALUE name, flags;
@@ -1432,7 +1492,8 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
  * Call +virDomainHasCurrentSnapshot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasCurrentSnapshot]
  * to find out if this domain has a snapshot active.
  */
-static VALUE libvirt_dom_has_current_snapshot_p(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_has_current_snapshot_p(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1451,7 +1512,8 @@ static VALUE libvirt_dom_has_current_snapshot_p(int argc, VALUE *argv, VALUE d) 
  * Call +virDomainRevertToSnapshot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRevertToSnapshot]
  * to restore this domain to a previously saved snapshot.
  */
-static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d)
+{
     VALUE snap, flags;
 
     rb_scan_args(argc, argv, "11", &snap, &flags);
@@ -1470,7 +1532,8 @@ static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainCurrentSnapshot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCurrentSnapshot]
  * to retrieve the current snapshot for this domain (if any).
  */
-static VALUE libvirt_dom_current_snapshot(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_current_snapshot(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
     virDomainSnapshotPtr snap;
 
@@ -1493,7 +1556,8 @@ static VALUE libvirt_dom_current_snapshot(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainSnapshotGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetXMLDesc]
  * to retrieve the xml description for this snapshot.
  */
-static VALUE libvirt_dom_snapshot_xml_desc(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_snapshot_xml_desc(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1512,7 +1576,8 @@ static VALUE libvirt_dom_snapshot_xml_desc(int argc, VALUE *argv, VALUE s) {
  * Call +virDomainSnapshotDelete+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotDelete]
  * to delete this snapshot.
  */
-static VALUE libvirt_dom_snapshot_delete(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_dom_snapshot_delete(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1532,7 +1597,8 @@ static VALUE libvirt_dom_snapshot_delete(int argc, VALUE *argv, VALUE s) {
  * to free up the snapshot object.  After this call the snapshot object is
  * no longer valid.
  */
-static VALUE libvirt_dom_snapshot_free(VALUE s) {
+static VALUE libvirt_dom_snapshot_free(VALUE s)
+{
     gen_call_free(DomainSnapshot, s);
 }
 
@@ -1546,7 +1612,8 @@ static VALUE libvirt_dom_snapshot_free(VALUE s) {
  * Call +virDomainGetJobInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo]
  * to retrieve the current state of the running domain job.
  */
-static VALUE libvirt_dom_job_info(VALUE d) {
+static VALUE libvirt_dom_job_info(VALUE d)
+{
     int r;
     virDomainJobInfo info;
     VALUE result;
@@ -1578,7 +1645,8 @@ static VALUE libvirt_dom_job_info(VALUE d) {
  * Call +virDomainAbortJob+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAbortJob]
  * to abort the currently running job on this domain.
  */
-static VALUE libvirt_dom_abort_job(VALUE d) {
+static VALUE libvirt_dom_abort_job(VALUE d)
+{
     gen_call_void(virDomainAbortJob, conn(d), domain_get(d));
 }
 
@@ -1589,7 +1657,8 @@ struct create_sched_type_args {
     int nparams;
 };
 
-static VALUE create_sched_type_array(VALUE input) {
+static VALUE create_sched_type_array(VALUE input)
+{
     struct create_sched_type_args *args;
     VALUE result;
 
@@ -1609,7 +1678,8 @@ static VALUE create_sched_type_array(VALUE input) {
  * Call +virDomainGetSchedulerType+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerType]
  * to retrieve the scheduler type used on this domain.
  */
-static VALUE libvirt_dom_scheduler_type(VALUE d) {
+static VALUE libvirt_dom_scheduler_type(VALUE d)
+{
     int nparams;
     char *type;
     VALUE result;
@@ -1643,7 +1713,8 @@ static VALUE libvirt_dom_scheduler_type(VALUE d) {
  * guaranteed to be stable.  Also note that using this command can severly
  * impede libvirt's ability to manage the domain; use with caution!
  */
-static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
+{
     VALUE cmd, flags;
     char *result;
     VALUE ret;
@@ -1685,7 +1756,8 @@ static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainIsUpdated+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsUpdated]
  * to determine whether the definition for this domain has been updated.
  */
-static VALUE libvirt_dom_is_updated(VALUE d) {
+static VALUE libvirt_dom_is_updated(VALUE d)
+{
     gen_call_truefalse(virDomainIsUpdated, conn(d), domain_get(d));
 }
 #endif
@@ -1695,7 +1767,8 @@ struct field_to_value {
     virTypedParameterPtr param;
 };
 
-static VALUE typed_field_to_value(VALUE input) {
+static VALUE typed_field_to_value(VALUE input)
+{
     struct field_to_value *ftv = (struct field_to_value *)input;
     VALUE val;
 
@@ -1733,7 +1806,8 @@ static VALUE internal_get_parameters(int argc, VALUE *argv, VALUE d,
                                      char *(*get_cb)(VALUE d,
                                                      unsigned int flags,
                                                      virTypedParameterPtr params,
-                                                     int *nparams)) {
+                                                     int *nparams))
+{
     int nparams;
     virTypedParameterPtr params;
     VALUE result;
@@ -1786,7 +1860,8 @@ struct value_to_field {
     VALUE input;
 };
 
-static VALUE typed_value_to_field(VALUE in) {
+static VALUE typed_value_to_field(VALUE in)
+{
     struct value_to_field *vtf = (struct value_to_field *)in;
     VALUE val;
 
@@ -1830,7 +1905,8 @@ static VALUE internal_set_parameters(VALUE d, VALUE in,
                                      char *(*set_cb)(VALUE d,
                                                      unsigned int flags,
                                                      virTypedParameterPtr params,
-                                                     int nparams)) {
+                                                     int nparams))
+{
     int nparams;
     virTypedParameterPtr params;
     int exception;
@@ -1903,7 +1979,8 @@ static VALUE internal_set_parameters(VALUE d, VALUE in,
     return Qnil;
 }
 
-static int scheduler_nparams(VALUE d, unsigned int flags) {
+static int scheduler_nparams(VALUE d, unsigned int flags)
+{
     int nparams;
     char *type;
 
@@ -1916,7 +1993,8 @@ static int scheduler_nparams(VALUE d, unsigned int flags) {
 }
 
 static char *scheduler_get(VALUE d, unsigned int flags,
-                           virTypedParameterPtr params, int *nparams) {
+                           virTypedParameterPtr params, int *nparams)
+{
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetSchedulerParametersFlags(domain_get(d), params, nparams,
                                              flags) < 0)
@@ -1934,7 +2012,8 @@ static char *scheduler_get(VALUE d, unsigned int flags,
 }
 
 static char *scheduler_set(VALUE d, unsigned int flags,
-                           virTypedParameterPtr params, int nparams) {
+                           virTypedParameterPtr params, int nparams)
+{
 #if HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetSchedulerParametersFlags(domain_get(d), params, nparams,
                                              flags) < 0)
@@ -1960,7 +2039,8 @@ static char *scheduler_set(VALUE d, unsigned int flags,
  * values in the hash that is returned are hypervisor specific.
  */
 static VALUE libvirt_dom_get_scheduler_parameters(int argc, VALUE *argv,
-                                                  VALUE d) {
+                                                  VALUE d)
+{
     return internal_get_parameters(argc, argv, d, scheduler_nparams,
                                    scheduler_get);
 }
@@ -1974,13 +2054,15 @@ static VALUE libvirt_dom_get_scheduler_parameters(int argc, VALUE *argv,
  * the input hash are hypervisor specific.  If an empty hash is given, no
  * changes are made (and no error is raised).
  */
-static VALUE libvirt_dom_set_scheduler_parameters(VALUE d, VALUE input) {
+static VALUE libvirt_dom_set_scheduler_parameters(VALUE d, VALUE input)
+{
     return internal_set_parameters(d, input, scheduler_nparams, scheduler_get,
                                    scheduler_set);
 }
 
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-static int memory_nparams(VALUE d, unsigned int flags) {
+static int memory_nparams(VALUE d, unsigned int flags)
+{
     int nparams = 0;
     int ret;
 
@@ -1992,7 +2074,8 @@ static int memory_nparams(VALUE d, unsigned int flags) {
 }
 
 static char *memory_get(VALUE d, unsigned int flags,
-                        virTypedParameterPtr params, int *nparams) {
+                        virTypedParameterPtr params, int *nparams)
+{
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetMemoryParameters(domain_get(d), params, nparams, flags) < 0)
 #else
@@ -2006,7 +2089,8 @@ static char *memory_get(VALUE d, unsigned int flags,
 }
 
 static char *memory_set(VALUE d, unsigned int flags,
-                        virTypedParameterPtr params, int nparams) {
+                        virTypedParameterPtr params, int nparams)
+{
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetMemoryParameters(domain_get(d), params, nparams, flags) < 0)
 #else
@@ -2027,7 +2111,8 @@ static char *memory_set(VALUE d, unsigned int flags,
  * to retrieve all of the memory parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d)
+{
     return internal_get_parameters(argc, argv, d, memory_nparams, memory_get);
 }
 
@@ -2039,14 +2124,16 @@ static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d) {
  * to set the memory parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
-static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in) {
+static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in)
+{
     return internal_set_parameters(d, in, memory_nparams, memory_get,
                                    memory_set);
 }
 #endif
 
 #if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-static int blkio_nparams(VALUE d, unsigned int flags) {
+static int blkio_nparams(VALUE d, unsigned int flags)
+{
     int nparams = 0;
     int ret;
 
@@ -2058,7 +2145,8 @@ static int blkio_nparams(VALUE d, unsigned int flags) {
 }
 
 static char *blkio_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
-                       int *nparams) {
+                       int *nparams)
+{
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetBlkioParameters(domain_get(d), params, nparams, flags) < 0)
 #else
@@ -2072,7 +2160,8 @@ static char *blkio_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
 }
 
 static char *blkio_set(VALUE d, unsigned int flags, virTypedParameterPtr params,
-                       int nparams) {
+                       int nparams)
+{
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetBlkioParameters(domain_get(d), params, nparams, flags) < 0)
 #else
@@ -2093,7 +2182,8 @@ static char *blkio_set(VALUE d, unsigned int flags, virTypedParameterPtr params,
  * to retrieve all of the blkio parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d)
+{
     return internal_get_parameters(argc, argv, d, blkio_nparams, blkio_get);
 }
 
@@ -2105,7 +2195,8 @@ static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d) {
  * to set the blkio parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
-static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
+static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in)
+{
     return internal_set_parameters(d, in, blkio_nparams, blkio_get, blkio_set);
 }
 #endif
@@ -2118,7 +2209,8 @@ static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in) {
  * Call +virDomainGetState+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetState]
  * to get the current state of the domain.
  */
-static VALUE libvirt_dom_get_state(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_get_state(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
     int state, reason;
     VALUE result;
@@ -2149,7 +2241,8 @@ static VALUE libvirt_dom_get_state(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainOpenConsole+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenConsole]
  * to open up a console to device over stream.
  */
-static VALUE libvirt_dom_open_console(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_open_console(int argc, VALUE *argv, VALUE d)
+{
     VALUE dev, st, flags;
 
     rb_scan_args(argc, argv, "21", &dev, &st, &flags);
@@ -2170,7 +2263,8 @@ static VALUE libvirt_dom_open_console(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainScreenshot+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainScreenshot]
  * to take a screenshot of the domain console as a stream.
  */
-static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d)
+{
     VALUE st, screen, flags;
 
     rb_scan_args(argc, argv, "21", &st, &screen, &flags);
@@ -2191,7 +2285,8 @@ static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainInjectNMI+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInjectNMI]
  * to send an NMI to the guest.
  */
-static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -2211,7 +2306,8 @@ static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d) {
  * Call +virDomainGetControlInfo+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetControlInfo]
  * to retrieve domain control interface information.
  */
-static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
     virDomainPtr dom = domain_get(d);
     virDomainControlInfo info;
@@ -2261,7 +2357,8 @@ VALUE libvirt_dom_send_key(VALUE s, VALUE codeset, VALUE holdtime, VALUE keycode
  * Call +virDomainMigrateGetMaxSpeed+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetMaxSpeed]
  * to retrieve the maximum speed a migration can use.
  */
-static VALUE libvirt_dom_migrate_max_speed(int argc, VALUE *argv, VALUE d) {
+static VALUE libvirt_dom_migrate_max_speed(int argc, VALUE *argv, VALUE d)
+{
     VALUE flags;
     virDomainPtr dom = domain_get(d);
     int r;

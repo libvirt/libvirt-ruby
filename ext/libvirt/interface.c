@@ -2,6 +2,7 @@
  * interface.c: virInterface methods
  *
  * Copyright (C) 2010 Red Hat Inc.
+ * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,15 +29,18 @@
 #if HAVE_TYPE_VIRINTERFACEPTR
 static VALUE c_interface;
 
-static void interface_free(void *i) {
+static void interface_free(void *i)
+{
     generic_free(Interface, i);
 }
 
-static virInterfacePtr interface_get(VALUE s) {
+static virInterfacePtr interface_get(VALUE s)
+{
     generic_get(Interface, s);
 }
 
-VALUE interface_new(virInterfacePtr i, VALUE conn) {
+VALUE interface_new(virInterfacePtr i, VALUE conn)
+{
     return generic_new(c_interface, i, conn, interface_free);
 }
 
@@ -47,7 +51,8 @@ VALUE interface_new(virInterfacePtr i, VALUE conn) {
  * Call +virInterfaceUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceUndefine]
  * to undefine this interface.
  */
-static VALUE libvirt_interface_undefine(VALUE s) {
+static VALUE libvirt_interface_undefine(VALUE s)
+{
     gen_call_void(virInterfaceUndefine, conn(s), interface_get(s));
 }
 
@@ -58,7 +63,8 @@ static VALUE libvirt_interface_undefine(VALUE s) {
  * Call +virInterfaceCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceCreate]
  * to start this interface.
  */
-static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -76,7 +82,8 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s) {
  * Call +virInterfaceDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDestroy]
  * to shutdown this interface.
  */
-static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -95,7 +102,8 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s) {
  * Call +virInterfaceIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceIsActive]
  * to determine if this interface is currently active.
  */
-static VALUE libvirt_interface_active_p(VALUE p) {
+static VALUE libvirt_interface_active_p(VALUE p)
+{
     gen_call_truefalse(virInterfaceIsActive, conn(p), interface_get(p));
 }
 #endif
@@ -107,7 +115,8 @@ static VALUE libvirt_interface_active_p(VALUE p) {
  * Call +virInterfaceGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
  * to retrieve the name of this interface.
  */
-static VALUE libvirt_interface_name(VALUE s) {
+static VALUE libvirt_interface_name(VALUE s)
+{
     gen_call_string(virInterfaceGetName, conn(s), 0, interface_get(s));
 }
 
@@ -118,7 +127,8 @@ static VALUE libvirt_interface_name(VALUE s) {
  * Call +virInterfaceGetMACString+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
  * to retrieve the MAC address of this interface.
  */
-static VALUE libvirt_interface_mac(VALUE s) {
+static VALUE libvirt_interface_mac(VALUE s)
+{
     gen_call_string(virInterfaceGetMACString, conn(s), 0, interface_get(s));
 }
 
@@ -129,7 +139,8 @@ static VALUE libvirt_interface_mac(VALUE s) {
  * Call +virInterfaceGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
  * to retrieve the XML of this interface.
  */
-static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s) {
+static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
+{
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -148,7 +159,8 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s) {
  * Call +virInterfaceFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceFree]
  * to free this interface.  The object will no longer be valid after this call.
  */
-static VALUE libvirt_interface_free(VALUE s) {
+static VALUE libvirt_interface_free(VALUE s)
+{
     gen_call_free(Interface, s);
 }
 #endif
