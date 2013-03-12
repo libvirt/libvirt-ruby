@@ -62,7 +62,6 @@ with the following exceptions:
 - virDomainGetBlockJobInfo
 - virDomainBlockJobSetSpeed
 - virDomainBlockPull
-- virDomainSendKey
 - virEventAddHandle
 - virEventUpdateHandle
 - virEventRemoveHandle

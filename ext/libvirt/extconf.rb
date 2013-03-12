@@ -155,6 +155,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainDestroyFlags',
                   'virDomainSaveFlags',
                   'virDomainSaveImageGetXMLDesc',
+                  'virDomainSendKey',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

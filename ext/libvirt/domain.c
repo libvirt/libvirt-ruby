@@ -2235,6 +2235,24 @@ static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d) {
 }
 #endif
 
+#if HAVE_VIRDOMAINSENDKEY
+/*
+ * call-seq:
+ *   dom.send_key(codeset, holdtime, keycodes)
+ *
+ * Call +virDomainSendKey+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSendKey]
+ * to send key(s) to the domain. Keycodes has to be an array of keys to send.
+ */
+VALUE libvirt_dom_send_key(VALUE s, VALUE codeset, VALUE holdtime, VALUE keycodes) {
+    unsigned int codes[RARRAY_LEN(keycodes)];
+    int i=0;
+    for (i=0; i<RARRAY_LEN(keycodes); i++)
+        codes[i]=NUM2UINT(rb_ary_entry(keycodes,i));
+
+    gen_call_void(virDomainSendKey, conn(s), domain_get(s), NUM2UINT(codeset), NUM2UINT(holdtime), codes, RARRAY_LEN(keycodes), 0);
+}
+#endif
+
 #if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
 /*
  * call-seq:
@@ -2794,5 +2812,8 @@ void init_domain()
 #if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
     rb_define_method(c_domain, "migrate_max_speed",
                      libvirt_dom_migrate_max_speed, -1);
+#endif
+#if HAVE_VIRDOMAINSENDKEY
+    rb_define_method(c_domain, "send_key", libvirt_dom_send_key, 3);
 #endif
 }
