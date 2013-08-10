@@ -1,3 +1,6 @@
+2013-08-10 0.5.0
+  * Update Network class, implementing network_update
+
 2011-07-27 0.4.0
   * Updated Domain class, implementing dom.memory_parameters=,
     dom.memory_parameters, dom.updated?, dom.migrate2, dom.migrate_to_uri2,

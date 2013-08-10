@@ -79,6 +79,10 @@ $new_net_xml = <<EOF
 </network>
 EOF
 
+$new_network_dhcp_ip = <<EOF
+<host mac='00:11:22:33:44:55' ip='192.168.134.5'/>
+EOF
+
 $NWFILTER_UUID = "bd339530-134c-6d07-441a-17fb90dad807"
 $new_nwfilter_xml = <<EOF
 <filter name='ruby-libvirt-tester' chain='ipv4'>

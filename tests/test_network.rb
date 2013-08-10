@@ -37,6 +37,19 @@ expect_fail(newnet, Libvirt::Error, "on already running network", "create")
 newnet.destroy
 newnet.undefine
 
+# TESTGROUP: net.update
+newnet = conn.create_network_xml($new_net_xml)
+
+expect_too_few_args(newnet, "update", 1)
+
+command = Libvirt::Network::NETWORK_UPDATE_COMMAND_ADD_LAST
+section = Libvirt::Network::NETWORK_SECTION_IP_DHCP_HOST
+flags   = Libvirt::Network::NETWORK_UPDATE_AFFECT_CURRENT
+expect_success(newnet, "update dhcp ip", "update",
+               command, section, -1, $new_network_dhcp_ip, flags)
+
+newnet.destroy
+
 # TESTGROUP: net.destroy
 newnet = conn.create_network_xml($new_net_xml)
 

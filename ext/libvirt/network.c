@@ -64,6 +64,20 @@ static VALUE libvirt_netw_create(VALUE s) {
 
 /*
  * call-seq:
+ *   net.update -> nil
+ *
+ * Call +virNetworkUpdate+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUpdate]
+ * to update this network.
+ */
+static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
+                                 VALUE index, VALUE xml, VALUE flags) {
+
+    gen_call_void(virNetworkUpdate, conn(s), network_get(s),
+         NUM2UINT(command), NUM2UINT(section), NUM2INT(index),
+         StringValuePtr(xml), NUM2UINT(flags));
+}
+/*
+ * call-seq:
  *   net.destroy -> nil
  *
  * Call +virNetworkDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDestroy]
@@ -216,6 +230,7 @@ void init_network()
 
     rb_define_method(c_network, "undefine", libvirt_netw_undefine, 0);
     rb_define_method(c_network, "create", libvirt_netw_create, 0);
+    rb_define_method(c_network, "update", libvirt_netw_update, 5);
     rb_define_method(c_network, "destroy", libvirt_netw_destroy, 0);
     rb_define_method(c_network, "name", libvirt_netw_name, 0);
     rb_define_method(c_network, "uuid", libvirt_netw_uuid, 0);
@@ -230,6 +245,28 @@ void init_network()
 #endif
 #if HAVE_VIRNETWORKISPERSISTENT
     rb_define_method(c_network, "persistent?", libvirt_netw_persistent_p, 0);
+#endif
+#if HAVE_CONST_VIR_NETWORK_UPDATE_COMMAND_NONE
+    rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_NONE", INT2NUM(VIR_NETWORK_UPDATE_COMMAND_NONE));
+    rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_MODIFY", INT2NUM(VIR_NETWORK_UPDATE_COMMAND_MODIFY));
+    rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_ADD_LAST", INT2NUM(VIR_NETWORK_UPDATE_COMMAND_ADD_LAST));
+    rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_ADD_FIRST", INT2NUM(VIR_NETWORK_UPDATE_COMMAND_ADD_FIRST));
+    rb_define_const(c_network, "NETWORK_SECTION_NONE", INT2NUM(VIR_NETWORK_SECTION_NONE));
+    rb_define_const(c_network, "NETWORK_SECTION_BRIDGE", INT2NUM(VIR_NETWORK_SECTION_BRIDGE));
+    rb_define_const(c_network, "NETWORK_SECTION_DOMAIN", INT2NUM(VIR_NETWORK_SECTION_DOMAIN));
+    rb_define_const(c_network, "NETWORK_SECTION_IP", INT2NUM(VIR_NETWORK_SECTION_IP));
+    rb_define_const(c_network, "NETWORK_SECTION_IP_DHCP_HOST", INT2NUM(VIR_NETWORK_SECTION_IP_DHCP_HOST));
+    rb_define_const(c_network, "NETWORK_SECTION_IP_DHCP_RANGE", INT2NUM(VIR_NETWORK_SECTION_IP_DHCP_RANGE));
+    rb_define_const(c_network, "NETWORK_SECTION_FORWARD", INT2NUM(VIR_NETWORK_SECTION_FORWARD));
+    rb_define_const(c_network, "NETWORK_SECTION_FORWARD_INTERFACE", INT2NUM(VIR_NETWORK_SECTION_FORWARD_INTERFACE));
+    rb_define_const(c_network, "NETWORK_SECTION_FORWARD_PF", INT2NUM(VIR_NETWORK_SECTION_FORWARD_PF));
+    rb_define_const(c_network, "NETWORK_SECTION_PORTGROUP", INT2NUM(VIR_NETWORK_SECTION_PORTGROUP));
+    rb_define_const(c_network, "NETWORK_SECTION_DNS_HOST", INT2NUM(VIR_NETWORK_SECTION_DNS_HOST));
+    rb_define_const(c_network, "NETWORK_SECTION_DNS_TXT", INT2NUM(VIR_NETWORK_SECTION_DNS_TXT));
+    rb_define_const(c_network, "NETWORK_SECTION_DNS_SRV", INT2NUM(VIR_NETWORK_SECTION_DNS_SRV));
+    rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_CURRENT", INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CURRENT));
+    rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_LIVE", INT2NUM(VIR_NETWORK_UPDATE_AFFECT_LIVE));
+    rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_CONFIG", INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CONFIG));
 #endif
 #endif
 }
