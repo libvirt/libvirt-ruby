@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include <ruby.h>
-#include <st.h>
+#include <ruby/st.h>
 #include <libvirt/libvirt.h>
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 #include <libvirt/libvirt-qemu.h>
@@ -996,7 +996,7 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE in) {
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2)
-            rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 1 or 2)",
                      RARRAY_LEN(in));
         memory = rb_ary_entry(in, 0);
         flags = rb_ary_entry(in, 1);
@@ -1073,7 +1073,7 @@ static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus) {
     Check_Type(vcpus, T_ARRAY);
 
     if (RARRAY_LEN(vcpus) != 2)
-        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(vcpus));
 
     nvcpus = rb_ary_entry(vcpus, 0);
@@ -1847,7 +1847,7 @@ static VALUE internal_set_parameters(VALUE d, VALUE in,
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2)
-            rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 or 2)",
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 1 or 2)",
                      RARRAY_LEN(in));
         input = rb_ary_entry(in, 0);
         flags_val = rb_ary_entry(in, 1);

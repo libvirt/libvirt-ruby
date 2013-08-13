@@ -128,7 +128,7 @@ static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
         rb_raise(rb_eTypeError, "wrong type (expected Array)");
 
     if (RARRAY_LEN(result) != 2)
-        rb_raise(rb_eArgError, "wrong number of arguments (%d for 2)",
+        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(result));
 
     retcode = rb_ary_entry(result, 0);
@@ -140,7 +140,7 @@ static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
     StringValue(buffer);
 
     if (RSTRING_LEN(buffer) > nbytes)
-        rb_raise(rb_eArgError, "asked for %d bytes, block returned %d", nbytes,
+        rb_raise(rb_eArgError, "asked for %zd bytes, block returned %ld", nbytes,
                  RSTRING_LEN(buffer));
 
     memcpy(data, RSTRING_PTR(buffer), RSTRING_LEN(buffer));
@@ -225,7 +225,7 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque) {
                  "wrong domain event lifecycle callback argument type (expected Array)");
 
     if (RARRAY_LEN(passthrough) != 3)
-        rb_raise(rb_eArgError, "wrong number of arguments (%d for 3)",
+        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 3)",
                  RARRAY_LEN(passthrough));
 
     cb = rb_ary_entry(passthrough, 0);
