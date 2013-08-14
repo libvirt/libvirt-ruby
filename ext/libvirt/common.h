@@ -161,6 +161,17 @@ extern VALUE m_libvirt;
 
 char *get_string_or_nil(VALUE arg);
 
+VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
+                     int (*nparams_cb)(VALUE d, unsigned int flags),
+                     char *(*get_cb)(VALUE d, unsigned int flags,
+                                     virTypedParameterPtr params, int *nparams));
+VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
+                     int (*nparams_cb)(VALUE d, unsigned int flags),
+                     char *(*get_cb)(VALUE d, unsigned int flags,
+                                     virTypedParameterPtr params, int *nparams),
+                     char *(*set_cb)(VALUE d, unsigned int flags,
+                                     virTypedParameterPtr params, int nparams));
+
 struct rb_ary_entry_arg {
     VALUE arr;
     int elem;

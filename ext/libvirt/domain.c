@@ -1764,229 +1764,6 @@ static VALUE libvirt_dom_is_updated(VALUE d)
 }
 #endif
 
-struct field_to_value {
-    VALUE result;
-    virTypedParameterPtr param;
-};
-
-static VALUE typed_field_to_value(VALUE input)
-{
-    struct field_to_value *ftv = (struct field_to_value *)input;
-    VALUE val;
-
-    switch(ftv->param->type) {
-    case VIR_TYPED_PARAM_INT:
-        val = INT2NUM(ftv->param->value.i);
-        break;
-    case VIR_TYPED_PARAM_UINT:
-        val = UINT2NUM(ftv->param->value.ui);
-        break;
-    case VIR_TYPED_PARAM_LLONG:
-        val = LL2NUM(ftv->param->value.l);
-        break;
-    case VIR_TYPED_PARAM_ULLONG:
-        val = ULL2NUM(ftv->param->value.ul);
-        break;
-    case VIR_TYPED_PARAM_DOUBLE:
-        val = rb_float_new(ftv->param->value.d);
-        break;
-    case VIR_TYPED_PARAM_BOOLEAN:
-        val = (ftv->param->value.b == 0) ? Qfalse : Qtrue;
-        break;
-    case VIR_TYPED_PARAM_STRING:
-        val = rb_str_new2(ftv->param->value.s);
-        break;
-    default:
-        rb_raise(rb_eArgError, "Invalid parameter type");
-    }
-
-    rb_hash_aset(ftv->result, rb_str_new2(ftv->param->field), val);
-
-    return Qnil;
-}
-
-static VALUE internal_get_parameters(int argc, VALUE *argv, VALUE d,
-                                     int (*nparams_cb)(VALUE d,
-                                                       unsigned int flags),
-                                     char *(*get_cb)(VALUE d,
-                                                     unsigned int flags,
-                                                     virTypedParameterPtr params,
-                                                     int *nparams))
-{
-    int nparams;
-    virTypedParameterPtr params;
-    VALUE result;
-    int i;
-    int exception;
-    char *errname;
-    struct field_to_value ftv;
-    unsigned int flags;
-    VALUE flags_val;
-
-    rb_scan_args(argc, argv, "01", &flags_val);
-
-    if (NIL_P(flags_val))
-        flags = 0;
-    else
-        flags = NUM2UINT(flags_val);
-
-    nparams = nparams_cb(d, flags);
-
-    result = rb_hash_new();
-
-    if (nparams == 0)
-        return result;
-
-    params = ALLOC_N(virTypedParameter, nparams);
-
-    errname = get_cb(d, flags, params, &nparams);
-    if (errname != NULL) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn(d)));
-    }
-
-    for (i = 0; i < nparams; i++) {
-        ftv.result = result;
-        ftv.param = &params[i];
-        rb_protect(typed_field_to_value, (VALUE)&ftv, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
-    }
-
-    xfree(params);
-
-    return result;
-}
-
-struct value_to_field {
-    virTypedParameterPtr param;
-    VALUE input;
-};
-
-static VALUE typed_value_to_field(VALUE in)
-{
-    struct value_to_field *vtf = (struct value_to_field *)in;
-    VALUE val;
-
-    val = rb_hash_aref(vtf->input, rb_str_new2(vtf->param->field));
-    if (NIL_P(val))
-        return Qnil;
-
-    switch(vtf->param->type) {
-    case VIR_TYPED_PARAM_INT:
-        vtf->param->value.i = NUM2INT(val);
-        break;
-    case VIR_TYPED_PARAM_UINT:
-        vtf->param->value.ui = NUM2UINT(val);
-        break;
-    case VIR_TYPED_PARAM_LLONG:
-        vtf->param->value.l = NUM2LL(val);
-        break;
-    case VIR_TYPED_PARAM_ULLONG:
-        vtf->param->value.ul = NUM2ULL(val);
-        break;
-    case VIR_TYPED_PARAM_DOUBLE:
-        vtf->param->value.d = NUM2DBL(val);
-        break;
-    case VIR_TYPED_PARAM_BOOLEAN:
-        vtf->param->value.b = (val == Qtrue) ? 1 : 0;
-        break;
-    case VIR_TYPED_PARAM_STRING:
-        vtf->param->value.s = StringValueCStr(val);
-        break;
-    default:
-        rb_raise(rb_eArgError, "Invalid parameter type");
-    }
-
-    return Qnil;
-}
-
-static VALUE internal_set_parameters(VALUE d, VALUE in,
-                                     int (*nparams_cb)(VALUE d,
-                                                       unsigned int flags),
-                                     char *(*get_cb)(VALUE d,
-                                                     unsigned int flags,
-                                                     virTypedParameterPtr params,
-                                                     int *nparams),
-                                     char *(*set_cb)(VALUE d,
-                                                     unsigned int flags,
-                                                     virTypedParameterPtr params,
-                                                     int nparams))
-{
-    int nparams;
-    virTypedParameterPtr params;
-    int exception;
-    int i;
-    char *errname;
-    struct value_to_field vtf;
-    VALUE input;
-    VALUE flags_val;
-    unsigned int flags;
-
-    if (TYPE(in) == T_HASH) {
-        input = in;
-        flags_val = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2)
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 1 or 2)",
-                     RARRAY_LEN(in));
-        input = rb_ary_entry(in, 0);
-        flags_val = rb_ary_entry(in, 1);
-    }
-    else
-        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
-
-    Check_Type(input, T_HASH);
-
-    /* we do this up-front for proper argument error checking */
-    flags = NUM2UINT(flags_val);
-
-    if (RHASH_SIZE(input) == 0)
-        return Qnil;
-
-    /* Complicated.  The below all stems from the fact that we have no way to
-     * have no way to discover what type each parameter should be based on the
-     * be based on the input.  Instead, we ask libvirt to give us the current
-     * us the current parameters and types, and then we replace the values with
-     * the values with the new values.  That way we find out what the old types
-     * what the old types were, and if the new types don't match, libvirt will
-     * throw an error.
-     */
-
-    nparams = nparams_cb(d, flags);
-
-    params = ALLOC_N(virTypedParameter, nparams);
-
-    errname = get_cb(d, flags, params, &nparams);
-    if (errname != NULL) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn(d)));
-    }
-
-    for (i = 0; i < nparams; i++) {
-        vtf.param = &params[i];
-        vtf.input = input;
-        rb_protect(typed_value_to_field, (VALUE)&vtf, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
-    }
-
-    errname = set_cb(d, flags, params, nparams);
-    if (errname != NULL) {
-        xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn(d)));
-    }
-
-    xfree(params);
-
-    return Qnil;
-}
-
 static int scheduler_nparams(VALUE d, unsigned int flags)
 {
     int nparams;
@@ -2049,13 +1826,13 @@ static char *scheduler_set(VALUE d, unsigned int flags,
 static VALUE libvirt_dom_get_scheduler_parameters(int argc, VALUE *argv,
                                                   VALUE d)
 {
-    return internal_get_parameters(argc, argv, d, scheduler_nparams,
-                                   scheduler_get);
+    return get_parameters(argc, argv, d, conn(d), scheduler_nparams,
+                          scheduler_get);
 }
 
 /*
  * call-seq:
- *   dom.scheduler_parameters = Hash,flags=0
+ *   dom.scheduler_parameters = Hash
  *
  * Call +virDomainSetSchedulerParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
  * to set the scheduler parameters for this domain.  The keys and values in
@@ -2064,8 +1841,8 @@ static VALUE libvirt_dom_get_scheduler_parameters(int argc, VALUE *argv,
  */
 static VALUE libvirt_dom_set_scheduler_parameters(VALUE d, VALUE input)
 {
-    return internal_set_parameters(d, input, scheduler_nparams, scheduler_get,
-                                   scheduler_set);
+    return set_parameters(d, input, conn(d), scheduler_nparams, scheduler_get,
+                          scheduler_set);
 }
 
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
@@ -2121,12 +1898,12 @@ static char *memory_set(VALUE d, unsigned int flags,
  */
 static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d)
 {
-    return internal_get_parameters(argc, argv, d, memory_nparams, memory_get);
+    return get_parameters(argc, argv, d, conn(d), memory_nparams, memory_get);
 }
 
 /*
  * call-seq:
- *   dom.memory_parameters = Hash,flags=0
+ *   dom.memory_parameters = Hash
  *
  * Call +virDomainSetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
  * to set the memory parameters for this domain.  The keys and values in
@@ -2134,8 +1911,8 @@ static VALUE libvirt_dom_get_memory_parameters(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_dom_set_memory_parameters(VALUE d, VALUE in)
 {
-    return internal_set_parameters(d, in, memory_nparams, memory_get,
-                                   memory_set);
+    return set_parameters(d, in, conn(d), memory_nparams, memory_get,
+                          memory_set);
 }
 #endif
 
@@ -2192,12 +1969,12 @@ static char *blkio_set(VALUE d, unsigned int flags, virTypedParameterPtr params,
  */
 static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d)
 {
-    return internal_get_parameters(argc, argv, d, blkio_nparams, blkio_get);
+    return get_parameters(argc, argv, d, conn(d), blkio_nparams, blkio_get);
 }
 
 /*
  * call-seq:
- *   dom.memory_parameters = Hash,flags=0
+ *   dom.blkio_parameters = Hash
  *
  * Call +virDomainSetBlkioParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
  * to set the blkio parameters for this domain.  The keys and values in
@@ -2205,7 +1982,7 @@ static VALUE libvirt_dom_get_blkio_parameters(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_dom_set_blkio_parameters(VALUE d, VALUE in)
 {
-    return internal_set_parameters(d, in, blkio_nparams, blkio_get, blkio_set);
+    return set_parameters(d, in, conn(d), blkio_nparams, blkio_get, blkio_set);
 }
 #endif
 
