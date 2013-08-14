@@ -139,8 +139,9 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_string(virNetworkGetXMLDesc, conn(s), 1, network_get(s),
                     NUM2UINT(flags));
@@ -185,9 +186,10 @@ static VALUE libvirt_netw_autostart(VALUE s)
  */
 static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart)
 {
-    if (autostart != Qtrue && autostart != Qfalse)
+    if (autostart != Qtrue && autostart != Qfalse) {
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected TrueClass or FalseClass)");
+    }
 
     gen_call_void(virNetworkSetAutostart, conn(s), network_get(s),
                   RTEST(autostart) ? 1 : 0);

@@ -93,10 +93,12 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
 
     uri_c = get_string_or_nil(uri);
 
-    if (readonly)
+    if (readonly) {
         conn = virConnectOpenReadOnly(uri_c);
-    else
+    }
+    else {
         conn = virConnectOpen(uri_c);
+    }
 
     _E(conn == NULL, create_error(e_ConnectionError,
                                   readonly ? "virConnectOpenReadOnly" : "virConnectOpen",
@@ -142,8 +144,9 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
 
     userdata = (VALUE)cbdata;
 
-    if (!rb_block_given_p())
+    if (!rb_block_given_p()) {
         rb_raise(rb_eRuntimeError, "No block given, this should never happen!\n");
+    }
 
     for (i = 0; i < ncred; i++) {
         newcred = rb_hash_new();
@@ -151,16 +154,20 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
         rb_hash_aset(newcred, rb_str_new2("type"), INT2NUM(cred[i].type));
         rb_hash_aset(newcred, rb_str_new2("prompt"),
                      rb_str_new2(cred[i].prompt));
-        if (cred[i].challenge)
+        if (cred[i].challenge) {
             rb_hash_aset(newcred, rb_str_new2("challenge"),
                          rb_str_new2(cred[i].challenge));
-        else
+        }
+        else {
             rb_hash_aset(newcred, rb_str_new2("challenge"), Qnil);
-        if (cred[i].defresult)
+        }
+        if (cred[i].defresult) {
             rb_hash_aset(newcred, rb_str_new2("defresult"),
                          rb_str_new2(cred[i].defresult));
-        else
+        }
+        else {
             rb_hash_aset(newcred, rb_str_new2("defresult"), Qnil);
+        }
         rb_hash_aset(newcred, rb_str_new2("result"), Qnil);
         rb_hash_aset(newcred, rb_str_new2("userdata"), userdata);
 
@@ -254,22 +261,27 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     uri_c = get_string_or_nil(uri);
 
     /* handle the optional flags */
-    if (NIL_P(flags_val))
+    if (NIL_P(flags_val)) {
         flags = 0;
-    else
+    }
+    else {
         flags = NUM2UINT(flags_val);
+    }
 
     if (rb_block_given_p()) {
         auth = ALLOC(virConnectAuth);
         auth_alloc = 1;
 
-        if (TYPE(credlist) == T_NIL)
+        if (TYPE(credlist) == T_NIL) {
             auth->ncredtype = 0;
-        else if (TYPE(credlist) == T_ARRAY)
+        }
+        else if (TYPE(credlist) == T_ARRAY) {
             auth->ncredtype = RARRAY_LEN(credlist);
-        else
+        }
+        else {
             rb_raise(rb_eTypeError,
                      "wrong argument type (expected Array or nil)");
+        }
         auth->credtype = NULL;
         if (auth->ncredtype > 0) {
             /* we don't use ALLOC_N here because that can throw an exception,
@@ -286,13 +298,15 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
                 args.arr = credlist;
                 args.elem = i;
                 tmp = rb_protect(rb_ary_entry_wrap, (VALUE)&args, &exception);
-                if (exception)
+                if (exception) {
                     goto do_cleanup;
+                }
 
                 auth->credtype[i] = rb_protect(rb_num2int_wrap, tmp,
                                                &exception);
-                if (exception)
+                if (exception) {
                     goto do_cleanup;
+                }
             }
         }
 
@@ -317,8 +331,9 @@ do_cleanup:
         xfree(auth);
     }
 
-    if (exception)
+    if (exception) {
         rb_jump_tag(exception);
+    }
 
     _E(conn == NULL, create_error(e_ConnectionError, "virConnectOpenAuth",
                                   NULL));
@@ -374,9 +389,10 @@ static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
     VALUE libvirt_cb;
     VALUE libvirt_opaque;
 
-    if (TYPE(opaque) != T_HASH)
+    if (TYPE(opaque) != T_HASH) {
         rb_raise(rb_eTypeError,
                  "wrong event callback argument type (expected Hash)");
+    }
 
     libvirt_cb = rb_hash_aref(opaque, rb_str_new2("libvirt_cb"));
 
@@ -426,9 +442,10 @@ static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
     VALUE libvirt_cb;
     VALUE libvirt_opaque;
 
-    if (TYPE(opaque) != T_HASH)
+    if (TYPE(opaque) != T_HASH) {
         rb_raise(rb_eTypeError,
                  "wrong event callback argument type (expected Hash)");
+    }
 
     libvirt_cb = rb_hash_aref(opaque, rb_str_new2("libvirt_cb"));
 
@@ -463,19 +480,23 @@ static int internal_add_handle_func(int fd, int events,
                  Data_Wrap_Struct(rb_class_of(add_handle), NULL, NULL, ff));
 
     /* call out to the ruby object */
-    if (strcmp(rb_obj_classname(add_handle), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(add_handle), "Symbol") == 0) {
         res = rb_funcall(rb_class_of(add_handle), rb_to_id(add_handle), 3,
                          INT2NUM(fd), INT2NUM(events), rubyargs);
-    else if (strcmp(rb_obj_classname(add_handle), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(add_handle), "Proc") == 0) {
         res = rb_funcall(add_handle, rb_intern("call"), 3, INT2NUM(fd),
                          INT2NUM(events), rubyargs);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong add handle callback argument type (expected Symbol or Proc)");
+    }
 
-    if (TYPE(res) != T_FIXNUM)
+    if (TYPE(res) != T_FIXNUM) {
         rb_raise(rb_eTypeError,
                  "expected integer return from add_handle callback");
+    }
 
     return NUM2INT(res);
 }
@@ -483,15 +504,18 @@ static int internal_add_handle_func(int fd, int events,
 static void internal_update_handle_func(int watch, int event)
 {
     /* call out to the ruby object */
-    if (strcmp(rb_obj_classname(update_handle), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(update_handle), "Symbol") == 0) {
         rb_funcall(rb_class_of(update_handle), rb_to_id(update_handle), 2,
                    INT2NUM(watch), INT2NUM(event));
-    else if (strcmp(rb_obj_classname(update_handle), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(update_handle), "Proc") == 0) {
         rb_funcall(update_handle, rb_intern("call"), 2, INT2NUM(watch),
                    INT2NUM(event));
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong update handle callback argument type (expected Symbol or Proc)");
+    }
 }
 
 static int internal_remove_handle_func(int watch)
@@ -503,18 +527,22 @@ static int internal_remove_handle_func(int watch)
     VALUE ff;
 
     /* call out to the ruby object */
-    if (strcmp(rb_obj_classname(remove_handle), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(remove_handle), "Symbol") == 0) {
         res = rb_funcall(rb_class_of(remove_handle), rb_to_id(remove_handle),
                          1, INT2NUM(watch));
-    else if (strcmp(rb_obj_classname(remove_handle), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(remove_handle), "Proc") == 0) {
         res = rb_funcall(remove_handle, rb_intern("call"), 1, INT2NUM(watch));
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong remove handle callback argument type (expected Symbol or Proc)");
+    }
 
-    if (TYPE(res) != T_HASH)
+    if (TYPE(res) != T_HASH) {
         rb_raise(rb_eTypeError,
                  "expected opaque hash returned from remove_handle callback");
+    }
 
     ff = rb_hash_aref(res, rb_str_new2("free_func"));
     if (!NIL_P(ff)) {
@@ -551,19 +579,23 @@ static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
                  Data_Wrap_Struct(rb_class_of(add_timeout), NULL, NULL, ff));
 
     /* call out to the ruby object */
-    if (strcmp(rb_obj_classname(add_timeout), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(add_timeout), "Symbol") == 0) {
         res = rb_funcall(rb_class_of(add_timeout), rb_to_id(add_timeout), 2,
                          INT2NUM(interval), rubyargs);
-    else if (strcmp(rb_obj_classname(add_timeout), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(add_timeout), "Proc") == 0) {
         res = rb_funcall(add_timeout, rb_intern("call"), 2, INT2NUM(interval),
                          rubyargs);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong add timeout callback argument type (expected Symbol or Proc)");
+    }
 
-    if (TYPE(res) != T_FIXNUM)
+    if (TYPE(res) != T_FIXNUM) {
         rb_raise(rb_eTypeError,
                  "expected integer return from add_timeout callback");
+    }
 
     return NUM2INT(res);
 }
@@ -571,15 +603,18 @@ static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
 static void internal_update_timeout_func(int timer, int timeout)
 {
     /* call out to the ruby object */
-    if (strcmp(rb_obj_classname(update_timeout), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(update_timeout), "Symbol") == 0) {
         rb_funcall(rb_class_of(update_timeout), rb_to_id(update_timeout), 2,
                    INT2NUM(timer), INT2NUM(timeout));
-    else if (strcmp(rb_obj_classname(update_timeout), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(update_timeout), "Proc") == 0) {
         rb_funcall(update_timeout, rb_intern("call"), 2, INT2NUM(timer),
                    INT2NUM(timeout));
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong update timeout callback argument type (expected Symbol or Proc)");
+    }
 }
 
 static int internal_remove_timeout_func(int timer)
@@ -591,18 +626,22 @@ static int internal_remove_timeout_func(int timer)
     VALUE ff;
 
     /* call out to the ruby object */
-    if (strcmp(rb_obj_classname(remove_timeout), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(remove_timeout), "Symbol") == 0) {
         res = rb_funcall(rb_class_of(remove_timeout), rb_to_id(remove_timeout),
                          1, INT2NUM(timer));
-    else if (strcmp(rb_obj_classname(remove_timeout), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(remove_timeout), "Proc") == 0) {
         res = rb_funcall(remove_timeout, rb_intern("call"), 1, INT2NUM(timer));
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong remove timeout callback argument type (expected Symbol or Proc)");
+    }
 
-    if (TYPE(res) != T_HASH)
+    if (TYPE(res) != T_HASH) {
         rb_raise(rb_eTypeError,
                  "expected opaque hash returned from remove_timeout callback");
+    }
 
     ff = rb_hash_aref(res, rb_str_new2("free_func"));
     if (!NIL_P(ff)) {
@@ -632,8 +671,9 @@ static int internal_remove_timeout_func(int timer)
 
 static int is_symbol_proc_or_nil(VALUE handle)
 {
-    if (NIL_P(handle))
+    if (NIL_P(handle)) {
         return 1;
+    }
     return is_symbol_or_proc(handle);
 }
 
@@ -692,9 +732,10 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
         !is_symbol_proc_or_nil(remove_handle) ||
         !is_symbol_proc_or_nil(add_timeout) ||
         !is_symbol_proc_or_nil(update_timeout) ||
-        !is_symbol_proc_or_nil(remove_timeout))
+        !is_symbol_proc_or_nil(remove_timeout)) {
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected Symbol, Proc, or nil)");
+    }
 
     set_event_func_or_null(add_handle);
     set_event_func_or_null(update_handle);
@@ -1025,6 +1066,7 @@ void Init__libvirt()
 
     virSetErrorFunc(NULL, rubyLibvirtErrorFunc);
 
-    if (virInitialize() < 0)
+    if (virInitialize() < 0) {
         rb_raise(rb_eSystemCallError, "virInitialize failed");
+    }
 }

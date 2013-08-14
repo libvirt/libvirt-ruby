@@ -9,8 +9,9 @@ VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
     do {                                                                \
         vir##kind##Ptr ptr;                                             \
         Data_Get_Struct(v, vir##kind, ptr);                             \
-        if (!ptr)                                                       \
+        if (!ptr) {                                                     \
             rb_raise(rb_eArgError, #kind " has been freed");            \
+        }                                                               \
         return ptr;                                                     \
     } while (0);
 
@@ -18,8 +19,9 @@ VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
     do {                                                                \
         int r;                                                          \
         r = vir##kind##Free((vir##kind##Ptr) p);                        \
-        if (r < 0)                                                      \
+        if (r < 0) {                                                    \
             rb_raise(rb_eSystemCallError, # kind " free failed");       \
+        }                                                               \
     } while(0);
 
 VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
@@ -44,8 +46,9 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         _E(str == NULL, create_error(e_Error, # func, conn));           \
                                                                         \
         result = rb_str_new2(str);                                      \
-        if (dealloc)                                                    \
+        if (dealloc) {                                                  \
             xfree((void *) str);                                        \
+        }                                                               \
         return result;                                                  \
     } while(0)
 

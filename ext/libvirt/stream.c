@@ -132,24 +132,28 @@ static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
 
     result = rb_yield_values(2, (VALUE)opaque, INT2NUM(nbytes));
 
-    if (TYPE(result) != T_ARRAY)
+    if (TYPE(result) != T_ARRAY) {
         rb_raise(rb_eTypeError, "wrong type (expected Array)");
+    }
 
-    if (RARRAY_LEN(result) != 2)
+    if (RARRAY_LEN(result) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(result));
+    }
 
     retcode = rb_ary_entry(result, 0);
     buffer = rb_ary_entry(result, 1);
 
-    if (NUM2INT(retcode) < 0)
+    if (NUM2INT(retcode) < 0) {
         return NUM2INT(retcode);
+    }
 
     StringValue(buffer);
 
-    if (RSTRING_LEN(buffer) > nbytes)
-        rb_raise(rb_eArgError, "asked for %zd bytes, block returned %ld", nbytes,
-                 RSTRING_LEN(buffer));
+    if (RSTRING_LEN(buffer) > nbytes) {
+        rb_raise(rb_eArgError, "asked for %zd bytes, block returned %ld",
+                 nbytes, RSTRING_LEN(buffer));
+    }
 
     memcpy(data, RSTRING_PTR(buffer), RSTRING_LEN(buffer));
 
@@ -174,8 +178,9 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
     VALUE opaque;
     int ret;
 
-    if (!rb_block_given_p())
+    if (!rb_block_given_p()) {
         rb_raise(rb_eRuntimeError, "A block must be provided");
+    }
 
     rb_scan_args(argc, argv, "01", &opaque);
 
@@ -192,8 +197,9 @@ static int internal_recvall(virStreamPtr st, const char *buf, size_t nbytes,
 
     result = rb_yield_values(2, rb_str_new(buf, nbytes), (VALUE)opaque);
 
-    if (TYPE(result) != T_FIXNUM)
+    if (TYPE(result) != T_FIXNUM) {
         rb_raise(rb_eArgError, "wrong type (expected an integer)");
+    }
 
     return NUM2INT(result);
 }
@@ -213,8 +219,9 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
     VALUE opaque;
     int ret;
 
-    if (!rb_block_given_p())
+    if (!rb_block_given_p()) {
         rb_raise(rb_eRuntimeError, "A block must be provided");
+    }
 
     rb_scan_args(argc, argv, "01", &opaque);
 
@@ -232,27 +239,32 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque)
     VALUE news;
     VALUE s;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event lifecycle callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 3)
+    if (RARRAY_LEN(passthrough) != 3) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 3)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
     s = rb_ary_entry(passthrough, 2);
 
     news = stream_new(st, conn_attr(s));
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 3, news, INT2NUM(events),
                    cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 3, news, INT2NUM(events), cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong stream event callback (expected Symbol or Proc)");
+    }
 }
 
 /*
@@ -280,8 +292,10 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "21", &events, &callback, &opaque);
 
-    if (!is_symbol_or_proc(callback))
-        rb_raise(rb_eTypeError, "wrong argument type (expected Symbol or Proc)");
+    if (!is_symbol_or_proc(callback)) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Symbol or Proc)");
+    }
 
     passthrough = rb_ary_new();
     rb_ary_store(passthrough, 0, callback);

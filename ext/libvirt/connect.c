@@ -35,8 +35,9 @@ static void connect_close(void *p)
 {
     int r;
 
-    if (!p)
+    if (!p) {
         return;
+    }
     r = virConnectClose((virConnectPtr) p);
     _E(r < 0, create_error(rb_eSystemCallError, "virConnectClose", p));
 }
@@ -273,18 +274,21 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "02", &start, &max);
 
-    if (NIL_P(start))
+    if (NIL_P(start)) {
         startCell = 0;
-    else
+    }
+    else {
         startCell = NUM2UINT(start);
+    }
 
     if (NIL_P(max)) {
         r = virNodeGetInfo(conn, &nodeinfo);
         _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn));
         maxCells = nodeinfo.nodes;
     }
-    else
+    else {
         maxCells = NUM2UINT(max);
+    }
 
     freeMems = ALLOC_N(unsigned long long, maxCells);
 
@@ -296,8 +300,9 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
     }
 
     cells = rb_ary_new2(r);
-    for (i = 0; i < r; i++)
+    for (i = 0; i < r; i++) {
         rb_ary_push(cells, ULL2NUM(freeMems[i]));
+    }
     xfree(freeMems);
 
     return cells;
@@ -384,8 +389,10 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s)
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_int(virConnectCompareCPU, conn(s), connect_get(s),
                  StringValueCStr(xml), NUM2UINT(flags));
@@ -420,16 +427,20 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s)
      * We check flags up-front here so that we get a TypeError early on if
      * flags is bogus.
      */
-    if (NIL_P(flags_val))
+    if (NIL_P(flags_val)) {
         flags = 0;
-    else
+    }
+    else {
         flags = NUM2UINT(flags_val);
+    }
 
     Check_Type(xmlcpus, T_ARRAY);
 
-    if (RARRAY_LEN(xmlcpus) < 1)
-        rb_raise(rb_eArgError, "wrong number of cpu arguments (%ld for 1 or more)",
+    if (RARRAY_LEN(xmlcpus) < 1) {
+        rb_raise(rb_eArgError,
+                 "wrong number of cpu arguments (%ld for 1 or more)",
                  RARRAY_LEN(xmlcpus));
+    }
 
     ncpus = RARRAY_LEN(xmlcpus);
     xmllist = ALLOC_N(const char *, ncpus);
@@ -477,28 +488,33 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
     VALUE cb_opaque;
     VALUE newc;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event lifecycle callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 5, newc,
                    domain_new(dom, newc), INT2NUM(event), INT2NUM(detail),
                    cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 5, newc, domain_new(dom, newc),
                    INT2NUM(event), INT2NUM(detail), cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event lifecycle callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -513,27 +529,32 @@ static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
     VALUE cb_opaque;
     VALUE newc;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event reboot callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 3, newc,
                    domain_new(dom, newc), cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 3, newc, domain_new(dom, newc),
                    cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event reboot callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -546,27 +567,32 @@ static int domain_event_rtc_callback(virConnectPtr conn, virDomainPtr dom,
     VALUE cb_opaque;
     VALUE newc;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event rtc callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
                    domain_new(dom, newc), LL2NUM(utc_offset), cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
                    LL2NUM(utc_offset), cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event rtc callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -579,27 +605,32 @@ static int domain_event_watchdog_callback(virConnectPtr conn, virDomainPtr dom,
     VALUE cb_opaque;
     VALUE newc;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event watchdog callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
                    domain_new(dom, newc), INT2NUM(action), cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
                    INT2NUM(action), cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event watchdog callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -615,29 +646,34 @@ static int domain_event_io_error_callback(virConnectPtr conn, virDomainPtr dom,
     VALUE cb_opaque;
     VALUE newc;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 6, newc,
                    domain_new(dom, newc), rb_str_new2(src_path),
                    rb_str_new2(dev_alias), INT2NUM(action), cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 6, newc, domain_new(dom, newc),
                    rb_str_new2(src_path), rb_str_new2(dev_alias),
                    INT2NUM(action), cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -655,30 +691,35 @@ static int domain_event_io_error_reason_callback(virConnectPtr conn,
     VALUE cb_opaque;
     VALUE newc;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error reason callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 7, newc,
                    domain_new(dom, newc), rb_str_new2(src_path),
                    rb_str_new2(dev_alias), INT2NUM(action),
                    rb_str_new2(reason), cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 7, newc, domain_new(dom, newc),
                    rb_str_new2(src_path), rb_str_new2(dev_alias),
                    INT2NUM(action), rb_str_new2(reason), cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event IO error reason callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -701,13 +742,15 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
     VALUE pair;
     int i;
 
-    if (TYPE(passthrough) != T_ARRAY)
+    if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
                  "wrong domain event graphics callback argument type (expected Array)");
+    }
 
-    if (RARRAY_LEN(passthrough) != 2)
+    if (RARRAY_LEN(passthrough) != 2) {
         rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                  RARRAY_LEN(passthrough));
+    }
 
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
@@ -734,18 +777,21 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
     }
 
     newc = connect_new(conn);
-    if (strcmp(rb_obj_classname(cb), "Symbol") == 0)
+    if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 8, newc,
                    domain_new(dom, newc), INT2NUM(phase), local_hash,
                    remote_hash, rb_str_new2(authScheme), subject_array,
                    cb_opaque);
-    else if (strcmp(rb_obj_classname(cb), "Proc") == 0)
+    }
+    else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
         rb_funcall(cb, rb_intern("call"), 8, newc, domain_new(dom, newc),
                    INT2NUM(phase), local_hash, remote_hash,
                    rb_str_new2(authScheme), subject_array, cb_opaque);
-    else
+    }
+    else {
         rb_raise(rb_eTypeError,
                  "wrong domain event graphics callback (expected Symbol or Proc)");
+    }
 
     return 0;
 }
@@ -785,13 +831,17 @@ static VALUE libvirt_conn_domain_event_register_any(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "22", &eventID, &cb, &dom, &opaque);
 
-    if (!is_symbol_or_proc(cb))
-        rb_raise(rb_eTypeError, "wrong argument type (expected Symbol or Proc)");
+    if (!is_symbol_or_proc(cb)) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Symbol or Proc)");
+    }
 
-    if (NIL_P(dom))
+    if (NIL_P(dom)) {
         domain = NULL;
-    else
+    }
+    else {
         domain = domain_get(dom);
+    }
 
     switch(NUM2INT(eventID)) {
     case VIR_DOMAIN_EVENT_ID_LIFECYCLE:
@@ -881,8 +931,10 @@ static VALUE libvirt_conn_domain_event_register(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &cb, &opaque);
 
-    if (!is_symbol_or_proc(cb))
-        rb_raise(rb_eTypeError, "wrong argument type (expected Symbol or Proc)");
+    if (!is_symbol_or_proc(cb)) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Symbol or Proc)");
+    }
 
     passthrough = rb_ary_new();
     rb_ary_store(passthrough, 0, cb);
@@ -1010,8 +1062,9 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     dom = virDomainCreateLinux(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", conn));
@@ -1035,8 +1088,9 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     dom = virDomainCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", conn));
@@ -1138,8 +1192,9 @@ static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     ret = virConnectDomainXMLFromNative(conn(s), StringValueCStr(nativeFormat),
                                         StringValueCStr(xml), NUM2UINT(flags));
@@ -1170,8 +1225,9 @@ static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     ret = virConnectDomainXMLToNative(conn(s), StringValueCStr(nativeFormat),
                                       StringValueCStr(xml), NUM2UINT(flags));
@@ -1289,8 +1345,9 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
@@ -1441,8 +1498,9 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &cap, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     result = virNodeNumOfDevices(conn, get_string_or_nil(cap), NUM2UINT(flags));
     _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
@@ -1468,10 +1526,12 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &cap, &flags_val);
 
-    if (NIL_P(flags_val))
+    if (NIL_P(flags_val)) {
         flags = 0;
-    else
+    }
+    else {
         flags = NUM2UINT(flags_val);
+    }
 
     capstr = get_string_or_nil(cap);
 
@@ -1528,8 +1588,9 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     nodedev = virNodeDeviceCreateXML(conn, StringValueCStr(xml),
                                      NUM2UINT(flags));
@@ -1707,8 +1768,9 @@ static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     secret = virSecretDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(secret == NULL, create_error(e_DefinitionError, "virSecretDefineXML",
@@ -1823,8 +1885,9 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     pool = virStoragePoolCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", conn));
@@ -1847,8 +1910,9 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
     _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
@@ -1871,8 +1935,9 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
                     connect_get(c), StringValueCStr(type),
@@ -1895,8 +1960,9 @@ static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_string(virConnectGetSysinfo, conn(c), 1, connect_get(c),
                     NUM2UINT(flags));
@@ -1920,8 +1986,9 @@ static VALUE libvirt_conn_stream(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     stream = virStreamNew(connect_get(c), NUM2UINT(flags));
 
@@ -1947,8 +2014,10 @@ static VALUE libvirt_conn_interface_change_begin(int argc, VALUE *argv,
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_void(virInterfaceChangeBegin, conn(c), connect_get(c),
                   NUM2UINT(flags));
@@ -1967,8 +2036,10 @@ static VALUE libvirt_conn_interface_change_commit(int argc, VALUE *argv,
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_void(virInterfaceChangeCommit, conn(c), connect_get(c),
                   NUM2UINT(flags));
@@ -1987,8 +2058,10 @@ static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_void(virInterfaceChangeRollback, conn(c), connect_get(c),
                   NUM2UINT(flags));
@@ -2021,10 +2094,13 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
     struct hash_field hf;
 
     rb_scan_args(argc, argv, "02", &intparam, &flags);
-    if (NIL_P(intparam))
+
+    if (NIL_P(intparam)) {
         intparam = INT2NUM(-1);
-    if (NIL_P(flags))
+    }
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     /* we first call out to the get_stats callback with NULL params and 0
      * nparams to find out how many parameters we need
@@ -2037,8 +2113,9 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
 
     result = rb_hash_new();
 
-    if (nparams == 0)
+    if (nparams == 0) {
         return result;
+    }
 
     /* Now we allocate the params array */
     params = alloc_stats(nparams);
@@ -2091,8 +2168,9 @@ static VALUE cpu_hash_set(VALUE in)
 static char *cpu_get_stats(virConnectPtr conn, int intparam, void *params,
                            int *nparams, unsigned int flags)
 {
-    if (virNodeGetCPUStats(conn, intparam, params, nparams, flags) < 0)
+    if (virNodeGetCPUStats(conn, intparam, params, nparams, flags) < 0) {
         return "virNodeGetCPUStats";
+    }
 
     return NULL;
 }
@@ -2135,8 +2213,9 @@ static VALUE memory_hash_set(VALUE in)
 static char *memory_get_stats(virConnectPtr conn, int intparam, void *params,
                               int *nparams, unsigned int flags)
 {
-    if (virNodeGetMemoryStats(conn, intparam, params, nparams, flags) < 0)
+    if (virNodeGetMemoryStats(conn, intparam, params, nparams, flags) < 0) {
         return "virNodeGetMemoryStats";
+    }
 
     return NULL;
 }
@@ -2169,8 +2248,10 @@ static VALUE libvirt_conn_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
     VALUE flags;
 
     rb_scan_args(argc, argv, "11", &filename, &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_string(virDomainSaveImageGetXMLDesc, conn(c), 1, connect_get(c),
                     StringValueCStr(filename), NUM2UINT(flags));
@@ -2190,8 +2271,10 @@ static VALUE libvirt_conn_define_save_image_xml(int argc, VALUE *argv, VALUE c)
     VALUE flags;
 
     rb_scan_args(argc, argv, "21", &filename, &newxml, &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_void(virDomainSaveImageDefineXML, conn(c), connect_get(c),
                   StringValueCStr(filename), StringValueCStr(newxml),
@@ -2207,15 +2290,18 @@ static VALUE libvirt_conn_define_save_image_xml(int argc, VALUE *argv, VALUE c)
  * Call +virNodeSuspendForDuration+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeSuspendForDuration]
  * to suspend the hypervisor for the specified duration.
  */
-static VALUE libvirt_conn_node_suspend_for_duration(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_conn_node_suspend_for_duration(int argc, VALUE *argv,
+                                                    VALUE c)
 {
     VALUE target;
     VALUE duration;
     VALUE flags;
 
     rb_scan_args(argc, argv, "21", &target, &duration, &flags);
-    if (NIL_P(flags))
+
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_void(virNodeSuspendForDuration, conn(c), connect_get(c),
                   NUM2UINT(target), NUM2UINT(duration), NUM2UINT(flags));

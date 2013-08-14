@@ -67,16 +67,18 @@ static VALUE libvirt_nodedevice_parent(VALUE c)
 {
     /* unfortunately we can't use gen_call_string() here because
      * virNodeDeviceGetParent() returns NULL as a valid value (when this
-     * device has no parent.  Hand-code it instead
+     * device has no parent).  Hand-code it instead
      */
 
     const char *str;
 
     str = virNodeDeviceGetParent(nodedevice_get(c));
-    if (str == NULL)
+    if (str == NULL) {
         return Qnil;
-    else
+    }
+    else {
         return rb_str_new2(str);
+    }
 }
 
 /*
@@ -135,8 +137,9 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags))
+    if (NIL_P(flags)) {
         flags = INT2NUM(0);
+    }
 
     gen_call_string(virNodeDeviceGetXMLDesc, conn(s), 1,
                     nodedevice_get(s), NUM2UINT(flags));

@@ -107,15 +107,19 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
     struct rb_exc_new2_arg arg;
     int exception = 0;
 
-    if (conn == NULL)
+    if (conn == NULL) {
         err = virGetLastError();
-    else
+    }
+    else {
         err = virConnGetLastError(conn);
+    }
 
-    if (err != NULL && err->message != NULL)
+    if (err != NULL && err->message != NULL) {
         rc = asprintf(&msg, "Call to %s failed: %s", method, err->message);
-    else
+    }
+    else {
         rc = asprintf(&msg, "Call to %s failed", method);
+    }
 
     if (rc < 0) {
         /* there's not a whole lot we can do here; try to raise an
@@ -127,8 +131,9 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
     arg.msg = msg;
     ruby_errinfo = rb_protect(rb_exc_new2_wrap, (VALUE)&arg, &exception);
     free(msg);
-    if (exception)
+    if (exception) {
         rb_jump_tag(exception);
+    }
 
     rb_iv_set(ruby_errinfo, "@libvirt_function_name", rb_str_new2(method));
 
@@ -136,9 +141,10 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
         rb_iv_set(ruby_errinfo, "@libvirt_code", INT2NUM(err->code));
         rb_iv_set(ruby_errinfo, "@libvirt_component", INT2NUM(err->domain));
         rb_iv_set(ruby_errinfo, "@libvirt_level", INT2NUM(err->level));
-        if (err->message != NULL)
+        if (err->message != NULL) {
             rb_iv_set(ruby_errinfo, "@libvirt_message",
                       rb_str_new2(err->message));
+        }
     }
 
     return ruby_errinfo;
@@ -146,12 +152,17 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
 
 char *get_string_or_nil(VALUE arg)
 {
-    if (TYPE(arg) == T_NIL)
+    if (TYPE(arg) == T_NIL) {
         return NULL;
-    else if (TYPE(arg) == T_STRING)
+    }
+    else if (TYPE(arg) == T_STRING) {
         return StringValueCStr(arg);
-    else
-        rb_raise(rb_eTypeError, "wrong argument type (expected String or nil)");    return NULL;
+    }
+    else {
+        rb_raise(rb_eTypeError, "wrong argument type (expected String or nil)");
+    }
+
+    return NULL;
 }
 
 VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
@@ -188,8 +199,9 @@ VALUE gen_list(int num, char ***list)
 
     result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
     if (exception) {
-        for (i = 0; i < num; i++)
+        for (i = 0; i < num; i++) {
             free((*list)[i]);
+        }
         xfree(*list);
         rb_jump_tag(exception);
     }
@@ -198,15 +210,17 @@ VALUE gen_list(int num, char ***list)
         arg.value = rb_protect(rb_str_new2_wrap, (VALUE)&((*list)[i]),
                                &exception);
         if (exception) {
-            for (j = i; j < num; j++)
+            for (j = i; j < num; j++) {
                 xfree((*list)[j]);
+            }
             xfree(*list);
             rb_jump_tag(exception);
         }
         rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
         if (exception) {
-            for (j = i; j < num; j++)
+            for (j = i; j < num; j++) {
                 xfree((*list)[j]);
+            }
             xfree(*list);
             rb_jump_tag(exception);
         }
