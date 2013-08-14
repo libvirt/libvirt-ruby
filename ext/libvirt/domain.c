@@ -39,6 +39,7 @@
 #define VIR_TYPED_PARAM_ULLONG VIR_DOMAIN_SCHED_FIELD_ULLONG
 #define VIR_TYPED_PARAM_DOUBLE VIR_DOMAIN_SCHED_FIELD_DOUBLE
 #define VIR_TYPED_PARAM_BOOLEAN VIR_DOMAIN_SCHED_FIELD_BOOLEAN
+#define VIR_TYPED_PARAM_STRING 7
 
 #define VIR_TYPED_PARAM_FIELD_LENGTH 80
 typedef struct _virTypedParameter virTypedParameter;
@@ -52,6 +53,7 @@ struct _virTypedParameter {
         unsigned long long int ul;  /* type is ULLONG */
         double d;                   /* type is DOUBLE */
         char b;                     /* type is BOOLEAN */
+        char *s;                    /* type is STRING, may not be NULL */
     } value; /* parameter value */
 };
 typedef virTypedParameter *virTypedParameterPtr;
@@ -1791,6 +1793,9 @@ static VALUE typed_field_to_value(VALUE input)
     case VIR_TYPED_PARAM_BOOLEAN:
         val = (ftv->param->value.b == 0) ? Qfalse : Qtrue;
         break;
+    case VIR_TYPED_PARAM_STRING:
+        val = rb_str_new2(ftv->param->value.s);
+        break;
     default:
         rb_raise(rb_eArgError, "Invalid parameter type");
     }
@@ -1887,6 +1892,9 @@ static VALUE typed_value_to_field(VALUE in)
         break;
     case VIR_TYPED_PARAM_BOOLEAN:
         vtf->param->value.b = (val == Qtrue) ? 1 : 0;
+        break;
+    case VIR_TYPED_PARAM_STRING:
+        vtf->param->value.s = StringValueCStr(val);
         break;
     default:
         rb_raise(rb_eArgError, "Invalid parameter type");
