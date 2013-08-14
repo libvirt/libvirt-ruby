@@ -34,7 +34,6 @@ with the following exceptions:
 - virConnectRef
 - virDomainGetConnect
 - virDomainRef
-- virDomainOpenConsole
 - virNetworkGetConnect
 - virNetworkRef
 - virInterfaceGetConnect
@@ -51,7 +50,6 @@ with the following exceptions:
 - virEventRegisterDefaultImpl
 - virEventRunDefaultImpl
 - virDomainRestoreFlags
-- virDomainGetControlInfo
 - virDomainBlockStatsFlags
 - VIR_DOMAIN_UNDEFINE_MANAGED_SAVE
 - VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
