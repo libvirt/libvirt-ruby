@@ -158,6 +158,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSendKey',
                   'virNetworkUpdate',
                   'virNodeSuspendForDuration',
+                  'virNodeGetMemoryParameters',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

@@ -2222,6 +2222,70 @@ static VALUE libvirt_conn_node_suspend_for_duration(int argc, VALUE *argv, VALUE
 }
 #endif
 
+#if HAVE_VIRNODEGETMEMORYPARAMETERS
+static int node_memory_nparams(VALUE d, unsigned int flags)
+{
+    int nparams = 0;
+    int ret;
+
+    ret = virNodeGetMemoryParameters(connect_get(d), NULL, &nparams, flags);
+    _E(ret < 0, create_error(e_RetrieveError, "virNodeGetMemoryParameters",
+                             connect_get(d)));
+
+    return nparams;
+}
+
+static char *node_memory_get(VALUE d, unsigned int flags,
+                             virTypedParameterPtr params, int *nparams)
+{
+    if (virNodeGetMemoryParameters(connect_get(d), params, nparams,
+                                   NUM2UINT(flags)) < 0) {
+        return "virNodeGetMemoryParameters";
+    }
+    return NULL;
+}
+
+static char *node_memory_set(VALUE d, unsigned int flags,
+                             virTypedParameterPtr params, int nparams)
+{
+    /* FIXME: virNodeSetMemoryParameters can take a flags parameter, so we
+     * should probably implement it and pass it through.
+     */
+    if (virNodeSetMemoryParameters(connect_get(d), params, nparams,
+                                   flags) < 0) {
+        return "virNodeSetMemoryParameters";
+    }
+    return NULL;
+}
+
+/*
+ * call-seq:
+ *   conn.node_memory_parameters(flags=0) -> Hash
+ *
+ * Call +virNodeGetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetMemoryParameters]
+ * to get information about memory on the host node.
+ */
+static VALUE libvirt_conn_node_get_memory_parameters(int argc, VALUE *argv,
+                                                     VALUE c)
+{
+    return get_parameters(argc, argv, c, connect_get(c), node_memory_nparams,
+                          node_memory_get);
+}
+
+/*
+ * call-seq:
+ *   conn.node_set_memory_parameters = Hash
+ *
+ * Call +virNodeSetMemoryParameters+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeSetMemoryParameters]
+ * to set the memory parameters for this host node.
+ */
+static VALUE libvirt_conn_node_set_memory_parameters(VALUE c, VALUE input)
+{
+    return set_parameters(c, input, connect_get(c), node_memory_nparams,
+                          node_memory_get, node_memory_set);
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2613,5 +2677,12 @@ void init_connect()
 
     rb_define_method(c_connect, "node_suspend_for_duration",
                      libvirt_conn_node_suspend_for_duration, -1);
+#endif
+
+#if HAVE_VIRNODEGETMEMORYPARAMETERS
+    rb_define_method(c_connect, "node_memory_parameters",
+                     libvirt_conn_node_get_memory_parameters, -1);
+    rb_define_method(c_connect, "node_memory_parameters=",
+                     libvirt_conn_node_set_memory_parameters, 1);
 #endif
 }
