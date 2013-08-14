@@ -2199,6 +2199,29 @@ static VALUE libvirt_conn_define_save_image_xml(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRNODESUSPENDFORDURATION
+/*
+ * call-seq:
+ *   conn.node_suspend_for_duration(target, duration, flags=0) -> nil
+ *
+ * Call +virNodeSuspendForDuration+[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeSuspendForDuration]
+ * to suspend the hypervisor for the specified duration.
+ */
+static VALUE libvirt_conn_node_suspend_for_duration(int argc, VALUE *argv, VALUE c)
+{
+    VALUE target;
+    VALUE duration;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "21", &target, &duration, &flags);
+    if (NIL_P(flags))
+        flags = INT2NUM(0);
+
+    gen_call_void(virNodeSuspendForDuration, conn(c), connect_get(c),
+                  NUM2UINT(target), NUM2UINT(duration), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2578,5 +2601,17 @@ void init_connect()
                      libvirt_conn_save_image_xml_desc, -1);
     rb_define_method(c_connect, "define_save_image_xml",
                      libvirt_conn_define_save_image_xml, -1);
+#endif
+
+#if HAVE_VIRNODESUSPENDFORDURATION
+    rb_define_const(c_connect, "NODE_SUSPEND_TARGET_MEM",
+                    INT2NUM(VIR_NODE_SUSPEND_TARGET_MEM));
+    rb_define_const(c_connect, "NODE_SUSPEND_TARGET_DISK",
+                    INT2NUM(VIR_NODE_SUSPEND_TARGET_DISK));
+    rb_define_const(c_connect, "NODE_SUSPEND_TARGET_HYBRID",
+                    INT2NUM(VIR_NODE_SUSPEND_TARGET_HYBRID));
+
+    rb_define_method(c_connect, "node_suspend_for_duration",
+                     libvirt_conn_node_suspend_for_duration, -1);
 #endif
 }
