@@ -62,7 +62,8 @@ static VALUE libvirt_stream_send(VALUE s, VALUE buffer)
 
     ret = virStreamSend(stream_get(s), RSTRING_PTR(buffer),
                         RSTRING_LEN(buffer));
-    _E(ret == -1, create_error(e_RetrieveError, "virStreamSend", conn(s)));
+    _E(ret == -1, create_error(e_RetrieveError, "virStreamSend",
+                               connect_get(s)));
 
     return INT2NUM(ret);
 }
@@ -109,7 +110,8 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     ret = virStreamRecv(stream_get(s), data, NUM2INT(bytes));
     if (ret == -1) {
         xfree(data);
-        rb_exc_raise(create_error(e_RetrieveError, "virStreamRecv", conn(s)));
+        rb_exc_raise(create_error(e_RetrieveError, "virStreamRecv",
+                                  connect_get(s)));
     }
 
     args.ret = ret;
@@ -185,7 +187,8 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
     rb_scan_args(argc, argv, "01", &opaque);
 
     ret = virStreamSendAll(stream_get(s), internal_sendall, (void *)opaque);
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamSendAll", conn(s)));
+    _E(ret < 0, create_error(e_RetrieveError, "virStreamSendAll",
+                             connect_get(s)));
 
     return Qnil;
 }
@@ -226,7 +229,8 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
     rb_scan_args(argc, argv, "01", &opaque);
 
     ret = virStreamRecvAll(stream_get(s), internal_recvall, (void *)opaque);
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecvAll", conn(s)));
+    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecvAll",
+                             connect_get(s)));
 
     return Qnil;
 }
@@ -306,7 +310,7 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
                                     stream_event_callback, (void *)passthrough,
                                     NULL);
     _E(ret < 0, create_error(e_RetrieveError, "virStreamEventAddCallback",
-                             conn(s)));
+                             connect_get(s)));
 
     return Qnil;
 }
@@ -327,7 +331,7 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
 
     ret = virStreamEventUpdateCallback(stream_get(s), NUM2INT(events));
     _E(ret < 0, create_error(e_RetrieveError, "virStreamEventUpdateCallback",
-                             conn(s)));
+                             connect_get(s)));
 
     return Qnil;
 }
@@ -345,7 +349,7 @@ static VALUE libvirt_stream_event_remove_callback(VALUE s)
 
     ret = virStreamEventRemoveCallback(stream_get(s));
     _E(ret < 0, create_error(e_RetrieveError, "virStreamEventRemoveCallback",
-                             conn(s)));
+                             connect_get(s)));
 
     return Qnil;
 }
@@ -360,7 +364,7 @@ static VALUE libvirt_stream_event_remove_callback(VALUE s)
  */
 static VALUE libvirt_stream_finish(VALUE s)
 {
-    gen_call_void(virStreamFinish, conn(s), stream_get(s));
+    gen_call_void(virStreamFinish, connect_get(s), stream_get(s));
 }
 
 /*
@@ -373,7 +377,7 @@ static VALUE libvirt_stream_finish(VALUE s)
  */
 static VALUE libvirt_stream_abort(VALUE s)
 {
-    gen_call_void(virStreamAbort, conn(s), stream_get(s));
+    gen_call_void(virStreamAbort, connect_get(s), stream_get(s));
 }
 
 /*

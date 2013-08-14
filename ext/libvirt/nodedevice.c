@@ -53,7 +53,7 @@ VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn)
  */
 static VALUE libvirt_nodedevice_name(VALUE c)
 {
-    gen_call_string(virNodeDeviceGetName, conn(c), 0, nodedevice_get(c));
+    gen_call_string(virNodeDeviceGetName, connect_get(c), 0, nodedevice_get(c));
 }
 
 /*
@@ -90,7 +90,7 @@ static VALUE libvirt_nodedevice_parent(VALUE c)
  */
 static VALUE libvirt_nodedevice_num_of_caps(VALUE c)
 {
-    gen_call_int(virNodeDeviceNumOfCaps, conn(c), nodedevice_get(c));
+    gen_call_int(virNodeDeviceNumOfCaps, connect_get(c), nodedevice_get(c));
 }
 
 /*
@@ -103,22 +103,22 @@ static VALUE libvirt_nodedevice_num_of_caps(VALUE c)
 static VALUE libvirt_nodedevice_list_caps(VALUE c)
 {
     int r, num;
-    virConnectPtr conn = connect_get(c);
-    virNodeDevicePtr nodedev = nodedevice_get(c);
     char **names;
 
-    num = virNodeDeviceNumOfCaps(nodedev);
-    _E(num < 0, create_error(e_RetrieveError, "virNodeDeviceNumOfCaps", conn));
-    if (num == 0)
+    num = virNodeDeviceNumOfCaps(nodedevice_get(c));
+    _E(num < 0, create_error(e_RetrieveError, "virNodeDeviceNumOfCaps",
+                             connect_get(c)));
+    if (num == 0) {
         /* if num is 0, don't call virNodeDeviceListCaps function */
         return rb_ary_new2(num);
+    }
 
     names = ALLOC_N(char *, num);
-    r = virNodeDeviceListCaps(nodedev, names, num);
+    r = virNodeDeviceListCaps(nodedevice_get(c), names, num);
     if (r < 0) {
         xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeDeviceListCaps",
-                                  conn));
+                                  connect_get(c)));
     }
 
     return gen_list(num, &names);
@@ -141,7 +141,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virNodeDeviceGetXMLDesc, conn(s), 1,
+    gen_call_string(virNodeDeviceGetXMLDesc, connect_get(s), 1,
                     nodedevice_get(s), NUM2UINT(flags));
 }
 
@@ -154,7 +154,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_nodedevice_detach(VALUE s)
 {
-    gen_call_void(virNodeDeviceDettach, conn(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceDettach, connect_get(s), nodedevice_get(s));
 }
 
 /*
@@ -166,7 +166,7 @@ static VALUE libvirt_nodedevice_detach(VALUE s)
  */
 static VALUE libvirt_nodedevice_reattach(VALUE s)
 {
-    gen_call_void(virNodeDeviceReAttach, conn(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceReAttach, connect_get(s), nodedevice_get(s));
 }
 
 /*
@@ -178,7 +178,7 @@ static VALUE libvirt_nodedevice_reattach(VALUE s)
  */
 static VALUE libvirt_nodedevice_reset(VALUE s)
 {
-    gen_call_void(virNodeDeviceReset, conn(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceReset, connect_get(s), nodedevice_get(s));
 }
 
 #if HAVE_VIRNODEDEVICEDESTROY
@@ -191,7 +191,7 @@ static VALUE libvirt_nodedevice_reset(VALUE s)
  */
 static VALUE libvirt_nodedevice_destroy(VALUE s)
 {
-    gen_call_void(virNodeDeviceDestroy, conn(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceDestroy, connect_get(s), nodedevice_get(s));
 }
 #endif
 

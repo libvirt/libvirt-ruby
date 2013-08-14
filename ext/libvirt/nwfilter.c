@@ -53,7 +53,7 @@ VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn)
  */
 static VALUE libvirt_nwfilter_undefine(VALUE s)
 {
-    gen_call_void(virNWFilterUndefine, conn(s), nwfilter_get(s));
+    gen_call_void(virNWFilterUndefine, connect_get(s), nwfilter_get(s));
 }
 
 /*
@@ -65,7 +65,7 @@ static VALUE libvirt_nwfilter_undefine(VALUE s)
  */
 static VALUE libvirt_nwfilter_name(VALUE s)
 {
-    gen_call_string(virNWFilterGetName, conn(s), 0, nwfilter_get(s));
+    gen_call_string(virNWFilterGetName, connect_get(s), 0, nwfilter_get(s));
 }
 
 /*
@@ -77,13 +77,12 @@ static VALUE libvirt_nwfilter_name(VALUE s)
  */
 static VALUE libvirt_nwfilter_uuid(VALUE s)
 {
-    virNWFilterPtr nwfilter = nwfilter_get(s);
     int r;
     char uuid[VIR_UUID_STRING_BUFLEN];
 
-    r = virNWFilterGetUUIDString(nwfilter, uuid);
+    r = virNWFilterGetUUIDString(nwfilter_get(s), uuid);
     _E(r < 0, create_error(e_RetrieveError, "virNWFilterGetUUIDString",
-                           conn(s)));
+                           connect_get(s)));
 
     return rb_str_new2((char *)uuid);
 }
@@ -105,7 +104,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virNWFilterGetXMLDesc, conn(s), 1, nwfilter_get(s),
+    gen_call_string(virNWFilterGetXMLDesc, connect_get(s), 1, nwfilter_get(s),
                     NUM2UINT(flags));
 }
 

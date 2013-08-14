@@ -53,7 +53,7 @@ VALUE interface_new(virInterfacePtr i, VALUE conn)
  */
 static VALUE libvirt_interface_undefine(VALUE s)
 {
-    gen_call_void(virInterfaceUndefine, conn(s), interface_get(s));
+    gen_call_void(virInterfaceUndefine, connect_get(s), interface_get(s));
 }
 
 /*
@@ -73,7 +73,7 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceCreate, conn(s), interface_get(s),
+    gen_call_void(virInterfaceCreate, connect_get(s), interface_get(s),
                   NUM2UINT(flags));
 }
 
@@ -94,7 +94,7 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceDestroy, conn(s), interface_get(s),
+    gen_call_void(virInterfaceDestroy, connect_get(s), interface_get(s),
                   NUM2UINT(flags));
 }
 
@@ -108,7 +108,7 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_interface_active_p(VALUE p)
 {
-    gen_call_truefalse(virInterfaceIsActive, conn(p), interface_get(p));
+    gen_call_truefalse(virInterfaceIsActive, connect_get(p), interface_get(p));
 }
 #endif
 
@@ -121,7 +121,7 @@ static VALUE libvirt_interface_active_p(VALUE p)
  */
 static VALUE libvirt_interface_name(VALUE s)
 {
-    gen_call_string(virInterfaceGetName, conn(s), 0, interface_get(s));
+    gen_call_string(virInterfaceGetName, connect_get(s), 0, interface_get(s));
 }
 
 /*
@@ -133,7 +133,8 @@ static VALUE libvirt_interface_name(VALUE s)
  */
 static VALUE libvirt_interface_mac(VALUE s)
 {
-    gen_call_string(virInterfaceGetMACString, conn(s), 0, interface_get(s));
+    gen_call_string(virInterfaceGetMACString, connect_get(s), 0,
+                    interface_get(s));
 }
 
 /*
@@ -153,7 +154,7 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virInterfaceGetXMLDesc, conn(s), 1, interface_get(s),
+    gen_call_string(virInterfaceGetXMLDesc, connect_get(s), 1, interface_get(s),
                     NUM2UINT(flags));
 }
 

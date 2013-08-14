@@ -47,11 +47,6 @@ VALUE connect_new(virConnectPtr p)
     return Data_Wrap_Struct(c_connect, NULL, connect_close, p);
 }
 
-virConnectPtr connect_get(VALUE s)
-{
-    generic_get(Connect, s);
-}
-
 VALUE conn_attr(VALUE s)
 {
     if (rb_obj_is_instance_of(s, c_connect) != Qtrue) {
@@ -63,15 +58,10 @@ VALUE conn_attr(VALUE s)
     return s;
 }
 
-virConnectPtr conn(VALUE s)
+virConnectPtr connect_get(VALUE s)
 {
-    virConnectPtr conn;
-
     s = conn_attr(s);
-    Data_Get_Struct(s, virConnect, conn);
-    if (!conn)
-        rb_raise(rb_eArgError, "Connection has been closed");
-    return conn;
+    generic_get(Connect, s);
 }
 
 /*
@@ -116,7 +106,7 @@ static VALUE libvirt_conn_closed_p(VALUE s)
  */
 static VALUE libvirt_conn_type(VALUE s)
 {
-    gen_call_string(virConnectGetType, conn(s), 0, connect_get(s));
+    gen_call_string(virConnectGetType, connect_get(s), 0, connect_get(s));
 }
 
 /*
@@ -130,10 +120,10 @@ static VALUE libvirt_conn_version(VALUE s)
 {
     int r;
     unsigned long v;
-    virConnectPtr conn = connect_get(s);
 
-    r = virConnectGetVersion(conn, &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion", conn));
+    r = virConnectGetVersion(connect_get(s), &v);
+    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion",
+                           connect_get(s)));
 
     return ULONG2NUM(v);
 }
@@ -150,10 +140,10 @@ static VALUE libvirt_conn_libversion(VALUE s)
 {
     int r;
     unsigned long v;
-    virConnectPtr conn = connect_get(s);
 
-    r = virConnectGetLibVersion(conn, &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetLibVersion", conn));
+    r = virConnectGetLibVersion(connect_get(s), &v);
+    _E(r < 0, create_error(e_RetrieveError, "virConnectGetLibVersion",
+                           connect_get(s)));
 
     return ULONG2NUM(v);
 }
@@ -168,7 +158,7 @@ static VALUE libvirt_conn_libversion(VALUE s)
  */
 static VALUE libvirt_conn_hostname(VALUE s)
 {
-    gen_call_string(virConnectGetHostname, conn(s), 1, connect_get(s));
+    gen_call_string(virConnectGetHostname, connect_get(s), 1, connect_get(s));
 }
 
 /*
@@ -180,7 +170,7 @@ static VALUE libvirt_conn_hostname(VALUE s)
  */
 static VALUE libvirt_conn_uri(VALUE s)
 {
-    gen_call_string(virConnectGetURI, conn(s), 1, connect_get(s));
+    gen_call_string(virConnectGetURI, connect_get(s), 1, connect_get(s));
 }
 
 /*
@@ -197,7 +187,7 @@ static VALUE libvirt_conn_max_vcpus(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &type);
 
-    gen_call_int(virConnectGetMaxVcpus, conn(s), connect_get(s),
+    gen_call_int(virConnectGetMaxVcpus, connect_get(s), connect_get(s),
                  get_string_or_nil(type));
 }
 
@@ -211,12 +201,11 @@ static VALUE libvirt_conn_max_vcpus(int argc, VALUE *argv, VALUE s)
 static VALUE libvirt_conn_node_get_info(VALUE s)
 {
     int r;
-    virConnectPtr conn = connect_get(s);
     virNodeInfo nodeinfo;
     VALUE result;
 
-    r = virNodeGetInfo(conn, &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn));
+    r = virNodeGetInfo(connect_get(s), &nodeinfo);
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", connect_get(s)));
 
     result = rb_class_new_instance(0, NULL, c_node_info);
     rb_iv_set(result, "@model", rb_str_new2(nodeinfo.model));
@@ -241,13 +230,12 @@ static VALUE libvirt_conn_node_get_info(VALUE s)
  */
 static VALUE libvirt_conn_node_free_memory(VALUE s)
 {
-    virConnectPtr conn = connect_get(s);
     unsigned long long freemem;
 
-    freemem = virNodeGetFreeMemory(conn);
+    freemem = virNodeGetFreeMemory(connect_get(s));
 
     _E(freemem == 0, create_error(e_RetrieveError, "virNodeGetFreeMemory",
-                                  conn));
+                                  connect_get(s)));
 
     return ULL2NUM(freemem);
 }
@@ -264,7 +252,6 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
                                                  VALUE s)
 {
     int r;
-    virConnectPtr conn = connect_get(s);
     VALUE cells;
     VALUE start, max;
     unsigned long long *freeMems;
@@ -282,8 +269,9 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
     }
 
     if (NIL_P(max)) {
-        r = virNodeGetInfo(conn, &nodeinfo);
-        _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", conn));
+        r = virNodeGetInfo(connect_get(s), &nodeinfo);
+        _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo",
+                               connect_get(s)));
         maxCells = nodeinfo.nodes;
     }
     else {
@@ -292,11 +280,12 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
 
     freeMems = ALLOC_N(unsigned long long, maxCells);
 
-    r = virNodeGetCellsFreeMemory(conn, freeMems, startCell, maxCells);
+    r = virNodeGetCellsFreeMemory(connect_get(s), freeMems, startCell,
+                                  maxCells);
     if (r < 0) {
         xfree(freeMems);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
-                                  conn));
+                                  connect_get(s)));
     }
 
     cells = rb_ary_new2(r);
@@ -319,12 +308,12 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
 static VALUE libvirt_conn_node_get_security_model(VALUE s)
 {
     virSecurityModel secmodel;
-    virConnectPtr conn = connect_get(s);
     int r;
     VALUE result;
 
-    r = virNodeGetSecurityModel(conn, &secmodel);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel", conn));
+    r = virNodeGetSecurityModel(connect_get(s), &secmodel);
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel",
+                           connect_get(s)));
 
     result = rb_class_new_instance(0, NULL, c_node_security_model);
     rb_iv_set(result, "@model", rb_str_new2(secmodel.model));
@@ -344,7 +333,7 @@ static VALUE libvirt_conn_node_get_security_model(VALUE s)
  */
 static VALUE libvirt_conn_encrypted_p(VALUE s)
 {
-    gen_call_truefalse(virConnectIsEncrypted, conn(s), connect_get(s));
+    gen_call_truefalse(virConnectIsEncrypted, connect_get(s), connect_get(s));
 }
 #endif
 
@@ -358,7 +347,7 @@ static VALUE libvirt_conn_encrypted_p(VALUE s)
  */
 static VALUE libvirt_conn_secure_p(VALUE s)
 {
-    gen_call_truefalse(virConnectIsSecure, conn(s), connect_get(s));
+    gen_call_truefalse(virConnectIsSecure, connect_get(s), connect_get(s));
 }
 #endif
 
@@ -371,7 +360,8 @@ static VALUE libvirt_conn_secure_p(VALUE s)
  */
 static VALUE libvirt_conn_capabilities(VALUE s)
 {
-    gen_call_string(virConnectGetCapabilities, conn(s), 1, connect_get(s));
+    gen_call_string(virConnectGetCapabilities, connect_get(s), 1,
+                    connect_get(s));
 }
 
 #if HAVE_VIRCONNECTCOMPARECPU
@@ -394,7 +384,7 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_int(virConnectCompareCPU, conn(s), connect_get(s),
+    gen_call_int(virConnectCompareCPU, connect_get(s), connect_get(s),
                  StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
@@ -412,7 +402,6 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE s)
 static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s)
 {
     VALUE xmlcpus, flags_val;
-    virConnectPtr conn = connect_get(s);
     char *r;
     VALUE retval;
     unsigned int ncpus, flags;
@@ -462,9 +451,10 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s)
         }
     }
 
-    r = virConnectBaselineCPU(conn, xmllist, ncpus, flags);
+    r = virConnectBaselineCPU(connect_get(s), xmllist, ncpus, flags);
     xfree(xmllist);
-    _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU", conn));
+    _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU",
+                               connect_get(s)));
 
     retval = rb_protect(rb_str_new2_wrap, (VALUE)&r, &exception);
     if (exception) {
@@ -875,9 +865,9 @@ static VALUE libvirt_conn_domain_event_register_any(int argc, VALUE *argv,
     rb_ary_store(passthrough, 0, cb);
     rb_ary_store(passthrough, 1, opaque);
 
-    gen_call_int(virConnectDomainEventRegisterAny, conn(c), connect_get(c),
-                 domain, NUM2INT(eventID), internalcb, (void *)passthrough,
-                 NULL);
+    gen_call_int(virConnectDomainEventRegisterAny, connect_get(c),
+                 connect_get(c), domain, NUM2INT(eventID), internalcb,
+                 (void *)passthrough, NULL);
 }
 
 /*
@@ -891,8 +881,8 @@ static VALUE libvirt_conn_domain_event_register_any(int argc, VALUE *argv,
 static VALUE libvirt_conn_domain_event_deregister_any(VALUE c,
                                                       VALUE callbackID)
 {
-    gen_call_void(virConnectDomainEventDeregisterAny, conn(c), connect_get(c),
-                  NUM2INT(callbackID));
+    gen_call_void(virConnectDomainEventDeregisterAny, connect_get(c),
+                  connect_get(c), NUM2INT(callbackID));
 }
 #endif
 
@@ -940,7 +930,7 @@ static VALUE libvirt_conn_domain_event_register(int argc, VALUE *argv,
     rb_ary_store(passthrough, 0, cb);
     rb_ary_store(passthrough, 1, opaque);
 
-    gen_call_void(virConnectDomainEventRegister, conn(c), connect_get(c),
+    gen_call_void(virConnectDomainEventRegister, connect_get(c), connect_get(c),
                   domain_event_callback, (void *)passthrough, NULL);
 }
 
@@ -956,8 +946,8 @@ static VALUE libvirt_conn_domain_event_register(int argc, VALUE *argv,
  */
 static VALUE libvirt_conn_domain_event_deregister(VALUE c)
 {
-    gen_call_void(virConnectDomainEventDeregister, conn(c), connect_get(c),
-                  domain_event_callback);
+    gen_call_void(virConnectDomainEventDeregister, connect_get(c),
+                  connect_get(c), domain_event_callback);
 }
 #endif
 
@@ -1057,7 +1047,6 @@ static VALUE libvirt_conn_list_defined_domains(VALUE s)
 static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c)
 {
     virDomainPtr dom;
-    virConnectPtr conn = connect_get(c);
     VALUE flags, xml;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1066,8 +1055,10 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    dom = virDomainCreateLinux(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux", conn));
+    dom = virDomainCreateLinux(connect_get(c), StringValueCStr(xml),
+                               NUM2UINT(flags));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux",
+                                 connect_get(c)));
 
     return domain_new(dom, c);
 }
@@ -1083,7 +1074,6 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c)
 {
     virDomainPtr dom;
-    virConnectPtr conn = connect_get(c);
     VALUE flags, xml;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1092,8 +1082,10 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    dom = virDomainCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML", conn));
+    dom = virDomainCreateXML(connect_get(c), StringValueCStr(xml),
+                             NUM2UINT(flags));
+    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML",
+                                 connect_get(c)));
 
     return domain_new(dom, c);
 }
@@ -1109,11 +1101,10 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name)
 {
     virDomainPtr dom;
-    virConnectPtr conn = connect_get(c);
 
-    dom = virDomainLookupByName(conn, StringValueCStr(name));
+    dom = virDomainLookupByName(connect_get(c), StringValueCStr(name));
     _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName",
-                                 conn));
+                                 connect_get(c)));
 
     return domain_new(dom, c);
 }
@@ -1128,11 +1119,10 @@ static VALUE libvirt_conn_lookup_domain_by_name(VALUE c, VALUE name)
 static VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id)
 {
     virDomainPtr dom;
-    virConnectPtr conn = connect_get(c);
 
-    dom = virDomainLookupByID(conn, NUM2INT(id));
+    dom = virDomainLookupByID(connect_get(c), NUM2INT(id));
     _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID",
-                                 conn));
+                                 connect_get(c)));
 
     return domain_new(dom, c);
 }
@@ -1147,11 +1137,10 @@ static VALUE libvirt_conn_lookup_domain_by_id(VALUE c, VALUE id)
 static VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid)
 {
     virDomainPtr dom;
-    virConnectPtr conn = connect_get(c);
 
-    dom = virDomainLookupByUUIDString(conn, StringValueCStr(uuid));
+    dom = virDomainLookupByUUIDString(connect_get(c), StringValueCStr(uuid));
     _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID",
-                                 conn));
+                                 connect_get(c)));
 
     return domain_new(dom, c);
 }
@@ -1166,11 +1155,10 @@ static VALUE libvirt_conn_lookup_domain_by_uuid(VALUE c, VALUE uuid)
 static VALUE libvirt_conn_define_domain_xml(VALUE c, VALUE xml)
 {
     virDomainPtr dom;
-    virConnectPtr conn = connect_get(c);
 
-    dom = virDomainDefineXML(conn, StringValueCStr(xml));
+    dom = virDomainDefineXML(connect_get(c), StringValueCStr(xml));
     _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML",
-                                 conn));
+                                 connect_get(c)));
 
     return domain_new(dom, c);
 }
@@ -1196,10 +1184,11 @@ static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    ret = virConnectDomainXMLFromNative(conn(s), StringValueCStr(nativeFormat),
+    ret = virConnectDomainXMLFromNative(connect_get(s),
+                                        StringValueCStr(nativeFormat),
                                         StringValueCStr(xml), NUM2UINT(flags));
     _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLFromNative",
-                                 conn(s)));
+                                 connect_get(s)));
 
     result = rb_str_new2(ret);
 
@@ -1229,10 +1218,11 @@ static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    ret = virConnectDomainXMLToNative(conn(s), StringValueCStr(nativeFormat),
+    ret = virConnectDomainXMLToNative(connect_get(s),
+                                      StringValueCStr(nativeFormat),
                                       StringValueCStr(xml), NUM2UINT(flags));
     _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLToNative",
-                                 conn(s)));
+                                 connect_get(s)));
 
     result = rb_str_new2(ret);
 
@@ -1302,11 +1292,10 @@ extern VALUE interface_new(virInterfacePtr i, VALUE conn);
 static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name)
 {
     virInterfacePtr iface;
-    virConnectPtr conn = connect_get(c);
 
-    iface = virInterfaceLookupByName(conn, StringValueCStr(name));
+    iface = virInterfaceLookupByName(connect_get(c), StringValueCStr(name));
     _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName",
-                                   conn));
+                                   connect_get(c)));
 
     return interface_new(iface, c);
 }
@@ -1321,11 +1310,11 @@ static VALUE libvirt_conn_lookup_interface_by_name(VALUE c, VALUE name)
 static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac)
 {
     virInterfacePtr iface;
-    virConnectPtr conn = connect_get(c);
 
-    iface = virInterfaceLookupByMACString(conn, StringValueCStr(mac));
+    iface = virInterfaceLookupByMACString(connect_get(c), StringValueCStr(mac));
     _E(iface == NULL, create_error(e_RetrieveError,
-                                   "virInterfaceLookupByMACString", conn));
+                                   "virInterfaceLookupByMACString",
+                                   connect_get(c)));
 
     return interface_new(iface, c);
 }
@@ -1340,7 +1329,6 @@ static VALUE libvirt_conn_lookup_interface_by_mac(VALUE c, VALUE mac)
 static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c)
 {
     virInterfacePtr iface;
-    virConnectPtr conn = connect_get(c);
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1349,9 +1337,10 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    iface = virInterfaceDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    iface = virInterfaceDefineXML(connect_get(c), StringValueCStr(xml),
+                                  NUM2UINT(flags));
     _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
-                                   conn));
+                                   connect_get(c)));
 
     return interface_new(iface, c);
 }
@@ -1415,11 +1404,10 @@ static VALUE libvirt_conn_list_defined_networks(VALUE s)
 static VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name)
 {
     virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
 
-    netw = virNetworkLookupByName(conn, StringValueCStr(name));
+    netw = virNetworkLookupByName(connect_get(c), StringValueCStr(name));
     _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName",
-                                  conn));
+                                  connect_get(c)));
 
     return network_new(netw, c);
 }
@@ -1434,11 +1422,10 @@ static VALUE libvirt_conn_lookup_network_by_name(VALUE c, VALUE name)
 static VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid)
 {
     virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
 
-    netw = virNetworkLookupByUUIDString(conn, StringValueCStr(uuid));
+    netw = virNetworkLookupByUUIDString(connect_get(c), StringValueCStr(uuid));
     _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID",
-                                  conn));
+                                  connect_get(c)));
 
     return network_new(netw, c);
 }
@@ -1453,10 +1440,10 @@ static VALUE libvirt_conn_lookup_network_by_uuid(VALUE c, VALUE uuid)
 static VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml)
 {
     virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
 
-    netw = virNetworkCreateXML(conn, StringValueCStr(xml));
-    _E(netw == NULL, create_error(e_Error, "virNetworkCreateXML", conn));
+    netw = virNetworkCreateXML(connect_get(c), StringValueCStr(xml));
+    _E(netw == NULL, create_error(e_Error, "virNetworkCreateXML",
+                                  connect_get(c)));
 
     return network_new(netw, c);
 }
@@ -1471,11 +1458,10 @@ static VALUE libvirt_conn_create_network_xml(VALUE c, VALUE xml)
 static VALUE libvirt_conn_define_network_xml(VALUE c, VALUE xml)
 {
     virNetworkPtr netw;
-    virConnectPtr conn = connect_get(c);
 
-    netw = virNetworkDefineXML(conn, StringValueCStr(xml));
+    netw = virNetworkDefineXML(connect_get(c), StringValueCStr(xml));
     _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML",
-                                  conn));
+                                  connect_get(c)));
 
     return network_new(netw, c);
 }
@@ -1493,7 +1479,6 @@ extern VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn);
 static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 {
     int result;
-    virConnectPtr conn = connect_get(c);
     VALUE cap, flags;
 
     rb_scan_args(argc, argv, "02", &cap, &flags);
@@ -1502,8 +1487,10 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    result = virNodeNumOfDevices(conn, get_string_or_nil(cap), NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
+    result = virNodeNumOfDevices(connect_get(c), get_string_or_nil(cap),
+                                 NUM2UINT(flags));
+    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices",
+                                connect_get(c)));
 
     return INT2NUM(result);
 }
@@ -1518,7 +1505,6 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c)
 {
     int r, num;
-    virConnectPtr conn = connect_get(c);
     VALUE cap, flags_val;
     char *capstr;
     char **names;
@@ -1535,17 +1521,20 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c)
 
     capstr = get_string_or_nil(cap);
 
-    num = virNodeNumOfDevices(conn, capstr, 0);
-    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices", conn));
-    if (num == 0)
+    num = virNodeNumOfDevices(connect_get(c), capstr, 0);
+    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices",
+                             connect_get(c)));
+    if (num == 0) {
         /* if num is 0, don't call virNodeListDevices function */
         return rb_ary_new2(num);
+    }
 
     names = ALLOC_N(char *, num);
-    r = virNodeListDevices(conn, capstr, names, num, flags);
+    r = virNodeListDevices(connect_get(c), capstr, names, num, flags);
     if (r < 0) {
         xfree(names);
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices", conn));
+        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices",
+                                  connect_get(c)));
     }
 
     return gen_list(num, &names);
@@ -1561,11 +1550,11 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_conn_lookup_nodedevice_by_name(VALUE c, VALUE name)
 {
     virNodeDevicePtr nodedev;
-    virConnectPtr conn = connect_get(c);
 
-    nodedev = virNodeDeviceLookupByName(conn, StringValueCStr(name));
+    nodedev = virNodeDeviceLookupByName(connect_get(c), StringValueCStr(name));
     _E(nodedev == NULL, create_error(e_RetrieveError,
-                                     "virNodeDeviceLookupByName", conn));
+                                     "virNodeDeviceLookupByName",
+                                     connect_get(c)));
 
     return nodedevice_new(nodedev, c);
 
@@ -1583,7 +1572,6 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv,
                                                 VALUE c)
 {
     virNodeDevicePtr nodedev;
-    virConnectPtr conn = connect_get(c);
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1592,9 +1580,10 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    nodedev = virNodeDeviceCreateXML(conn, StringValueCStr(xml),
+    nodedev = virNodeDeviceCreateXML(connect_get(c), StringValueCStr(xml),
                                      NUM2UINT(flags));
-    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML", conn));
+    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML",
+                                     connect_get(c)));
 
     return nodedevice_new(nodedev, c);
 }
@@ -1638,11 +1627,11 @@ static VALUE libvirt_conn_list_nwfilters(VALUE s)
 static VALUE libvirt_conn_lookup_nwfilter_by_name(VALUE c, VALUE name)
 {
     virNWFilterPtr nwfilter;
-    virConnectPtr conn = connect_get(c);
 
-    nwfilter = virNWFilterLookupByName(conn, StringValueCStr(name));
+    nwfilter = virNWFilterLookupByName(connect_get(c), StringValueCStr(name));
     _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByName", conn));
+                                      "virNWFilterLookupByName",
+                                      connect_get(c)));
 
     return nwfilter_new(nwfilter, c);
 }
@@ -1657,11 +1646,12 @@ static VALUE libvirt_conn_lookup_nwfilter_by_name(VALUE c, VALUE name)
 static VALUE libvirt_conn_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid)
 {
     virNWFilterPtr nwfilter;
-    virConnectPtr conn = connect_get(c);
 
-    nwfilter = virNWFilterLookupByUUIDString(conn, StringValueCStr(uuid));
+    nwfilter = virNWFilterLookupByUUIDString(connect_get(c),
+                                             StringValueCStr(uuid));
     _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByUUIDString", conn));
+                                      "virNWFilterLookupByUUIDString",
+                                      connect_get(c)));
 
     return nwfilter_new(nwfilter, c);
 }
@@ -1676,11 +1666,10 @@ static VALUE libvirt_conn_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid)
 static VALUE libvirt_conn_define_nwfilter_xml(VALUE c, VALUE xml)
 {
     virNWFilterPtr nwfilter;
-    virConnectPtr conn = connect_get(c);
 
-    nwfilter = virNWFilterDefineXML(conn, StringValueCStr(xml));
+    nwfilter = virNWFilterDefineXML(connect_get(c), StringValueCStr(xml));
     _E(nwfilter == NULL, create_error(e_DefinitionError, "virNWFilterDefineXML",
-                                      conn));
+                                      connect_get(c)));
 
     return nwfilter_new(nwfilter, c);
 }
@@ -1723,11 +1712,10 @@ static VALUE libvirt_conn_list_secrets(VALUE s)
 static VALUE libvirt_conn_lookup_secret_by_uuid(VALUE c, VALUE uuid)
 {
     virSecretPtr secret;
-    virConnectPtr conn = connect_get(c);
 
-    secret = virSecretLookupByUUIDString(conn, StringValueCStr(uuid));
+    secret = virSecretLookupByUUIDString(connect_get(c), StringValueCStr(uuid));
     _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUUID",
-                                    conn));
+                                    connect_get(c)));
 
     return secret_new(secret, c);
 }
@@ -1743,12 +1731,11 @@ static VALUE libvirt_conn_lookup_secret_by_usage(VALUE c, VALUE usagetype,
                                                  VALUE usageID)
 {
     virSecretPtr secret;
-    virConnectPtr conn = connect_get(c);
 
-    secret = virSecretLookupByUsage(conn, NUM2UINT(usagetype),
+    secret = virSecretLookupByUsage(connect_get(c), NUM2UINT(usagetype),
                                     StringValueCStr(usageID));
     _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUsage",
-                                    conn));
+                                    connect_get(c)));
 
     return secret_new(secret, c);
 }
@@ -1763,7 +1750,6 @@ static VALUE libvirt_conn_lookup_secret_by_usage(VALUE c, VALUE usagetype,
 static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c)
 {
     virSecretPtr secret;
-    virConnectPtr conn = connect_get(c);
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1772,9 +1758,10 @@ static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    secret = virSecretDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    secret = virSecretDefineXML(connect_get(c), StringValueCStr(xml),
+                                NUM2UINT(flags));
     _E(secret == NULL, create_error(e_DefinitionError, "virSecretDefineXML",
-                                    conn));
+                                    connect_get(c)));
 
     return secret_new(secret, c);
 }
@@ -1842,11 +1829,10 @@ static VALUE libvirt_conn_num_of_defined_storage_pools(VALUE s)
 static VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name)
 {
     virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
 
-    pool = virStoragePoolLookupByName(conn, StringValueCStr(name));
+    pool = virStoragePoolLookupByName(connect_get(c), StringValueCStr(name));
     _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByName",
-                                  conn));
+                                  connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1861,11 +1847,11 @@ static VALUE libvirt_conn_lookup_pool_by_name(VALUE c, VALUE name)
 static VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid)
 {
     virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
 
-    pool = virStoragePoolLookupByUUIDString(conn, StringValueCStr(uuid));
+    pool = virStoragePoolLookupByUUIDString(connect_get(c),
+                                            StringValueCStr(uuid));
     _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByUUID",
-                                  conn));
+                                  connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1880,7 +1866,6 @@ static VALUE libvirt_conn_lookup_pool_by_uuid(VALUE c, VALUE uuid)
 static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c)
 {
     virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1889,8 +1874,10 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    pool = virStoragePoolCreateXML(conn, StringValueCStr(xml), NUM2UINT(flags));
-    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML", conn));
+    pool = virStoragePoolCreateXML(connect_get(c), StringValueCStr(xml),
+                                   NUM2UINT(flags));
+    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML",
+                                  connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1905,7 +1892,6 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c)
 {
     virStoragePoolPtr pool;
-    virConnectPtr conn = connect_get(c);
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
@@ -1914,9 +1900,10 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    pool = virStoragePoolDefineXML(conn, StringValueCStr(xml), NUM2UINT(flags));
+    pool = virStoragePoolDefineXML(connect_get(c), StringValueCStr(xml),
+                                   NUM2UINT(flags));
     _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
-                                  conn));
+                                  connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1939,7 +1926,7 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virConnectFindStoragePoolSources, conn(c), 1,
+    gen_call_string(virConnectFindStoragePoolSources, connect_get(c), 1,
                     connect_get(c), StringValueCStr(type),
                     get_string_or_nil(srcSpec_val), NUM2UINT(flags));
 }
@@ -1964,7 +1951,7 @@ static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virConnectGetSysinfo, conn(c), 1, connect_get(c),
+    gen_call_string(virConnectGetSysinfo, connect_get(c), 1, connect_get(c),
                     NUM2UINT(flags));
 }
 #endif
@@ -1992,7 +1979,8 @@ static VALUE libvirt_conn_stream(int argc, VALUE *argv, VALUE c)
 
     stream = virStreamNew(connect_get(c), NUM2UINT(flags));
 
-    _E(stream == NULL, create_error(e_RetrieveError, "virStreamNew", conn(c)));
+    _E(stream == NULL, create_error(e_RetrieveError, "virStreamNew",
+                                    connect_get(c)));
 
     return stream_new(stream, c);
 }
@@ -2019,7 +2007,7 @@ static VALUE libvirt_conn_interface_change_begin(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceChangeBegin, conn(c), connect_get(c),
+    gen_call_void(virInterfaceChangeBegin, connect_get(c), connect_get(c),
                   NUM2UINT(flags));
 }
 
@@ -2041,7 +2029,7 @@ static VALUE libvirt_conn_interface_change_commit(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceChangeCommit, conn(c), connect_get(c),
+    gen_call_void(virInterfaceChangeCommit, connect_get(c), connect_get(c),
                   NUM2UINT(flags));
 }
 
@@ -2063,7 +2051,7 @@ static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceChangeRollback, conn(c), connect_get(c),
+    gen_call_void(virInterfaceChangeRollback, connect_get(c), connect_get(c),
                   NUM2UINT(flags));
 }
 #endif
@@ -2106,10 +2094,11 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
      * nparams to find out how many parameters we need
      */
     nparams = 0;
-    errname = get_stats(conn(c), NUM2INT(intparam), NULL, &nparams,
+    errname = get_stats(connect_get(c), NUM2INT(intparam), NULL, &nparams,
                         NUM2UINT(flags));
-    if (errname != NULL)
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn(c)));
+    if (errname != NULL) {
+        rb_exc_raise(create_error(e_RetrieveError, errname, connect_get(c)));
+    }
 
     result = rb_hash_new();
 
@@ -2120,11 +2109,11 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
     /* Now we allocate the params array */
     params = alloc_stats(nparams);
 
-    errname = get_stats(conn(c), NUM2INT(intparam), params, &nparams,
+    errname = get_stats(connect_get(c), NUM2INT(intparam), params, &nparams,
                         NUM2UINT(flags));
     if (errname != NULL) {
         xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn(c)));
+        rb_exc_raise(create_error(e_RetrieveError, errname, connect_get(c)));
     }
 
     for (i = 0; i < nparams; i++) {
@@ -2253,8 +2242,8 @@ static VALUE libvirt_conn_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virDomainSaveImageGetXMLDesc, conn(c), 1, connect_get(c),
-                    StringValueCStr(filename), NUM2UINT(flags));
+    gen_call_string(virDomainSaveImageGetXMLDesc, connect_get(c), 1,
+                    connect_get(c), StringValueCStr(filename), NUM2UINT(flags));
 }
 
 /*
@@ -2276,7 +2265,7 @@ static VALUE libvirt_conn_define_save_image_xml(int argc, VALUE *argv, VALUE c)
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virDomainSaveImageDefineXML, conn(c), connect_get(c),
+    gen_call_void(virDomainSaveImageDefineXML, connect_get(c), connect_get(c),
                   StringValueCStr(filename), StringValueCStr(newxml),
                   NUM2UINT(flags));
 }
@@ -2303,7 +2292,7 @@ static VALUE libvirt_conn_node_suspend_for_duration(int argc, VALUE *argv,
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virNodeSuspendForDuration, conn(c), connect_get(c),
+    gen_call_void(virNodeSuspendForDuration, connect_get(c), connect_get(c),
                   NUM2UINT(target), NUM2UINT(duration), NUM2UINT(flags));
 }
 #endif

@@ -53,7 +53,7 @@ VALUE network_new(virNetworkPtr n, VALUE conn)
  */
 static VALUE libvirt_netw_undefine(VALUE s)
 {
-    gen_call_void(virNetworkUndefine, conn(s), network_get(s));
+    gen_call_void(virNetworkUndefine, connect_get(s), network_get(s));
 }
 
 /*
@@ -65,7 +65,7 @@ static VALUE libvirt_netw_undefine(VALUE s)
  */
 static VALUE libvirt_netw_create(VALUE s)
 {
-    gen_call_void(virNetworkCreate, conn(s), network_get(s));
+    gen_call_void(virNetworkCreate, connect_get(s), network_get(s));
 }
 
 /*
@@ -78,7 +78,7 @@ static VALUE libvirt_netw_create(VALUE s)
 static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
                                  VALUE index, VALUE xml, VALUE flags)
 {
-    gen_call_void(virNetworkUpdate, conn(s), network_get(s),
+    gen_call_void(virNetworkUpdate, connect_get(s), network_get(s),
          NUM2UINT(command), NUM2UINT(section), NUM2INT(index),
          StringValuePtr(xml), NUM2UINT(flags));
 }
@@ -91,7 +91,7 @@ static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
  */
 static VALUE libvirt_netw_destroy(VALUE s)
 {
-    gen_call_void(virNetworkDestroy, conn(s), network_get(s));
+    gen_call_void(virNetworkDestroy, connect_get(s), network_get(s));
 }
 
 /*
@@ -103,7 +103,7 @@ static VALUE libvirt_netw_destroy(VALUE s)
  */
 static VALUE libvirt_netw_name(VALUE s)
 {
-    gen_call_string(virNetworkGetName, conn(s), 0, network_get(s));
+    gen_call_string(virNetworkGetName, connect_get(s), 0, network_get(s));
 }
 
 /*
@@ -121,7 +121,7 @@ static VALUE libvirt_netw_uuid(VALUE s)
 
     r = virNetworkGetUUIDString(netw, uuid);
     _E(r < 0, create_error(e_RetrieveError, "virNetworkGetUUIDString",
-                           conn(s)));
+                           connect_get(s)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -143,7 +143,7 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virNetworkGetXMLDesc, conn(s), 1, network_get(s),
+    gen_call_string(virNetworkGetXMLDesc, connect_get(s), 1, network_get(s),
                     NUM2UINT(flags));
 }
 
@@ -156,7 +156,7 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_netw_bridge_name(VALUE s)
 {
-    gen_call_string(virNetworkGetBridgeName, conn(s), 1, network_get(s));
+    gen_call_string(virNetworkGetBridgeName, connect_get(s), 1, network_get(s));
 }
 
 /*
@@ -172,7 +172,8 @@ static VALUE libvirt_netw_autostart(VALUE s)
     int r, autostart;
 
     r = virNetworkGetAutostart(netw, &autostart);
-    _E(r < 0, create_error(e_RetrieveError, "virNetworkAutostart", conn(s)));
+    _E(r < 0, create_error(e_RetrieveError, "virNetworkAutostart",
+                           connect_get(s)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -191,7 +192,7 @@ static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart)
                  "wrong argument type (expected TrueClass or FalseClass)");
     }
 
-    gen_call_void(virNetworkSetAutostart, conn(s), network_get(s),
+    gen_call_void(virNetworkSetAutostart, connect_get(s), network_get(s),
                   RTEST(autostart) ? 1 : 0);
 }
 
@@ -217,7 +218,7 @@ static VALUE libvirt_netw_free(VALUE s)
  */
 static VALUE libvirt_netw_active_p(VALUE s)
 {
-    gen_call_truefalse(virNetworkIsActive, conn(s), network_get(s));
+    gen_call_truefalse(virNetworkIsActive, connect_get(s), network_get(s));
 }
 #endif
 
@@ -231,7 +232,7 @@ static VALUE libvirt_netw_active_p(VALUE s)
  */
 static VALUE libvirt_netw_persistent_p(VALUE s)
 {
-    gen_call_truefalse(virNetworkIsPersistent, conn(s), network_get(s));
+    gen_call_truefalse(virNetworkIsPersistent, connect_get(s), network_get(s));
 }
 #endif
 

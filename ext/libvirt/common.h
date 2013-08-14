@@ -61,7 +61,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         Data_Get_Struct(s, vir##kind, ptr);                             \
         if (ptr != NULL) {                                              \
             int r = vir##kind##Free(ptr);                               \
-            _E(r < 0, create_error(e_Error, "vir" #kind "Free", conn(s))); \
+            _E(r < 0, create_error(e_Error, "vir" #kind "Free", connect_get(s))); \
             DATA_PTR(s) = NULL;                                         \
         }                                                               \
         return Qnil;                                                    \

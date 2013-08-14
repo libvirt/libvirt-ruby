@@ -53,12 +53,12 @@ VALUE secret_new(virSecretPtr s, VALUE conn)
  */
 static VALUE libvirt_secret_uuid(VALUE s)
 {
-    virSecretPtr secret = secret_get(s);
     int r;
     char uuid[VIR_UUID_STRING_BUFLEN];
 
-    r = virSecretGetUUIDString(secret, uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virSecretGetUUIDString", conn(s)));
+    r = virSecretGetUUIDString(secret_get(s), uuid);
+    _E(r < 0, create_error(e_RetrieveError, "virSecretGetUUIDString",
+                           connect_get(s)));
 
     return rb_str_new2((char *)uuid);
 }
@@ -72,7 +72,7 @@ static VALUE libvirt_secret_uuid(VALUE s)
  */
 static VALUE libvirt_secret_usagetype(VALUE s)
 {
-    gen_call_int(virSecretGetUsageType, conn(s), secret_get(s));
+    gen_call_int(virSecretGetUsageType, connect_get(s), secret_get(s));
 }
 
 /*
@@ -84,7 +84,7 @@ static VALUE libvirt_secret_usagetype(VALUE s)
  */
 static VALUE libvirt_secret_usageid(VALUE s)
 {
-    gen_call_string(virSecretGetUsageID, conn(s), 0, secret_get(s));
+    gen_call_string(virSecretGetUsageID, connect_get(s), 0, secret_get(s));
 }
 
 /*
@@ -104,7 +104,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virSecretGetXMLDesc, conn(s), 1, secret_get(s),
+    gen_call_string(virSecretGetXMLDesc, connect_get(s), 1, secret_get(s),
                     NUM2UINT(flags));
 }
 
@@ -128,7 +128,7 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 
     StringValue(value);
 
-    gen_call_void(virSecretSetValue, conn(s), secret_get(s),
+    gen_call_void(virSecretSetValue, connect_get(s), secret_get(s),
                   (unsigned char *)RSTRING_PTR(value), RSTRING_LEN(value),
                   NUM2UINT(flags));
 }
@@ -142,7 +142,6 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
 {
-    virSecretPtr secret = secret_get(s);
     VALUE flags;
     unsigned char *val;
     size_t value_size;
@@ -156,10 +155,10 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    val = virSecretGetValue(secret, &value_size, NUM2UINT(flags));
+    val = virSecretGetValue(secret_get(s), &value_size, NUM2UINT(flags));
 
     _E(val == NULL, create_error(e_RetrieveError, "virSecretGetValue",
-                                 conn(s)));
+                                 connect_get(s)));
 
     args.val = (char *)val;
     args.size = value_size;
@@ -183,7 +182,7 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_secret_undefine(VALUE s)
 {
-    gen_call_void(virSecretUndefine, conn(s), secret_get(s));
+    gen_call_void(virSecretUndefine, connect_get(s), secret_get(s));
 }
 
 /*
