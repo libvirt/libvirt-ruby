@@ -247,6 +247,9 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_NETWORK_UPDATE_AFFECT_CURRENT',
                    'VIR_NETWORK_UPDATE_AFFECT_LIVE',
                    'VIR_NETWORK_UPDATE_AFFECT_CONFIG',
+                   'VIR_DOMAIN_PMSUSPENDED',
+                   'VIR_DOMAIN_RUNNING_WAKEUP',
+                   'VIR_DOMAIN_PMSUSPENDED_UNKNOWN',
                  ]
 
 have_libvirt_types(libvirt_types)

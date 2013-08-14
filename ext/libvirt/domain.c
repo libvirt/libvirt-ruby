@@ -2390,6 +2390,9 @@ void init_domain()
     rb_define_const(c_domain, "SHUTDOWN", INT2NUM(VIR_DOMAIN_SHUTDOWN));
     rb_define_const(c_domain, "SHUTOFF", INT2NUM(VIR_DOMAIN_SHUTOFF));
     rb_define_const(c_domain, "CRASHED", INT2NUM(VIR_DOMAIN_CRASHED));
+#if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED
+    rb_define_const(c_domain, "PMSUSPENDED", INT2NUM(VIR_DOMAIN_PMSUSPENDED));
+#endif
 
     /* virDomainMigrateFlags */
 #if HAVE_CONST_VIR_MIGRATE_LIVE
@@ -2815,6 +2818,10 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_RUNNING_MIGRATION_CANCELED));
     rb_define_const(c_domain, "DOMAIN_RUNNING_SAVE_CANCELED",
                     INT2NUM(VIR_DOMAIN_RUNNING_SAVE_CANCELED));
+#if HAVE_CONST_VIR_DOMAIN_RUNNING_WAKEUP
+    rb_define_const(c_domain, "DOMAIN_RUNNING_WAKEUP",
+                    INT2NUM(VIR_DOMAIN_RUNNING_WAKEUP));
+#endif
     rb_define_const(c_domain, "DOMAIN_BLOCKED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_BLOCKED_UNKNOWN));
     rb_define_const(c_domain, "DOMAIN_PAUSED_UNKNOWN",
@@ -2859,6 +2866,10 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_SHUTOFF_FROM_SNAPSHOT));
     rb_define_const(c_domain, "DOMAIN_CRASHED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
+#if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_UNKNOWN
+    rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_PMSUSPENDED_UNKNOWN));
+#endif
 
     rb_define_method(c_domain, "state", libvirt_dom_get_state, -1);
 #endif
