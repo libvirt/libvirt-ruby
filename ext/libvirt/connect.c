@@ -2361,6 +2361,62 @@ static VALUE libvirt_conn_node_set_memory_parameters(VALUE c, VALUE input)
 }
 #endif
 
+#if HAVE_VIRNODEGETCPUMAP
+struct cpu_map_field_to_value {
+    VALUE result;
+    int cpu;
+    int used;
+};
+
+static VALUE cpu_map_field_to_valume(VALUE input)
+{
+    struct cpu_map_field_to_value *ftv = (struct cpu_map_field_to_value *)input;
+    char cpuname[10];
+
+    snprintf(cpuname, sizeof(cpuname), "%d", ftv->cpu);
+    rb_hash_aset(ftv->result, cpuname, ftv->used ? Qtrue : Qfalse);
+}
+
+static VALUE libvirt_conn_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
+{
+    VALUE flags;
+    int ret;
+    char *map;
+    unsigned int online;
+    int exception;
+    int i;
+    struct cpu_map_field_to_value ftv;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    ret = virNodeGetCPUMap(connect_get(c), &map, &online, NUM2UINT(flags));
+    _E(ret < 0, create_error(e_RetrieveError, "virNodeGetCPUMap",
+                             connect_get(c)));
+
+    result = rb_hash_new();
+
+    for (i = 0; i < ret; i++) {
+        ftv.result = result;
+        ftv.cpu = i;
+        ftv.used = VIR_CPU_USED(map, i);
+        rb_protect(cpu_map_field_to_value, (VALUE)&ftv, &exception);
+        if (exception) {
+            free(map);
+            rb_jump_tag(exception);
+        }
+    }
+
+    free(map);
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2759,5 +2815,10 @@ void init_connect()
                      libvirt_conn_node_get_memory_parameters, -1);
     rb_define_method(c_connect, "node_memory_parameters=",
                      libvirt_conn_node_set_memory_parameters, 1);
+#endif
+
+#if HAVE_VIRNODEGETCPUMAP
+    rb_define_method(c_connect, "node_get_cpu_map",
+                     libvirt_conn_node_get_cpu_map, -1);
 #endif
 }
