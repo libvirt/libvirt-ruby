@@ -692,12 +692,11 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s)
     size = NUM2UINT(size_val);
     flags = NUM2UINT(flags_val);
 
-    buffer = ALLOC_N(char, size);
+    buffer = alloca(sizeof(char) * size);
 
     r = virDomainBlockPeek(domain_get(s), path, offset, size, buffer, flags);
 
     if (r < 0) {
-        xfree(buffer);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainBlockPeek",
                                   connect_get(s)));
     }
@@ -705,7 +704,6 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s)
     args.val = buffer;
     args.size = size;
     ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
-    xfree(buffer);
     if (exception) {
         rb_jump_tag(exception);
     }
@@ -745,12 +743,11 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s)
     size = NUM2UINT(size_val);
     flags = NUM2UINT(flags_val);
 
-    buffer = ALLOC_N(char, size);
+    buffer = alloca(sizeof(char) * size);
 
     r = virDomainMemoryPeek(domain_get(s), start, size, buffer, flags);
 
     if (r < 0) {
-        xfree(buffer);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainMemoryPeek",
                                   connect_get(s)));
     }
@@ -758,7 +755,6 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s)
     args.val = buffer;
     args.size = size;
     ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
-    xfree(buffer);
     if (exception) {
         rb_jump_tag(exception);
     }
@@ -816,7 +812,6 @@ static VALUE create_vcpu_array(VALUE input)
  */
 static VALUE libvirt_dom_get_vcpus(VALUE s)
 {
-    virDomainPtr dom = domain_get(s);
     virNodeInfo nodeinfo;
     virDomainInfo dominfo;
     virVcpuInfoPtr cpuinfo;
@@ -830,27 +825,19 @@ static VALUE libvirt_dom_get_vcpus(VALUE s)
     r = virNodeGetInfo(connect_get(s), &nodeinfo);
     _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", connect_get(s)));
 
-    r = virDomainGetInfo(dom, &dominfo);
+    r = virDomainGetInfo(domain_get(s), &dominfo);
     _E(r < 0, create_error(e_RetrieveError, "virDomainGetInfo",
                            connect_get(s)));
 
-    cpuinfo = ALLOC_N(virVcpuInfo, dominfo.nrVirtCpu);
+    cpuinfo = alloca(sizeof(virVcpuInfo) * dominfo.nrVirtCpu);
 
     cpumaplen = VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo));
 
-    /* we use malloc instead of ruby_xmalloc here to avoid a memory leak
-     * if ruby_xmalloc raises an exception
-     */
-    cpumap = malloc(dominfo.nrVirtCpu * cpumaplen);
-    if (cpumap == NULL) {
-        xfree(cpuinfo);
-        rb_memerror();
-    }
+    cpumap = alloca(dominfo.nrVirtCpu * cpumaplen);
 
-    r = virDomainGetVcpus(dom, cpuinfo, dominfo.nrVirtCpu, cpumap, cpumaplen);
+    r = virDomainGetVcpus(domain_get(s), cpuinfo, dominfo.nrVirtCpu, cpumap,
+                          cpumaplen);
     if (r < 0) {
-        xfree(cpuinfo);
-        free(cpumap);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainGetVcpus",
                                   connect_get(s)));
     }
@@ -861,13 +848,8 @@ static VALUE libvirt_dom_get_vcpus(VALUE s)
     args.maxcpus = VIR_NODEINFO_MAXCPUS(nodeinfo);
     result = rb_protect(create_vcpu_array, (VALUE)&args, &exception);
     if (exception) {
-        xfree(cpuinfo);
-        free(cpumap);
         rb_jump_tag(exception);
     }
-
-    free(cpumap);
-    xfree(cpuinfo);
 
     return result;
 }
@@ -1186,7 +1168,7 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist)
     _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", c));
 
     maplen = VIR_CPU_MAPLEN(nodeinfo.cpus);
-    cpumap = ALLOC_N(unsigned char, maplen);
+    cpumap = alloca(sizeof(unsigned char) * maplen);
     MEMZERO(cpumap, unsigned char, maplen);
 
     len = RARRAY_LEN(cpulist);
@@ -1196,7 +1178,6 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist)
     }
 
     r = virDomainPinVcpu(domain_get(s), vcpunum, cpumap, maplen);
-    xfree(cpumap);
     _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", c));
 
     return Qnil;
@@ -1495,16 +1476,15 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d)
         return rb_ary_new2(num);
     }
 
-    names = ALLOC_N(char *, num);
+    names = alloca(sizeof(char *) * num);
 
     r = virDomainSnapshotListNames(domain_get(d), names, num, flags);
     if (r < 0) {
-        xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotListNames",
                                   connect_get(d)));
     }
 
-    return gen_list(num, &names);
+    return gen_list(num, names);
 }
 
 /*

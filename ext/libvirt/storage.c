@@ -340,15 +340,14 @@ static VALUE libvirt_pool_list_volumes(VALUE s)
         return rb_ary_new2(num);
     }
 
-    names = ALLOC_N(char *, num);
+    names = alloca(sizeof(char *) * num);
     r = virStoragePoolListVolumes(pool, names, num);
     if (r < 0) {
-        xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virStoragePoolListVolumes",
                                   connect_get(s)));
     }
 
-    return gen_list(num, &names);
+    return gen_list(num, names);
 }
 
 /*

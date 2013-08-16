@@ -113,15 +113,14 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
         return rb_ary_new2(num);
     }
 
-    names = ALLOC_N(char *, num);
+    names = alloca(sizeof(char *) * num);
     r = virNodeDeviceListCaps(nodedevice_get(c), names, num);
     if (r < 0) {
-        xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeDeviceListCaps",
                                   connect_get(c)));
     }
 
-    return gen_list(num, &names);
+    return gen_list(num, names);
 }
 
 /*

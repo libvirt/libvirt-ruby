@@ -248,7 +248,6 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     char *uri_c;
     virConnectPtr conn = NULL;
     unsigned int flags;
-    int auth_alloc;
     int i;
     VALUE tmp;
     int exception = 0;
@@ -269,8 +268,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     }
 
     if (rb_block_given_p()) {
-        auth = ALLOC(virConnectAuth);
-        auth_alloc = 1;
+        auth = alloca(sizeof(virConnectAuth));
 
         if (TYPE(credlist) == T_NIL) {
             auth->ncredtype = 0;
@@ -284,28 +282,20 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         }
         auth->credtype = NULL;
         if (auth->ncredtype > 0) {
-            /* we don't use ALLOC_N here because that can throw an exception,
-             * and leak the auth pointer.  Instead we use normal malloc
-             * (which has a slightly higher chance of returning NULL), and
-             * then properly cleanup if it fails
-             */
-            auth->credtype = malloc(sizeof(int) * auth->ncredtype);
-            if (auth->credtype == NULL) {
-                xfree(auth);
-                rb_memerror();
-            }
+            auth->credtype = alloca(sizeof(int) * auth->ncredtype);
+
             for (i = 0; i < auth->ncredtype; i++) {
                 args.arr = credlist;
                 args.elem = i;
                 tmp = rb_protect(rb_ary_entry_wrap, (VALUE)&args, &exception);
                 if (exception) {
-                    goto do_cleanup;
+                    rb_jump_tag(exception);
                 }
 
                 auth->credtype[i] = rb_protect(rb_num2int_wrap, tmp,
                                                &exception);
                 if (exception) {
-                    goto do_cleanup;
+                    rb_jump_tag(exception);
                 }
             }
         }
@@ -315,7 +305,6 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     }
     else {
         auth = virConnectAuthPtrDefault;
-        auth_alloc = 0;
     }
 
     callargs.uri = uri_c;
@@ -324,13 +313,6 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
 
     conn = (virConnectPtr)rb_protect(rb_open_auth_wrap, (VALUE)&callargs,
                                      &exception);
-
-do_cleanup:
-    if (auth_alloc) {
-        free(auth->credtype);
-        xfree(auth);
-    }
-
     if (exception) {
         rb_jump_tag(exception);
     }

@@ -27,6 +27,33 @@
 #include "domain.h"
 #include "network.h"
 
+/*
+ * Generate a call to a virConnectList... function. S is the Ruby VALUE
+ * holding the connection and OBJS is a token indicating what objects to
+ * get the number of, e.g. 'Domains' The list function must return an array
+ * of strings, which is returned as a Ruby array
+ */
+#define gen_conn_list_names(s, objs)                                    \
+    do {                                                                \
+        int r, num;                                                     \
+        char **names;                                                   \
+        virConnectPtr conn = connect_get(s);                            \
+                                                                        \
+        num = virConnectNumOf##objs(conn);                              \
+        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));   \
+        if (num == 0) {                                                 \
+            /* if num is 0, don't call virConnectList* function */      \
+            return rb_ary_new2(num);                                    \
+        }                                                               \
+        names = alloca(sizeof(char *) * num);                           \
+        r = virConnectList##objs(conn, names, num);                     \
+        if (r < 0) {                                                    \
+            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, conn));  \
+        }                                                               \
+                                                                        \
+        return gen_list(num, names);                                   \
+    } while(0)
+
 static VALUE c_connect;
 static VALUE c_node_security_model;
 static VALUE c_node_info;
@@ -278,12 +305,11 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
         maxCells = NUM2UINT(max);
     }
 
-    freeMems = ALLOC_N(unsigned long long, maxCells);
+    freeMems = alloca(sizeof(unsigned long long) * maxCells);
 
     r = virNodeGetCellsFreeMemory(connect_get(s), freeMems, startCell,
                                   maxCells);
     if (r < 0) {
-        xfree(freeMems);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
                                   connect_get(s)));
     }
@@ -292,7 +318,6 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
     for (i = 0; i < r; i++) {
         rb_ary_push(cells, ULL2NUM(freeMems[i]));
     }
-    xfree(freeMems);
 
     return cells;
 }
@@ -432,27 +457,24 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE s)
     }
 
     ncpus = RARRAY_LEN(xmlcpus);
-    xmllist = ALLOC_N(const char *, ncpus);
+    xmllist = alloca(sizeof(const char *) * ncpus);
 
     for (i = 0; i < ncpus; i++) {
         arg.arr = xmlcpus;
         arg.elem = i;
         entry = rb_protect(rb_ary_entry_wrap, (VALUE)&arg, &exception);
         if (exception) {
-            xfree(xmllist);
             rb_jump_tag(exception);
         }
 
         xmllist[i] = (char *)rb_protect(rb_string_value_cstr_wrap,
                                         (VALUE)&entry, &exception);
         if (exception) {
-            xfree(xmllist);
             rb_jump_tag(exception);
         }
     }
 
     r = virConnectBaselineCPU(connect_get(s), xmllist, ncpus, flags);
-    xfree(xmllist);
     _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU",
                                connect_get(s)));
 
@@ -985,17 +1007,15 @@ static VALUE libvirt_conn_list_domains(VALUE s)
         return result;
     }
 
-    ids = ALLOC_N(int, num);
+    ids = alloca(sizeof(int) * num);
     r = virConnectListDomains(conn, ids, num);
     if (r < 0) {
-        xfree(ids);
         rb_exc_raise(create_error(e_RetrieveError, "virConnectListDomains",
                                   conn));
     }
 
     result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
     if (exception) {
-        xfree(ids);
         rb_jump_tag(exception);
     }
 
@@ -1004,11 +1024,10 @@ static VALUE libvirt_conn_list_domains(VALUE s)
         args. value = INT2NUM(ids[i]);
         rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
         if (exception) {
-            xfree(ids);
             rb_jump_tag(exception);
         }
     }
-    xfree(ids);
+
     return result;
 }
 
@@ -1529,15 +1548,14 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c)
         return rb_ary_new2(num);
     }
 
-    names = ALLOC_N(char *, num);
+    names = alloca(sizeof(char *) * num);
     r = virNodeListDevices(connect_get(c), capstr, names, num, flags);
     if (r < 0) {
-        xfree(names);
         rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices",
                                   connect_get(c)));
     }
 
-    return gen_list(num, &names);
+    return gen_list(num, names);
 }
 
 /*
@@ -2136,11 +2154,7 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
 #if HAVE_VIRNODEGETCPUSTATS
 static void *cpu_alloc_stats(int nparams)
 {
-    virNodeCPUStatsPtr params;
-
-    params = ALLOC_N(virNodeCPUStats, nparams);
-
-    return (void *)params;
+    return ALLOC_N(virNodeCPUStats, nparams);
 }
 
 static VALUE cpu_hash_set(VALUE in)
@@ -2181,11 +2195,7 @@ static VALUE libvirt_conn_node_cpu_stats(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRNODEGETMEMORYSTATS
 static void *memory_alloc_stats(int nparams)
 {
-    virNodeMemoryStatsPtr params;
-
-    params = ALLOC_N(virNodeMemoryStats, nparams);
-
-    return (void *)params;
+    return ALLOC_N(virNodeMemoryStats, nparams);
 }
 
 static VALUE memory_hash_set(VALUE in)

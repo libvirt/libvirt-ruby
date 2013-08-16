@@ -96,36 +96,6 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
     } while(0)
 
 
-VALUE gen_list(int num, char ***list);
-
-/*
- * Generate a call to a virConnectList... function. S is the Ruby VALUE
- * holding the connection and OBJS is a token indicating what objects to
- * get the number of, e.g. 'Domains' The list function must return an array
- * of strings, which is returned as a Ruby array
- */
-#define gen_conn_list_names(s, objs)                                    \
-    do {                                                                \
-        int r, num;                                                     \
-        char **names;                                                   \
-        virConnectPtr conn = connect_get(s);                            \
-                                                                        \
-        num = virConnectNumOf##objs(conn);                              \
-        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));   \
-        if (num == 0) {                                                 \
-            /* if num is 0, don't call virConnectList* function */      \
-            return rb_ary_new2(num);                                    \
-        }                                                               \
-        names = ALLOC_N(char *, num);                                   \
-        r = virConnectList##objs(conn, names, num);                     \
-        if (r < 0) {                                                    \
-            xfree(names);                                               \
-            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, conn));  \
-        }                                                               \
-                                                                        \
-        return gen_list(num, &names);                                   \
-    } while(0)
-
 /* Generate a call to a function FUNC which returns an int; -1 indicates
  * error, 0 indicates Qfalse, and 1 indicates Qtrue.
  */
@@ -163,6 +133,8 @@ extern VALUE e_NoSupportError;
 extern VALUE m_libvirt;
 
 char *get_string_or_nil(VALUE arg);
+
+VALUE gen_list(int num, char **list);
 
 VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
                      int (*nparams_cb)(VALUE d, unsigned int flags),

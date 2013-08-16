@@ -105,11 +105,10 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     VALUE result;
     struct stream_recv_args args;
 
-    data = ALLOC_N(char, NUM2INT(bytes));
+    data = alloca(sizeof(char) * NUM2INT(bytes));
 
     ret = virStreamRecv(stream_get(s), data, NUM2INT(bytes));
     if (ret == -1) {
-        xfree(data);
         rb_exc_raise(create_error(e_RetrieveError, "virStreamRecv",
                                   connect_get(s)));
     }
@@ -118,11 +117,9 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     args.data = data;
     result = rb_protect(stream_recv_array, (VALUE)&args, &exception);
     if (exception) {
-        xfree(data);
         rb_jump_tag(exception);
     }
 
-    xfree(data);
     return result;
 }
 

@@ -180,17 +180,16 @@ int is_symbol_or_proc(VALUE handle)
             (strcmp(rb_obj_classname(handle), "Proc") == 0));
 }
 
-/* this is an odd function, because it has massive side-effects.  The first
- * tip that something is weird here should be the triple-starred list.
+/* this is an odd function, because it has massive side-effects.
  * The intended usage of this function is after a list has been collected
  * from a libvirt list function, and now we want to make an array out of it.
  * However, it is possible that the act of creating an array causes an
  * exception, which would lead to a memory leak of the values we got from
  * libvirt.  Therefore, this function not only wraps all of the relevant
- * calls with rb_protect, it also frees every individual entry in list
- * along with list itself.
+ * calls with rb_protect, it also frees every individual entry in list after
+ * it is done with it.  Freeing list itself is left to the callers.
  */
-VALUE gen_list(int num, char ***list)
+VALUE gen_list(int num, char **list)
 {
     VALUE result;
     int exception = 0;
@@ -200,9 +199,8 @@ VALUE gen_list(int num, char ***list)
     result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
     if (exception) {
         for (i = 0; i < num; i++) {
-            free((*list)[i]);
+            free(list[i]);
         }
-        xfree(*list);
         rb_jump_tag(exception);
     }
     for (i = 0; i < num; i++) {
@@ -211,22 +209,19 @@ VALUE gen_list(int num, char ***list)
                                &exception);
         if (exception) {
             for (j = i; j < num; j++) {
-                xfree((*list)[j]);
+                xfree(list[j]);
             }
-            xfree(*list);
             rb_jump_tag(exception);
         }
         rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
         if (exception) {
             for (j = i; j < num; j++) {
-                xfree((*list)[j]);
+                xfree(list[j]);
             }
-            xfree(*list);
             rb_jump_tag(exception);
         }
-        xfree((*list)[i]);
+        xfree(list[i]);
     }
-    xfree(*list);
 
     return result;
 }
@@ -304,11 +299,10 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
         return result;
     }
 
-    params = ALLOC_N(virTypedParameter, nparams);
+    params = alloca(sizeof(virTypedParameter) * nparams);
 
     errname = get_cb(d, flags, params, &nparams);
     if (errname != NULL) {
-        xfree(params);
         rb_exc_raise(create_error(e_RetrieveError, errname, conn));
     }
 
@@ -317,12 +311,9 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
         ftv.param = &params[i];
         rb_protect(typed_field_to_value, (VALUE)&ftv, &exception);
         if (exception) {
-            xfree(params);
             rb_jump_tag(exception);
         }
     }
-
-    xfree(params);
 
     return result;
 }
@@ -424,11 +415,10 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
 
     nparams = nparams_cb(d, flags);
 
-    params = ALLOC_N(virTypedParameter, nparams);
+    params = alloca(sizeof(virTypedParameter) * nparams);
 
     errname = get_cb(d, flags, params, &nparams);
     if (errname != NULL) {
-        xfree(params);
         rb_exc_raise(create_error(e_RetrieveError, errname, conn));
     }
 
@@ -437,18 +427,14 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
         vtf.input = input;
         rb_protect(typed_value_to_field, (VALUE)&vtf, &exception);
         if (exception) {
-            xfree(params);
             rb_jump_tag(exception);
         }
     }
 
     errname = set_cb(d, flags, params, nparams);
     if (errname != NULL) {
-        xfree(params);
         rb_exc_raise(create_error(e_RetrieveError, errname, conn));
     }
-
-    xfree(params);
 
     return Qnil;
 }
