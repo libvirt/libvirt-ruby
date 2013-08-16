@@ -27,8 +27,8 @@ toplevel of your source checkout):
 
 Notes
 -----
-As of August 10, 2013, the ruby-libvirt bindings support all of the libvirt
-APIs up to libvirt commit hash eebbb232e65e555b7d358ca752c23d2bacaf4edf
+As of August 11, 2013, the ruby-libvirt bindings support all of the libvirt
+APIs up to libvirt commit hash 81b191577313104cacf48077c7b1a00d0e838dcb
 with the following exceptions:
 
 - virConnectRef
@@ -333,3 +333,15 @@ with the following exceptions:
 - VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH
 - virDomainOpenGraphics
 - virDomainFSTrim
+- virDomainMigrate3
+- virDomainMigrateToURI3
+- virDomainCreateXMLWithFiles
+- virDomainSetMemoryStatsPeriod
+- virDomainCreateWithFiles
+- virDomainBlockRebase
+- virConnectListAllNetworks
+- virNodeDeviceDetachFlags
+- virConnectListAllSecrets
+- virDomainSnapshotGetName
+- virDomainSnapshotGetDomain
+- virDomainSnapshotGetConnect
