@@ -1838,6 +1838,9 @@ static char *scheduler_set(VALUE d, unsigned int flags,
                            virTypedParameterPtr params, int nparams)
 {
 #if HAVE_TYPE_VIRTYPEDPARAMETERPTR
+    /* FIXME: virDomainSetSchedulerParametersFlags can take a flags parameter,
+     * so we should probably implement it and pass it through.
+     */
     if (virDomainSetSchedulerParametersFlags(domain_get(d), params, nparams,
                                              flags) < 0) {
         return "virDomainSetSchedulerParameters";
@@ -1919,6 +1922,9 @@ static char *memory_get(VALUE d, unsigned int flags,
 static char *memory_set(VALUE d, unsigned int flags,
                         virTypedParameterPtr params, int nparams)
 {
+    /* FIXME: virDomainSetMemoryParameters can take a flags parameter, so we
+     * should probably implement it and pass it through.
+     */
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetMemoryParameters(domain_get(d), params, nparams,
                                      flags) < 0) {
@@ -1995,6 +2001,9 @@ static char *blkio_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
 static char *blkio_set(VALUE d, unsigned int flags, virTypedParameterPtr params,
                        int nparams)
 {
+    /* FIXME: virDomainSetBlkioParameters can take a flags parameter, so we
+     * should probably implement it and pass it through.
+     */
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetBlkioParameters(domain_get(d), params, nparams,
                                     flags) < 0) {
