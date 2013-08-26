@@ -1058,16 +1058,15 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE in)
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
     r = virDomainSetMemoryFlags(domain_get(s), NUM2ULONG(memory),
                                 NUM2UINT(flags));
-    _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemoryFlags",
-                           connect_get(s)));
 #else
     if (NUM2UINT(flags) != 0) {
         rb_raise(e_NoSupportError, "Non-zero flags not supported");
     }
     r = virDomainSetMemory(domain_get(s), NUM2ULONG(memory));
+#endif
+
     _E(r < 0, create_error(e_DefinitionError, "virDomainSetMemory",
                            connect_get(s)));
-#endif
 
     return ULONG2NUM(memory);
 }
