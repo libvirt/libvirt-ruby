@@ -1144,27 +1144,33 @@ static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus)
 
 /*
  * call-seq:
- *   dom.pin_vcpu(vcpu, cpulist) -> nil
+ *   dom.pin_vcpu(vcpu, cpulist, flags=0) -> nil
  *
  * Call +virDomainPinVcpu+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
  * to pin a particular virtual CPU to a range of physical processors.  The
  * cpulist should be an array of Fixnums representing the physical processors
  * this virtual CPU should be allowed to be scheduled on.
  */
-static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist)
+static VALUE libvirt_dom_pin_vcpu(int argc, VALUE *argv, VALUE s)
 {
+    VALUE vcpu, cpulist, flags;
     int r, i, len, maplen;
     unsigned char *cpumap;
     virNodeInfo nodeinfo;
-    virConnectPtr c = connect_get(s);
     unsigned int vcpunum;
     VALUE e;
+
+    rb_scan_args(argc, argv, "21", &vcpu, &cpulist);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
 
     vcpunum = NUM2UINT(vcpu);
     Check_Type(cpulist, T_ARRAY);
 
-    r = virNodeGetInfo(c, &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", c));
+    r = virNodeGetInfo(connect_get(s), &nodeinfo);
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", connect_get(s)));
 
     maplen = VIR_CPU_MAPLEN(nodeinfo.cpus);
     cpumap = alloca(sizeof(unsigned char) * maplen);
@@ -1176,10 +1182,17 @@ static VALUE libvirt_dom_pin_vcpu(VALUE s, VALUE vcpu, VALUE cpulist)
         VIR_USE_CPU(cpumap, NUM2UINT(e));
     }
 
-    r = virDomainPinVcpu(domain_get(s), vcpunum, cpumap, maplen);
-    _E(r < 0, create_error(e_RetrieveError, "virDomainPinVcpu", c));
+#if HAVE_VIRDOMAINPINVCPUFLAGS
+    gen_call_void(virDomainPinVcpuFlags, connect_get(s), domain_get(s),
+                  vcpunum, cpumap, maplen, NUM2UINT(flags));
+#else
+    if (NUM2UINT(flags) != 0) {
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    }
 
-    return Qnil;
+    gen_call_void(virDomainPinVcpu, connect_get(s), domain_get(s), vcpunum,
+                  cpumap, maplen);
+#endif
 }
 
 /*
@@ -2413,7 +2426,7 @@ void init_domain()
 #if HAVE_VIRDOMAINSETVCPUSFLAGS
     rb_define_method(c_domain, "vcpus_flags=", libvirt_dom_vcpus_set_flags, 1);
 #endif
-    rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, 2);
+    rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, -1);
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_dom_undefine, -1);
     rb_define_method(c_domain, "create", libvirt_dom_create, -1);
