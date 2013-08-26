@@ -1206,15 +1206,32 @@ static VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE s)
 
 /*
  * call-seq:
- *   dom.undefine -> nil
+ *   dom.undefine(flags=0) -> nil
  *
  * Call +virDomainUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUndefine]
  * to undefine the domain.  After this call, the domain object is no longer
  * valid.
  */
-static VALUE libvirt_dom_undefine(VALUE s)
+static VALUE libvirt_dom_undefine(int argc, VALUE *argv, VALUE s)
 {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+#if HAVE_VIRDOMAINUNDEFINEFLAGS
+    gen_call_void(virDomainUndefineFlags, connect_get(s), domain_get(s),
+                  NUM2UINT(flags));
+#else
+    if (NUM2UINT(flags) != 0) {
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    }
+
     gen_call_void(virDomainUndefine, connect_get(s), domain_get(s));
+#endif
 }
 
 /*
@@ -2365,6 +2382,15 @@ void init_domain()
     rb_define_const(c_domain, "SAVE_PAUSED", INT2NUM(VIR_DOMAIN_SAVE_PAUSED));
 #endif
 
+#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_MANAGED_SAVE
+    rb_define_const(c_domain, "UNDEFINE_MANAGED_SAVE",
+                    INT2NUM(VIR_DOMAIN_UNDEFINE_MANAGED_SAVE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
+    rb_define_const(c_domain, "UNDEFINE_SNAPSHOTS_METADATA",
+                    INT2NUM(VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA));
+#endif
+
     rb_define_attr(c_domain, "connection", 1, 0);
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
@@ -2390,7 +2416,7 @@ void init_domain()
 #endif
     rb_define_method(c_domain, "pin_vcpu", libvirt_dom_pin_vcpu, 2);
     rb_define_method(c_domain, "xml_desc", libvirt_dom_xml_desc, -1);
-    rb_define_method(c_domain, "undefine", libvirt_dom_undefine, 0);
+    rb_define_method(c_domain, "undefine", libvirt_dom_undefine, -1);
     rb_define_method(c_domain, "create", libvirt_dom_create, -1);
     rb_define_method(c_domain, "autostart", libvirt_dom_autostart, 0);
     rb_define_method(c_domain, "autostart?", libvirt_dom_autostart, 0);

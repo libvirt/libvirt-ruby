@@ -160,6 +160,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeSuspendForDuration',
                   'virNodeGetMemoryParameters',
                   'virNodeGetCPUMap',
+                  'virDomainUndefineFlags',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -252,6 +253,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_PMSUSPENDED',
                    'VIR_DOMAIN_RUNNING_WAKEUP',
                    'VIR_DOMAIN_PMSUSPENDED_UNKNOWN',
+                   'VIR_DOMAIN_UNDEFINE_MANAGED_SAVE',
+                   'VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA',
                  ]
 
 have_libvirt_types(libvirt_types)

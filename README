@@ -51,9 +51,6 @@ with the following exceptions:
 - virEventRunDefaultImpl
 - virDomainRestoreFlags
 - virDomainBlockStatsFlags
-- VIR_DOMAIN_UNDEFINE_MANAGED_SAVE
-- VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
-- virDomainUndefineFlags
 - virDomainPinVcpuFlags
 - virDomainGetVcpuPinInfo
 - virDomainBlockJobAbort
