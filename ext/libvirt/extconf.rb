@@ -162,6 +162,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeGetCPUMap',
                   'virDomainUndefineFlags',
                   'virDomainPinVcpuFlags',
+                  'virDomainGetVcpuPinInfo',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

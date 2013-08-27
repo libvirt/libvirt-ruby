@@ -766,7 +766,7 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s)
 struct create_vcpu_array_args {
     virVcpuInfoPtr cpuinfo;
     unsigned char *cpumap;
-    int nr_virt_cpu;
+    unsigned short nr_virt_cpu;
     int maxcpus;
 };
 
@@ -774,7 +774,7 @@ static VALUE create_vcpu_array(VALUE input)
 {
     struct create_vcpu_array_args *args;
     VALUE result;
-    int i;
+    unsigned short i;
     VALUE vcpuinfo;
     VALUE p2vcpumap;
     int j;
@@ -785,10 +785,18 @@ static VALUE create_vcpu_array(VALUE input)
 
     for (i = 0; i < args->nr_virt_cpu; i++) {
         vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
-        rb_iv_set(vcpuinfo, "@number", UINT2NUM((args->cpuinfo)[i].number));
-        rb_iv_set(vcpuinfo, "@state", INT2NUM((args->cpuinfo)[i].state));
-        rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM((args->cpuinfo)[i].cpuTime));
-        rb_iv_set(vcpuinfo, "@cpu", INT2NUM((args->cpuinfo)[i].cpu));
+        rb_iv_set(vcpuinfo, "@number", UINT2NUM(i));
+        if (args->cpuinfo != NULL) {
+            rb_iv_set(vcpuinfo, "@state", INT2NUM((args->cpuinfo)[i].state));
+            rb_iv_set(vcpuinfo, "@cpu_time",
+                      ULL2NUM((args->cpuinfo)[i].cpuTime));
+            rb_iv_set(vcpuinfo, "@cpu", INT2NUM((args->cpuinfo)[i].cpu));
+        }
+        else {
+            rb_iv_set(vcpuinfo, "@state", Qnil);
+            rb_iv_set(vcpuinfo, "@cpu_time", Qnil);
+            rb_iv_set(vcpuinfo, "@cpu", Qnil);
+        }
 
         p2vcpumap = rb_ary_new();
 
@@ -835,17 +843,44 @@ static VALUE libvirt_dom_get_vcpus(VALUE s)
 
     cpumap = alloca(dominfo.nrVirtCpu * cpumaplen);
 
+    memset(&args, 0, sizeof(struct create_vcpu_array_args));
+
     r = virDomainGetVcpus(domain_get(s), cpuinfo, dominfo.nrVirtCpu, cpumap,
                           cpumaplen);
     if (r < 0) {
+#if HAVE_VIRDOMAINGETVCPUPININFO
+        /* if the domain is not shutoff, then this is an error */
+        if (dominfo.state != VIR_DOMAIN_SHUTOFF) {
+            rb_exc_raise(create_error(e_RetrieveError, "virDomainGetVcpus",
+                                      connect_get(s)));
+        }
+
+        /* otherwise, we can try to call virDomainGetVcpuPinInfo to get the
+         * information instead
+         */
+        r = virDomainGetVcpuPinInfo(domain_get(s), dominfo.nrVirtCpu,
+                                    cpumap, cpumaplen,
+                                    VIR_DOMAIN_AFFECT_CONFIG);
+        _E(r < 0, create_error(e_RetrieveError, "virDomainGetVcpuPinInfo",
+                               connect_get(s)));
+
+#else
         rb_exc_raise(create_error(e_RetrieveError, "virDomainGetVcpus",
                                   connect_get(s)));
+#endif
+    }
+    else {
+        /* this is the one piece of information that is different depending on
+         * whether we called virDomainGetVcpus() or virDomainGetVcpuPinInfo().
+         * Here, we set it so that the data can be filled out later.
+         */
+        args.cpuinfo = cpuinfo;
     }
 
-    args.cpuinfo = cpuinfo;
     args.cpumap = cpumap;
     args.nr_virt_cpu = dominfo.nrVirtCpu;
     args.maxcpus = VIR_NODEINFO_MAXCPUS(nodeinfo);
+
     result = rb_protect(create_vcpu_array, (VALUE)&args, &exception);
     if (exception) {
         rb_jump_tag(exception);
