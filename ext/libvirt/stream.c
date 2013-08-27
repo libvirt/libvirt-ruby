@@ -108,10 +108,8 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     data = alloca(sizeof(char) * NUM2INT(bytes));
 
     ret = virStreamRecv(stream_get(s), data, NUM2INT(bytes));
-    if (ret == -1) {
-        rb_exc_raise(create_error(e_RetrieveError, "virStreamRecv",
-                                  connect_get(s)));
-    }
+    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecv",
+                             connect_get(s)));
 
     args.ret = ret;
     args.data = data;

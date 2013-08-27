@@ -342,10 +342,8 @@ static VALUE libvirt_pool_list_volumes(VALUE s)
 
     names = alloca(sizeof(char *) * num);
     r = virStoragePoolListVolumes(pool, names, num);
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virStoragePoolListVolumes",
-                                  connect_get(s)));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolListVolumes",
+                           connect_get(s)));
 
     return gen_list(num, names);
 }

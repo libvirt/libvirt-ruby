@@ -302,9 +302,7 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     params = alloca(sizeof(virTypedParameter) * nparams);
 
     errname = get_cb(d, flags, params, &nparams);
-    if (errname != NULL) {
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn));
-    }
+    _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
 
     for (i = 0; i < nparams; i++) {
         ftv.result = result;
@@ -418,9 +416,7 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
     params = alloca(sizeof(virTypedParameter) * nparams);
 
     errname = get_cb(d, flags, params, &nparams);
-    if (errname != NULL) {
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn));
-    }
+    _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
 
     for (i = 0; i < nparams; i++) {
         vtf.param = &params[i];

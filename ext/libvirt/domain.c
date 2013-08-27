@@ -695,11 +695,8 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE s)
     buffer = alloca(sizeof(char) * size);
 
     r = virDomainBlockPeek(domain_get(s), path, offset, size, buffer, flags);
-
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virDomainBlockPeek",
-                                  connect_get(s)));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virDomainBlockPeek",
+                           connect_get(s)));
 
     args.val = buffer;
     args.size = size;
@@ -746,11 +743,8 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE s)
     buffer = alloca(sizeof(char) * size);
 
     r = virDomainMemoryPeek(domain_get(s), start, size, buffer, flags);
-
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virDomainMemoryPeek",
-                                  connect_get(s)));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryPeek",
+                           connect_get(s)));
 
     args.val = buffer;
     args.size = size;
@@ -1580,10 +1574,8 @@ static VALUE libvirt_dom_list_snapshots(int argc, VALUE *argv, VALUE d)
     names = alloca(sizeof(char *) * num);
 
     r = virDomainSnapshotListNames(domain_get(d), names, num, flags);
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotListNames",
-                                  connect_get(d)));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virDomainSnapshotListNames",
+                           connect_get(d)));
 
     return gen_list(num, names);
 }

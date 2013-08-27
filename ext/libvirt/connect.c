@@ -37,21 +37,18 @@
     do {                                                                \
         int r, num;                                                     \
         char **names;                                                   \
-        virConnectPtr conn = connect_get(s);                            \
                                                                         \
-        num = virConnectNumOf##objs(conn);                              \
-        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));   \
+        num = virConnectNumOf##objs(connect_get(s));                    \
+        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, connect_get(s))); \
         if (num == 0) {                                                 \
             /* if num is 0, don't call virConnectList* function */      \
             return rb_ary_new2(num);                                    \
         }                                                               \
         names = alloca(sizeof(char *) * num);                           \
-        r = virConnectList##objs(conn, names, num);                     \
-        if (r < 0) {                                                    \
-            _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, conn));  \
-        }                                                               \
+        r = virConnectList##objs(connect_get(s), names, num);           \
+        _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, connect_get(s))); \
                                                                         \
-        return gen_list(num, names);                                   \
+        return gen_list(num, names);                                    \
     } while(0)
 
 static VALUE c_connect;
@@ -309,10 +306,8 @@ static VALUE libvirt_conn_node_cells_free_memory(int argc, VALUE *argv,
 
     r = virNodeGetCellsFreeMemory(connect_get(s), freeMems, startCell,
                                   maxCells);
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
-                                  connect_get(s)));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
+                           connect_get(s)));
 
     cells = rb_ary_new2(r);
     for (i = 0; i < r; i++) {
@@ -1009,10 +1004,8 @@ static VALUE libvirt_conn_list_domains(VALUE s)
 
     ids = alloca(sizeof(int) * num);
     r = virConnectListDomains(conn, ids, num);
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virConnectListDomains",
-                                  conn));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains",
+                           conn));
 
     result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
     if (exception) {
@@ -1021,7 +1014,7 @@ static VALUE libvirt_conn_list_domains(VALUE s)
 
     for (i = 0; i < num; i++) {
         args.arr = result;
-        args. value = INT2NUM(ids[i]);
+        args.value = INT2NUM(ids[i]);
         rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
         if (exception) {
             rb_jump_tag(exception);
@@ -1550,10 +1543,8 @@ static VALUE libvirt_conn_list_nodedevices(int argc, VALUE *argv, VALUE c)
 
     names = alloca(sizeof(char *) * num);
     r = virNodeListDevices(connect_get(c), capstr, names, num, flags);
-    if (r < 0) {
-        rb_exc_raise(create_error(e_RetrieveError, "virNodeListDevices",
-                                  connect_get(c)));
-    }
+    _E(r < 0, create_error(e_RetrieveError, "virNodeListDevices",
+                           connect_get(c)));
 
     return gen_list(num, names);
 }
