@@ -337,6 +337,5 @@ with the following exceptions:
 - virConnectListAllNetworks
 - virNodeDeviceDetachFlags
 - virConnectListAllSecrets
-- virDomainSnapshotGetName
 - virDomainSnapshotGetDomain
 - virDomainSnapshotGetConnect

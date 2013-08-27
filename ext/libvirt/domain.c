@@ -1739,6 +1739,22 @@ static VALUE libvirt_dom_snapshot_free(VALUE s)
 
 #endif
 
+#if HAVE_VIRDOMAINSNAPSHOTGETNAME
+/*
+ * call-seq:
+ *   snapshot.name -> string
+ *
+ * Call +virDomainSnapshotGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetName]
+ * to get the name associated with a snapshot.
+ */
+static VALUE libvirt_dom_snapshot_name(VALUE s)
+{
+    gen_call_string(virDomainSnapshotGetName, connect_get(s), 0,
+                    domain_snapshot_get(s));
+}
+#endif
+
+
 #if HAVE_TYPE_VIRDOMAINJOBINFOPTR
 /*
  * call-seq:
@@ -2672,6 +2688,9 @@ void init_domain()
     rb_define_method(c_domain_snapshot, "delete",
                      libvirt_dom_snapshot_delete, -1);
     rb_define_method(c_domain_snapshot, "free", libvirt_dom_snapshot_free, 0);
+#endif
+#if HAVE_VIRDOMAINSNAPSHOTGETNAME
+    rb_define_method(c_domain_snapshot, "name", libvirt_dom_snapshot_name, 0);
 #endif
 
     /*
