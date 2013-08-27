@@ -1079,7 +1079,7 @@ static VALUE libvirt_dom_memory_set(VALUE s, VALUE in)
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 1 or 2)",
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                      RARRAY_LEN(in));
         }
         memory = rb_ary_entry(in, 0);
@@ -1134,43 +1134,80 @@ static VALUE libvirt_dom_num_vcpus(VALUE d, VALUE flags)
 
 /*
  * call-seq:
- *   dom.vcpus = Fixnum
+ *   dom.vcpus = Fixnum,flags=0
  *
  * Call +virDomainSetVcpus+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpus]
  * to set the current number of virtual CPUs this domain should have.  Note
  * that this will only work if both the hypervisor and domain on this
  * connection support virtual CPU hotplug/hot-unplug.
  */
-static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE nvcpus)
+static VALUE libvirt_dom_vcpus_set(VALUE s, VALUE in)
 {
+    VALUE nvcpus;
+    VALUE flags;
+
+    if (TYPE(in) == T_FIXNUM) {
+        nvcpus = in;
+        flags = INT2NUM(0);
+    }
+#if HAVE_VIRDOMAINSETVCPUSFLAGS
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2) {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                     RARRAY_LEN(in));
+        }
+        nvcpus = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
+
+    gen_call_void(virDomainSetVcpusFlags, connect_get(s), domain_get(s),
+                  NUM2UINT(nvcpus), NUM2UINT(flags));
+#else
+
+    if (NUM2UINT(flags) != 0) {
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    }
+
     gen_call_void(virDomainSetVcpus, connect_get(s), domain_get(s),
                   NUM2UINT(nvcpus));
+#endif
 }
 
 #if HAVE_VIRDOMAINSETVCPUSFLAGS
 /*
  * call-seq:
- *   dom.vcpus_flags = Fixnum,flags
+ *   dom.vcpus_flags = Fixnum,flags=0
  *
  * Call +virDomainSetVcpusFlags+[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpusFlags]
  * to set the current number of virtual CPUs this domain should have.  The
  * flags parameter controls whether the change is made to the running domain
  * the domain configuration, or both, and must not be 0.
  */
-static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE vcpus)
+static VALUE libvirt_dom_vcpus_set_flags(VALUE s, VALUE in)
 {
     VALUE nvcpus;
     VALUE flags;
 
-    Check_Type(vcpus, T_ARRAY);
-
-    if (RARRAY_LEN(vcpus) != 2) {
-        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                 RARRAY_LEN(vcpus));
+    if (TYPE(in) == T_FIXNUM) {
+        nvcpus = in;
+        flags = INT2NUM(0);
     }
-
-    nvcpus = rb_ary_entry(vcpus, 0);
-    flags = rb_ary_entry(vcpus, 1);
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2) {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                     RARRAY_LEN(in));
+        }
+        nvcpus = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
 
     gen_call_void(virDomainSetVcpusFlags, connect_get(s), domain_get(s),
                   NUM2UINT(nvcpus), NUM2UINT(flags));

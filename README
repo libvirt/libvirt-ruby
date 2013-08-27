@@ -51,7 +51,6 @@ with the following exceptions:
 - virEventRunDefaultImpl
 - virDomainRestoreFlags
 - virDomainBlockStatsFlags
-- virDomainGetVcpuPinInfo
 - virDomainBlockJobAbort
 - virDomainGetBlockJobInfo
 - virDomainBlockJobSetSpeed
