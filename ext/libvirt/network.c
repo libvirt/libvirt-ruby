@@ -48,7 +48,7 @@ VALUE network_new(virNetworkPtr n, VALUE conn)
  * call-seq:
  *   net.undefine -> nil
  *
- * Call +virNetworkUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUndefine]
+ * Call virNetworkUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUndefine]
  * to undefine this network.
  */
 static VALUE libvirt_netw_undefine(VALUE s)
@@ -60,7 +60,7 @@ static VALUE libvirt_netw_undefine(VALUE s)
  * call-seq:
  *   net.create -> nil
  *
- * Call +virNetworkCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreate]
+ * Call virNetworkCreate[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkCreate]
  * to start this network.
  */
 static VALUE libvirt_netw_create(VALUE s)
@@ -72,7 +72,7 @@ static VALUE libvirt_netw_create(VALUE s)
  * call-seq:
  *   net.update -> nil
  *
- * Call +virNetworkUpdate+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUpdate]
+ * Call virNetworkUpdate[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkUpdate]
  * to update this network.
  */
 static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
@@ -86,7 +86,7 @@ static VALUE libvirt_netw_update(VALUE s, VALUE command, VALUE section,
  * call-seq:
  *   net.destroy -> nil
  *
- * Call +virNetworkDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDestroy]
+ * Call virNetworkDestroy[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkDestroy]
  * to shutdown this network.
  */
 static VALUE libvirt_netw_destroy(VALUE s)
@@ -98,7 +98,7 @@ static VALUE libvirt_netw_destroy(VALUE s)
  * call-seq:
  *   net.name -> string
  *
- * Call +virNetworkGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
+ * Call virNetworkGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
  * to retrieve the name of this network.
  */
 static VALUE libvirt_netw_name(VALUE s)
@@ -110,7 +110,7 @@ static VALUE libvirt_netw_name(VALUE s)
  * call-seq:
  *   net.uuid -> string
  *
- * Call +virNetworkGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetUUIDString]
+ * Call virNetworkGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetUUIDString]
  * to retrieve the UUID of this network.
  */
 static VALUE libvirt_netw_uuid(VALUE s)
@@ -130,7 +130,7 @@ static VALUE libvirt_netw_uuid(VALUE s)
  * call-seq:
  *   net.xml_desc(flags=0) -> string
  *
- * Call +virNetworkGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
+ * Call virNetworkGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
  * to retrieve the XML for this network.
  */
 static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s)
@@ -151,7 +151,7 @@ static VALUE libvirt_netw_xml_desc(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   net.bridge_name -> string
  *
- * Call +virNetworkGetBridgeName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
+ * Call virNetworkGetBridgeName[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
  * to retrieve the bridge name for this network.
  */
 static VALUE libvirt_netw_bridge_name(VALUE s)
@@ -163,7 +163,7 @@ static VALUE libvirt_netw_bridge_name(VALUE s)
  * call-seq:
  *   net.autostart? -> [true|false]
  *
- * Call +virNetworkGetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetAutostart]
+ * Call virNetworkGetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetAutostart]
  * to determine if this network will be autostarted when libvirtd starts.
  */
 static VALUE libvirt_netw_autostart(VALUE s)
@@ -182,7 +182,7 @@ static VALUE libvirt_netw_autostart(VALUE s)
  * call-seq:
  *   net.autostart = [true|false]
  *
- * Call +virNetworkSetAutostart+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
+ * Call virNetworkSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
  * to set this network to be autostarted when libvirtd starts.
  */
 static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart)
@@ -200,7 +200,7 @@ static VALUE libvirt_netw_autostart_set(VALUE s, VALUE autostart)
  * call-seq:
  *   net.free -> nil
  *
- * Call +virNetworkFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkFree]
+ * Call virNetworkFree[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkFree]
  * to free this network.  The object will no longer be valid after this call.
  */
 static VALUE libvirt_netw_free(VALUE s)
@@ -213,7 +213,7 @@ static VALUE libvirt_netw_free(VALUE s)
  * call-seq:
  *   net.active? -> [true|false]
  *
- * Call +virNetworkIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsActive]
+ * Call virNetworkIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsActive]
  * to determine if this network is currently active.
  */
 static VALUE libvirt_netw_active_p(VALUE s)
@@ -227,7 +227,7 @@ static VALUE libvirt_netw_active_p(VALUE s)
  * call-seq:
  *   net.persistent? -> [true|false]
  *
- * Call +virNetworkIsPersistent+[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsPersistent]
+ * Call virNetworkIsPersistent[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsPersistent]
  * to determine if this network is persistent.
  */
 static VALUE libvirt_netw_persistent_p(VALUE s)

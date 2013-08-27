@@ -48,7 +48,7 @@ VALUE interface_new(virInterfacePtr i, VALUE conn)
  * call-seq:
  *   interface.undefine -> nil
  *
- * Call +virInterfaceUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceUndefine]
+ * Call virInterfaceUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceUndefine]
  * to undefine this interface.
  */
 static VALUE libvirt_interface_undefine(VALUE s)
@@ -60,7 +60,7 @@ static VALUE libvirt_interface_undefine(VALUE s)
  * call-seq:
  *   interface.create(flags=0) -> nil
  *
- * Call +virInterfaceCreate+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceCreate]
+ * Call virInterfaceCreate[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceCreate]
  * to start this interface.
  */
 static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
@@ -81,7 +81,7 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   interface.destroy(flags=0) -> nil
  *
- * Call +virInterfaceDestroy+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDestroy]
+ * Call virInterfaceDestroy[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDestroy]
  * to shutdown this interface.
  */
 static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
@@ -103,7 +103,7 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   interface.active? -> [true|false]
  *
- * Call +virInterfaceIsActive+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceIsActive]
+ * Call virInterfaceIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceIsActive]
  * to determine if this interface is currently active.
  */
 static VALUE libvirt_interface_active_p(VALUE p)
@@ -116,7 +116,7 @@ static VALUE libvirt_interface_active_p(VALUE p)
  * call-seq:
  *   interface.name -> string
  *
- * Call +virInterfaceGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
+ * Call virInterfaceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
  * to retrieve the name of this interface.
  */
 static VALUE libvirt_interface_name(VALUE s)
@@ -128,7 +128,7 @@ static VALUE libvirt_interface_name(VALUE s)
  * call-seq:
  *   interface.mac -> string
  *
- * Call +virInterfaceGetMACString+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
+ * Call virInterfaceGetMACString[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
  * to retrieve the MAC address of this interface.
  */
 static VALUE libvirt_interface_mac(VALUE s)
@@ -141,7 +141,7 @@ static VALUE libvirt_interface_mac(VALUE s)
  * call-seq:
  *   interface.xml_desc -> string
  *
- * Call +virInterfaceGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
+ * Call virInterfaceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
  * to retrieve the XML of this interface.
  */
 static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
@@ -162,7 +162,7 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   interface.free -> nil
  *
- * Call +virInterfaceFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceFree]
+ * Call virInterfaceFree[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceFree]
  * to free this interface.  The object will no longer be valid after this call.
  */
 static VALUE libvirt_interface_free(VALUE s)

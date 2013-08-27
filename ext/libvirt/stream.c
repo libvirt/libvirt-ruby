@@ -48,7 +48,7 @@ VALUE stream_new(virStreamPtr s, VALUE conn)
  * call-seq:
  *   stream.send(buffer) -> Fixnum
  *
- * Call +virStreamSend+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamSend]
+ * Call virStreamSend[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamSend]
  * to send the data in buffer out to the stream.  The return value is the
  * number of bytes sent, which may be less than the size of the buffer.  If
  * an error occurred, -1 is returned.  If the transmit buffers are full and the
@@ -90,7 +90,7 @@ static VALUE stream_recv_array(VALUE input)
  * call-seq:
  *   stream.recv(bytes) -> [return_value, data]
  *
- * Call +virStreamRecv+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamRecv]
+ * Call virStreamRecv[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamRecv]
  * to receive up to bytes amount of data from the stream.  The return is an
  * array with two elements; the return code from the virStreamRecv call and
  * the data (as a String) read from the stream.  If an error occurred, the
@@ -161,7 +161,7 @@ static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
  * call-seq:
  *   stream.sendall(opaque=nil){|opaque, nbytes| send block} -> nil
  *
- * Call +virStreamSendAll+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamSendAll]
+ * Call virStreamSendAll[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamSendAll]
  * to send the entire data stream.  The send block is required and is executed
  * one or more times to send data.  Each invocation of the send block yields
  * the opaque data passed into the initial call and the number of bytes this
@@ -206,7 +206,7 @@ static int internal_recvall(virStreamPtr st, const char *buf, size_t nbytes,
  * call-seq:
  *   stream.recvall(opaque){|data, opaque| receive block} -> nil
  *
- * Call +virStreamRecvAll+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamRecvAll]
+ * Call virStreamRecvAll[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamRecvAll]
  * to receive the entire data stream.  The receive block is required and is
  * called one or more times to receive data.  Each invocation of the receive
  * block yields the data received and the opaque data passed into the initial
@@ -270,7 +270,7 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque)
  * call-seq:
  *   stream.event_add_callback(events, callback, opaque=nil) -> nil
  *
- * Call +virStreamEventAddCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventAddCallback]
+ * Call virStreamEventAddCallback[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventAddCallback]
  * to register a callback to be notified when a stream becomes readable or
  * writeable.  The events parameter is an integer representing the events the
  * user is interested in; it should be one or more of EVENT_READABLE,
@@ -314,7 +314,7 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   stream.event_update_callback(events) -> nil
  *
- * Call +virStreamEventUpdateCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventUpdateCallback]
+ * Call virStreamEventUpdateCallback[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventUpdateCallback]
  * to change the events that the event callback is looking for.  The events
  * parameter is an integer representing the events the user is interested in;
  * it should be one or more of EVENT_READABLE, EVENT_WRITABLE, EVENT_ERROR,
@@ -335,7 +335,7 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
  * call-seq:
  *   stream.event_remove_callback -> nil
  *
- * Call +virStreamEventRemoveCallback+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventRemoveCallback]
+ * Call virStreamEventRemoveCallback[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamEventRemoveCallback]
  * to remove the event callback currently registered to this stream.
  */
 static VALUE libvirt_stream_event_remove_callback(VALUE s)
@@ -353,7 +353,7 @@ static VALUE libvirt_stream_event_remove_callback(VALUE s)
  * call-seq:
  *   stream.finish -> nil
  *
- * Call +virStreamFinish+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamFinish]
+ * Call virStreamFinish[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamFinish]
  * to finish this stream.  Finish is typically used when the stream is no
  * longer needed and needs to be cleaned up.
  */
@@ -366,7 +366,7 @@ static VALUE libvirt_stream_finish(VALUE s)
  * call-seq:
  *   stream.abort -> nil
  *
- * Call +virStreamAbort+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamAbort]
+ * Call virStreamAbort[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamAbort]
  * to abort this stream.  Abort is typically used when something on the stream
  * has failed, and the stream needs to be cleaned up.
  */
@@ -379,7 +379,7 @@ static VALUE libvirt_stream_abort(VALUE s)
  * call-seq:
  *   stream.free -> nil
  *
- * Call +virStreamFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamFree]
+ * Call virStreamFree[http://www.libvirt.org/html/libvirt-libvirt.html#virStreamFree]
  * to free this stream.  The object will no longer be valid after this call.
  */
 static VALUE libvirt_stream_free(VALUE s)

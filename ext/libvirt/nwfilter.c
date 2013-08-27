@@ -48,7 +48,7 @@ VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn)
  * call-seq:
  *   nwfilter.undefine -> nil
  *
- * Call +virNWFilterUndefine+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterUndefine]
+ * Call virNWFilterUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterUndefine]
  * to undefine the network filter.
  */
 static VALUE libvirt_nwfilter_undefine(VALUE s)
@@ -60,7 +60,7 @@ static VALUE libvirt_nwfilter_undefine(VALUE s)
  * call-seq:
  *   nwfilter.name -> string
  *
- * Call +virNWFilterGetName+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetName]
+ * Call virNWFilterGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetName]
  * to retrieve the network filter name.
  */
 static VALUE libvirt_nwfilter_name(VALUE s)
@@ -72,7 +72,7 @@ static VALUE libvirt_nwfilter_name(VALUE s)
  * call-seq:
  *   nwfilter.uuid -> string
  *
- * Call +virNWFilterGetUUIDString+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetUUIDString]
+ * Call virNWFilterGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetUUIDString]
  * to retrieve the network filter UUID.
  */
 static VALUE libvirt_nwfilter_uuid(VALUE s)
@@ -91,7 +91,7 @@ static VALUE libvirt_nwfilter_uuid(VALUE s)
  * call-seq:
  *   nwfilter.xml_desc(flags=0) -> string
  *
- * Call +virNWFilterGetXMLDesc+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetXMLDesc]
+ * Call virNWFilterGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetXMLDesc]
  * to retrieve the XML for this network filter.
  */
 static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
@@ -112,7 +112,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   nwfilter.free -> nil
  *
- * Call +virNWFilterFree+[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterFree]
+ * Call virNWFilterFree[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterFree]
  * to free this network filter.  After this call the network filter object is
  * no longer valid.
  */

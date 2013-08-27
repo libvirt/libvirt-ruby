@@ -56,8 +56,7 @@ static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err)
  * call-seq:
  *   Libvirt::version(type=nil) -> [ libvirt_version, type_version ]
  *
- * Call
- * +virGetVersion+[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
+ * Call virGetVersion[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
  * to get the version of libvirt and of the hypervisor TYPE.
  */
 static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
@@ -111,8 +110,7 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
  * call-seq:
  *   Libvirt::open(uri=nil) -> Libvirt::Connect
  *
- * Call
- * +virConnectOpen+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
+ * Call virConnectOpen[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
  * to open a connection to a URL.
  */
 static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
@@ -124,8 +122,7 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
  * call-seq:
  *   Libvirt::open_read_only(uri=nil) -> Libvirt::Connect
  *
- * Call
- * +virConnectOpenReadOnly+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
+ * Call virConnectOpenReadOnly[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
  * to open a read-only connection to a URL.
  */
 static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m)
@@ -207,8 +204,7 @@ static VALUE rb_num2int_wrap(VALUE arg)
  * call-seq:
  *   Libvirt::open_auth(uri=nil, credlist=nil, userdata=nil, flags=0) {|...| authentication block} -> Libvirt::Connect
  *
- * Call
- * +virConnectOpenAuth+[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenAuth]
+ * Call virConnectOpenAuth[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenAuth]
  * to open a connection to a libvirt URI, with a possible authentication block.
  * If an authentication block is desired, then credlist should be an array that
  * specifies which credentials the authentication block is willing to support;
@@ -343,24 +339,13 @@ static VALUE add_timeout, update_timeout, remove_timeout;
  *
  * Libvirt::event_invoke_handle_callback takes 4 arguments:
  *
- * handle
- *          an application specific handle ID.  This can be any integer, but
- *          must be unique from all other libvirt handles in the application.
- * fd
- *          the file descriptor of interest.  This was given to the application
- *          as a callback to add_handle of Libvirt::event_register_impl
- * events
- *          the events that have occured on the fd.  Note that the events are
- *          libvirt specific, and are some combination of
- *          Libvirt::EVENT_HANDLE_READABLE, Libvirt::EVENT_HANDLE_WRITABLE,
- *          Libvirt::EVENT_HANDLE_ERROR, Libvirt::EVENT_HANDLE_HANGUP.  To
- *          notify libvirt of more than one event at a time, these values should
- *          be logically OR'ed together.
- * opaque
- *          the opaque data passed from libvirt during the
- *          Libvirt::event_register_impl add_handle callback.  To ensure proper
- *          operation this data must be passed through to
- *          event_invoke_handle_callback without modification.
+ * handle - an application specific handle ID.  This can be any integer, but must be unique from all other libvirt handles in the application.
+ *
+ * fd - the file descriptor of interest.  This was given to the application as a callback to add_handle of Libvirt::event_register_impl
+ *
+ * events - the events that have occured on the fd.  Note that the events are libvirt specific, and are some combination of Libvirt::EVENT_HANDLE_READABLE, Libvirt::EVENT_HANDLE_WRITABLE, Libvirt::EVENT_HANDLE_ERROR, Libvirt::EVENT_HANDLE_HANGUP.  To notify libvirt of more than one event at a time, these values should be logically OR'ed together.
+ *
+ * opaque - the opaque data passed from libvirt during the Libvirt::event_register_impl add_handle callback.  To ensure proper operation this data must be passed through to event_invoke_handle_callback without modification.
  */
 static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
                                                   VALUE fd, VALUE events,
@@ -407,14 +392,9 @@ static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
  *
  * Libvirt::event_invoke_timeout_callback takes 2 arguments:
  *
- * handle
- *          an application specific timer ID.  This can be any integer, but
- *          must be unique from all other libvirt timers in the application.
- * opaque
- *          the opaque data passed from libvirt during the
- *          Libvirt::event_register_impl add_handle callback.  To ensure proper
- *          operation this data must be passed through to
- *          event_invoke_handle_callback without modification.
+ * handle - an application specific timer ID.  This can be any integer, but must be unique from all other libvirt timers in the application.
+ *
+ * opaque - the opaque data passed from libvirt during the Libvirt::event_register_impl add_handle callback.  To ensure proper operation this data must be passed through to event_invoke_handle_callback without modification.
  */
 static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
                                                    VALUE opaque)
@@ -663,8 +643,7 @@ static int is_symbol_proc_or_nil(VALUE handle)
  * call-seq:
  *   Libvirt::event_register_impl(add_handle=nil, update_handle=nil, remove_handle=nil, add_timeout=nil, update_timeout=nil, remove_timeout=nil) -> Qnil
  *
- * Call
- * +virEventRegisterImpl+[http://www.libvirt.org/html/libvirt-libvirt.html#virEventRegisterImpl]
+ * Call virEventRegisterImpl[http://www.libvirt.org/html/libvirt-libvirt.html#virEventRegisterImpl]
  * to register callback handlers for handles and timeouts.  These handles and
  * timeouts are used as part of the libvirt infrastructure for generating
  * domain events.  Each callback must be a Symbol (that is the name of a
