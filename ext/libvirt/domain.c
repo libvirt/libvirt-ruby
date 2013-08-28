@@ -2440,6 +2440,12 @@ void init_domain()
 #if HAVE_CONST_VIR_DUMP_BYPASS_CACHE
     rb_define_const(c_domain, "BYPASS_CACHE", INT2NUM(VIR_DUMP_BYPASS_CACHE));
 #endif
+#if HAVE_CONST_VIR_DUMP_RESET
+    rb_define_const(c_domain, "RESET", INT2NUM(VIR_DUMP_RESET));
+#endif
+#if HAVE_CONST_VIR_DUMP_MEMORY_ONLY
+    rb_define_const(c_domain, "MEMORY_ONLY", INT2NUM(VIR_DUMP_MEMORY_ONLY));
+#endif
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
     rb_define_const(c_domain, "VCPU_LIVE", INT2NUM(VIR_DOMAIN_VCPU_LIVE));
@@ -2824,6 +2830,10 @@ void init_domain()
     rb_define_const(c_domain, "DOMAIN_PAUSED_SHUTTING_DOWN",
                     INT2NUM(VIR_DOMAIN_PAUSED_SHUTTING_DOWN));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_PAUSED_SNAPSHOT
+    rb_define_const(c_domain, "DOMAIN_PAUSED_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_PAUSED_SNAPSHOT));
+#endif
     rb_define_const(c_domain, "DOMAIN_SHUTDOWN_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_UNKNOWN));
     rb_define_const(c_domain, "DOMAIN_SHUTDOWN_USER",
@@ -2849,6 +2859,10 @@ void init_domain()
 #if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_UNKNOWN
     rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_UNKNOWN));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN
+    rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_DISK_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN));
 #endif
 
     rb_define_method(c_domain, "state", libvirt_dom_get_state, -1);

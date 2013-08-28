@@ -258,6 +258,10 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_PMSUSPENDED_UNKNOWN',
                    'VIR_DOMAIN_UNDEFINE_MANAGED_SAVE',
                    'VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA',
+                   'VIR_DOMAIN_PAUSED_SNAPSHOT',
+                   'VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN',
+                   'VIR_DUMP_RESET',
+                   'VIR_DUMP_MEMORY_ONLY',
                  ]
 
 have_libvirt_types(libvirt_types)
