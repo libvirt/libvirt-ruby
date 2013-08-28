@@ -84,7 +84,6 @@ with the following exceptions:
 - VIR_DOMAIN_NUMATUNE_MEM_INTERLEAVE
 - virDomainSetNumaParameters
 - virDomainGetNumaParameters
-- virDomainGetHostname
 - virDomainGetSecurityLabelList
 - VIR_DOMAIN_METADATA_DESCRIPTION
 - VIR_DOMAIN_METADATA_TITLE

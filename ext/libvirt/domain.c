@@ -2384,6 +2384,29 @@ static VALUE libvirt_dom_reset(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETHOSTNAME
+/*
+ * call-seq:
+ *   dom.hostname(flags=0) -> nil
+ *
+ * Call virDomainGetHostname[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetHostname]
+ * to get the hostname from a domain.
+ */
+static VALUE libvirt_dom_hostname(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    gen_call_string(virDomainGetHostname, connect_get(d), 1, domain_get(d),
+                    NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3010,5 +3033,8 @@ void init_domain()
 #endif
 #if HAVE_VIRDOMAINRESET
     rb_define_method(c_domain, "reset", libvirt_dom_reset, -1);
+#endif
+#if HAVE_VIRDOMAINGETHOSTNAME
+    rb_define_method(c_domain, "hostname", libvirt_dom_hostname, -1);
 #endif
 }

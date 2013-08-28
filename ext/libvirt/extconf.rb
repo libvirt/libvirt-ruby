@@ -167,6 +167,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectSetKeepAlive',
                   'virDomainReset',
                   'virDomainShutdownFlags',
+                  'virDomainGetHostname',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
