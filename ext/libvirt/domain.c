@@ -2531,6 +2531,26 @@ void init_domain()
 #endif
 
     rb_define_attr(c_domain, "connection", 1, 0);
+#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_DEFAULT
+    rb_define_const(c_domain, "SHUTDOWN_DEFAULT",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_DEFAULT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_ACPI_POWER_BTN
+    rb_define_const(c_domain, "SHUTDOWN_ACPI_POWER_BTN",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_ACPI_POWER_BTN));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_GUEST_AGENT
+    rb_define_const(c_domain, "SHUTDOWN_GUEST_AGENT",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_GUEST_AGENT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_INITCTL
+    rb_define_const(c_domain, "SHUTDOWN_INITCTL",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_INITCTL));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_SIGNAL
+    rb_define_const(c_domain, "SHUTDOWN_SIGNAL",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_SIGNAL));
+#endif
     rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, -1);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
     rb_define_method(c_domain, "destroy", libvirt_dom_destroy, -1);

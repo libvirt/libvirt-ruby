@@ -265,6 +265,11 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN',
                    'VIR_DUMP_RESET',
                    'VIR_DUMP_MEMORY_ONLY',
+                   'VIR_DOMAIN_SHUTDOWN_DEFAULT',
+                   'VIR_DOMAIN_SHUTDOWN_ACPI_POWER_BTN',
+                   'VIR_DOMAIN_SHUTDOWN_GUEST_AGENT',
+                   'VIR_DOMAIN_SHUTDOWN_INITCTL',
+                   'VIR_DOMAIN_SHUTDOWN_SIGNAL',
                  ]
 
 have_libvirt_types(libvirt_types)
