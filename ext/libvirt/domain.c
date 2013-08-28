@@ -2575,6 +2575,14 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_REBOOT_SIGNAL));
 #endif
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
+#if HAVE_CONST_VIR_DOMAIN_DESTROY_DEFAULT
+    rb_define_const(c_domain, "DESTROY_DEFAULT",
+                    INT2NUM(VIR_DOMAIN_DESTROY_DEFAULT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_DESTROY_GRACEFUL
+    rb_define_const(c_domain, "DESTROY_GRACEFUL",
+                    INT2NUM(VIR_DOMAIN_DESTROY_GRACEFUL));
+#endif
     rb_define_method(c_domain, "destroy", libvirt_dom_destroy, -1);
     rb_define_method(c_domain, "suspend", libvirt_dom_suspend, 0);
     rb_define_method(c_domain, "resume", libvirt_dom_resume, 0);

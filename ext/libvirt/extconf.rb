@@ -275,6 +275,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_REBOOT_GUEST_AGENT',
                    'VIR_DOMAIN_REBOOT_INITCTL',
                    'VIR_DOMAIN_REBOOT_SIGNAL',
+                   'VIR_DOMAIN_DESTROY_DEFAULT',
+                   'VIR_DOMAIN_DESTROY_GRACEFUL',
                  ]
 
 have_libvirt_types(libvirt_types)

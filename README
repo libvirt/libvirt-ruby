@@ -76,8 +76,6 @@ with the following exceptions:
 - VIR_CONNECT_CLOSE_REASON_CLIENT
 - virConnectRegisterCloseCallback
 - virConnectUnregisterCloseCallback
-- VIR_DOMAIN_DESTROY_DEFAULT
-- VIR_DOMAIN_DESTROY_GRACEFUL
 - virDomainPMSuspendForDuration
 - virDomainPMWakeup
 - virDomainGetCPUStats
