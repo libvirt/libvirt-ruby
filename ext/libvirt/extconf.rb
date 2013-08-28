@@ -270,6 +270,11 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_SHUTDOWN_GUEST_AGENT',
                    'VIR_DOMAIN_SHUTDOWN_INITCTL',
                    'VIR_DOMAIN_SHUTDOWN_SIGNAL',
+                   'VIR_DOMAIN_REBOOT_DEFAULT',
+                   'VIR_DOMAIN_REBOOT_ACPI_POWER_BTN',
+                   'VIR_DOMAIN_REBOOT_GUEST_AGENT',
+                   'VIR_DOMAIN_REBOOT_INITCTL',
+                   'VIR_DOMAIN_REBOOT_SIGNAL',
                  ]
 
 have_libvirt_types(libvirt_types)
