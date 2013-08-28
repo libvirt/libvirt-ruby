@@ -268,16 +268,33 @@ static VALUE libvirt_dom_migrate_set_max_speed(int argc, VALUE *argv, VALUE s)
 
 /*
  * call-seq:
- *   dom.shutdown -> nil
+ *   dom.shutdown(flags=0) -> nil
  *
  * Call virDomainShutdown[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainShutdown]
  * to do a soft shutdown of the domain.  The mechanism for doing the shutdown
  * is hypervisor specific, and may require software running inside the domain
  * to succeed.
  */
-static VALUE libvirt_dom_shutdown(VALUE s)
+static VALUE libvirt_dom_shutdown(int argc, VALUE *argv, VALUE s)
 {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+#if HAVE_VIRDOMAINSHUTDOWNFLAGS
+    gen_call_void(virDomainShutdownFlags, connect_get(s), domain_get(s),
+                  NUM2UINT(flags));
+#else
+    if (NUM2UINT(flags) != 0) {
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    }
+
     gen_call_void(virDomainShutdown, connect_get(s), domain_get(s));
+#endif
 }
 
 /*
@@ -2514,7 +2531,7 @@ void init_domain()
 #endif
 
     rb_define_attr(c_domain, "connection", 1, 0);
-    rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, 0);
+    rb_define_method(c_domain, "shutdown", libvirt_dom_shutdown, -1);
     rb_define_method(c_domain, "reboot", libvirt_dom_reboot, -1);
     rb_define_method(c_domain, "destroy", libvirt_dom_destroy, -1);
     rb_define_method(c_domain, "suspend", libvirt_dom_suspend, 0);
