@@ -79,23 +79,6 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         return Qnil;                                                    \
     } while(0)
 
-/*
- * Generate a call to a virConnectNumOf... function. C is the Ruby VALUE
- * holding the connection and OBJS is a token indicating what objects to
- * get the number of, e.g. 'Domains'
- */
-#define gen_conn_num_of(c, objs)                                        \
-    do {                                                                \
-        int result;                                                     \
-        virConnectPtr conn = connect_get(c);                            \
-                                                                        \
-        result = virConnectNumOf##objs(conn);                           \
-        _E(result < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, conn));                \
-                                                                        \
-        return INT2NUM(result);                                         \
-    } while(0)
-
-
 /* Generate a call to a function FUNC which returns an int; -1 indicates
  * error, 0 indicates Qfalse, and 1 indicates Qtrue.
  */

@@ -28,6 +28,21 @@
 #include "network.h"
 
 /*
+ * Generate a call to a virConnectNumOf... function. C is the Ruby VALUE
+ * holding the connection and OBJS is a token indicating what objects to
+ * get the number of, e.g. 'Domains'
+ */
+#define gen_conn_num_of(c, objs)                                        \
+    do {                                                                \
+        int r;                                                          \
+                                                                        \
+        r = virConnectNumOf##objs(connect_get(c));                      \
+        _E(r < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, connect_get(c))); \
+                                                                        \
+        return INT2NUM(r);                                              \
+    } while(0)
+
+/*
  * Generate a call to a virConnectList... function. S is the Ruby VALUE
  * holding the connection and OBJS is a token indicating what objects to
  * get the number of, e.g. 'Domains' The list function must return an array
