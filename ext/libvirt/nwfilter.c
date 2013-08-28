@@ -29,19 +29,19 @@
 #if HAVE_TYPE_VIRNWFILTERPTR
 static VALUE c_nwfilter;
 
-static void nwfilter_free(void *nw)
+static void nwfilter_free(void *n)
 {
-    generic_free(NWFilter, nw);
+    generic_free(NWFilter, n);
 }
 
-static virNWFilterPtr nwfilter_get(VALUE nw)
+static virNWFilterPtr nwfilter_get(VALUE n)
 {
-    generic_get(NWFilter, nw);
+    generic_get(NWFilter, n);
 }
 
-VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn)
+VALUE nwfilter_new(virNWFilterPtr n, VALUE conn)
 {
-    return generic_new(c_nwfilter, nw, conn, nwfilter_free);
+    return generic_new(c_nwfilter, n, conn, nwfilter_free);
 }
 
 /*
@@ -51,9 +51,9 @@ VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn)
  * Call virNWFilterUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterUndefine]
  * to undefine the network filter.
  */
-static VALUE libvirt_nwfilter_undefine(VALUE s)
+static VALUE libvirt_nwfilter_undefine(VALUE n)
 {
-    gen_call_void(virNWFilterUndefine, connect_get(s), nwfilter_get(s));
+    gen_call_void(virNWFilterUndefine, connect_get(n), nwfilter_get(n));
 }
 
 /*
@@ -63,9 +63,9 @@ static VALUE libvirt_nwfilter_undefine(VALUE s)
  * Call virNWFilterGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetName]
  * to retrieve the network filter name.
  */
-static VALUE libvirt_nwfilter_name(VALUE s)
+static VALUE libvirt_nwfilter_name(VALUE n)
 {
-    gen_call_string(virNWFilterGetName, connect_get(s), 0, nwfilter_get(s));
+    gen_call_string(virNWFilterGetName, connect_get(n), 0, nwfilter_get(n));
 }
 
 /*
@@ -75,14 +75,14 @@ static VALUE libvirt_nwfilter_name(VALUE s)
  * Call virNWFilterGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetUUIDString]
  * to retrieve the network filter UUID.
  */
-static VALUE libvirt_nwfilter_uuid(VALUE s)
+static VALUE libvirt_nwfilter_uuid(VALUE n)
 {
     int r;
     char uuid[VIR_UUID_STRING_BUFLEN];
 
-    r = virNWFilterGetUUIDString(nwfilter_get(s), uuid);
+    r = virNWFilterGetUUIDString(nwfilter_get(n), uuid);
     _E(r < 0, create_error(e_RetrieveError, "virNWFilterGetUUIDString",
-                           connect_get(s)));
+                           connect_get(n)));
 
     return rb_str_new2((char *)uuid);
 }
@@ -94,7 +94,7 @@ static VALUE libvirt_nwfilter_uuid(VALUE s)
  * Call virNWFilterGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetXMLDesc]
  * to retrieve the XML for this network filter.
  */
-static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
 {
     VALUE flags;
 
@@ -104,7 +104,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virNWFilterGetXMLDesc, connect_get(s), 1, nwfilter_get(s),
+    gen_call_string(virNWFilterGetXMLDesc, connect_get(n), 1, nwfilter_get(n),
                     NUM2UINT(flags));
 }
 
@@ -116,9 +116,9 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE s)
  * to free this network filter.  After this call the network filter object is
  * no longer valid.
  */
-static VALUE libvirt_nwfilter_free(VALUE s)
+static VALUE libvirt_nwfilter_free(VALUE n)
 {
-    gen_call_free(NWFilter, s);
+    gen_call_free(NWFilter, n);
 }
 
 #endif

@@ -34,9 +34,9 @@ static void interface_free(void *i)
     generic_free(Interface, i);
 }
 
-static virInterfacePtr interface_get(VALUE s)
+static virInterfacePtr interface_get(VALUE i)
 {
-    generic_get(Interface, s);
+    generic_get(Interface, i);
 }
 
 VALUE interface_new(virInterfacePtr i, VALUE conn)
@@ -51,9 +51,9 @@ VALUE interface_new(virInterfacePtr i, VALUE conn)
  * Call virInterfaceUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceUndefine]
  * to undefine this interface.
  */
-static VALUE libvirt_interface_undefine(VALUE s)
+static VALUE libvirt_interface_undefine(VALUE i)
 {
-    gen_call_void(virInterfaceUndefine, connect_get(s), interface_get(s));
+    gen_call_void(virInterfaceUndefine, connect_get(i), interface_get(i));
 }
 
 /*
@@ -63,7 +63,7 @@ static VALUE libvirt_interface_undefine(VALUE s)
  * Call virInterfaceCreate[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceCreate]
  * to start this interface.
  */
-static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE i)
 {
     VALUE flags;
 
@@ -73,7 +73,7 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceCreate, connect_get(s), interface_get(s),
+    gen_call_void(virInterfaceCreate, connect_get(i), interface_get(i),
                   NUM2UINT(flags));
 }
 
@@ -84,7 +84,7 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE s)
  * Call virInterfaceDestroy[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceDestroy]
  * to shutdown this interface.
  */
-static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
 {
     VALUE flags;
 
@@ -94,7 +94,7 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_void(virInterfaceDestroy, connect_get(s), interface_get(s),
+    gen_call_void(virInterfaceDestroy, connect_get(i), interface_get(i),
                   NUM2UINT(flags));
 }
 
@@ -119,9 +119,9 @@ static VALUE libvirt_interface_active_p(VALUE p)
  * Call virInterfaceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
  * to retrieve the name of this interface.
  */
-static VALUE libvirt_interface_name(VALUE s)
+static VALUE libvirt_interface_name(VALUE i)
 {
-    gen_call_string(virInterfaceGetName, connect_get(s), 0, interface_get(s));
+    gen_call_string(virInterfaceGetName, connect_get(i), 0, interface_get(i));
 }
 
 /*
@@ -131,10 +131,10 @@ static VALUE libvirt_interface_name(VALUE s)
  * Call virInterfaceGetMACString[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
  * to retrieve the MAC address of this interface.
  */
-static VALUE libvirt_interface_mac(VALUE s)
+static VALUE libvirt_interface_mac(VALUE i)
 {
-    gen_call_string(virInterfaceGetMACString, connect_get(s), 0,
-                    interface_get(s));
+    gen_call_string(virInterfaceGetMACString, connect_get(i), 0,
+                    interface_get(i));
 }
 
 /*
@@ -144,7 +144,7 @@ static VALUE libvirt_interface_mac(VALUE s)
  * Call virInterfaceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
  * to retrieve the XML of this interface.
  */
-static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
 {
     VALUE flags;
 
@@ -154,7 +154,7 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virInterfaceGetXMLDesc, connect_get(s), 1, interface_get(s),
+    gen_call_string(virInterfaceGetXMLDesc, connect_get(i), 1, interface_get(i),
                     NUM2UINT(flags));
 }
 
@@ -165,9 +165,9 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE s)
  * Call virInterfaceFree[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceFree]
  * to free this interface.  The object will no longer be valid after this call.
  */
-static VALUE libvirt_interface_free(VALUE s)
+static VALUE libvirt_interface_free(VALUE i)
 {
-    gen_call_free(Interface, s);
+    gen_call_free(Interface, i);
 }
 #endif
 

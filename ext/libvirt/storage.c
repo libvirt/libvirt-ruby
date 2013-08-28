@@ -31,9 +31,9 @@
 /* this has to be here (as opposed to below with the rest of the volume
  * stuff) because libvirt_vol_get_pool() relies on it
  */
-static virStorageVolPtr vol_get(VALUE s)
+static virStorageVolPtr vol_get(VALUE v)
 {
-    generic_get(StorageVol, s);
+    generic_get(StorageVol, v);
 }
 #endif
 
@@ -50,14 +50,14 @@ static void pool_free(void *d)
     generic_free(StoragePool, d);
 }
 
-static virStoragePoolPtr pool_get(VALUE s)
+static virStoragePoolPtr pool_get(VALUE p)
 {
-    generic_get(StoragePool, s);
+    generic_get(StoragePool, p);
 }
 
-VALUE pool_new(virStoragePoolPtr n, VALUE conn)
+VALUE pool_new(virStoragePoolPtr p, VALUE conn)
 {
-    return generic_new(c_storage_pool, n, conn, pool_free);
+    return generic_new(c_storage_pool, p, conn, pool_free);
 }
 
 /*
@@ -195,9 +195,9 @@ static VALUE libvirt_pool_refresh(int argc, VALUE *argv, VALUE p)
  * Call virStoragePoolGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetName]
  * to retrieve the name of this storage pool.
  */
-static VALUE libvirt_pool_name(VALUE s)
+static VALUE libvirt_pool_name(VALUE p)
 {
-    gen_call_string(virStoragePoolGetName, connect_get(s), 0, pool_get(s));
+    gen_call_string(virStoragePoolGetName, connect_get(p), 0, pool_get(p));
 }
 
 /*
@@ -207,14 +207,14 @@ static VALUE libvirt_pool_name(VALUE s)
  * Call virStoragePoolGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetUUIDString]
  * to retrieve the UUID of this storage pool.
  */
-static VALUE libvirt_pool_uuid(VALUE s)
+static VALUE libvirt_pool_uuid(VALUE p)
 {
     char uuid[VIR_UUID_STRING_BUFLEN];
     int r;
 
-    r = virStoragePoolGetUUIDString(pool_get(s), uuid);
+    r = virStoragePoolGetUUIDString(pool_get(p), uuid);
     _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetUUIDString",
-                           connect_get(s)));
+                           connect_get(p)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -226,15 +226,15 @@ static VALUE libvirt_pool_uuid(VALUE s)
  * Call virStoragePoolGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetInfo]
  * to retrieve information about this storage pool.
  */
-static VALUE libvirt_pool_info(VALUE s)
+static VALUE libvirt_pool_info(VALUE p)
 {
     virStoragePoolInfo info;
     int r;
     VALUE result;
 
-    r = virStoragePoolGetInfo(pool_get(s), &info);
+    r = virStoragePoolGetInfo(pool_get(p), &info);
     _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetInfo",
-                           connect_get(s)));
+                           connect_get(p)));
 
     result = rb_class_new_instance(0, NULL, c_storage_pool_info);
     rb_iv_set(result, "@state", INT2NUM(info.state));
@@ -252,7 +252,7 @@ static VALUE libvirt_pool_info(VALUE s)
  * Call virStoragePoolGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetXMLDesc]
  * to retrieve the XML for this storage pool.
  */
-static VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE p)
 {
     VALUE flags;
 
@@ -262,7 +262,7 @@ static VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virStoragePoolGetXMLDesc, connect_get(s), 1, pool_get(s),
+    gen_call_string(virStoragePoolGetXMLDesc, connect_get(p), 1, pool_get(p),
                     NUM2UINT(flags));
 }
 
@@ -273,13 +273,13 @@ static VALUE libvirt_pool_xml_desc(int argc, VALUE *argv, VALUE s)
  * Call virStoragePoolGetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetAutostart]
  * to determine whether this storage pool will autostart when libvirtd starts.
  */
-static VALUE libvirt_pool_autostart(VALUE s)
+static VALUE libvirt_pool_autostart(VALUE p)
 {
     int r, autostart;
 
-    r = virStoragePoolGetAutostart(pool_get(s), &autostart);
+    r = virStoragePoolGetAutostart(pool_get(p), &autostart);
     _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetAutostart",
-                           connect_get(s)));
+                           connect_get(p)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -291,14 +291,14 @@ static VALUE libvirt_pool_autostart(VALUE s)
  * Call virStoragePoolSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolSetAutostart]
  * to make this storage pool start when libvirtd starts.
  */
-static VALUE libvirt_pool_autostart_set(VALUE s, VALUE autostart)
+static VALUE libvirt_pool_autostart_set(VALUE p, VALUE autostart)
 {
     if (autostart != Qtrue && autostart != Qfalse) {
 		rb_raise(rb_eTypeError,
                  "wrong argument type (expected TrueClass or FalseClass)");
     }
 
-    gen_call_void(virStoragePoolSetAutostart, connect_get(s), pool_get(s),
+    gen_call_void(virStoragePoolSetAutostart, connect_get(p), pool_get(p),
                   RTEST(autostart) ? 1 : 0);
 }
 
@@ -309,13 +309,13 @@ static VALUE libvirt_pool_autostart_set(VALUE s, VALUE autostart)
  * Call virStoragePoolNumOfVolumes[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolNumOfVolumes]
  * to retrieve the number of volumes in this storage pool.
  */
-static VALUE libvirt_pool_num_of_volumes(VALUE s)
+static VALUE libvirt_pool_num_of_volumes(VALUE p)
 {
     int n;
 
-    n = virStoragePoolNumOfVolumes(pool_get(s));
+    n = virStoragePoolNumOfVolumes(pool_get(p));
     _E(n < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
-                           connect_get(s)));
+                           connect_get(p)));
 
     return INT2NUM(n);
 }
@@ -327,23 +327,22 @@ static VALUE libvirt_pool_num_of_volumes(VALUE s)
  * Call virStoragePoolListVolumes[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolListVolumes]
  * to retrieve a list of volume names in this storage pools.
  */
-static VALUE libvirt_pool_list_volumes(VALUE s)
+static VALUE libvirt_pool_list_volumes(VALUE p)
 {
     int r, num;
     char **names;
-    virStoragePoolPtr pool = pool_get(s);
 
-    num = virStoragePoolNumOfVolumes(pool);
+    num = virStoragePoolNumOfVolumes(pool_get(p));
     _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
-                             connect_get(s)));
+                             connect_get(p)));
     if (num == 0) {
         return rb_ary_new2(num);
     }
 
     names = alloca(sizeof(char *) * num);
-    r = virStoragePoolListVolumes(pool, names, num);
+    r = virStoragePoolListVolumes(pool_get(p), names, num);
     _E(r < 0, create_error(e_RetrieveError, "virStoragePoolListVolumes",
-                           connect_get(s)));
+                           connect_get(p)));
 
     return gen_list(num, names);
 }
@@ -356,9 +355,9 @@ static VALUE libvirt_pool_list_volumes(VALUE s)
  * to free this storage pool object.  After this call the storage pool object
  * is no longer valid.
  */
-static VALUE libvirt_pool_free(VALUE s)
+static VALUE libvirt_pool_free(VALUE p)
 {
-    gen_call_free(StoragePool, s);
+    gen_call_free(StoragePool, p);
 }
 #endif
 
@@ -374,9 +373,9 @@ static void vol_free(void *d)
     generic_free(StorageVol, d);
 }
 
-static VALUE vol_new(virStorageVolPtr n, VALUE conn)
+static VALUE vol_new(virStorageVolPtr v, VALUE conn)
 {
-    return generic_new(c_storage_vol, n, conn, vol_free);
+    return generic_new(c_storage_vol, v, conn, vol_free);
 }
 
 /*
@@ -652,9 +651,9 @@ static VALUE libvirt_vol_path(VALUE v)
  * to free the storage volume object.  After this call the storage volume object
  * is no longer valid.
  */
-static VALUE libvirt_vol_free(VALUE s)
+static VALUE libvirt_vol_free(VALUE v)
 {
-    gen_call_free(StorageVol, s);
+    gen_call_free(StorageVol, v);
 }
 #endif
 

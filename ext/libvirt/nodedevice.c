@@ -34,14 +34,14 @@ static void nodedevice_free(void *s)
     generic_free(NodeDevice, s);
 }
 
-static virNodeDevicePtr nodedevice_get(VALUE s)
+static virNodeDevicePtr nodedevice_get(VALUE n)
 {
-    generic_get(NodeDevice, s);
+    generic_get(NodeDevice, n);
 }
 
-VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn)
+VALUE nodedevice_new(virNodeDevicePtr n, VALUE conn)
 {
-    return generic_new(c_nodedevice, s, conn, nodedevice_free);
+    return generic_new(c_nodedevice, n, conn, nodedevice_free);
 }
 
 /*
@@ -128,7 +128,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
  * Call virNodeDeviceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetXMLDesc]
  * to retrieve the XML for the node device.
  */
-static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
 {
     VALUE flags;
 
@@ -138,8 +138,8 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s)
         flags = INT2NUM(0);
     }
 
-    gen_call_string(virNodeDeviceGetXMLDesc, connect_get(s), 1,
-                    nodedevice_get(s), NUM2UINT(flags));
+    gen_call_string(virNodeDeviceGetXMLDesc, connect_get(n), 1,
+                    nodedevice_get(n), NUM2UINT(flags));
 }
 
 /*
@@ -149,9 +149,9 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE s)
  * Call virNodeDeviceDettach[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDettach]
  * to detach the node device from the node.
  */
-static VALUE libvirt_nodedevice_detach(VALUE s)
+static VALUE libvirt_nodedevice_detach(VALUE n)
 {
-    gen_call_void(virNodeDeviceDettach, connect_get(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceDettach, connect_get(n), nodedevice_get(n));
 }
 
 /*
@@ -161,9 +161,9 @@ static VALUE libvirt_nodedevice_detach(VALUE s)
  * Call virNodeDeviceReAttach[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceReAttach]
  * to reattach the node device to the node.
  */
-static VALUE libvirt_nodedevice_reattach(VALUE s)
+static VALUE libvirt_nodedevice_reattach(VALUE n)
 {
-    gen_call_void(virNodeDeviceReAttach, connect_get(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceReAttach, connect_get(n), nodedevice_get(n));
 }
 
 /*
@@ -173,9 +173,9 @@ static VALUE libvirt_nodedevice_reattach(VALUE s)
  * Call virNodeDeviceReset[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceReset]
  * to reset the node device.
  */
-static VALUE libvirt_nodedevice_reset(VALUE s)
+static VALUE libvirt_nodedevice_reset(VALUE n)
 {
-    gen_call_void(virNodeDeviceReset, connect_get(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceReset, connect_get(n), nodedevice_get(n));
 }
 
 #if HAVE_VIRNODEDEVICEDESTROY
@@ -186,9 +186,9 @@ static VALUE libvirt_nodedevice_reset(VALUE s)
  * Call virNodeDeviceDestroy[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDestroy]
  * to shutdown the node device.
  */
-static VALUE libvirt_nodedevice_destroy(VALUE s)
+static VALUE libvirt_nodedevice_destroy(VALUE n)
 {
-    gen_call_void(virNodeDeviceDestroy, connect_get(s), nodedevice_get(s));
+    gen_call_void(virNodeDeviceDestroy, connect_get(n), nodedevice_get(n));
 }
 #endif
 
@@ -200,9 +200,9 @@ static VALUE libvirt_nodedevice_destroy(VALUE s)
  * to free the node device object.  After this call the node device object is
  * no longer valid.
  */
-static VALUE libvirt_nodedevice_free(VALUE s)
+static VALUE libvirt_nodedevice_free(VALUE n)
 {
-    gen_call_free(NodeDevice, s);
+    gen_call_free(NodeDevice, n);
 }
 #endif
 
