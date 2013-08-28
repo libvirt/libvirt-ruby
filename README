@@ -70,7 +70,6 @@ with the following exceptions:
 - virDomainMigrateGetCompressionCache
 - virDomainMigrateSetCompressionCache
 - VIR_CONNECT_NO_ALIASES
-- virConnectSetKeepAlive
 - VIR_CONNECT_CLOSE_REASON_ERROR
 - VIR_CONNECT_CLOSE_REASON_EOF
 - VIR_CONNECT_CLOSE_REASON_KEEPALIVE

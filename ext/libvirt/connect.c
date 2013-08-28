@@ -2425,6 +2425,21 @@ static VALUE libvirt_conn_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTSETKEEPALIVE
+/*
+ * call-seq:
+ *   conn.set_keepalive -> fixnum
+ *
+ * Call virConnectSetKeepAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectSetKeepAlive]
+ * to start sending keepalive messages.
+ */
+static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
+{
+    gen_call_int(virConnectSetKeepAlive, connect_get(c), connect_get(c),
+                 NUM2INT(interval), NUM2UINT(count));
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2828,5 +2843,9 @@ void init_connect()
 #if HAVE_VIRNODEGETCPUMAP
     rb_define_method(c_connect, "node_get_cpu_map",
                      libvirt_conn_node_get_cpu_map, -1);
+#endif
+
+#if HAVE_VIRCONNECTSETKEEPALIVE
+    rb_define_method(c_connect, "set_keepalive", libvirt_conn_set_keepalive, 2);
 #endif
 }
