@@ -2344,6 +2344,29 @@ static VALUE libvirt_dom_migrate_max_speed(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINRESET
+/*
+ * call-seq:
+ *   dom.reset(flags=0) -> nil
+ *
+ * Call virDomainReset[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReset]
+ * to reset a domain immediately.
+ */
+static VALUE libvirt_dom_reset(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    gen_call_void(virDomainReset, connect_get(d), domain_get(d),
+                  NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -2917,5 +2940,8 @@ void init_domain()
 #endif
 #if HAVE_VIRDOMAINSENDKEY
     rb_define_method(c_domain, "send_key", libvirt_dom_send_key, 3);
+#endif
+#if HAVE_VIRDOMAINRESET
+    rb_define_method(c_domain, "reset", libvirt_dom_reset, -1);
 #endif
 }
