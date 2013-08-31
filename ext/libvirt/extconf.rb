@@ -168,6 +168,8 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainReset',
                   'virDomainShutdownFlags',
                   'virDomainGetHostname',
+                  'virDomainGetMetadata',
+                  'virDomainSetMetadata',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

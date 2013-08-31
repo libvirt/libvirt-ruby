@@ -2407,6 +2407,75 @@ static VALUE libvirt_dom_hostname(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETMETADATA
+/*
+ * call-seq:
+ *   dom.metadata(flags=0) -> string
+ *
+ * Call virDomainGetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMetadata]
+ * to get the metadata from a domain.
+ */
+static VALUE libvirt_dom_metadata(int argc, VALUE *argv, VALUE d)
+{
+    VALUE uri, flags, type;
+
+    rb_scan_args(argc, argv, "12", &type, &uri, &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    gen_call_string(virDomainGetMetadata, connect_get(d), 1, domain_get(d),
+                    NUM2INT(type), get_string_or_nil(uri), NUM2UINT(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINSETMETADATA
+/*
+ * call-seq:
+ *   dom.metadata = fixnum,string/nil,key=nil,uri=nil,flags=0 -> nil
+ *
+ * Call virDomainSetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMetadata]
+ * to set the metadata for a domain.
+ */
+static VALUE libvirt_dom_set_metadata(VALUE d, VALUE in)
+{
+    VALUE type, metadata, key, uri, flags;
+
+    if (TYPE(in) != T_ARRAY) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Array)");
+    }
+
+    if (RARRAY_LEN(in) < 2 || RARRAY_LEN(in) > 5) {
+        rb_raise(rb_eArgError,
+                 "wrong number of arguments (%ld for 2, 3, 4, or 5)",
+                 RARRAY_LEN(in));
+    }
+
+    type = rb_ary_entry(in, 0);
+    metadata = rb_ary_entry(in, 1);
+    key = Qnil;
+    uri = Qnil;
+    flags = INT2NUM(0);
+
+    if (RARRAY_LEN(in) >= 3) {
+        key = rb_ary_entry(in, 2);
+    }
+    if (RARRAY_LEN(in) >= 4) {
+        uri = rb_ary_entry(in, 3);
+    }
+    if (RARRAY_LEN(in) == 5) {
+        flags = rb_ary_entry(in, 4);
+    }
+
+    gen_call_void(virDomainSetMetadata, connect_get(d), domain_get(d),
+                  NUM2INT(type), get_string_or_nil(metadata),
+                  get_string_or_nil(key), get_string_or_nil(uri),
+                  NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3036,5 +3105,17 @@ void init_domain()
 #endif
 #if HAVE_VIRDOMAINGETHOSTNAME
     rb_define_method(c_domain, "hostname", libvirt_dom_hostname, -1);
+#endif
+#if HAVE_VIRDOMAINGETMETADATA
+    rb_define_const(c_domain, "METADATA_DESCRIPTION",
+                    INT2NUM(VIR_DOMAIN_METADATA_DESCRIPTION));
+    rb_define_const(c_domain, "METADATA_TITLE",
+                    INT2NUM(VIR_DOMAIN_METADATA_TITLE));
+    rb_define_const(c_domain, "METADATA_ELEMENT",
+                    INT2NUM(VIR_DOMAIN_METADATA_ELEMENT));
+    rb_define_method(c_domain, "metadata", libvirt_dom_metadata, -1);
+#endif
+#if HAVE_VIRDOMAINSETMETADATA
+    rb_define_method(c_domain, "metadata=", libvirt_dom_set_metadata, 1);
 #endif
 }
