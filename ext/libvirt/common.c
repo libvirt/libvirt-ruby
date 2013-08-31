@@ -196,34 +196,36 @@ VALUE gen_list(int num, char **list)
     int i, j;
     struct rb_ary_push_arg arg;
 
+    i = 0;
+
     result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
     if (exception) {
-        for (i = 0; i < num; i++) {
-            free(list[i]);
-        }
-        rb_jump_tag(exception);
+        goto exception;
     }
     for (i = 0; i < num; i++) {
         arg.arr = result;
         arg.value = rb_protect(rb_str_new2_wrap, (VALUE)&((*list)[i]),
                                &exception);
         if (exception) {
-            for (j = i; j < num; j++) {
-                xfree(list[j]);
-            }
-            rb_jump_tag(exception);
+            goto exception;
         }
         rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
         if (exception) {
-            for (j = i; j < num; j++) {
-                xfree(list[j]);
-            }
-            rb_jump_tag(exception);
+            goto exception;
         }
         xfree(list[i]);
     }
 
     return result;
+
+exception:
+    for (j = i; j < num; j++) {
+        xfree(list[j]);
+    }
+    rb_jump_tag(exception);
+
+    /* not needed, but here to shut the compiler up */
+    return Qnil;
 }
 
 struct field_to_value {

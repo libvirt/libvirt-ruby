@@ -45,6 +45,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         str = func(args);                                               \
         _E(str == NULL, create_error(e_Error, # func, conn));           \
                                                                         \
+        /* FIXME: if rb_str_new2() throws an exception, this could leak */ \
         result = rb_str_new2(str);                                      \
         if (dealloc) {                                                  \
             xfree((void *) str);                                        \
