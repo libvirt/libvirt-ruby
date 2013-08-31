@@ -2455,6 +2455,64 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
 }
 #endif
 
+#if HAVE_VIRCONNECTLISTALLDOMAINS
+/*
+ * call-seq:
+ *   conn.list_all_domains(flags=0) -> array
+ *
+ * Call virConnectListAllDomains[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllDomains]
+ * to get an array of domain objects for all domains.
+ */
+static VALUE libvirt_conn_list_all_domains(int argc, VALUE *argv, VALUE c)
+{
+    VALUE flags;
+    virDomainPtr *domains;
+    size_t i;
+    int ret;
+    VALUE result;
+    int exception = 0;
+    struct rb_ary_push_arg arg;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    ret = virConnectListAllDomains(connect_get(c), &domains, flags);
+    _E(ret < 0, create_error(e_RetrieveError, "virConnectListAllDomains",
+                             connect_get(c)));
+
+    result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception);
+    if (exception) {
+        goto exception;
+    }
+
+    for (i = 0; i < ret; i++) {
+        arg.arr = result;
+        arg.value = domain_new(domains[i], c);
+        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
+        if (exception) {
+            goto exception;
+        }
+    }
+
+    free(domains);
+
+    return result;
+
+exception:
+    for (i = 0; i < ret; i++) {
+        virDomainFree(domains[i]);
+    }
+    free(domains);
+    rb_jump_tag(exception);
+
+    /* not needed, but here to shut the compiler up */
+    return Qnil;
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2862,5 +2920,38 @@ void init_connect()
 
 #if HAVE_VIRCONNECTSETKEEPALIVE
     rb_define_method(c_connect, "set_keepalive", libvirt_conn_set_keepalive, 2);
+#endif
+
+#if HAVE_VIRCONNECTLISTALLDOMAINS
+    rb_define_const(c_connect, "LIST_DOMAINS_ACTIVE",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_ACTIVE));
+    rb_define_const(c_connect, "LIST_DOMAINS_INACTIVE",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_INACTIVE));
+    rb_define_const(c_connect, "LIST_DOMAINS_PERSISTENT",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_PERSISTENT));
+    rb_define_const(c_connect, "LIST_DOMAINS_TRANSIENT",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_TRANSIENT));
+    rb_define_const(c_connect, "LIST_DOMAINS_RUNNING",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_RUNNING));
+    rb_define_const(c_connect, "LIST_DOMAINS_PAUSED",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_PAUSED));
+    rb_define_const(c_connect, "LIST_DOMAINS_SHUTOFF",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_SHUTOFF));
+    rb_define_const(c_connect, "LIST_DOMAINS_OTHER",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_OTHER));
+    rb_define_const(c_connect, "LIST_DOMAINS_MANAGEDSAVE",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_MANAGEDSAVE));
+    rb_define_const(c_connect, "LIST_DOMAINS_NO_MANAGEDSAVE",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_NO_MANAGEDSAVE));
+    rb_define_const(c_connect, "LIST_DOMAINS_AUTOSTART",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_AUTOSTART));
+    rb_define_const(c_connect, "LIST_DOMAINS_NO_AUTOSTART",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_NO_AUTOSTART));
+    rb_define_const(c_connect, "LIST_DOMAINS_HAS_SNAPSHOT",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_HAS_SNAPSHOT));
+    rb_define_const(c_connect, "LIST_DOMAINS_NO_SNAPSHOT",
+                    INT2NUM(VIR_CONNECT_LIST_DOMAINS_NO_SNAPSHOT));
+    rb_define_method(c_connect, "list_all_domains",
+                     libvirt_conn_list_all_domains, -1);
 #endif
 }
