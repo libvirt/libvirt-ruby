@@ -229,10 +229,6 @@ with the following exceptions:
 - VIR_DOMAIN_EVENT_PMSUSPENDED_MEMORY
 - VIR_DOMAIN_EVENT_PMSUSPENDED_DISK
 - VIR_SECRET_USAGE_TYPE_CEPH
-- VIR_CONNECT_LIST_SECRETS_EPHEMERAL
-- VIR_CONNECT_LIST_SECRETS_NO_EPHEMERAL
-- VIR_CONNECT_LIST_SECRETS_PRIVATE
-- VIR_CONNECT_LIST_SECRETS_NO_PRIVATE
 - virConnectIsAlive
 - virDomainGetJobStats
 - VIR_DOMAIN_SNAPSHOT_CREATE_REUSE_EXT
@@ -285,6 +281,5 @@ with the following exceptions:
 - virDomainCreateWithFiles
 - virDomainBlockRebase
 - virNodeDeviceDetachFlags
-- virConnectListAllSecrets
 - virDomainSnapshotGetDomain
 - virDomainSnapshotGetConnect

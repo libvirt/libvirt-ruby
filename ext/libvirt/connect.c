@@ -2546,6 +2546,21 @@ static VALUE libvirt_conn_list_all_interfaces(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTLISTALLSECRETS
+/*
+ * call-seq:
+ *   conn.list_all_secrets(flags=0) -> array
+ *
+ * Call virConnectListAllSecrets[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllSecrets]
+ * to get an array of secret objects for all secrets;
+ */
+static VALUE libvirt_conn_list_all_secrets(int argc, VALUE *argv, VALUE c)
+{
+    gen_list_all(virSecretPtr, argc, argv, c, virConnectListAllSecrets,
+                 secret_new, virSecretFree);
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3010,5 +3025,17 @@ void init_connect()
                     INT2NUM(VIR_CONNECT_LIST_INTERFACES_ACTIVE));
     rb_define_method(c_connect, "list_all_interfaces",
                      libvirt_conn_list_all_interfaces, -1);
+#endif
+#if HAVE_VIRCONNECTLISTALLSECRETS
+    rb_define_const(c_connect, "LIST_SECRETS_EPHEMERAL",
+                    INT2NUM(VIR_CONNECT_LIST_SECRETS_EPHEMERAL));
+    rb_define_const(c_connect, "LIST_SECRETS_NO_EPHEMERAL",
+                    INT2NUM(VIR_CONNECT_LIST_SECRETS_NO_EPHEMERAL));
+    rb_define_const(c_connect, "LIST_SECRETS_PRIVATE",
+                    INT2NUM(VIR_CONNECT_LIST_SECRETS_PRIVATE));
+    rb_define_const(c_connect, "LIST_SECRETS_NO_PRIVATE",
+                    INT2NUM(VIR_CONNECT_LIST_SECRETS_NO_PRIVATE));
+    rb_define_method(c_connect, "list_all_secrets",
+                     libvirt_conn_list_all_secrets, -1);
 #endif
 }
