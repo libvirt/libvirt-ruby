@@ -174,6 +174,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectListAllNetworks',
                   'virConnectListAllInterfaces',
                   'virConnectListAllSecrets',
+                  'virConnectListAllNodeDevices',
                   'virConnectIsAlive',
                 ]
 
@@ -285,6 +286,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_REBOOT_SIGNAL',
                    'VIR_DOMAIN_DESTROY_DEFAULT',
                    'VIR_DOMAIN_DESTROY_GRACEFUL',
+                   'VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST',
                  ]
 
 have_libvirt_types(libvirt_types)

@@ -2552,12 +2552,27 @@ static VALUE libvirt_conn_list_all_interfaces(int argc, VALUE *argv, VALUE c)
  *   conn.list_all_secrets(flags=0) -> array
  *
  * Call virConnectListAllSecrets[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllSecrets]
- * to get an array of secret objects for all secrets;
+ * to get an array of secret objects for all secrets.
  */
 static VALUE libvirt_conn_list_all_secrets(int argc, VALUE *argv, VALUE c)
 {
     gen_list_all(virSecretPtr, argc, argv, c, virConnectListAllSecrets,
                  secret_new, virSecretFree);
+}
+#endif
+
+#if HAVE_VIRCONNECTLISTALLNODEDEVICES
+/*
+ * call-seq:
+ *   conn.list_all_nodedevices(flags=0) -> array
+ *
+ * Call virConnectListAllNodeDevices[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllNodeDevices]
+ * to get an array of nodedevice objects for all nodedevices.
+ */
+static VALUE libvirt_conn_list_all_nodedevices(int argc, VALUE *argv, VALUE c)
+{
+    gen_list_all(virNodeDevicePtr, argc, argv, c, virConnectListAllNodeDevices,
+                 nodedevice_new, virNodeDeviceFree);
 }
 #endif
 
@@ -3051,6 +3066,36 @@ void init_connect()
                     INT2NUM(VIR_CONNECT_LIST_SECRETS_NO_PRIVATE));
     rb_define_method(c_connect, "list_all_secrets",
                      libvirt_conn_list_all_secrets, -1);
+#endif
+#if HAVE_VIRCONNECTLISTALLNODEDEVICES
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SYSTEM",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SYSTEM));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_PCI_DEV",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_PCI_DEV));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_USB_DEV",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_USB_DEV));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_USB_INTERFACE",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_USB_INTERFACE));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_NET",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_NET));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SCSI_HOST",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_HOST));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SCSI_TARGET",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_TARGET));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SCSI",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_STORAGE",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_STORAGE));
+#if HAVE_CONST_VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_FC_HOST",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_VPORTS",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_VPORTS));
+    rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SCSI_GENERIC",
+                    INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC));
+#endif
+    rb_define_method(c_connect, "list_all_nodedevices",
+                     libvirt_conn_list_all_nodedevices, -1);
 #endif
 #if HAVE_VIRCONNECTISALIVE
     rb_define_method(c_connect, "alive?", libvirt_conn_alive_p, 0);
