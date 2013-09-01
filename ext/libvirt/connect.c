@@ -2576,6 +2576,21 @@ static VALUE libvirt_conn_list_all_nodedevices(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTLISTALLSTORAGEPOOLS
+/*
+ * call-seq:
+ *   conn.list_all_storage_pools(flags=0) -> array
+ *
+ * Call virConnectListAllStoragePools[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllStoragePools]
+ * to get an array of storage pool objects for all storage pools.
+ */
+static VALUE libvirt_conn_list_all_storage_pools(int argc, VALUE *argv, VALUE c)
+{
+    gen_list_all(virStoragePoolPtr, argc, argv, c,
+                 virConnectListAllStoragePools, pool_new, virStoragePoolFree);
+}
+#endif
+
 #if HAVE_VIRCONNECTISALIVE
 /*
  * call-seq:
@@ -3096,6 +3111,42 @@ void init_connect()
 #endif
     rb_define_method(c_connect, "list_all_nodedevices",
                      libvirt_conn_list_all_nodedevices, -1);
+#endif
+#if HAVE_VIRCONNECTLISTALLSTORAGEPOOLS
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_INACTIVE",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_INACTIVE));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_ACTIVE",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_ACTIVE));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_PERSISTENT",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_PERSISTENT));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_TRANSIENT",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_TRANSIENT));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_AUTOSTART",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_AUTOSTART));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_NO_AUTOSTART",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_NO_AUTOSTART));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_DIR",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_DIR));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_FS",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_FS));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_NETFS",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_NETFS));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_LOGICAL",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_LOGICAL));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_DISK",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_DISK));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_ISCSI",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_ISCSI));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_SCSI",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_SCSI));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_MPATH",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_MPATH));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_RBD",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_RBD));
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_SHEEPDOG",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_SHEEPDOG));
+    rb_define_method(c_connect, "list_all_storage_pools",
+                     libvirt_conn_list_all_storage_pools, -1);
 #endif
 #if HAVE_VIRCONNECTISALIVE
     rb_define_method(c_connect, "alive?", libvirt_conn_alive_p, 0);
