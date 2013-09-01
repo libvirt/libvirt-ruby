@@ -171,6 +171,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainGetMetadata',
                   'virDomainSetMetadata',
                   'virConnectListAllDomains',
+                  'virConnectListAllNetworks',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

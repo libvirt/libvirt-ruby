@@ -2513,6 +2513,64 @@ exception:
 }
 #endif
 
+#if HAVE_VIRCONNECTLISTALLNETWORKS
+/*
+ * call-seq:
+ *   conn.list_all_networks(flags=0) -> array
+ *
+ * Call virConnectListAllNetworks[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllNetworks]
+ * to get an array of network objects for all networks.
+ */
+static VALUE libvirt_conn_list_all_networks(int argc, VALUE *argv, VALUE c)
+{
+    VALUE flags;
+    virNetworkPtr *nets;
+    size_t i;
+    int ret;
+    VALUE result;
+    int exception = 0;
+    struct rb_ary_push_arg arg;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    ret = virConnectListAllNetworks(connect_get(c), &nets, flags);
+    _E(ret < 0, create_error(e_RetrieveError, "virConnectListAllNetworks",
+                             connect_get(c)));
+
+    result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception);
+    if (exception) {
+        goto exception;
+    }
+
+    for (i = 0; i < ret; i++) {
+        arg.arr = result;
+        arg.value = network_new(nets[i], c);
+        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
+        if (exception) {
+            goto exception;
+        }
+    }
+
+    free(nets);
+
+    return result;
+
+exception:
+    for (i = 0; i < ret; i++) {
+        virNetworkFree(nets[i]);
+    }
+    free(nets);
+    rb_jump_tag(exception);
+
+    /* not needed, but here to shut the compiler up */
+    return Qnil;
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -2953,5 +3011,21 @@ void init_connect()
                     INT2NUM(VIR_CONNECT_LIST_DOMAINS_NO_SNAPSHOT));
     rb_define_method(c_connect, "list_all_domains",
                      libvirt_conn_list_all_domains, -1);
+#endif
+#if HAVE_VIRCONNECTLISTALLNETWORKS
+    rb_define_const(c_connect, "LIST_NETWORKS_ACTIVE",
+                    INT2NUM(VIR_CONNECT_LIST_NETWORKS_ACTIVE));
+    rb_define_const(c_connect, "LIST_NETWORKS_INACTIVE",
+                    INT2NUM(VIR_CONNECT_LIST_NETWORKS_INACTIVE));
+    rb_define_const(c_connect, "LIST_NETWORKS_PERSISTENT",
+                    INT2NUM(VIR_CONNECT_LIST_NETWORKS_PERSISTENT));
+    rb_define_const(c_connect, "LIST_NETWORKS_TRANSIENT",
+                    INT2NUM(VIR_CONNECT_LIST_NETWORKS_TRANSIENT));
+    rb_define_const(c_connect, "LIST_NETWORKS_AUTOSTART",
+                    INT2NUM(VIR_CONNECT_LIST_NETWORKS_AUTOSTART));
+    rb_define_const(c_connect, "LIST_NETWORKS_NO_AUTOSTART",
+                    INT2NUM(VIR_CONNECT_LIST_NETWORKS_NO_AUTOSTART));
+    rb_define_method(c_connect, "list_all_networks",
+                     libvirt_conn_list_all_networks, -1);
 #endif
 }
