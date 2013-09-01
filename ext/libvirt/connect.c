@@ -2455,6 +2455,52 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
 }
 #endif
 
+#if HAVE_VIRCONNECTLISTALLDOMAINS || HAVE_VIRCONNECTLISTALLNETWORKS || HAVE_VIRCONNECTLISTALLINTERFACES
+#define gen_list_all(type, argc, argv, c, listall, newfunc, freefunc)   \
+    do {                                                                \
+        VALUE flags;                                                    \
+        type *list;                                                     \
+        size_t i;                                                       \
+        int ret;                                                        \
+        VALUE result;                                                   \
+        int exception = 0;                                              \
+        struct rb_ary_push_arg arg;                                     \
+                                                                        \
+        rb_scan_args(argc, argv, "01", &flags);                         \
+        if (NIL_P(flags)) {                                             \
+            flags = INT2NUM(0);                                         \
+        }                                                               \
+        ret = listall(connect_get(c), &list, flags);                    \
+        _E(ret < 0, create_error(e_RetrieveError, #listall, connect_get(c))); \
+        result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception); \
+        if (exception) {                                                \
+            goto exception;                                             \
+        }                                                               \
+        for (i = 0; i < ret; i++) {                                     \
+            arg.arr = result;                                           \
+            arg.value = newfunc(list[i], c);                                \
+            rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);      \
+            if (exception) {                                            \
+                goto exception;                                         \
+            }                                                           \
+        }                                                               \
+                                                                        \
+        free(list);                                                     \
+                                                                        \
+        return result;                                                  \
+                                                                        \
+    exception:                                                          \
+        for (i = 0; i < ret; i++) {                                     \
+            freefunc(list[i]);                                              \
+        }                                                               \
+        free(list);                                                     \
+        rb_jump_tag(exception);                                         \
+                                                                        \
+        /* not needed, but here to shut the compiler up */              \
+        return Qnil;                                                    \
+    } while(0)
+#endif
+
 #if HAVE_VIRCONNECTLISTALLDOMAINS
 /*
  * call-seq:
@@ -2465,51 +2511,8 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
  */
 static VALUE libvirt_conn_list_all_domains(int argc, VALUE *argv, VALUE c)
 {
-    VALUE flags;
-    virDomainPtr *domains;
-    size_t i;
-    int ret;
-    VALUE result;
-    int exception = 0;
-    struct rb_ary_push_arg arg;
-
-    rb_scan_args(argc, argv, "01", &flags);
-
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
-
-    ret = virConnectListAllDomains(connect_get(c), &domains, flags);
-    _E(ret < 0, create_error(e_RetrieveError, "virConnectListAllDomains",
-                             connect_get(c)));
-
-    result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception);
-    if (exception) {
-        goto exception;
-    }
-
-    for (i = 0; i < ret; i++) {
-        arg.arr = result;
-        arg.value = domain_new(domains[i], c);
-        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
-        if (exception) {
-            goto exception;
-        }
-    }
-
-    free(domains);
-
-    return result;
-
-exception:
-    for (i = 0; i < ret; i++) {
-        virDomainFree(domains[i]);
-    }
-    free(domains);
-    rb_jump_tag(exception);
-
-    /* not needed, but here to shut the compiler up */
-    return Qnil;
+    gen_list_all(virDomainPtr, argc, argv, c, virConnectListAllDomains,
+                 domain_new, virDomainFree);
 }
 #endif
 
@@ -2523,51 +2526,8 @@ exception:
  */
 static VALUE libvirt_conn_list_all_networks(int argc, VALUE *argv, VALUE c)
 {
-    VALUE flags;
-    virNetworkPtr *nets;
-    size_t i;
-    int ret;
-    VALUE result;
-    int exception = 0;
-    struct rb_ary_push_arg arg;
-
-    rb_scan_args(argc, argv, "01", &flags);
-
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
-
-    ret = virConnectListAllNetworks(connect_get(c), &nets, flags);
-    _E(ret < 0, create_error(e_RetrieveError, "virConnectListAllNetworks",
-                             connect_get(c)));
-
-    result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception);
-    if (exception) {
-        goto exception;
-    }
-
-    for (i = 0; i < ret; i++) {
-        arg.arr = result;
-        arg.value = network_new(nets[i], c);
-        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
-        if (exception) {
-            goto exception;
-        }
-    }
-
-    free(nets);
-
-    return result;
-
-exception:
-    for (i = 0; i < ret; i++) {
-        virNetworkFree(nets[i]);
-    }
-    free(nets);
-    rb_jump_tag(exception);
-
-    /* not needed, but here to shut the compiler up */
-    return Qnil;
+    gen_list_all(virNetworkPtr, argc, argv, c, virConnectListAllNetworks,
+                 network_new, virNetworkFree);
 }
 #endif
 
@@ -2581,51 +2541,8 @@ exception:
  */
 static VALUE libvirt_conn_list_all_interfaces(int argc, VALUE *argv, VALUE c)
 {
-    VALUE flags;
-    virInterfacePtr *ifaces;
-    size_t i;
-    int ret;
-    VALUE result;
-    int exception = 0;
-    struct rb_ary_push_arg arg;
-
-    rb_scan_args(argc, argv, "01", &flags);
-
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
-
-    ret = virConnectListAllInterfaces(connect_get(c), &ifaces, flags);
-    _E(ret < 0, create_error(e_RetrieveError, "virConnectListAllInterfaces",
-                             connect_get(c)));
-
-    result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception);
-    if (exception) {
-        goto exception;
-    }
-
-    for (i = 0; i < ret; i++) {
-        arg.arr = result;
-        arg.value = interface_new(ifaces[i], c);
-        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
-        if (exception) {
-            goto exception;
-        }
-    }
-
-    free(ifaces);
-
-    return result;
-
-exception:
-    for (i = 0; i < ret; i++) {
-        virInterfaceFree(ifaces[i]);
-    }
-    free(ifaces);
-    rb_jump_tag(exception);
-
-    /* not needed, but here to shut the compiler up */
-    return Qnil;
+    gen_list_all(virInterfacePtr, argc, argv, c, virConnectListAllInterfaces,
+                 interface_new, virInterfaceFree);
 }
 #endif
 
