@@ -2561,6 +2561,20 @@ static VALUE libvirt_conn_list_all_secrets(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTISALIVE
+/*
+ * call-seq:
+ *   conn.alive? -> [True|False]
+ *
+ * Call virConnectIsAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectIsAlive]
+ * to determine if the connection is alive.
+ */
+static VALUE libvirt_conn_alive_p(VALUE c)
+{
+    gen_call_truefalse(virConnectIsAlive, connect_get(c), connect_get(c));
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3037,5 +3051,8 @@ void init_connect()
                     INT2NUM(VIR_CONNECT_LIST_SECRETS_NO_PRIVATE));
     rb_define_method(c_connect, "list_all_secrets",
                      libvirt_conn_list_all_secrets, -1);
+#endif
+#if HAVE_VIRCONNECTISALIVE
+    rb_define_method(c_connect, "alive?", libvirt_conn_alive_p, 0);
 #endif
 }

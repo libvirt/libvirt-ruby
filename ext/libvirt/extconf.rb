@@ -174,6 +174,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectListAllNetworks',
                   'virConnectListAllInterfaces',
                   'virConnectListAllSecrets',
+                  'virConnectIsAlive',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
