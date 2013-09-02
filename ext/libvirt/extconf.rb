@@ -178,6 +178,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectListAllStoragePools',
                   'virConnectListAllNWFilters',
                   'virConnectIsAlive',
+                  'virNodeDeviceDetachFlags',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

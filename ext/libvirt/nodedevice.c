@@ -144,14 +144,35 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
 
 /*
  * call-seq:
- *   nodedevice.detach -> nil
+ *   nodedevice.detach(driver=nil, flags=0) -> nil
  *
  * Call virNodeDeviceDettach[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDettach]
  * to detach the node device from the node.
  */
-static VALUE libvirt_nodedevice_detach(VALUE n)
+static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
 {
+    VALUE driver, flags;
+
+    rb_scan_args(argc, argv, "02", &driver, &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+#if HAVE_VIRNODEDEVICEDETACHFLAGS
+    gen_call_void(virNodeDeviceDetachFlags, connect_get(n), nodedevice_get(n),
+                  get_string_or_nil(driver), NUM2UINT(flags));
+#else
+    if (NUM2UINT(flags) != 0) {
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    }
+
+    if (get_string_or_nil(driver) != NULL) {
+        rb_raise(e_NoSupportError, "Non-NULL driver not supported");
+    }
+
     gen_call_void(virNodeDeviceDettach, connect_get(n), nodedevice_get(n));
+#endif
 }
 
 /*
@@ -223,7 +244,7 @@ void init_nodedevice()
     rb_define_method(c_nodedevice, "list_caps",
                      libvirt_nodedevice_list_caps, 0);
     rb_define_method(c_nodedevice, "xml_desc", libvirt_nodedevice_xml_desc, -1);
-    rb_define_method(c_nodedevice, "detach", libvirt_nodedevice_detach, 0);
+    rb_define_method(c_nodedevice, "detach", libvirt_nodedevice_detach, -1);
     rb_define_method(c_nodedevice, "reattach", libvirt_nodedevice_reattach, 0);
     rb_define_method(c_nodedevice, "reset", libvirt_nodedevice_reset, 0);
 #if HAVE_VIRNODEDEVICEDESTROY

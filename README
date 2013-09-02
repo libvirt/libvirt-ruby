@@ -251,6 +251,5 @@ with the following exceptions:
 - virDomainSetMemoryStatsPeriod
 - virDomainCreateWithFiles
 - virDomainBlockRebase
-- virNodeDeviceDetachFlags
 - virDomainSnapshotGetDomain
 - virDomainSnapshotGetConnect
