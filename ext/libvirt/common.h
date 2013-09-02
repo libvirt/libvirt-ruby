@@ -131,6 +131,8 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
                      char *(*set_cb)(VALUE d, unsigned int flags,
                                      virTypedParameterPtr params, int nparams));
 
+VALUE integer_default_if_nil(VALUE in, int def);
+
 struct rb_ary_entry_arg {
     VALUE arr;
     int elem;

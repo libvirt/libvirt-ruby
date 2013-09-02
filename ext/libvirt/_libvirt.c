@@ -625,10 +625,12 @@ static int internal_remove_timeout_func(int timer)
 
 #define set_event_func_or_null(type)                \
     do {                                            \
-        if (NIL_P(type))                            \
+        if (NIL_P(type)) {                          \
             type##_temp = NULL;                     \
-        else                                        \
+        }                                           \
+        else {                                      \
             type##_temp = internal_##type##_func;   \
+        }                                           \
     } while(0)
 
 static int is_symbol_proc_or_nil(VALUE handle)

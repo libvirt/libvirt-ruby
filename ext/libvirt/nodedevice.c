@@ -134,9 +134,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virNodeDeviceGetXMLDesc, connect_get(n), 1,
                     nodedevice_get(n), NUM2UINT(flags));
@@ -155,9 +153,7 @@ static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "02", &driver, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRNODEDEVICEDETACHFLAGS
     gen_call_void(virNodeDeviceDetachFlags, connect_get(n), nodedevice_get(n),

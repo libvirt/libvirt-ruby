@@ -436,3 +436,12 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
 
     return Qnil;
 }
+
+VALUE integer_default_if_nil(VALUE in, int def)
+{
+    if (NIL_P(in)) {
+        return INT2NUM(def);
+    }
+
+    return in;
+}

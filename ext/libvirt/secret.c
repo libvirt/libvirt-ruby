@@ -100,9 +100,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virSecretGetXMLDesc, connect_get(s), 1, secret_get(s),
                     NUM2UINT(flags));
@@ -122,9 +120,7 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "11", &value, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     StringValue(value);
 
@@ -151,9 +147,7 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     val = virSecretGetValue(secret_get(s), &value_size, NUM2UINT(flags));
 

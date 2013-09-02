@@ -113,12 +113,8 @@ static VALUE libvirt_dom_migrate(int argc, VALUE *argv, VALUE d)
     rb_scan_args(argc, argv, "14", &dconn, &flags, &dname_val, &uri_val,
                  &bandwidth);
 
-    if (NIL_P(bandwidth)) {
-        bandwidth = INT2NUM(0);
-    }
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    bandwidth = integer_default_if_nil(bandwidth, 0);
+    flags = integer_default_if_nil(flags, 0);
 
     ddom = virDomainMigrate(domain_get(d), connect_get(dconn), NUM2ULONG(flags),
                             get_string_or_nil(dname_val),
@@ -144,12 +140,8 @@ static VALUE libvirt_dom_migrate_to_uri(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "13", &duri, &flags, &dname, &bandwidth);
 
-    if (NIL_P(bandwidth)) {
-        bandwidth = INT2NUM(0);
-    }
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    bandwidth = integer_default_if_nil(bandwidth, 0);
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainMigrateToURI, connect_get(d), domain_get(d),
                   StringValueCStr(duri), NUM2ULONG(flags),
@@ -172,9 +164,7 @@ static VALUE libvirt_dom_migrate_set_max_downtime(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &downtime, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainMigrateSetMaxDowntime, connect_get(d), domain_get(d),
                   NUM2ULL(downtime), NUM2UINT(flags));
@@ -198,12 +188,8 @@ static VALUE libvirt_dom_migrate2(int argc, VALUE *argv, VALUE d)
     rb_scan_args(argc, argv, "15", &dconn, &dxml, &flags, &dname_val, &uri_val,
                  &bandwidth);
 
-    if (NIL_P(bandwidth)) {
-        bandwidth = INT2NUM(0);
-    }
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    bandwidth = integer_default_if_nil(bandwidth, 0);
+    flags = integer_default_if_nil(flags, 0);
 
     ddom = virDomainMigrate2(domain_get(d), connect_get(dconn),
                              get_string_or_nil(dxml), NUM2ULONG(flags),
@@ -231,12 +217,8 @@ static VALUE libvirt_dom_migrate_to_uri2(int argc, VALUE *argv, VALUE d)
     rb_scan_args(argc, argv, "06", &duri, &migrate_uri, &dxml, &flags, &dname,
                  &bandwidth);
 
-    if (NIL_P(bandwidth)) {
-        bandwidth = INT2NUM(0);
-    }
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    bandwidth = integer_default_if_nil(bandwidth, 0);
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainMigrateToURI2, connect_get(d), domain_get(d),
                   get_string_or_nil(duri), get_string_or_nil(migrate_uri),
@@ -257,9 +239,7 @@ static VALUE libvirt_dom_migrate_set_max_speed(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &bandwidth, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainMigrateSetMaxSpeed, connect_get(d), domain_get(d),
                   NUM2ULONG(bandwidth), NUM2UINT(flags));
@@ -281,9 +261,7 @@ static VALUE libvirt_dom_shutdown(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINSHUTDOWNFLAGS
     gen_call_void(virDomainShutdownFlags, connect_get(d), domain_get(d),
@@ -310,9 +288,7 @@ static VALUE libvirt_dom_reboot(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainReboot, connect_get(d), domain_get(d),
                   NUM2UINT(flags));
@@ -331,9 +307,7 @@ static VALUE libvirt_dom_destroy(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINDESTROYFLAGS
     gen_call_void(virDomainDestroyFlags, connect_get(d), domain_get(d),
@@ -388,9 +362,7 @@ static VALUE libvirt_dom_save(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "12", &to, &dxml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINSAVEFLAGS
     gen_call_void(virDomainSaveFlags, connect_get(d), domain_get(d),
@@ -423,9 +395,7 @@ static VALUE libvirt_dom_managed_save(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainManagedSave, connect_get(d), domain_get(d),
                   NUM2UINT(flags));
@@ -444,9 +414,7 @@ static VALUE libvirt_dom_has_managed_save(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_truefalse(virDomainHasManagedSaveImage, connect_get(d),
                        domain_get(d), NUM2UINT(flags));
@@ -465,9 +433,7 @@ static VALUE libvirt_dom_managed_save_remove(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainManagedSaveRemove, connect_get(d), domain_get(d),
                   NUM2UINT(flags));
@@ -487,9 +453,7 @@ static VALUE libvirt_dom_core_dump(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &to, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainCoreDump, connect_get(d), domain_get(d),
                   StringValueCStr(to), NUM2INT(flags));
@@ -608,9 +572,7 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     r = virDomainMemoryStats(domain_get(d), stats, 6, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryStats",
@@ -657,9 +619,7 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &path, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     r = virDomainGetBlockInfo(domain_get(d), StringValueCStr(path), &info,
                               NUM2UINT(flags));
@@ -687,36 +647,27 @@ static VALUE libvirt_dom_block_info(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE d)
 {
-    VALUE path_val, offset_val, size_val, flags_val;
+    VALUE path, offset, size, flags;
     char *buffer;
     int r;
     VALUE ret;
-    char *path;
-    unsigned int size, flags;
-    unsigned long long offset;
     struct rb_str_new_arg args;
     int exception = 0;
 
-    rb_scan_args(argc, argv, "31", &path_val, &offset_val, &size_val,
-                 &flags_val);
+    rb_scan_args(argc, argv, "31", &path, &offset, &size, &flags);
 
-    if (NIL_P(flags_val)) {
-        flags_val = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
-    path = StringValueCStr(path_val);
-    offset = NUM2ULL(offset_val);
-    size = NUM2UINT(size_val);
-    flags = NUM2UINT(flags_val);
+    buffer = alloca(sizeof(char) * NUM2UINT(size));
 
-    buffer = alloca(sizeof(char) * size);
-
-    r = virDomainBlockPeek(domain_get(d), path, offset, size, buffer, flags);
+    r = virDomainBlockPeek(domain_get(d), StringValueCStr(path),
+                           NUM2ULL(offset), NUM2UINT(size), buffer,
+                           NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainBlockPeek",
                            connect_get(d)));
 
     args.val = buffer;
-    args.size = size;
+    args.size = NUM2UINT(size);
     ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
     if (exception) {
         rb_jump_tag(exception);
@@ -738,33 +689,26 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE d)
 {
-    VALUE start_val, size_val, flags_val;
+    VALUE start, size, flags;
     char *buffer;
     int r;
     VALUE ret;
-    unsigned int size, flags;
-    unsigned long long start;
     struct rb_str_new_arg args;
     int exception = 0;
 
-    rb_scan_args(argc, argv, "21", &start_val, &size_val, &flags_val);
+    rb_scan_args(argc, argv, "21", &start, &size, &flags);
 
-    if (NIL_P(flags_val)) {
-        flags_val = INT2NUM(VIR_MEMORY_VIRTUAL);
-    }
+    flags = integer_default_if_nil(flags, VIR_MEMORY_VIRTUAL);
 
-    start = NUM2UINT(start_val);
-    size = NUM2UINT(size_val);
-    flags = NUM2UINT(flags_val);
+    buffer = alloca(sizeof(char) * NUM2UINT(size));
 
-    buffer = alloca(sizeof(char) * size);
-
-    r = virDomainMemoryPeek(domain_get(d), start, size, buffer, flags);
+    r = virDomainMemoryPeek(domain_get(d), NUM2ULL(start), NUM2UINT(size),
+                            buffer, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryPeek",
                            connect_get(d)));
 
     args.val = buffer;
-    args.size = size;
+    args.size = NUM2UINT(size);
     ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
     if (exception) {
         rb_jump_tag(exception);
@@ -1243,11 +1187,9 @@ static VALUE libvirt_dom_pin_vcpu(int argc, VALUE *argv, VALUE d)
     unsigned int vcpunum;
     VALUE e;
 
-    rb_scan_args(argc, argv, "21", &vcpu, &cpulist);
+    rb_scan_args(argc, argv, "21", &vcpu, &cpulist, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     vcpunum = NUM2UINT(vcpu);
     Check_Type(cpulist, T_ARRAY);
@@ -1291,9 +1233,7 @@ static VALUE libvirt_dom_xml_desc(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virDomainGetXMLDesc, connect_get(d), 1, domain_get(d),
                     NUM2INT(flags));
@@ -1313,9 +1253,7 @@ static VALUE libvirt_dom_undefine(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINUNDEFINEFLAGS
     gen_call_void(virDomainUndefineFlags, connect_get(d), domain_get(d),
@@ -1342,9 +1280,7 @@ static VALUE libvirt_dom_create(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINCREATEWITHFLAGS
     gen_call_void(virDomainCreateWithFlags, connect_get(d), domain_get(d),
@@ -1407,9 +1343,7 @@ static VALUE libvirt_dom_attach_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINATTACHDEVICEFLAGS
     gen_call_void(virDomainAttachDeviceFlags, connect_get(d), domain_get(d),
@@ -1437,9 +1371,7 @@ static VALUE libvirt_dom_detach_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
 #if HAVE_VIRDOMAINDETACHDEVICEFLAGS
     gen_call_void(virDomainDetachDeviceFlags, connect_get(d), domain_get(d),
@@ -1468,9 +1400,7 @@ static VALUE libvirt_dom_update_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainUpdateDeviceFlags, connect_get(d), domain_get(d),
                   StringValueCStr(xml), NUM2UINT(flags));
@@ -1522,9 +1452,7 @@ static VALUE libvirt_dom_snapshot_create_xml(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xmlDesc, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     ret = virDomainSnapshotCreateXML(domain_get(d), StringValueCStr(xmlDesc),
                                      NUM2UINT(flags));
@@ -1548,9 +1476,7 @@ static VALUE libvirt_dom_num_of_snapshots(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_int(virDomainSnapshotNum, connect_get(d), domain_get(d),
                  NUM2UINT(flags));
@@ -1611,9 +1537,7 @@ static VALUE libvirt_dom_lookup_snapshot_by_name(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &name, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     snap = virDomainSnapshotLookupByName(domain_get(d), StringValueCStr(name),
                                          NUM2UINT(flags));
@@ -1637,9 +1561,7 @@ static VALUE libvirt_dom_has_current_snapshot_p(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_truefalse(virDomainHasCurrentSnapshot, connect_get(d),
                        domain_get(d), NUM2UINT(flags));
@@ -1658,9 +1580,7 @@ static VALUE libvirt_dom_revert_to_snapshot(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &snap, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainRevertToSnapshot, connect_get(d),
                   domain_snapshot_get(snap), NUM2UINT(flags));
@@ -1680,9 +1600,7 @@ static VALUE libvirt_dom_current_snapshot(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     snap = virDomainSnapshotCurrent(domain_get(d), NUM2UINT(flags));
     _E(snap == NULL, create_error(e_RetrieveError, "virDomainSnapshotCurrent",
@@ -1704,9 +1622,7 @@ static VALUE libvirt_dom_snapshot_xml_desc(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virDomainSnapshotGetXMLDesc, connect_get(d), 1,
                     domain_snapshot_get(d), NUM2UINT(flags));
@@ -1725,9 +1641,7 @@ static VALUE libvirt_dom_snapshot_delete(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainSnapshotDelete, connect_get(d),
                   domain_snapshot_get(d), NUM2UINT(flags));
@@ -1885,9 +1799,7 @@ static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &cmd, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     type = virConnectGetType(connect_get(d));
     _E(type == NULL, create_error(e_Error, "virConnectGetType",
@@ -2191,9 +2103,7 @@ static VALUE libvirt_dom_get_state(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     retval = virDomainGetState(domain_get(d), &state, &reason, NUM2INT(flags));
     _E(retval < 0, create_error(e_Error, "virDomainGetState", connect_get(d)));
@@ -2221,9 +2131,7 @@ static VALUE libvirt_dom_open_console(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "21", &dev, &st, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainOpenConsole, connect_get(d), domain_get(d),
                   StringValueCStr(dev), stream_get(st), NUM2INT(flags));
@@ -2244,9 +2152,7 @@ static VALUE libvirt_dom_screenshot(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "21", &st, &screen, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virDomainScreenshot, connect_get(d), 1, domain_get(d),
                     stream_get(st), NUM2UINT(screen), NUM2UINT(flags));
@@ -2267,9 +2173,7 @@ static VALUE libvirt_dom_inject_nmi(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainInjectNMI, connect_get(d), domain_get(d),
                   NUM2UINT(flags));
@@ -2293,9 +2197,7 @@ static VALUE libvirt_dom_control_info(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     r = virDomainGetControlInfo(domain_get(d), &info, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainGetControlInfo",
@@ -2349,9 +2251,8 @@ static VALUE libvirt_dom_migrate_max_speed(int argc, VALUE *argv, VALUE d)
     unsigned long bandwidth;
 
     rb_scan_args(argc, argv, "01", &flags);
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+
+    flags = integer_default_if_nil(flags, 0);
 
     r = virDomainMigrateGetMaxSpeed(domain_get(d), &bandwidth, NUM2UINT(flags));
     _E(r < 0, create_error(e_RetrieveError, "virDomainMigrateGetMaxSpeed",
@@ -2375,9 +2276,7 @@ static VALUE libvirt_dom_reset(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainReset, connect_get(d), domain_get(d),
                   NUM2UINT(flags));
@@ -2398,9 +2297,7 @@ static VALUE libvirt_dom_hostname(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virDomainGetHostname, connect_get(d), 1, domain_get(d),
                     NUM2UINT(flags));
@@ -2421,9 +2318,7 @@ static VALUE libvirt_dom_metadata(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "12", &type, &uri, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virDomainGetMetadata, connect_get(d), 1, domain_get(d),
                     NUM2INT(type), get_string_or_nil(uri), NUM2UINT(flags));
@@ -2490,9 +2385,7 @@ static VALUE libvirt_dom_send_process_signal(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "21", &pid, &signum, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainSendProcessSignal, connect_get(d), domain_get(d),
                   NUM2LL(pid), NUM2UINT(signum), NUM2UINT(flags));

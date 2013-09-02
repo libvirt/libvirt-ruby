@@ -69,9 +69,7 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virInterfaceCreate, connect_get(i), interface_get(i),
                   NUM2UINT(flags));
@@ -90,9 +88,7 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virInterfaceDestroy, connect_get(i), interface_get(i),
                   NUM2UINT(flags));
@@ -150,9 +146,7 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virInterfaceGetXMLDesc, connect_get(i), 1, interface_get(i),
                     NUM2UINT(flags));

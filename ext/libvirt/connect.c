@@ -415,9 +415,7 @@ static VALUE libvirt_conn_compare_cpu(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_int(virConnectCompareCPU, connect_get(c), connect_get(c),
                  StringValueCStr(xml), NUM2UINT(flags));
@@ -1078,9 +1076,7 @@ static VALUE libvirt_conn_create_linux(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     dom = virDomainCreateLinux(connect_get(c), StringValueCStr(xml),
                                NUM2UINT(flags));
@@ -1105,9 +1101,7 @@ static VALUE libvirt_conn_create_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     dom = virDomainCreateXML(connect_get(c), StringValueCStr(xml),
                              NUM2UINT(flags));
@@ -1207,9 +1201,7 @@ static VALUE libvirt_conn_domain_xml_from_native(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     ret = virConnectDomainXMLFromNative(connect_get(c),
                                         StringValueCStr(nativeFormat),
@@ -1241,9 +1233,7 @@ static VALUE libvirt_conn_domain_xml_to_native(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     ret = virConnectDomainXMLToNative(connect_get(c),
                                       StringValueCStr(nativeFormat),
@@ -1360,9 +1350,7 @@ static VALUE libvirt_conn_define_interface_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     iface = virInterfaceDefineXML(connect_get(c), StringValueCStr(xml),
                                   NUM2UINT(flags));
@@ -1510,9 +1498,7 @@ static VALUE libvirt_conn_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &cap, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     result = virNodeNumOfDevices(connect_get(c), get_string_or_nil(cap),
                                  NUM2UINT(flags));
@@ -1600,9 +1586,7 @@ static VALUE libvirt_conn_create_nodedevice_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     nodedev = virNodeDeviceCreateXML(connect_get(c), StringValueCStr(xml),
                                      NUM2UINT(flags));
@@ -1778,9 +1762,7 @@ static VALUE libvirt_conn_define_secret_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     secret = virSecretDefineXML(connect_get(c), StringValueCStr(xml),
                                 NUM2UINT(flags));
@@ -1894,9 +1876,7 @@ static VALUE libvirt_conn_create_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     pool = virStoragePoolCreateXML(connect_get(c), StringValueCStr(xml),
                                    NUM2UINT(flags));
@@ -1920,9 +1900,7 @@ static VALUE libvirt_conn_define_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     pool = virStoragePoolDefineXML(connect_get(c), StringValueCStr(xml),
                                    NUM2UINT(flags));
@@ -1946,9 +1924,7 @@ static VALUE libvirt_conn_find_storage_pool_sources(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virConnectFindStoragePoolSources, connect_get(c), 1,
                     connect_get(c), StringValueCStr(type),
@@ -1971,9 +1947,7 @@ static VALUE libvirt_conn_get_sys_info(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virConnectGetSysinfo, connect_get(c), 1, connect_get(c),
                     NUM2UINT(flags));
@@ -1997,9 +1971,7 @@ static VALUE libvirt_conn_stream(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     stream = virStreamNew(connect_get(c), NUM2UINT(flags));
 
@@ -2027,9 +1999,7 @@ static VALUE libvirt_conn_interface_change_begin(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virInterfaceChangeBegin, connect_get(c), connect_get(c),
                   NUM2UINT(flags));
@@ -2049,9 +2019,7 @@ static VALUE libvirt_conn_interface_change_commit(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virInterfaceChangeCommit, connect_get(c), connect_get(c),
                   NUM2UINT(flags));
@@ -2071,9 +2039,7 @@ static VALUE libvirt_conn_interface_change_rollback(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virInterfaceChangeRollback, connect_get(c), connect_get(c),
                   NUM2UINT(flags));
@@ -2107,12 +2073,8 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "02", &intparam, &flags);
 
-    if (NIL_P(intparam)) {
-        intparam = INT2NUM(-1);
-    }
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    intparam = integer_default_if_nil(intparam, -1);
+    flags = integer_default_if_nil(flags, 0);
 
     /* we first call out to the get_stats callback with NULL params and 0
      * nparams to find out how many parameters we need
@@ -2254,9 +2216,7 @@ static VALUE libvirt_conn_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &filename, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_string(virDomainSaveImageGetXMLDesc, connect_get(c), 1,
                     connect_get(c), StringValueCStr(filename), NUM2UINT(flags));
@@ -2277,9 +2237,7 @@ static VALUE libvirt_conn_define_save_image_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "21", &filename, &newxml, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virDomainSaveImageDefineXML, connect_get(c), connect_get(c),
                   StringValueCStr(filename), StringValueCStr(newxml),
@@ -2304,9 +2262,7 @@ static VALUE libvirt_conn_node_suspend_for_duration(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &target, &duration, &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     gen_call_void(virNodeSuspendForDuration, connect_get(c), connect_get(c),
                   NUM2UINT(target), NUM2UINT(duration), NUM2UINT(flags));
@@ -2413,9 +2369,7 @@ static VALUE libvirt_conn_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags)) {
-        flags = INT2NUM(0);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     ret = virNodeGetCPUMap(connect_get(c), &map, &online, NUM2UINT(flags));
     _E(ret < 0, create_error(e_RetrieveError, "virNodeGetCPUMap",
@@ -2467,9 +2421,7 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
         struct rb_ary_push_arg arg;                                     \
                                                                         \
         rb_scan_args(argc, argv, "01", &flags);                         \
-        if (NIL_P(flags)) {                                             \
-            flags = INT2NUM(0);                                         \
-        }                                                               \
+        flags = integer_default_if_nil(flags, 0);                       \
         ret = listall(connect_get(c), &list, flags);                    \
         _E(ret < 0, create_error(e_RetrieveError, #listall, connect_get(c))); \
         result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception); \
