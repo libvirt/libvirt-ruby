@@ -2409,11 +2409,11 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
 }
 #endif
 
-#if HAVE_VIRCONNECTLISTALLDOMAINS || HAVE_VIRCONNECTLISTALLNETWORKS || HAVE_VIRCONNECTLISTALLINTERFACES
-#define gen_list_all(type, argc, argv, c, listall, newfunc, freefunc)   \
+#if HAVE_VIRCONNECTLISTALLDOMAINS || HAVE_VIRCONNECTLISTALLNETWORKS || HAVE_VIRCONNECTLISTALLINTERFACES || HAVE_VIRCONNECTLISTALLSECRETS || HAVE_VIRCONNECTLISTALLNODEDEVICES || HAVE_VIRCONNECTLISTALLSTORAGEPOOLS || HAVE_VIRCONNECTLISTALLNWFILTERS
+#define gen_list_all(kind, argc, argv, c, newfunc)                      \
     do {                                                                \
         VALUE flags;                                                    \
-        type *list;                                                     \
+        vir##kind##Ptr *list;                                           \
         size_t i;                                                       \
         int ret;                                                        \
         VALUE result;                                                   \
@@ -2422,15 +2422,15 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
                                                                         \
         rb_scan_args(argc, argv, "01", &flags);                         \
         flags = integer_default_if_nil(flags, 0);                       \
-        ret = listall(connect_get(c), &list, flags);                    \
-        _E(ret < 0, create_error(e_RetrieveError, #listall, connect_get(c))); \
+        ret = virConnectListAll##kind##s(connect_get(c), &list, flags); \
+        _E(ret < 0, create_error(e_RetrieveError, "virConnectListAll" #kind "s", connect_get(c))); \
         result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception); \
         if (exception) {                                                \
             goto exception;                                             \
         }                                                               \
         for (i = 0; i < ret; i++) {                                     \
             arg.arr = result;                                           \
-            arg.value = newfunc(list[i], c);                                \
+            arg.value = newfunc(list[i], c);                            \
             rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);      \
             if (exception) {                                            \
                 goto exception;                                         \
@@ -2443,7 +2443,7 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
                                                                         \
     exception:                                                          \
         for (i = 0; i < ret; i++) {                                     \
-            freefunc(list[i]);                                              \
+            vir##kind##Free(list[i]);                                   \
         }                                                               \
         free(list);                                                     \
         rb_jump_tag(exception);                                         \
@@ -2463,8 +2463,7 @@ static VALUE libvirt_conn_set_keepalive(VALUE c, VALUE interval, VALUE count)
  */
 static VALUE libvirt_conn_list_all_domains(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virDomainPtr, argc, argv, c, virConnectListAllDomains,
-                 domain_new, virDomainFree);
+    gen_list_all(Domain, argc, argv, c, domain_new);
 }
 #endif
 
@@ -2478,8 +2477,7 @@ static VALUE libvirt_conn_list_all_domains(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_conn_list_all_networks(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virNetworkPtr, argc, argv, c, virConnectListAllNetworks,
-                 network_new, virNetworkFree);
+    gen_list_all(Network, argc, argv, c, network_new);
 }
 #endif
 
@@ -2493,8 +2491,7 @@ static VALUE libvirt_conn_list_all_networks(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_conn_list_all_interfaces(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virInterfacePtr, argc, argv, c, virConnectListAllInterfaces,
-                 interface_new, virInterfaceFree);
+    gen_list_all(Interface, argc, argv, c, interface_new);
 }
 #endif
 
@@ -2508,8 +2505,7 @@ static VALUE libvirt_conn_list_all_interfaces(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_conn_list_all_secrets(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virSecretPtr, argc, argv, c, virConnectListAllSecrets,
-                 secret_new, virSecretFree);
+    gen_list_all(Secret, argc, argv, c, secret_new);
 }
 #endif
 
@@ -2523,8 +2519,7 @@ static VALUE libvirt_conn_list_all_secrets(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_conn_list_all_nodedevices(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virNodeDevicePtr, argc, argv, c, virConnectListAllNodeDevices,
-                 nodedevice_new, virNodeDeviceFree);
+    gen_list_all(NodeDevice, argc, argv, c, nodedevice_new);
 }
 #endif
 
@@ -2538,8 +2533,7 @@ static VALUE libvirt_conn_list_all_nodedevices(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_conn_list_all_storage_pools(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virStoragePoolPtr, argc, argv, c,
-                 virConnectListAllStoragePools, pool_new, virStoragePoolFree);
+    gen_list_all(StoragePool, argc, argv, c, pool_new);
 }
 #endif
 
@@ -2553,8 +2547,7 @@ static VALUE libvirt_conn_list_all_storage_pools(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_conn_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virNWFilterPtr, argc, argv, c,
-                 virConnectListAllNWFilters, nwfilter_new, virNWFilterFree);
+    gen_list_all(NWFilter, argc, argv, c, nwfilter_new);
 }
 #endif
 
