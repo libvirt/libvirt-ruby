@@ -176,6 +176,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectListAllSecrets',
                   'virConnectListAllNodeDevices',
                   'virConnectListAllStoragePools',
+                  'virConnectListAllNWFilters',
                   'virConnectIsAlive',
                 ]
 

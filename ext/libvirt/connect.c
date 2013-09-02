@@ -2591,6 +2591,21 @@ static VALUE libvirt_conn_list_all_storage_pools(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTLISTALLNWFILTERS
+/*
+ * call-seq:
+ *   conn.list_all_nwfilters(flags=0) -> array
+ *
+ * Call virConnectListAllNWFilters[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllNWFilters]
+ * to get an array of nwfilters for all nwfilter objects.
+ */
+static VALUE libvirt_conn_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
+{
+    gen_list_all(virNWFilterPtr, argc, argv, c,
+                 virConnectListAllNWFilters, nwfilter_new, virNWFilterFree);
+}
+#endif
+
 #if HAVE_VIRCONNECTISALIVE
 /*
  * call-seq:
@@ -3147,6 +3162,10 @@ void init_connect()
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_SHEEPDOG));
     rb_define_method(c_connect, "list_all_storage_pools",
                      libvirt_conn_list_all_storage_pools, -1);
+#endif
+#if HAVE_VIRCONNECTLISTALLNWFILTERS
+    rb_define_method(c_connect, "list_all_nwfilters",
+                     libvirt_conn_list_all_nwfilters, -1);
 #endif
 #if HAVE_VIRCONNECTISALIVE
     rb_define_method(c_connect, "alive?", libvirt_conn_alive_p, 0);
