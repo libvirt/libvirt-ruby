@@ -2476,6 +2476,29 @@ static VALUE libvirt_dom_set_metadata(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINSENDPROCESSSIGNAL
+/*
+ * call-seq:
+ *   dom.send_process_signal(pid, signum, flags=0) -> nil
+ *
+ * Call virDomainSendProcessSignal[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSendProcessSignal]
+ * to send a signal to a process inside the domain.
+ */
+static VALUE libvirt_dom_send_process_signal(int argc, VALUE *argv, VALUE d)
+{
+    VALUE pid, signum, flags;
+
+    rb_scan_args(argc, argv, "21", &pid, &signum, &flags);
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    gen_call_void(virDomainSendProcessSignal, connect_get(d), domain_get(d),
+                  NUM2LL(pid), NUM2UINT(signum), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3117,5 +3140,139 @@ void init_domain()
 #endif
 #if HAVE_VIRDOMAINSETMETADATA
     rb_define_method(c_domain, "metadata=", libvirt_dom_set_metadata, 1);
+#endif
+#if HAVE_VIRDOMAINPROCESSSIGNAL
+    rb_define_const(c_domain, "PROCESS_SIGNAL_NOP",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_NOP));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_HUP",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_HUP));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_INT",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_INT));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_QUIT",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_QUIT));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_ILL",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_ILL));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_TRAP",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_TRAP));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_ABRT",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_ABRT));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_BUS",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_BUS));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_FPE",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_FPE));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_KILL",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_KILL));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_USR1",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_USR1));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_SEGV",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_SEGV));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_USR2",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_USR2));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_PIPE",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_PIPE));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_ALRM",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_ALRM));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_TERM",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_TERM));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_STKFLT",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_STKFLT));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_CHLD",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_CHLD));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_CONT",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_CONT));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_STOP",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_STOP));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_TSTP",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_TSTP));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_TTIN",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_TTIN));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_TTOU",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_TTOU));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_URG",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_URG));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_XCPU",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_XCPU));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_XFSZ",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_XFSZ));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_VTALRM",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_VTALRM));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_PROF",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_PROF));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_WINCH",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_WINCH));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_POLL",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_POLL));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_PWR",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_PWR));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_SYS",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_SYS));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT0",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT0));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT1",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT1));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT2",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT2));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT3",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT3));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT4",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT4));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT5",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT5));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT6",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT6));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT7",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT7));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT8",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT8));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT9",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT9));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT10",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT10));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT11",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT11));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT12",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT12));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT13",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT13));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT14",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT14));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT15",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT15));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT16",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT16));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT17",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT17));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT18",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT18));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT19",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT19));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT20",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT20));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT21",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT21));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT22",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT22));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT23",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT23));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT24",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT24));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT25",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT25));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT26",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT26));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT27",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT27));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT28",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT28));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT29",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT29));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT30",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT30));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT31",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT31));
+    rb_define_const(c_domain, "PROCESS_SIGNAL_RT32",
+                    INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT32));
+    rb_define_method(c_domain, "send_process_signal",
+                     libvirt_dom_send_process_signal, -1);
 #endif
 }
