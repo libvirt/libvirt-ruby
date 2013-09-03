@@ -157,12 +157,10 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
     args.val = (char *)val;
     args.size = value_size;
     ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
+    free(val);
     if (exception) {
-        free(val);
         rb_jump_tag(exception);
     }
-
-    free(val);
 
     return ret;
 }

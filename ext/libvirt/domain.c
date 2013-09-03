@@ -650,9 +650,6 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE d)
     VALUE path, offset, size, flags;
     char *buffer;
     int r;
-    VALUE ret;
-    struct rb_str_new_arg args;
-    int exception = 0;
 
     rb_scan_args(argc, argv, "31", &path, &offset, &size, &flags);
 
@@ -666,14 +663,7 @@ static VALUE libvirt_dom_block_peek(int argc, VALUE *argv, VALUE d)
     _E(r < 0, create_error(e_RetrieveError, "virDomainBlockPeek",
                            connect_get(d)));
 
-    args.val = buffer;
-    args.size = NUM2UINT(size);
-    ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
-    if (exception) {
-        rb_jump_tag(exception);
-    }
-
-    return ret;
+    return rb_str_new(buffer, NUM2UINT(size));
 }
 #endif
 
@@ -692,9 +682,6 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE d)
     VALUE start, size, flags;
     char *buffer;
     int r;
-    VALUE ret;
-    struct rb_str_new_arg args;
-    int exception = 0;
 
     rb_scan_args(argc, argv, "21", &start, &size, &flags);
 
@@ -707,65 +694,9 @@ static VALUE libvirt_dom_memory_peek(int argc, VALUE *argv, VALUE d)
     _E(r < 0, create_error(e_RetrieveError, "virDomainMemoryPeek",
                            connect_get(d)));
 
-    args.val = buffer;
-    args.size = NUM2UINT(size);
-    ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
-    if (exception) {
-        rb_jump_tag(exception);
-    }
-
-    return ret;
+    return rb_str_new(buffer, NUM2UINT(size));
 }
 #endif
-
-struct create_vcpu_array_args {
-    virVcpuInfoPtr cpuinfo;
-    unsigned char *cpumap;
-    unsigned short nr_virt_cpu;
-    int maxcpus;
-};
-
-static VALUE create_vcpu_array(VALUE input)
-{
-    struct create_vcpu_array_args *args;
-    VALUE result;
-    unsigned short i;
-    VALUE vcpuinfo;
-    VALUE p2vcpumap;
-    int j;
-
-    args = (struct create_vcpu_array_args *)input;
-
-    result = rb_ary_new();
-
-    for (i = 0; i < args->nr_virt_cpu; i++) {
-        vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
-        rb_iv_set(vcpuinfo, "@number", UINT2NUM(i));
-        if (args->cpuinfo != NULL) {
-            rb_iv_set(vcpuinfo, "@state", INT2NUM((args->cpuinfo)[i].state));
-            rb_iv_set(vcpuinfo, "@cpu_time",
-                      ULL2NUM((args->cpuinfo)[i].cpuTime));
-            rb_iv_set(vcpuinfo, "@cpu", INT2NUM((args->cpuinfo)[i].cpu));
-        }
-        else {
-            rb_iv_set(vcpuinfo, "@state", Qnil);
-            rb_iv_set(vcpuinfo, "@cpu_time", Qnil);
-            rb_iv_set(vcpuinfo, "@cpu", Qnil);
-        }
-
-        p2vcpumap = rb_ary_new();
-
-        for (j = 0; j < args->maxcpus; j++)
-            rb_ary_push(p2vcpumap,
-                        (VIR_CPU_USABLE(args->cpumap,
-                                        VIR_CPU_MAPLEN(args->maxcpus), i, j)) ? Qtrue : Qfalse);
-        rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
-
-        rb_ary_push(result, vcpuinfo);
-    }
-
-    return result;
-}
 
 /* call-seq:
  *   dom.get_vcpus -> [ Libvirt::Domain::VCPUInfo ]
@@ -777,13 +708,15 @@ static VALUE libvirt_dom_get_vcpus(VALUE d)
 {
     virNodeInfo nodeinfo;
     virDomainInfo dominfo;
-    virVcpuInfoPtr cpuinfo;
+    virVcpuInfoPtr cpuinfo = NULL;
     unsigned char *cpumap;
     int cpumaplen;
     int r;
     VALUE result;
-    int exception = 0;
-    struct create_vcpu_array_args args;
+    unsigned short i;
+    int j;
+    VALUE vcpuinfo;
+    VALUE p2vcpumap;
 
     r = virNodeGetInfo(connect_get(d), &nodeinfo);
     _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", connect_get(d)));
@@ -797,8 +730,6 @@ static VALUE libvirt_dom_get_vcpus(VALUE d)
     cpumaplen = VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo));
 
     cpumap = alloca(dominfo.nrVirtCpu * cpumaplen);
-
-    memset(&args, 0, sizeof(struct create_vcpu_array_args));
 
     r = virDomainGetVcpus(domain_get(d), cpuinfo, dominfo.nrVirtCpu, cpumap,
                           cpumaplen);
@@ -824,21 +755,32 @@ static VALUE libvirt_dom_get_vcpus(VALUE d)
                                   connect_get(d)));
 #endif
     }
-    else {
-        /* this is the one piece of information that is different depending on
-         * whether we called virDomainGetVcpus() or virDomainGetVcpuPinInfo().
-         * Here, we set it so that the data can be filled out later.
-         */
-        args.cpuinfo = cpuinfo;
-    }
 
-    args.cpumap = cpumap;
-    args.nr_virt_cpu = dominfo.nrVirtCpu;
-    args.maxcpus = VIR_NODEINFO_MAXCPUS(nodeinfo);
+    result = rb_ary_new();
 
-    result = rb_protect(create_vcpu_array, (VALUE)&args, &exception);
-    if (exception) {
-        rb_jump_tag(exception);
+    for (i = 0; i < dominfo.nrVirtCpu; i++) {
+        vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
+        rb_iv_set(vcpuinfo, "@number", UINT2NUM(i));
+        if (cpuinfo != NULL) {
+            rb_iv_set(vcpuinfo, "@state", INT2NUM(cpuinfo[i].state));
+            rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM(cpuinfo[i].cpuTime));
+            rb_iv_set(vcpuinfo, "@cpu", INT2NUM(cpuinfo[i].cpu));
+        }
+        else {
+            rb_iv_set(vcpuinfo, "@state", Qnil);
+            rb_iv_set(vcpuinfo, "@cpu_time", Qnil);
+            rb_iv_set(vcpuinfo, "@cpu", Qnil);
+        }
+
+        p2vcpumap = rb_ary_new();
+
+        for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++)
+            rb_ary_push(p2vcpumap,
+                        (VIR_CPU_USABLE(cpumap,
+                                        VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo)), i, j)) ? Qtrue : Qfalse);
+        rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
+
+        rb_ary_push(result, vcpuinfo);
     }
 
     return result;
@@ -1804,10 +1746,11 @@ static VALUE libvirt_dom_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
     type = virConnectGetType(connect_get(d));
     _E(type == NULL, create_error(e_Error, "virConnectGetType",
                                   connect_get(d)));
-    if (strcmp(type, "QEMU") != 0)
+    if (strcmp(type, "QEMU") != 0) {
         rb_raise(rb_eTypeError,
                  "Tried to use virDomainQemuMonitor command on %s connection",
                  type);
+    }
 
     r = virDomainQemuMonitorCommand(domain_get(d), StringValueCStr(cmd),
                                     &result, NUM2UINT(flags));

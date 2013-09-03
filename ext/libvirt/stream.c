@@ -68,24 +68,6 @@ static VALUE libvirt_stream_send(VALUE s, VALUE buffer)
     return INT2NUM(ret);
 }
 
-struct stream_recv_args {
-    int ret;
-    char *data;
-};
-
-static VALUE stream_recv_array(VALUE input)
-{
-    VALUE result;
-    struct stream_recv_args *args = (struct stream_recv_args *)input;
-
-    result = rb_ary_new();
-
-    rb_ary_push(result, INT2NUM(args->ret));
-    rb_ary_push(result, rb_str_new(args->data, args->ret));
-
-    return result;
-}
-
 /*
  * call-seq:
  *   stream.recv(bytes) -> [return_value, data]
@@ -101,22 +83,17 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
 {
     char *data;
     int ret;
-    int exception = 0;
     VALUE result;
-    struct stream_recv_args args;
 
     data = alloca(sizeof(char) * NUM2INT(bytes));
 
     ret = virStreamRecv(stream_get(s), data, NUM2INT(bytes));
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecv",
-                             connect_get(s)));
+    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecv", connect_get(s)));
 
-    args.ret = ret;
-    args.data = data;
-    result = rb_protect(stream_recv_array, (VALUE)&args, &exception);
-    if (exception) {
-        rb_jump_tag(exception);
-    }
+    result = rb_ary_new();
+
+    rb_ary_push(result, INT2NUM(ret));
+    rb_ary_push(result, rb_str_new(data, ret));
 
     return result;
 }

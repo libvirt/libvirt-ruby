@@ -41,14 +41,20 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
     do {                                                                \
         const char *str;                                                \
         VALUE result;                                                   \
+        int exception;                                                  \
                                                                         \
         str = func(args);                                               \
         _E(str == NULL, create_error(e_Error, # func, conn));           \
                                                                         \
-        /* FIXME: if rb_str_new2() throws an exception, this could leak */ \
-        result = rb_str_new2(str);                                      \
         if (dealloc) {                                                  \
+            result = rb_protect(rb_str_new2_wrap, (VALUE)&str, &exception); \
             xfree((void *) str);                                        \
+            if (exception) {                                            \
+                rb_jump_tag(exception);                                 \
+            }                                                           \
+        }                                                               \
+        else {                                                          \
+            result = rb_str_new2(str);                                  \
         }                                                               \
         return result;                                                  \
     } while(0)

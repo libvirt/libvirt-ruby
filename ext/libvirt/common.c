@@ -228,47 +228,6 @@ exception:
     return Qnil;
 }
 
-struct field_to_value {
-    VALUE result;
-    virTypedParameterPtr param;
-};
-
-static VALUE typed_field_to_value(VALUE input)
-{
-    struct field_to_value *ftv = (struct field_to_value *)input;
-    VALUE val;
-
-    switch(ftv->param->type) {
-    case VIR_TYPED_PARAM_INT:
-        val = INT2NUM(ftv->param->value.i);
-        break;
-    case VIR_TYPED_PARAM_UINT:
-        val = UINT2NUM(ftv->param->value.ui);
-        break;
-    case VIR_TYPED_PARAM_LLONG:
-        val = LL2NUM(ftv->param->value.l);
-        break;
-    case VIR_TYPED_PARAM_ULLONG:
-        val = ULL2NUM(ftv->param->value.ul);
-        break;
-    case VIR_TYPED_PARAM_DOUBLE:
-        val = rb_float_new(ftv->param->value.d);
-        break;
-    case VIR_TYPED_PARAM_BOOLEAN:
-        val = (ftv->param->value.b == 0) ? Qfalse : Qtrue;
-        break;
-    case VIR_TYPED_PARAM_STRING:
-        val = rb_str_new2(ftv->param->value.s);
-        break;
-    default:
-        rb_raise(rb_eArgError, "Invalid parameter type");
-    }
-
-    rb_hash_aset(ftv->result, rb_str_new2(ftv->param->field), val);
-
-    return Qnil;
-}
-
 VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
                      int (*nparams_cb)(VALUE d, unsigned int flags),
                      char *(*get_cb)(VALUE d, unsigned int flags,
@@ -278,11 +237,10 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     virTypedParameterPtr params;
     VALUE result;
     int i;
-    int exception;
     char *errname;
-    struct field_to_value ftv;
     unsigned int flags;
     VALUE flags_val;
+    VALUE val;
 
     rb_scan_args(argc, argv, "01", &flags_val);
 
@@ -307,59 +265,36 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
 
     for (i = 0; i < nparams; i++) {
-        ftv.result = result;
-        ftv.param = &params[i];
-        rb_protect(typed_field_to_value, (VALUE)&ftv, &exception);
-        if (exception) {
-            rb_jump_tag(exception);
+        switch(params[i].type) {
+        case VIR_TYPED_PARAM_INT:
+            val = INT2NUM(params[i].value.i);
+            break;
+        case VIR_TYPED_PARAM_UINT:
+            val = UINT2NUM(params[i].value.ui);
+            break;
+        case VIR_TYPED_PARAM_LLONG:
+            val = LL2NUM(params[i].value.l);
+            break;
+        case VIR_TYPED_PARAM_ULLONG:
+            val = ULL2NUM(params[i].value.ul);
+            break;
+        case VIR_TYPED_PARAM_DOUBLE:
+            val = rb_float_new(params[i].value.d);
+            break;
+        case VIR_TYPED_PARAM_BOOLEAN:
+            val = (params[i].value.b == 0) ? Qfalse : Qtrue;
+            break;
+        case VIR_TYPED_PARAM_STRING:
+            val = rb_str_new2(params[i].value.s);
+            break;
+        default:
+            rb_raise(rb_eArgError, "Invalid parameter type");
         }
+
+        rb_hash_aset(result, rb_str_new2(params[i].field), val);
     }
 
     return result;
-}
-
-struct value_to_field {
-    virTypedParameterPtr param;
-    VALUE input;
-};
-
-static VALUE typed_value_to_field(VALUE in)
-{
-    struct value_to_field *vtf = (struct value_to_field *)in;
-    VALUE val;
-
-    val = rb_hash_aref(vtf->input, rb_str_new2(vtf->param->field));
-    if (NIL_P(val)) {
-        return Qnil;
-    }
-
-    switch(vtf->param->type) {
-    case VIR_TYPED_PARAM_INT:
-        vtf->param->value.i = NUM2INT(val);
-        break;
-    case VIR_TYPED_PARAM_UINT:
-        vtf->param->value.ui = NUM2UINT(val);
-        break;
-    case VIR_TYPED_PARAM_LLONG:
-        vtf->param->value.l = NUM2LL(val);
-        break;
-    case VIR_TYPED_PARAM_ULLONG:
-        vtf->param->value.ul = NUM2ULL(val);
-        break;
-    case VIR_TYPED_PARAM_DOUBLE:
-        vtf->param->value.d = NUM2DBL(val);
-        break;
-    case VIR_TYPED_PARAM_BOOLEAN:
-        vtf->param->value.b = (val == Qtrue) ? 1 : 0;
-        break;
-    case VIR_TYPED_PARAM_STRING:
-        vtf->param->value.s = StringValueCStr(val);
-        break;
-    default:
-        rb_raise(rb_eArgError, "Invalid parameter type");
-    }
-
-    return Qnil;
 }
 
 VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
@@ -371,13 +306,12 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
 {
     int nparams;
     virTypedParameterPtr params;
-    int exception;
     int i;
     char *errname;
-    struct value_to_field vtf;
     VALUE input;
     VALUE flags_val;
     unsigned int flags;
+    VALUE val;
 
     if (TYPE(in) == T_HASH) {
         input = in;
@@ -405,12 +339,11 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
     }
 
     /* Complicated.  The below all stems from the fact that we have no way to
-     * have no way to discover what type each parameter should be based on the
-     * be based on the input.  Instead, we ask libvirt to give us the current
-     * us the current parameters and types, and then we replace the values with
-     * the values with the new values.  That way we find out what the old types
-     * what the old types were, and if the new types don't match, libvirt will
-     * throw an error.
+     * discover what type each parameter should be based on the input.
+     * Instead, we ask libvirt to give us the current parameters and types,
+     * and then we replace the values with the new values.  That way we find
+     * out what the old types were, and if the new types don't match, libvirt
+     * will throw an error.
      */
 
     nparams = nparams_cb(d, flags);
@@ -421,11 +354,35 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
     _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
 
     for (i = 0; i < nparams; i++) {
-        vtf.param = &params[i];
-        vtf.input = input;
-        rb_protect(typed_value_to_field, (VALUE)&vtf, &exception);
-        if (exception) {
-            rb_jump_tag(exception);
+        val = rb_hash_aref(input, rb_str_new2(params[i].field));
+        if (NIL_P(val)) {
+            continue;
+        }
+
+        switch(params[i].type) {
+        case VIR_TYPED_PARAM_INT:
+            params[i].value.i = NUM2INT(val);
+            break;
+        case VIR_TYPED_PARAM_UINT:
+            params[i].value.ui = NUM2UINT(val);
+            break;
+        case VIR_TYPED_PARAM_LLONG:
+            params[i].value.l = NUM2LL(val);
+            break;
+        case VIR_TYPED_PARAM_ULLONG:
+            params[i].value.ul = NUM2ULL(val);
+            break;
+        case VIR_TYPED_PARAM_DOUBLE:
+            params[i].value.d = NUM2DBL(val);
+            break;
+        case VIR_TYPED_PARAM_BOOLEAN:
+            params[i].value.b = (val == Qtrue) ? 1 : 0;
+            break;
+        case VIR_TYPED_PARAM_STRING:
+            params[i].value.s = StringValueCStr(val);
+            break;
+        default:
+            rb_raise(rb_eArgError, "Invalid parameter type");
         }
     }
 

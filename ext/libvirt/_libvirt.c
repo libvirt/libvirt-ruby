@@ -182,24 +182,6 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
     return 0;
 }
 
-struct wrap_callout {
-    char *uri;
-    virConnectAuthPtr auth;
-    unsigned int flags;
-};
-
-static VALUE rb_open_auth_wrap(VALUE arg)
-{
-    struct wrap_callout *e = (struct wrap_callout *)arg;
-
-    return (VALUE)virConnectOpenAuth(e->uri, e->auth, e->flags);
-}
-
-static VALUE rb_num2int_wrap(VALUE arg)
-{
-    return NUM2INT(arg);
-}
-
 /*
  * call-seq:
  *   Libvirt::open_auth(uri=nil, credlist=nil, userdata=nil, flags=0) {|...| authentication block} -> Libvirt::Connect
@@ -246,9 +228,6 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     unsigned int flags;
     int i;
     VALUE tmp;
-    int exception = 0;
-    struct rb_ary_entry_arg args;
-    struct wrap_callout callargs;
 
     rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags_val);
 
@@ -281,18 +260,8 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
             auth->credtype = alloca(sizeof(int) * auth->ncredtype);
 
             for (i = 0; i < auth->ncredtype; i++) {
-                args.arr = credlist;
-                args.elem = i;
-                tmp = rb_protect(rb_ary_entry_wrap, (VALUE)&args, &exception);
-                if (exception) {
-                    rb_jump_tag(exception);
-                }
-
-                auth->credtype[i] = rb_protect(rb_num2int_wrap, tmp,
-                                               &exception);
-                if (exception) {
-                    rb_jump_tag(exception);
-                }
+                tmp = rb_ary_entry(credlist, i);
+                auth->credtype[i] = NUM2INT(tmp);
             }
         }
 
@@ -303,15 +272,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         auth = virConnectAuthPtrDefault;
     }
 
-    callargs.uri = uri_c;
-    callargs.auth = auth;
-    callargs.flags = flags;
-
-    conn = (virConnectPtr)rb_protect(rb_open_auth_wrap, (VALUE)&callargs,
-                                     &exception);
-    if (exception) {
-        rb_jump_tag(exception);
-    }
+    conn = virConnectOpenAuth(uri_c, auth, flags);
 
     _E(conn == NULL, create_error(e_ConnectionError, "virConnectOpenAuth",
                                   NULL));

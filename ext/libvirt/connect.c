@@ -442,7 +442,6 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE c)
     const char **xmllist;
     int i;
     int exception = 0;
-    struct rb_ary_entry_arg arg;
 
     rb_scan_args(argc, argv, "11", &xmlcpus, &flags_val);
     /*
@@ -468,18 +467,9 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE c)
     xmllist = alloca(sizeof(const char *) * ncpus);
 
     for (i = 0; i < ncpus; i++) {
-        arg.arr = xmlcpus;
-        arg.elem = i;
-        entry = rb_protect(rb_ary_entry_wrap, (VALUE)&arg, &exception);
-        if (exception) {
-            rb_jump_tag(exception);
-        }
+        entry = rb_ary_entry(xmlcpus, i);
 
-        xmllist[i] = (char *)rb_protect(rb_string_value_cstr_wrap,
-                                        (VALUE)&entry, &exception);
-        if (exception) {
-            rb_jump_tag(exception);
-        }
+        xmllist[i] = rb_string_value_cstr((VALUE *)entry);
     }
 
     r = virConnectBaselineCPU(connect_get(c), xmllist, ncpus, flags);
@@ -487,12 +477,10 @@ static VALUE libvirt_conn_baseline_cpu(int argc, VALUE *argv, VALUE c)
                                connect_get(c)));
 
     retval = rb_protect(rb_str_new2_wrap, (VALUE)&r, &exception);
+    free(r);
     if (exception) {
-        free(r);
         rb_jump_tag(exception);
     }
-
-    free(r);
 
     return retval;
 }
@@ -1004,8 +992,6 @@ static VALUE libvirt_conn_list_domains(VALUE c)
 {
     int i, r, num, *ids;
     VALUE result;
-    int exception = 0;
-    struct rb_ary_push_arg args;
 
     num = virConnectNumOfDomains(connect_get(c));
     _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains",
@@ -1020,18 +1006,10 @@ static VALUE libvirt_conn_list_domains(VALUE c)
     _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains",
                            connect_get(c)));
 
-    result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
-    if (exception) {
-        rb_jump_tag(exception);
-    }
+    result = rb_ary_new2(num);
 
     for (i = 0; i < num; i++) {
-        args.arr = result;
-        args.value = INT2NUM(ids[i]);
-        rb_protect(rb_ary_push_wrap, (VALUE)&args, &exception);
-        if (exception) {
-            rb_jump_tag(exception);
-        }
+        rb_ary_push(result, INT2NUM(ids[i]));
     }
 
     return result;
