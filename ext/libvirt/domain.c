@@ -2342,6 +2342,20 @@ static VALUE libvirt_dom_list_all_snapshots(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
+static VALUE libvirt_dom_snapshot_num_children(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_int(virDomainSnapshotNumChildren, connect_get(d),
+                 domain_snapshot_get(d), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3167,5 +3181,9 @@ void init_domain()
 #if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_LIVE
     rb_define_const(c_domain_snapshot, "CREATE_LIVE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_LIVE));
+#endif
+#if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
+    rb_define_method(c_domain_snapshot, "num_children",
+                     libvirt_dom_snapshot_num_children, -1);
 #endif
 }
