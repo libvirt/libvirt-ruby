@@ -2419,6 +2419,16 @@ error:
 }
 #endif
 
+#if HAVE_VIRDOMAINSNAPSHOTLISTALLCHILDREN
+static VALUE libvirt_dom_snapshot_list_all_children(int argc, VALUE *argv,
+                                                    VALUE s)
+{
+    gen_list_all(virDomainSnapshotPtr, argc, argv,
+                 virDomainSnapshotListAllChildren, domain_snapshot_get(s), s,
+                 domain_snapshot_new, virDomainSnapshotFree);
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3252,5 +3262,9 @@ void init_domain()
 #if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
     rb_define_method(c_domain_snapshot, "list_children_names",
                      libvirt_dom_snapshot_list_children_names, -1);
+#endif
+#if HAVE_VIRDOMAINSNAPSHOTLISTALLCHILDREN
+    rb_define_method(c_domain_snapshot, "list_all_children",
+                     libvirt_dom_snapshot_list_all_children, -1);
 #endif
 }
