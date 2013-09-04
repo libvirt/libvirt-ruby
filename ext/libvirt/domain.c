@@ -2334,6 +2334,14 @@ static VALUE libvirt_dom_send_process_signal(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINLISTALLSNAPSHOTS
+static VALUE libvirt_dom_list_all_snapshots(int argc, VALUE *argv, VALUE d)
+{
+    gen_list_all(virDomainSnapshotPtr, argc, argv, virDomainListAllSnapshots,
+                 domain_get(d), d, domain_snapshot_new, virDomainSnapshotFree);
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3109,5 +3117,33 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT32));
     rb_define_method(c_domain, "send_process_signal",
                      libvirt_dom_send_process_signal, -1);
+#endif
+#if HAVE_VIRDOMAINLISTALLSNAPSHOTS
+    rb_define_const(c_domain_snapshot, "LIST_ROOTS",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_ROOTS));
+    rb_define_const(c_domain_snapshot, "LIST_DESCENDANTS",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_DESCENDANTS));
+    rb_define_const(c_domain_snapshot, "LIST_LEAVES",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_LEAVES));
+    rb_define_const(c_domain_snapshot, "LIST_NO_LEAVES",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_NO_LEAVES));
+    rb_define_const(c_domain_snapshot, "LIST_METADATA",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_METADATA));
+    rb_define_const(c_domain_snapshot, "LIST_NO_METADATA",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_NO_METADATA));
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE
+    rb_define_const(c_domain_snapshot, "LIST_INACTIVE",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE));
+    rb_define_const(c_domain_snapshot, "LIST_ACTIVE",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_ACTIVE));
+    rb_define_const(c_domain_snapshot, "LIST_DISK_ONLY",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_DISK_ONLY));
+    rb_define_const(c_domain_snapshot, "LIST_INTERNAL",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_INTERNAL));
+    rb_define_const(c_domain_snapshot, "LIST_EXTERNAL",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_EXTERNAL));
+#endif
+    rb_define_method(c_domain, "list_all_snapshots",
+                     libvirt_dom_list_all_snapshots, -1);
 #endif
 }

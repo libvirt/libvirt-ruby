@@ -109,6 +109,48 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         return INT2NUM(_r_##func);                                      \
     } while(0)
 
+#define gen_list_all(type, argc, argv, listfunc, firstarg, val, newfunc, freefunc) \
+    do {                                                                \
+        VALUE flags;                                                    \
+        type *list;                                                     \
+        size_t i;                                                       \
+        int ret;                                                        \
+        VALUE result;                                                   \
+        int exception = 0;                                              \
+        struct rb_ary_push_arg arg;                                     \
+                                                                        \
+        rb_scan_args(argc, argv, "01", &flags);                         \
+        flags = integer_default_if_nil(flags, 0);                       \
+        ret = listfunc(firstarg, &list, flags); \
+        _E(ret < 0, create_error(e_RetrieveError, #listfunc, connect_get(val))); \
+        result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception); \
+        if (exception) {                                                \
+            goto exception;                                             \
+        }                                                               \
+        for (i = 0; i < ret; i++) {                                     \
+            arg.arr = result;                                           \
+            arg.value = newfunc(list[i], val);                            \
+            rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);      \
+            if (exception) {                                            \
+                goto exception;                                         \
+            }                                                           \
+        }                                                               \
+                                                                        \
+        free(list);                                                     \
+                                                                        \
+        return result;                                                  \
+                                                                        \
+    exception:                                                          \
+        for (i = 0; i < ret; i++) {                                     \
+            freefunc(list[i]);                                          \
+        }                                                               \
+        free(list);                                                     \
+        rb_jump_tag(exception);                                         \
+                                                                        \
+        /* not needed, but here to shut the compiler up */              \
+        return Qnil;                                                    \
+    } while(0)
+
 /* Error handling */
 #define _E(cond, excep) \
     do { if (cond) rb_exc_raise(excep); } while(0)
