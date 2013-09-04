@@ -2335,6 +2335,13 @@ static VALUE libvirt_dom_send_process_signal(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINLISTALLSNAPSHOTS
+/*
+ * call-seq:
+ *   dom.list_all_snapshots(flags=0) -> array
+ *
+ * Call virDomainListAllSnapshots[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainListAllSnapshots]
+ * to get an array of snapshot objects for all snapshots.
+ */
 static VALUE libvirt_dom_list_all_snapshots(int argc, VALUE *argv, VALUE d)
 {
     gen_list_all(virDomainSnapshotPtr, argc, argv, virDomainListAllSnapshots,
@@ -2343,6 +2350,13 @@ static VALUE libvirt_dom_list_all_snapshots(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
+/*
+ * call-seq:
+ *   snapshot.num_children(flags=0) -> fixnum
+ *
+ * Call virDomainSnapshotNumChildren[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotNumChildren]
+ * to get the number of children snapshots of this snapshot.
+ */
 static VALUE libvirt_dom_snapshot_num_children(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
@@ -2357,6 +2371,13 @@ static VALUE libvirt_dom_snapshot_num_children(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
+/*
+ * call-seq:
+ *   snapshot.list_children_names(flags=0) -> array
+ *
+ * Call virDomainSnapshotListChildrenNames[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListChildrenNames]
+ * to get an array of strings representing the children of this snapshot.
+ */
 static VALUE libvirt_dom_snapshot_list_children_names(int argc, VALUE *argv,
                                                       VALUE d)
 {
@@ -2420,12 +2441,56 @@ error:
 #endif
 
 #if HAVE_VIRDOMAINSNAPSHOTLISTALLCHILDREN
+/*
+ * call-seq:
+ *   snapshot.list_all_children(flags=0) -> array
+ *
+ * Call virDomainSnapshotListAllChildren[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListAllChildren]
+ * to get an array of snapshot objects that are children of this snapshot.
+ */
 static VALUE libvirt_dom_snapshot_list_all_children(int argc, VALUE *argv,
                                                     VALUE s)
 {
     gen_list_all(virDomainSnapshotPtr, argc, argv,
                  virDomainSnapshotListAllChildren, domain_snapshot_get(s), s,
                  domain_snapshot_new, virDomainSnapshotFree);
+}
+#endif
+
+#if HAVE_VIRDOMAINSNAPSHOTGETPARENT
+/*
+ * call-seq:
+ *   snapshot.parent(flags=0) -> [Libvirt::Domain::Snapshot|nil]
+ *
+ * Call virDomainSnapshotGetParent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetParent]
+ * to get the parent of this snapshot (nil will be returned if this is a root
+ * snapshot).
+ */
+static VALUE libvirt_dom_snapshot_parent(int argc, VALUE *argv, VALUE s)
+{
+    virDomainSnapshotPtr snap;
+    VALUE flags;
+    virErrorPtr err;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    snap = virDomainSnapshotGetParent(domain_snapshot_get(s), NUM2UINT(flags));
+    if (snap == NULL) {
+        /* snap may be NULL if there is a root, in which case we want to return
+         * nil
+         */
+        err = virConnGetLastError(connect_get(s));
+        if (err->code == VIR_ERR_NO_DOMAIN_SNAPSHOT) {
+            return Qnil;
+        }
+
+        rb_exc_raise(create_error(e_RetrieveError, "virDomainSnapshotGetParent",
+                                  connect_get(s)));
+    }
+
+    return domain_snapshot_new(snap, s);
 }
 #endif
 
@@ -3267,4 +3332,9 @@ void init_domain()
     rb_define_method(c_domain_snapshot, "list_all_children",
                      libvirt_dom_snapshot_list_all_children, -1);
 #endif
+#if HAVE_VIRDOMAINSNAPSHOTGETPARENT
+    rb_define_method(c_domain_snapshot, "parent",
+                     libvirt_dom_snapshot_parent, -1);
+#endif
+
 }
