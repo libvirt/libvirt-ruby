@@ -181,7 +181,8 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virNodeDeviceDetachFlags',
                   'virDomainSendProcessSignal',
                   'virDomainListAllSnapshots',
-                  'virDomainSnapshotNumChildren'
+                  'virDomainSnapshotNumChildren',
+                  'virDomainSnapshotListChildrenNames',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

@@ -129,7 +129,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
         }                                                               \
         for (i = 0; i < ret; i++) {                                     \
             arg.arr = result;                                           \
-            arg.value = newfunc(list[i], val);                            \
+            arg.value = newfunc(list[i], val);                          \
             rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);      \
             if (exception) {                                            \
                 goto exception;                                         \
@@ -193,6 +193,12 @@ struct rb_ary_push_arg {
 };
 VALUE rb_ary_push_wrap(VALUE arg);
 VALUE rb_ary_new2_wrap(VALUE arg);
+struct rb_ary_store_wrap {
+    VALUE arr;
+    VALUE index;
+    VALUE elem;
+};
+VALUE rb_ary_store_wrap(VALUE arg);
 
 VALUE rb_str_new2_wrap(VALUE arg);
 struct rb_str_new_arg {

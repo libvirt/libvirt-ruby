@@ -2356,6 +2356,69 @@ static VALUE libvirt_dom_snapshot_num_children(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
+static VALUE libvirt_dom_snapshot_list_children_names(int argc, VALUE *argv,
+                                                      VALUE d)
+{
+    VALUE flags;
+    int num_children;
+    char **children;
+    int ret;
+    int i, j;
+    VALUE result;
+    VALUE str;
+    int exception = 0;
+    struct rb_ary_store_wrap arg;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    num_children = virDomainSnapshotNumChildren(domain_snapshot_get(d),
+                                                NUM2UINT(flags));
+    _E(num_children < 0, create_error(e_RetrieveError,
+                                      "virDomainSnapshotNumChildren",
+                                      connect_get(d)));
+
+    children = alloca(num_children * sizeof(char *));
+
+    result = rb_ary_new();
+
+    ret = virDomainSnapshotListChildrenNames(domain_snapshot_get(d), children,
+                                             num_children, NUM2UINT(flags));
+    _E(ret < 0, create_error(e_RetrieveError,
+                             "virDomainSnapshotListChildrenNames",
+                             connect_get(d)));
+
+    for (i = 0; i < ret; i++) {
+        str = rb_protect(rb_str_new2_wrap, (VALUE)&(children[i]), &exception);
+        if (exception) {
+            goto error;
+        }
+
+        arg.arr = result;
+        arg.index = INT2NUM(i);
+        arg.elem = str;
+        rb_protect(rb_ary_store_wrap, (VALUE)&arg, &exception);
+        if (exception) {
+            goto error;
+        }
+        free(children[i]);
+    }
+
+    return result;
+
+error:
+    for (j = i; j < ret; j++) {
+        free(children[j]);
+    }
+    rb_jump_tag(exception);
+
+    /* not necessary, just to shut the compiler up */
+    return Qnil;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3185,5 +3248,9 @@ void init_domain()
 #if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
     rb_define_method(c_domain_snapshot, "num_children",
                      libvirt_dom_snapshot_num_children, -1);
+#endif
+#if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
+    rb_define_method(c_domain_snapshot, "list_children_names",
+                     libvirt_dom_snapshot_list_children_names, -1);
 #endif
 }

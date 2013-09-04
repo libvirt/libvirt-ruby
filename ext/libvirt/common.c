@@ -52,13 +52,6 @@ VALUE rb_ary_push_wrap(VALUE arg)
     return rb_ary_push(e->arr, e->value);
 }
 
-VALUE rb_str_new2_wrap(VALUE arg)
-{
-    char **str = (char **)arg;
-
-    return rb_str_new2(*str);
-}
-
 VALUE rb_ary_entry_wrap(VALUE arg)
 {
     struct rb_ary_entry_arg *e = (struct rb_ary_entry_arg *)arg;
@@ -69,6 +62,22 @@ VALUE rb_ary_entry_wrap(VALUE arg)
 VALUE rb_ary_new_wrap(VALUE arg)
 {
     return rb_ary_new();
+}
+
+VALUE rb_ary_store_wrap(VALUE arg)
+{
+    struct rb_ary_store_wrap *e = (struct rb_ary_store_wrap *)arg;
+
+    rb_ary_store(e->arr, e->index, e->elem);
+
+    return Qnil;
+}
+
+VALUE rb_str_new2_wrap(VALUE arg)
+{
+    char **str = (char **)arg;
+
+    return rb_str_new2(*str);
 }
 
 VALUE rb_str_new_wrap(VALUE arg)
