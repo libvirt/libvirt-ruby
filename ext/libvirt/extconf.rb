@@ -293,6 +293,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_DESTROY_GRACEFUL',
                    'VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST',
                    'VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE',
+                   'VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE',
+                   'VIR_DOMAIN_SNAPSHOT_CREATE_LIVE',
                  ]
 
 have_libvirt_types(libvirt_types)

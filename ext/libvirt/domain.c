@@ -3146,4 +3146,26 @@ void init_domain()
     rb_define_method(c_domain, "list_all_snapshots",
                      libvirt_dom_list_all_snapshots, -1);
 #endif
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE
+    rb_define_const(c_domain_snapshot, "CREATE_REDEFINE",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE));
+    rb_define_const(c_domain_snapshot, "CREATE_CURRENT",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_CURRENT));
+    rb_define_const(c_domain_snapshot, "CREATE_NO_METADATA",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_NO_METADATA));
+    rb_define_const(c_domain_snapshot, "CREATE_HALT",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_HALT));
+    rb_define_const(c_domain_snapshot, "CREATE_DISK_ONLY",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY));
+    rb_define_const(c_domain_snapshot, "CREATE_REUSE_EXT",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_REUSE_EXT));
+    rb_define_const(c_domain_snapshot, "CREATE_QUIESCE",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_QUIESCE));
+    rb_define_const(c_domain_snapshot, "CREATE_ATOMIC",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_LIVE
+    rb_define_const(c_domain_snapshot, "CREATE_LIVE",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_LIVE));
+#endif
 }
