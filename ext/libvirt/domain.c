@@ -589,7 +589,7 @@ static VALUE libvirt_dom_memory_stats(int argc, VALUE *argv, VALUE d)
      * a new memory_stats-like call that properly creates the hash.
      */
     result = rb_ary_new2(r);
-    for (i=0; i<r; i++) {
+    for (i = 0; i < r; i++) {
         tmp = rb_class_new_instance(0, NULL, c_domain_memory_stats);
         rb_iv_set(tmp, "@tag", INT2NUM(stats[i].tag));
         rb_iv_set(tmp, "@val", ULL2NUM(stats[i].val));
@@ -775,9 +775,8 @@ static VALUE libvirt_dom_get_vcpus(VALUE d)
         p2vcpumap = rb_ary_new();
 
         for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++)
-            rb_ary_push(p2vcpumap,
-                        (VIR_CPU_USABLE(cpumap,
-                                        VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo)), i, j)) ? Qtrue : Qfalse);
+            rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap,
+                                                   VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo)), i, j)) ? Qtrue : Qfalse);
         rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
 
         rb_ary_push(result, vcpuinfo);

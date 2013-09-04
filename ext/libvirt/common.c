@@ -238,20 +238,14 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     VALUE result;
     int i;
     char *errname;
-    unsigned int flags;
-    VALUE flags_val;
+    VALUE flags;
     VALUE val;
 
-    rb_scan_args(argc, argv, "01", &flags_val);
+    rb_scan_args(argc, argv, "01", &flags);
 
-    if (NIL_P(flags_val)) {
-        flags = 0;
-    }
-    else {
-        flags = NUM2UINT(flags_val);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
-    nparams = nparams_cb(d, flags);
+    nparams = nparams_cb(d, NUM2UINT(flags));
 
     result = rb_hash_new();
 
@@ -261,7 +255,7 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
 
     params = alloca(sizeof(virTypedParameter) * nparams);
 
-    errname = get_cb(d, flags, params, &nparams);
+    errname = get_cb(d, NUM2UINT(flags), params, &nparams);
     _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
 
     for (i = 0; i < nparams; i++) {
@@ -309,13 +303,12 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
     int i;
     char *errname;
     VALUE input;
-    VALUE flags_val;
-    unsigned int flags;
+    VALUE flags;
     VALUE val;
 
     if (TYPE(in) == T_HASH) {
         input = in;
-        flags_val = INT2NUM(0);
+        flags = INT2NUM(0);
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2) {
@@ -323,16 +316,13 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
                      RARRAY_LEN(in));
         }
         input = rb_ary_entry(in, 0);
-        flags_val = rb_ary_entry(in, 1);
+        flags = rb_ary_entry(in, 1);
     }
     else {
         rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
     }
 
     Check_Type(input, T_HASH);
-
-    /* we do this up-front for proper argument error checking */
-    flags = NUM2UINT(flags_val);
 
     if (RHASH_SIZE(input) == 0) {
         return Qnil;
@@ -346,11 +336,11 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
      * will throw an error.
      */
 
-    nparams = nparams_cb(d, flags);
+    nparams = nparams_cb(d, NUM2UINT(flags));
 
     params = alloca(sizeof(virTypedParameter) * nparams);
 
-    errname = get_cb(d, flags, params, &nparams);
+    errname = get_cb(d, NUM2UINT(flags), params, &nparams);
     _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
 
     for (i = 0; i < nparams; i++) {
@@ -386,7 +376,7 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
         }
     }
 
-    errname = set_cb(d, flags, params, nparams);
+    errname = set_cb(d, NUM2UINT(flags), params, nparams);
     if (errname != NULL) {
         rb_exc_raise(create_error(e_RetrieveError, errname, conn));
     }

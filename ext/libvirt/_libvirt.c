@@ -222,25 +222,14 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     VALUE uri;
     VALUE credlist;
     VALUE userdata;
-    VALUE flags_val;
-    char *uri_c;
-    virConnectPtr conn = NULL;
-    unsigned int flags;
+    VALUE flags;
+    virConnectPtr conn;
     int i;
     VALUE tmp;
 
-    rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags_val);
+    rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags);
 
-    /* handle the optional URI */
-    uri_c = get_string_or_nil(uri);
-
-    /* handle the optional flags */
-    if (NIL_P(flags_val)) {
-        flags = 0;
-    }
-    else {
-        flags = NUM2UINT(flags_val);
-    }
+    flags = integer_default_if_nil(flags, 0);
 
     if (rb_block_given_p()) {
         auth = alloca(sizeof(virConnectAuth));
@@ -272,7 +261,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         auth = virConnectAuthPtrDefault;
     }
 
-    conn = virConnectOpenAuth(uri_c, auth, flags);
+    conn = virConnectOpenAuth(get_string_or_nil(uri), auth, NUM2UINT(flags));
 
     _E(conn == NULL, create_error(e_ConnectionError, "virConnectOpenAuth",
                                   NULL));

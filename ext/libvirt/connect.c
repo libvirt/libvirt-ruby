@@ -2039,8 +2039,10 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
                                 void *(*alloc_stats)(int nparams),
                                 VALUE (*hash_set)(VALUE in))
 {
-    VALUE flags;
-    VALUE intparam;
+    VALUE flags_val;
+    VALUE intparam_val;
+    int intparam;
+    unsigned int flags;
     int nparams;
     char *errname;
     VALUE result;
@@ -2049,17 +2051,20 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
     int exception;
     struct hash_field hf;
 
-    rb_scan_args(argc, argv, "02", &intparam, &flags);
+    rb_scan_args(argc, argv, "02", &intparam_val, &flags_val);
 
-    intparam = integer_default_if_nil(intparam, -1);
-    flags = integer_default_if_nil(flags, 0);
+    /* here we convert intparam and flags to an integer and unsigned,
+     * respectively.  That way if NUM2*() throws an exception, it happens
+     * early on, before we have allocated any memory.
+     */
+    intparam = NUM2INT(integer_default_if_nil(intparam_val, -1));
+    flags = NUM2UINT(integer_default_if_nil(flags_val, 0));
 
     /* we first call out to the get_stats callback with NULL params and 0
      * nparams to find out how many parameters we need
      */
     nparams = 0;
-    errname = get_stats(connect_get(c), NUM2INT(intparam), NULL, &nparams,
-                        NUM2UINT(flags));
+    errname = get_stats(connect_get(c), intparam, NULL, &nparams, flags);
     if (errname != NULL) {
         rb_exc_raise(create_error(e_RetrieveError, errname, connect_get(c)));
     }
@@ -2073,8 +2078,7 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
     /* Now we allocate the params array */
     params = alloc_stats(nparams);
 
-    errname = get_stats(connect_get(c), NUM2INT(intparam), params, &nparams,
-                        NUM2UINT(flags));
+    errname = get_stats(connect_get(c), intparam, params, &nparams, flags);
     if (errname != NULL) {
         xfree(params);
         rb_exc_raise(create_error(e_RetrieveError, errname, connect_get(c)));
