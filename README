@@ -156,7 +156,6 @@ with the following exceptions:
 - virDomainOpenChannel
 - VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH
 - virDomainOpenGraphics
-- virDomainFSTrim
 - virDomainMigrate3
 - virDomainMigrateToURI3
 - virDomainCreateXMLWithFiles

@@ -2572,6 +2572,31 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINFSTRIM
+/*
+ * call-seq:
+ *   dom.fstrim(mountpoint=nil, minimum=0, flags=0)
+ *
+ * Call virDomainFSTrim[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSTrim]
+ * to call FITRIM within the guest.
+ */
+static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
+{
+    VALUE mountpoint;
+    VALUE minimum;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "03", &mountpoint, &minimum, &flags);
+
+    minimum = integer_default_if_nil(minimum, 0);
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_void(virDomainFSTrim, connect_get(d),
+                  get_string_or_nil(mountpoint), NUM2ULL(minimum),
+                  NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3425,5 +3450,8 @@ void init_domain()
 #if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
     rb_define_method(c_domain, "memory_stats_period=",
                      libvirt_domain_memory_stats_period, 1);
+#endif
+#if HAVE_VIRDOMAINFSTRIM
+    rb_define_method(c_domain, "fstrim", libvirt_domain_fstrim, -1);
 #endif
 }
