@@ -2270,7 +2270,7 @@ static VALUE libvirt_dom_metadata(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINSETMETADATA
 /*
  * call-seq:
- *   dom.metadata = fixnum,string/nil,key=nil,uri=nil,flags=0 -> nil
+ *   dom.metadata = Fixnum,string/nil,key=nil,uri=nil,flags=0 -> nil
  *
  * Call virDomainSetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMetadata]
  * to set the metadata for a domain.
@@ -2534,6 +2534,41 @@ static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
 
     gen_call_truefalse(virDomainSnapshotHasMetadata, connect_get(s),
                        domain_snapshot_get(s), NUM2UINT(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
+/*
+ * call-seq:
+ *   dom.memory_stats_period = Fixnum,flags=0
+ *
+ * Call virDomainSetMemoryStatsPeriod[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryStatsPeriod]
+ * to set the memory statistics collection period.
+ */
+static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
+{
+    VALUE period;
+    VALUE flags;
+
+    if (TYPE(in) == T_FIXNUM) {
+        period = in;
+        flags = INT2NUM(0);
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2) {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                     RARRAY_LEN(in));
+        }
+        period = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
+
+    gen_call_void(virDomainSetMemoryStatsPeriod, connect_get(d), domain_get(d),
+                  NUM2INT(period), NUM2UINT(flags));
 }
 #endif
 
@@ -3386,5 +3421,9 @@ void init_domain()
 #if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
     rb_define_method(c_domain_snapshot, "has_metadata?",
                      libvirt_domain_snapshot_has_metadata_p, -1);
+#endif
+#if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
+    rb_define_method(c_domain, "memory_stats_period=",
+                     libvirt_domain_memory_stats_period, 1);
 #endif
 }

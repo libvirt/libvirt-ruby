@@ -187,6 +187,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSnapshotGetParent',
                   'virDomainSnapshotIsCurrent',
                   'virDomainSnapshotHasMetadata',
+                  'virDomainSetMemoryStatsPeriod',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
