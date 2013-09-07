@@ -2494,6 +2494,20 @@ static VALUE libvirt_dom_snapshot_parent(int argc, VALUE *argv, VALUE s)
 }
 #endif
 
+#if HAVE_VIRDOMAINSNAPSHOTISCURRENT
+static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_truefalse(virDomainSnapshotIsCurrent, connect_get(s),
+                       domain_snapshot_get(s), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3336,5 +3350,8 @@ void init_domain()
     rb_define_method(c_domain_snapshot, "parent",
                      libvirt_dom_snapshot_parent, -1);
 #endif
-
+#if HAVE_VIRDOMAINSNAPSHOTISCURRENT
+    rb_define_method(c_domain_snapshot, "current?",
+                     libvirt_domain_snapshot_current_p, -1);
+#endif
 }

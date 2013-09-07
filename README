@@ -137,7 +137,6 @@ with the following exceptions:
 - VIR_DOMAIN_EVENT_PMSUSPENDED_DISK
 - VIR_SECRET_USAGE_TYPE_CEPH
 - virDomainGetJobStats
-- virDomainSnapshotIsCurrent
 - virDomainSnapshotHasMetadata
 - VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
 - virDomainSnapshotRef

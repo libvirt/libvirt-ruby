@@ -185,6 +185,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSnapshotListChildrenNames',
                   'virDomainSnapshotListAllChildren',
                   'virDomainSnapshotGetParent',
+                  'virDomainSnapshotIsCurrent',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
