@@ -2495,6 +2495,13 @@ static VALUE libvirt_dom_snapshot_parent(int argc, VALUE *argv, VALUE s)
 #endif
 
 #if HAVE_VIRDOMAINSNAPSHOTISCURRENT
+/*
+ * call-seq:
+ *   snapshot.current?(flags=0) -> [true|false]
+ *
+ * Call virDomainSnapshotIsCurrent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotIsCurrent]
+ * to determine if the snapshot is the domain's current snapshot.
+ */
 static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags;
@@ -2504,6 +2511,28 @@ static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
     flags = integer_default_if_nil(flags, 0);
 
     gen_call_truefalse(virDomainSnapshotIsCurrent, connect_get(s),
+                       domain_snapshot_get(s), NUM2UINT(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
+/*
+ * call-seq:
+ *   snapshot.has_metadata?(flags=0) -> [true|false]
+ *
+ * Call virDomainSnapshotHasMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotHasMetadata]
+ * to determine if the snapshot is associated with libvirt metadata.
+ */
+static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
+                                                    VALUE s)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_truefalse(virDomainSnapshotHasMetadata, connect_get(s),
                        domain_snapshot_get(s), NUM2UINT(flags));
 }
 #endif
@@ -3353,5 +3382,9 @@ void init_domain()
 #if HAVE_VIRDOMAINSNAPSHOTISCURRENT
     rb_define_method(c_domain_snapshot, "current?",
                      libvirt_domain_snapshot_current_p, -1);
+#endif
+#if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
+    rb_define_method(c_domain_snapshot, "has_metadata?",
+                     libvirt_domain_snapshot_has_metadata_p, -1);
 #endif
 }
