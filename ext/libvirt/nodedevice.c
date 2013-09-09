@@ -221,6 +221,36 @@ static VALUE libvirt_nodedevice_free(VALUE n)
 {
     gen_call_free(NodeDevice, n);
 }
+
+#if HAVE_VIRNODEDEVICELOOKUPSCSIHOSTBYWWN
+/*
+ * call-seq:
+ *   nodedevice.lookup_scsi_host_by_wwn(wwnn, wwpn, flags=0) -> Libvirt::NodeDevice
+ *
+ * Call virNodeDeviceLookupSCSIHostByWWN[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceLookupSCSIHostByWWN]
+ * to look up a SCSI host by its WWNN and WWPN.
+ */
+static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
+                                                        VALUE n)
+{
+    VALUE wwnn, wwpn, flags;
+    virNodeDevicePtr nd;
+
+    rb_scan_args(argc, argv, "21", &wwnn, &wwpn, &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    nd = virNodeDeviceLookupSCSIHostByWWN(connect_get(n), StringValueCStr(wwnn),
+                                          StringValueCStr(wwpn),
+                                          NUM2UINT(flags));
+    if (nd == NULL) {
+        return Qnil;
+    }
+
+    return nodedevice_new(nd);
+}
+#endif
+
 #endif
 
 /*
@@ -247,5 +277,9 @@ void init_nodedevice()
     rb_define_method(c_nodedevice, "destroy", libvirt_nodedevice_destroy, 0);
 #endif
     rb_define_method(c_nodedevice, "free", libvirt_nodedevice_free, 0);
+#if HAVE_VIRNODEDEVICELOOKUPSCSIHOSTBYWWN
+    rb_define_method(c_nodedevice, "lookup_scsi_host_by_wwn",
+                     libvirt_nodedevice_lookup_scsi_host_by_wwn, -1);
+#endif
 #endif
 }

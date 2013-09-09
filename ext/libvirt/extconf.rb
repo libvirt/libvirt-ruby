@@ -191,6 +191,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainFSTrim',
                   'virDomainBlockRebase',
                   'virDomainOpenChannel',
+                  'virNodeDeviceLookupSCSIHostByWWN',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
