@@ -4335,28 +4335,10 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_MIGRATE_RDMA_PIN_ALL));
 #endif
 
-    /* Ideally we would just have the "XML_SECURE" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_XML_SECURE" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "XML_SECURE", INT2NUM(VIR_DOMAIN_XML_SECURE));
-    rb_define_const(c_domain, "DOMAIN_XML_SECURE",
-                    INT2NUM(VIR_DOMAIN_XML_SECURE));
-    /* Ideally we would just have the "XML_INACTIVE" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_XML_INACTIVE" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "XML_INACTIVE", INT2NUM(VIR_DOMAIN_XML_INACTIVE));
-    rb_define_const(c_domain, "DOMAIN_XML_INACTIVE",
-                    INT2NUM(VIR_DOMAIN_XML_INACTIVE));
 #if HAVE_CONST_VIR_DOMAIN_XML_UPDATE_CPU
-    /* Ideally we would just have the "XML_UPDATE_CPU" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_XML_UPDATE_CPU" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "XML_UPDATE_CPU",
-                    INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
-    rb_define_const(c_domain, "DOMAIN_XML_UPDATE_CPU",
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
 #endif
 #if HAVE_CONST_VIR_DOMAIN_XML_MIGRATABLE
@@ -4832,35 +4814,12 @@ void ruby_libvirt_domain_init(void)
 #endif
 
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
-    /* Ideally we would just have the "MEM_LIVE" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_MEM_LIVE" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "MEM_LIVE", INT2NUM(VIR_DOMAIN_MEM_LIVE));
-    rb_define_const(c_domain, "DOMAIN_MEM_LIVE", INT2NUM(VIR_DOMAIN_MEM_LIVE));
-    /* Ideally we would just have the "MEM_CONFIG" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_MEM_CONFIG" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "MEM_CONFIG", INT2NUM(VIR_DOMAIN_MEM_CONFIG));
-    rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
-                    INT2NUM(VIR_DOMAIN_MEM_CONFIG));
 #endif
 #if HAVE_CONST_VIR_DOMAIN_MEM_CURRENT
-    /* Ideally we would just have the "MEM_CURRENT" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_MEM_CURRENT" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain,"MEM_CURRENT", INT2NUM(VIR_DOMAIN_MEM_CURRENT));
-    rb_define_const(c_domain, "DOMAIN_MEM_CURRENT",
-                    INT2NUM(VIR_DOMAIN_MEM_CURRENT));
-    /* Ideally we would just have the "MEM_MAXIMUM" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_MEM_MAXIMUM" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "MEM_MAXIMUM", INT2NUM(VIR_DOMAIN_MEM_MAXIMUM));
-    rb_define_const(c_domain, "DOMAIN_MEM_MAXIMUM",
-                    INT2NUM(VIR_DOMAIN_MEM_MAXIMUM));
 #endif
 
     rb_define_method(c_domain, "scheduler_parameters",
@@ -4883,278 +4842,80 @@ void ruby_libvirt_domain_init(void)
 #endif
 
 #if HAVE_VIRDOMAINGETSTATE
-    /* Ideally we would just have the "RUNNING_UNKNOWN" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_RUNNING_UNKNOWN"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_RUNNING_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_RUNNING_UNKNOWN));
-    /* Ideally we would just have the "RUNNING_BOOTED" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_RUNNING_BOOTED"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_BOOTED",
                     INT2NUM(VIR_DOMAIN_RUNNING_BOOTED));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_BOOTED",
-                    INT2NUM(VIR_DOMAIN_RUNNING_BOOTED));
-    /* Ideally we would just have the "RUNNING_MIGRATED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_RUNNING_MIGRATED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_MIGRATED",
                     INT2NUM(VIR_DOMAIN_RUNNING_MIGRATED));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_MIGRATED",
-                    INT2NUM(VIR_DOMAIN_RUNNING_MIGRATED));
-    /* Ideally we would just have the "RUNNING_RESTORED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_RUNNING_RESTORED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_RESTORED",
                     INT2NUM(VIR_DOMAIN_RUNNING_RESTORED));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_RESTORED",
-                    INT2NUM(VIR_DOMAIN_RUNNING_RESTORED));
-    /* Ideally we would just have the "RUNNING_FROM_SNAPSHOT" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_RUNNING_FROM_SNAPSHOT" for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_RUNNING_FROM_SNAPSHOT));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_FROM_SNAPSHOT",
-                    INT2NUM(VIR_DOMAIN_RUNNING_FROM_SNAPSHOT));
-    /* Ideally we would just have the "RUNNING_UNPAUSED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_RUNNING_UNPAUSED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_UNPAUSED",
                     INT2NUM(VIR_DOMAIN_RUNNING_UNPAUSED));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_UNPAUSED",
-                    INT2NUM(VIR_DOMAIN_RUNNING_UNPAUSED));
-    /* Ideally we would just have the "RUNNING_MIGRATION_CANCELED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_RUNNING_MIGRATION_CANCELED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_MIGRATION_CANCELED",
                     INT2NUM(VIR_DOMAIN_RUNNING_MIGRATION_CANCELED));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_MIGRATION_CANCELED",
-                    INT2NUM(VIR_DOMAIN_RUNNING_MIGRATION_CANCELED));
-    /* Ideally we would just have the "RUNNING_SAVE_CANCELED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_RUNNING_SAVE_CANCELED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_SAVE_CANCELED",
                     INT2NUM(VIR_DOMAIN_RUNNING_SAVE_CANCELED));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_SAVE_CANCELED",
-                    INT2NUM(VIR_DOMAIN_RUNNING_SAVE_CANCELED));
 #if HAVE_CONST_VIR_DOMAIN_RUNNING_WAKEUP
-    /* Ideally we would just have the "RUNNING_WAKEUP" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_RUNNING_WAKEUP"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "RUNNING_WAKEUP",
                     INT2NUM(VIR_DOMAIN_RUNNING_WAKEUP));
-    rb_define_const(c_domain, "DOMAIN_RUNNING_WAKEUP",
-                    INT2NUM(VIR_DOMAIN_RUNNING_WAKEUP));
 #endif
-    /* Ideally we would just have the "BLOCKED_UNKNOWN" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_BLOCKED_UNKNOWN"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "BLOCKED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_BLOCKED_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_BLOCKED_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_BLOCKED_UNKNOWN));
-    /* Ideally we would just have the "PAUSED_UNKNOWN" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_UNKNOWN"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PAUSED_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_PAUSED_UNKNOWN));
-    /* Ideally we would just have the "PAUSED_USER" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_USER"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_USER",
                     INT2NUM(VIR_DOMAIN_PAUSED_USER));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_USER",
-                    INT2NUM(VIR_DOMAIN_PAUSED_USER));
-    /* Ideally we would just have the "PAUSED_MIGRATION" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_PAUSED_MIGRATION" for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_MIGRATION",
                     INT2NUM(VIR_DOMAIN_PAUSED_MIGRATION));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_MIGRATION",
-                    INT2NUM(VIR_DOMAIN_PAUSED_MIGRATION));
-    /* Ideally we would just have the "PAUSED_SAVE" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_SAVE"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_SAVE",
                     INT2NUM(VIR_DOMAIN_PAUSED_SAVE));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_SAVE",
-                    INT2NUM(VIR_DOMAIN_PAUSED_SAVE));
-    /* Ideally we would just have the "PAUSED_DUMP" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_DUMP"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_DUMP",
                     INT2NUM(VIR_DOMAIN_PAUSED_DUMP));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_DUMP",
-                    INT2NUM(VIR_DOMAIN_PAUSED_DUMP));
-    /* Ideally we would just have the "PAUSED_IOERROR" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_IOERROR"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_IOERROR",
                     INT2NUM(VIR_DOMAIN_PAUSED_IOERROR));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_IOERROR",
-                    INT2NUM(VIR_DOMAIN_PAUSED_IOERROR));
-    /* Ideally we would just have the "PAUSED_WATCHDOG" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_WATCHDOG"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_WATCHDOG",
                     INT2NUM(VIR_DOMAIN_PAUSED_WATCHDOG));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_WATCHDOG",
-                    INT2NUM(VIR_DOMAIN_PAUSED_WATCHDOG));
-    /* Ideally we would just have the "PAUSED_FROM_SNAPSHOT" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_PAUSED_FROM_SNAPSHOT" for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_PAUSED_FROM_SNAPSHOT));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_FROM_SNAPSHOT",
-                    INT2NUM(VIR_DOMAIN_PAUSED_FROM_SNAPSHOT));
 #if HAVE_CONST_VIR_DOMAIN_PAUSED_SHUTTING_DOWN
-    /* Ideally we would just have the "PAUSED_SHUTTING_DOWN" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_PAUSED_SHUTTING_DOWN" for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_SHUTTING_DOWN",
-                    INT2NUM(VIR_DOMAIN_PAUSED_SHUTTING_DOWN));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_SHUTTING_DOWN",
                     INT2NUM(VIR_DOMAIN_PAUSED_SHUTTING_DOWN));
 #endif
 #if HAVE_CONST_VIR_DOMAIN_PAUSED_SNAPSHOT
-    /* Ideally we would just have the "PAUSED_SNAPSHOT" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_SNAPSHOT"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "PAUSED_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_PAUSED_SNAPSHOT));
-    rb_define_const(c_domain, "DOMAIN_PAUSED_SNAPSHOT",
-                    INT2NUM(VIR_DOMAIN_PAUSED_SNAPSHOT));
 #endif
-    /* Ideally we would just have the "SHUTDOWN_UNKNOWN" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_SHUTDOWN_UNKNOWN" for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTDOWN_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_SHUTDOWN_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_SHUTDOWN_UNKNOWN));
-    /* Ideally we would just have the "SHUTDOWN_USER" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_SHUTDOWN_USER"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTDOWN_USER",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_USER));
-    rb_define_const(c_domain, "DOMAIN_SHUTDOWN_USER",
-                    INT2NUM(VIR_DOMAIN_SHUTDOWN_USER));
-    /* Ideally we would just have the "SHUTOFF_UNKNOWN" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_SHUTOFF_UNKNOWN"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_UNKNOWN));
-    /* Ideally we would just have the "SHUTOFF_SHUTDOWN" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_SHUTOFF_SHUTDOWN" for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_SHUTDOWN",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_SHUTDOWN));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_SHUTDOWN",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_SHUTDOWN));
-    /* Ideally we would just have the "SHUTOFF_DESTROYED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_SHUTOFF_DESTROYED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_DESTROYED",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_DESTROYED));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_DESTROYED",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_DESTROYED));
-    /* Ideally we would just have the "SHUTOFF_CRASHED" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_SHUTOFF_CRASHED"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_CRASHED",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_CRASHED));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_CRASHED",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_CRASHED));
-    /* Ideally we would just have the "SHUTOFF_MIGRATED" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_SHUTOFF_MIGRATED" for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_MIGRATED",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_MIGRATED));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_MIGRATED",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_MIGRATED));
-    /* Ideally we would just have the "SHUTOFF_SAVED" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_SHUTOFF_SAVED"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_SAVED",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_SAVED));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_SAVED",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_SAVED));
-    /* Ideally we would just have the "SHUTOFF_FAILED" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_SHUTOFF_FAILED"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_FAILED",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_FAILED));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_FAILED",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_FAILED));
-    /* Ideally we would just have the "SHUTOFF_FROM_SNAPSHOT" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_SHUTOFF_FROM_SNAPSHOT" for backwards compatibility.
-     */
     rb_define_const(c_domain, "SHUTOFF_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_SHUTOFF_FROM_SNAPSHOT));
-    rb_define_const(c_domain, "DOMAIN_SHUTOFF_FROM_SNAPSHOT",
-                    INT2NUM(VIR_DOMAIN_SHUTOFF_FROM_SNAPSHOT));
-    /* Ideally we would just have the "CRASHED_UNKNOWN" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_CRASHED_UNKNOWN"
-     * for backwards compatibility.
-     */
     rb_define_const(c_domain, "CRASHED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_CRASHED_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
 #if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_UNKNOWN
-    /* Ideally we would just have the "PMSUSPENDED_UNKNOWN" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_PMSUSPENDED_UNKNOWN" for backwards compatibility.
-     */
     rb_define_const(c_domain, "PMSUSPENDED_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_PMSUSPENDED_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_UNKNOWN));
 #endif
 #if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN
-    /* Ideally we would just have the "PMSUSPENDED_DISK_UNKNOWN" constant.
-     * Unfortunately we screwed up long ago, and we have to leave
-     * "DOMAIN_PMSUSPENDED_DISK_UNKNOWN" for backwards compatibility.
-     */
     rb_define_const(c_domain, "PMSUSPENDED_DISK_UNKNOWN",
-                    INT2NUM(VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN));
-    rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_DISK_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN));
 #endif
 #if HAVE_CONST_VIR_DOMAIN_RUNNING_CRASHED
@@ -5178,29 +4939,11 @@ void ruby_libvirt_domain_init(void)
 #endif
 
 #if HAVE_CONST_VIR_DOMAIN_AFFECT_CURRENT
-    /* Ideally we would just have the "AFFECT_CURRENT" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_AFFECT_CURRENT" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "AFFECT_CURRENT",
                     INT2NUM(VIR_DOMAIN_AFFECT_CURRENT));
-    rb_define_const(c_domain, "DOMAIN_AFFECT_CURRENT",
-                    INT2NUM(VIR_DOMAIN_AFFECT_CURRENT));
-    /* Ideally we would just have the "AFFECT_LIVE" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_AFFECT_LIVE" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "AFFECT_LIVE",
                     INT2NUM(VIR_DOMAIN_AFFECT_LIVE));
-    rb_define_const(c_domain, "DOMAIN_AFFECT_LIVE",
-                    INT2NUM(VIR_DOMAIN_AFFECT_LIVE));
-    /* Ideally we would just have the "AFFECT_CONFIG" constant.  Unfortunately
-     * we screwed up long ago, and we have to leave "DOMAIN_AFFECT_CONFIG" for
-     * backwards compatibility.
-     */
     rb_define_const(c_domain, "AFFECT_CONFIG",
-                    INT2NUM(VIR_DOMAIN_AFFECT_CONFIG));
-    rb_define_const(c_domain, "DOMAIN_AFFECT_CONFIG",
                     INT2NUM(VIR_DOMAIN_AFFECT_CONFIG));
 #endif
 
