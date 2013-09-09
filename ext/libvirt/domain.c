@@ -3238,6 +3238,14 @@ void init_domain()
                     INT2NUM(VIR_DOMAIN_AFFECT_CONFIG));
 #endif
 
+#if HAVE_CONST_VIR_DOMAIN_CONSOLE_FORCE
+    rb_define_const(c_domain, "CONSOLE_FORCE",
+                    INT2NUM(VIR_DOMAIN_CONSOLE_FORCE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_CONSOLE_SAFE
+    rb_define_const(c_domain, "CONSOLE_SAFE", INT2NUM(VIR_DOMAIN_CONSOLE_SAFE));
+#endif
+
 #if HAVE_VIRDOMAINOPENCONSOLE
     rb_define_method(c_domain, "open_console", libvirt_domain_open_console, -1);
 #endif

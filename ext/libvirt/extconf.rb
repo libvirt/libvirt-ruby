@@ -310,6 +310,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_BLOCK_REBASE_COPY_RAW',
                    'VIR_DOMAIN_BLOCK_REBASE_COPY',
                    'VIR_DOMAIN_CHANNEL_FORCE',
+                   'VIR_DOMAIN_CONSOLE_FORCE',
+                   'VIR_DOMAIN_CONSOLE_SAFE',
                  ]
 
 have_libvirt_types(libvirt_types)
