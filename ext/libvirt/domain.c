@@ -2580,7 +2580,7 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
 #if HAVE_VIRDOMAINFSTRIM
 /*
  * call-seq:
- *   dom.fstrim(mountpoint=nil, minimum=0, flags=0)
+ *   dom.fstrim(mountpoint=nil, minimum=0, flags=0) -> nil
  *
  * Call virDomainFSTrim[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSTrim]
  * to call FITRIM within the guest.
@@ -2605,7 +2605,7 @@ static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINBLOCKREBASE
 /*
  * call-seq:
- *   dom.block_rebase(disk, base=nil, bandwidth=0, flags=0)
+ *   dom.block_rebase(disk, base=nil, bandwidth=0, flags=0) -> nil
  *
  * Call virDomainBlockRebase[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockRebase]
  * to populate a disk image with data from its backing image chain.
@@ -2622,6 +2622,28 @@ static VALUE libvirt_domain_block_rebase(int argc, VALUE *argv, VALUE d)
     gen_call_void(virDomainBlockRebase, connect_get(d), domain_get(d),
                   get_string_or_nil(disk), get_string_or_nil(base),
                   NUM2UINT(bandwidth), NUM2UINT(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINOPENCHANNEL
+/*
+ * call-seq:
+ *   dom.open_channel(name, stream, flags=0) -> nil
+ *
+ * Call virDomainOpenChannel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenChannel]
+ * to open a channel on a guest.  Note that name may be nil, in which case the
+ * first channel on the guest is opened.
+ */
+static VALUE libvirt_domain_open_channel(int argc, VALUE *argv, VALUE d)
+{
+    VALUE name, st, flags;
+
+    rb_scan_args(argc, argv, "21", &name, &st, &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_void(virDomainOpenChannel, connect_get(d), domain_get(d),
+                  get_string_or_nil(name), stream_get(st), NUM2UINT(flags));
 }
 #endif
 
@@ -3508,5 +3530,12 @@ void init_domain()
 #endif
 #if HAVE_VIRDOMAINBLOCKREBASE
     rb_define_method(c_domain, "block_rebase", libvirt_domain_block_rebase, -1);
+#endif
+#if HAVE_CONST_VIR_DOMAIN_CHANNEL_FORCE
+    rb_define_const(c_domain, "CHANNEL_FORCE",
+                    INT2NUM(VIR_DOMAIN_CHANNEL_FORCE));
+#endif
+#if HAVE_VIRDOMAINOPENCHANNEL
+    rb_define_method(c_domain, "open_channel", libvirt_domain_open_channel, -1);
 #endif
 }

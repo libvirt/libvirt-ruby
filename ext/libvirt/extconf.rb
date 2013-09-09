@@ -190,6 +190,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSetMemoryStatsPeriod',
                   'virDomainFSTrim',
                   'virDomainBlockRebase',
+                  'virDomainOpenChannel',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -308,6 +309,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_BLOCK_REBASE_REUSE_EXT',
                    'VIR_DOMAIN_BLOCK_REBASE_COPY_RAW',
                    'VIR_DOMAIN_BLOCK_REBASE_COPY',
+                   'VIR_DOMAIN_CHANNEL_FORCE',
                  ]
 
 have_libvirt_types(libvirt_types)

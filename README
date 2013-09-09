@@ -148,8 +148,6 @@ with the following exceptions:
 - VIR_DOMAIN_EVENT_ID_PMSUSPEND_DISK
 - VIR_DOMAIN_CONSOLE_FORCE
 - VIR_DOMAIN_CONSOLE_SAFE
-- VIR_DOMAIN_CHANNEL_FORCE
-- virDomainOpenChannel
 - VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH
 - virDomainOpenGraphics
 - virDomainMigrate3
