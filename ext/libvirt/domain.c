@@ -2597,6 +2597,22 @@ static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKREBASE
+static VALUE libvirt_domain_block_rebase(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, base, bandwidth, flags;
+
+    rb_scan_args(argc, argv, "13", &disk, &base, &bandwidth, &flags);
+
+    bandwidth = integer_default_if_nil(bandwidth, 0);
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_void(virDomainBlockRebase, connect_get(d), domain_get(d),
+                  get_string_or_nil(disk), get_string_or_nil(base),
+                  NUM2UINT(bandwidth), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3453,5 +3469,24 @@ void init_domain()
 #endif
 #if HAVE_VIRDOMAINFSTRIM
     rb_define_method(c_domain, "fstrim", libvirt_domain_fstrim, -1);
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_SHALLOW
+    rb_define_const(c_domain, "BLOCK_REBASE_SHALLOW",
+                    INT2NUM(VIR_DOMAIN_BLOCK_REBASE_SHALLOW));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_REUSE_EXT
+    rb_define_const(c_domain, "BLOCK_REBASE_REUSE_EXT",
+                    INT2NUM(VIR_DOMAIN_BLOCK_REBASE_REUSE_EXT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_COPY_RAW
+    rb_define_const(c_domain, "BLOCK_REBASE_COPY_RAW",
+                    INT2NUM(VIR_DOMAIN_BLOCK_REBASE_COPY_RAW));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_COPY
+    rb_define_const(c_domain, "BLOCK_REBASE_COPY",
+                    INT2NUM(VIR_DOMAIN_BLOCK_REBASE_COPY));
+#endif
+#if HAVE_VIRDOMAINBLOCKREBASE
+    rb_define_method(c_domain, "block_rebase", libvirt_domain_block_rebase, -1);
 #endif
 }

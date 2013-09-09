@@ -189,6 +189,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSnapshotHasMetadata',
                   'virDomainSetMemoryStatsPeriod',
                   'virDomainFSTrim',
+                  'virDomainBlockRebase',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -303,6 +304,10 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE',
                    'VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE',
                    'VIR_DOMAIN_SNAPSHOT_CREATE_LIVE',
+                   'VIR_DOMAIN_BLOCK_REBASE_SHALLOW',
+                   'VIR_DOMAIN_BLOCK_REBASE_REUSE_EXT',
+                   'VIR_DOMAIN_BLOCK_REBASE_COPY_RAW',
+                   'VIR_DOMAIN_BLOCK_REBASE_COPY',
                  ]
 
 have_libvirt_types(libvirt_types)
