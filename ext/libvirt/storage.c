@@ -424,6 +424,22 @@ static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
     return vol_new(vol, conn_attr(p));
 }
 
+#if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
+/*
+ * call-seq:
+ *   pool.list_all_volumes(flags=0) -> array
+ *
+ * Call virStoragePoolListAllVolumes[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolListAllVolumes]
+ * to get an array of volume objects for all volumes.
+ */
+static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
+                                                   VALUE p)
+{
+    gen_list_all(virStorageVolPtr, argc, argv, virStoragePoolListAllVolumes,
+                 pool_get(p), p, vol_new, virStorageVolFree);
+}
+#endif
+
 /*
  * call-seq:
  *   vol.name -> string
@@ -799,6 +815,12 @@ void init_storage(void)
     rb_define_method(c_storage_pool, "persistent?",
                      libvirt_storage_pool_persistent_p, 0);
 #endif
+
+#if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
+    rb_define_method(c_storage_pool, "list_all_volumes",
+                     libvirt_storage_pool_list_all_volumes, -1);
+#endif
+
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR
