@@ -2322,22 +2322,6 @@ static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTSETKEEPALIVE
 /*
  * call-seq:
- *   conn.set_keepalive(interval, count) -> Fixnum
- *
- * Call virConnectSetKeepAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectSetKeepAlive]
- * to start sending keepalive messages.  Deprecated; use conn.keepalive=
- * instead.
- */
-static VALUE libvirt_connect_set_keepalive(VALUE c, VALUE interval, VALUE count)
-{
-    ruby_libvirt_generate_call_int(virConnectSetKeepAlive,
-                                   ruby_libvirt_connect_get(c),
-                                   ruby_libvirt_connect_get(c),
-                                   NUM2INT(interval), NUM2UINT(count));
-}
-
-/*
- * call-seq:
  *   conn.keepalive = interval,count
  *
  * Call virConnectSetKeepAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectSetKeepAlive]
@@ -2762,7 +2746,6 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "uri", libvirt_connect_uri, 0);
     rb_define_method(c_connect, "max_vcpus", libvirt_connect_max_vcpus, -1);
     rb_define_method(c_connect, "node_info", libvirt_connect_node_info, 0);
-    rb_define_alias(c_connect, "node_get_info", "node_info");
     rb_define_method(c_connect, "node_free_memory",
                      libvirt_connect_node_free_memory, 0);
     rb_define_method(c_connect, "node_cells_free_memory",
@@ -2770,8 +2753,6 @@ void ruby_libvirt_connect_init(void)
 #if HAVE_VIRNODEGETSECURITYMODEL
     rb_define_method(c_connect, "node_security_model",
                      libvirt_connect_node_security_model, 0);
-    rb_define_alias(c_connect, "node_get_security_model",
-                    "node_security_model");
 #endif
 #if HAVE_VIRCONNECTISENCRYPTED
     rb_define_method(c_connect, "encrypted?", libvirt_connect_encrypted_p, 0);
@@ -3201,12 +3182,9 @@ void ruby_libvirt_connect_init(void)
 #if HAVE_VIRNODEGETCPUMAP
     rb_define_method(c_connect, "node_cpu_map",
                      libvirt_connect_node_cpu_map, -1);
-    rb_define_alias(c_connect, "node_get_cpu_map", "node_cpu_map");
 #endif
 
 #if HAVE_VIRCONNECTSETKEEPALIVE
-    rb_define_method(c_connect, "set_keepalive",
-                     libvirt_connect_set_keepalive, 2);
     rb_define_method(c_connect, "keepalive=", libvirt_connect_keepalive_equal,
                      1);
 #endif

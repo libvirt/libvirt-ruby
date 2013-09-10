@@ -184,28 +184,6 @@ static VALUE libvirt_domain_migrate_to_uri(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
 /*
  * call-seq:
- *   dom.migrate_set_max_downtime(downtime, flags=0) -> nil
- *
- * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
- * to set the maximum downtime desired for live migration.  Deprecated; use
- * dom.migrate_max_downtime= instead.
- */
-static VALUE libvirt_domain_migrate_set_max_downtime(int argc, VALUE *argv,
-                                                     VALUE d)
-{
-    VALUE downtime, flags;
-
-    rb_scan_args(argc, argv, "11", &downtime, &flags);
-
-    ruby_libvirt_generate_call_nil(virDomainMigrateSetMaxDowntime,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   NUM2ULL(downtime),
-                                   ruby_libvirt_value_to_uint(flags));
-}
-
-/*
- * call-seq:
  *   dom.migrate_max_downtime = downtime,flags=0
  *
  * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
@@ -280,28 +258,6 @@ static VALUE libvirt_domain_migrate_to_uri2(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_value_to_ulong(flags),
                                    ruby_libvirt_get_cstring_or_null(dname),
                                    ruby_libvirt_value_to_ulong(bandwidth));
-}
-
-/*
- * call-seq:
- *   dom.migrate_set_max_speed(bandwidth, flags=0) -> nil
- *
- * Call virDomainMigrateSetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxSpeed]
- * to set the maximum bandwidth allowed for live migration.  Deprecated; use
- * dom.migrate_max_speed= instead.
- */
-static VALUE libvirt_domain_migrate_set_max_speed(int argc, VALUE *argv,
-                                                  VALUE d)
-{
-    VALUE bandwidth, flags;
-
-    rb_scan_args(argc, argv, "11", &bandwidth, &flags);
-
-    ruby_libvirt_generate_call_nil(virDomainMigrateSetMaxSpeed,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   NUM2ULONG(bandwidth),
-                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -1142,31 +1098,6 @@ static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
                                    NUM2UINT(nvcpus));
 #endif
 }
-
-#if HAVE_VIRDOMAINSETVCPUSFLAGS
-/*
- * call-seq:
- *   dom.vcpus_flags = Fixnum,flags=0
- *
-
- * Call virDomainSetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpusFlags]
- * to set the current number of virtual CPUs this domain should have.  The
- * flags parameter controls whether the change is made to the running domain
- * the domain configuration, or both, and must not be 0.  Deprecated;
- * use dom.vcpus= instead.
- */
-static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
-{
-    VALUE nvcpus, flags;
-
-    domain_input_to_fixnum_and_flags(in, &nvcpus, &flags);
-
-    ruby_libvirt_generate_call_nil(virDomainSetVcpusFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d), NUM2UINT(nvcpus),
-                                   NUM2UINT(flags));
-}
-#endif
 
 /*
  * call-seq:
@@ -4405,8 +4336,6 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_migrate_to_uri, -1);
 #endif
 #if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
-    rb_define_method(c_domain, "migrate_set_max_downtime",
-                     libvirt_domain_migrate_set_max_downtime, -1);
     rb_define_method(c_domain, "migrate_max_downtime=",
                      libvirt_domain_migrate_max_downtime_equal, 1);
 #endif
@@ -4414,8 +4343,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "migrate2", libvirt_domain_migrate2, -1);
     rb_define_method(c_domain, "migrate_to_uri2",
                      libvirt_domain_migrate_to_uri2, -1);
-    rb_define_method(c_domain, "migrate_set_max_speed",
-                     libvirt_domain_migrate_set_max_speed, -1);
     rb_define_method(c_domain, "migrate_max_speed=",
                      libvirt_domain_migrate_max_speed_equal, 1);
 #endif
@@ -4523,10 +4450,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "memory=", libvirt_domain_memory_equal, 1);
     rb_define_method(c_domain, "max_vcpus", libvirt_domain_max_vcpus, 0);
     rb_define_method(c_domain, "vcpus=", libvirt_domain_vcpus_equal, 1);
-#if HAVE_VIRDOMAINSETVCPUSFLAGS
-    rb_define_method(c_domain, "vcpus_flags=", libvirt_domain_vcpus_flags_equal,
-                     1);
-#endif
     rb_define_method(c_domain, "pin_vcpu", libvirt_domain_pin_vcpu, -1);
     rb_define_method(c_domain, "xml_desc", libvirt_domain_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_domain_undefine, -1);
@@ -4589,7 +4512,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "memory_peek", libvirt_domain_memory_peek, -1);
 #endif
     rb_define_method(c_domain, "vcpus", libvirt_domain_vcpus, 0);
-    rb_define_alias(c_domain, "get_vcpus", "vcpus");
 #if HAVE_VIRDOMAINISACTIVE
     rb_define_method(c_domain, "active?", libvirt_domain_active_p, 0);
 #endif

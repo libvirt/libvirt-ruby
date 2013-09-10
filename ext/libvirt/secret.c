@@ -106,29 +106,6 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
 
 /*
  * call-seq:
- *   secret.set_value(value, flags=0) -> nil
- *
- * Call virSecretSetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
- * to set a new value in this secret.  Deprecated; use secret.value= instead.
- */
-static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
-{
-    VALUE flags, value;
-
-    rb_scan_args(argc, argv, "11", &value, &flags);
-
-    StringValue(value);
-
-    ruby_libvirt_generate_call_nil(virSecretSetValue,
-                                   ruby_libvirt_connect_get(s),
-                                   secret_get(s),
-                                   (unsigned char *)RSTRING_PTR(value),
-                                   RSTRING_LEN(value),
-                                   ruby_libvirt_value_to_uint(flags));
-}
-
-/*
- * call-seq:
  *   secret.value = value,flags=0
  *
  * Call virSecretSetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
@@ -161,7 +138,8 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
                                    ruby_libvirt_connect_get(s),
                                    secret_get(s),
                                    (unsigned char *)RSTRING_PTR(value),
-                                   RSTRING_LEN(value), NUM2UINT(flags));
+                                   RSTRING_LEN(value),
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -257,10 +235,8 @@ void ruby_libvirt_secret_init(void)
     rb_define_method(c_secret, "usagetype", libvirt_secret_usagetype, 0);
     rb_define_method(c_secret, "usageid", libvirt_secret_usageid, 0);
     rb_define_method(c_secret, "xml_desc", libvirt_secret_xml_desc, -1);
-    rb_define_method(c_secret, "set_value", libvirt_secret_set_value, -1);
     rb_define_method(c_secret, "value=", libvirt_secret_value_equal, 1);
     rb_define_method(c_secret, "value", libvirt_secret_value, -1);
-    rb_define_alias(c_secret, "get_value", "value");
     rb_define_method(c_secret, "undefine", libvirt_secret_undefine, 0);
     rb_define_method(c_secret, "free", libvirt_secret_free, 0);
 #endif
