@@ -680,6 +680,27 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
 }
 #endif
 
+#if HAVE_VIRSTORAGEVOLWIPEPATTERN
+/*
+ * call-seq:
+ *   vol.wipe_pattern(alg, flags=0) -> nil
+ *
+ * Call virStorageVolWipePattern[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolWipePattern]
+ * to wipe the data from this storage volume.  This is a destructive operation.
+ */
+static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
+{
+    VALUE alg, flags;
+
+    rb_scan_args(argc, argv, "11", &alg, &flags);
+
+    flags = integer_default_if_nil(flags, 0);
+
+    gen_call_void(virStorageVolWipePattern, connect_get(v), vol_get(v),
+                  NUM2UINT(alg), NUM2UINT(flags));
+}
+#endif
+
 void init_storage(void)
 {
     /*
@@ -810,6 +831,47 @@ void init_storage(void)
 #if HAVE_VIRSTORAGEVOLWIPE
     rb_define_method(c_storage_vol, "wipe", libvirt_storage_vol_wipe, -1);
 #endif
+#if HAVE_VIRSTORAGEVOLWIPEPATTERN
+    rb_define_method(c_storage_vol, "wipe_pattern",
+                     libvirt_storage_vol_wipe_pattern, -1);
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_ZERO
+    rb_define_const(c_storage_vol, "WIPE_ALG_ZERO",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_ZERO));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_NNSA
+    rb_define_const(c_storage_vol, "WIPE_ALG_NNSA",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_NNSA));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_DOD
+    rb_define_const(c_storage_vol, "WIPE_ALG_DOD",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_DOD));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_BSI
+    rb_define_const(c_storage_vol, "WIPE_ALG_BSI",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_BSI));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_GUTMANN
+    rb_define_const(c_storage_vol, "WIPE_ALG_GUTMANN",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_GUTMANN));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_SCHNEIER
+    rb_define_const(c_storage_vol, "WIPE_ALG_SCHNEIER",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_SCHNEIER));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_PFITZNER7
+    rb_define_const(c_storage_vol, "WIPE_ALG_PFITZNER7",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_PFITZNER7));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_PFITZNER33
+    rb_define_const(c_storage_vol, "WIPE_ALG_PFITZNER33",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_PFITZNER33));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_RANDOM
+    rb_define_const(c_storage_vol, "WIPE_ALG_RANDOM",
+                    INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_RANDOM));
+#endif
+
     rb_define_method(c_storage_vol, "info", libvirt_storage_vol_info, 0);
     rb_define_method(c_storage_vol, "xml_desc", libvirt_storage_vol_xml_desc,
                      -1);

@@ -192,6 +192,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainBlockRebase',
                   'virDomainOpenChannel',
                   'virNodeDeviceLookupSCSIHostByWWN',
+                  'virStorageVolWipePattern',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -313,6 +314,15 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_CHANNEL_FORCE',
                    'VIR_DOMAIN_CONSOLE_FORCE',
                    'VIR_DOMAIN_CONSOLE_SAFE',
+                   'VIR_STORAGE_VOL_WIPE_ALG_ZERO',
+                   'VIR_STORAGE_VOL_WIPE_ALG_NNSA',
+                   'VIR_STORAGE_VOL_WIPE_ALG_DOD',
+                   'VIR_STORAGE_VOL_WIPE_ALG_BSI',
+                   'VIR_STORAGE_VOL_WIPE_ALG_GUTMANN',
+                   'VIR_STORAGE_VOL_WIPE_ALG_SCHNEIER',
+                   'VIR_STORAGE_VOL_WIPE_ALG_PFITZNER7',
+                   'VIR_STORAGE_VOL_WIPE_ALG_PFITZNER33',
+                   'VIR_STORAGE_VOL_WIPE_ALG_RANDOM',
                  ]
 
 have_libvirt_types(libvirt_types)
