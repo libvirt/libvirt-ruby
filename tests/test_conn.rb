@@ -136,7 +136,7 @@ expect_success(conn, "CPU XML", "compare_cpu", cpu_xml)
 expect_too_many_args(conn, "baseline_cpu", 1, 2, 3)
 expect_too_few_args(conn, "baseline_cpu")
 expect_invalid_arg_type(conn, "baseline_cpu", 1)
-expect_invalid_arg_type(conn, "baseline_cpu", [], "foo")
+expect_invalid_arg_type(conn, "baseline_cpu", [cpu_xml], "foo")
 expect_fail(conn, ArgumentError, "empty array", "baseline_cpu", [])
 expect_success(conn, "CPU XML", "baseline_cpu", [cpu_xml])
 

@@ -434,26 +434,18 @@ static VALUE libvirt_connect_compare_cpu(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
 {
-    VALUE xmlcpus, flags_val;
+    VALUE xmlcpus, flags;
     char *r;
     VALUE retval;
-    unsigned int ncpus, flags;
+    unsigned int ncpus;
     VALUE entry;
     const char **xmllist;
     int i;
     int exception = 0;
 
-    rb_scan_args(argc, argv, "11", &xmlcpus, &flags_val);
-    /*
-     * We check flags up-front here so that we get a TypeError early on if
-     * flags is bogus.
-     */
-    if (NIL_P(flags_val)) {
-        flags = 0;
-    }
-    else {
-        flags = NUM2UINT(flags_val);
-    }
+    rb_scan_args(argc, argv, "11", &xmlcpus, &flags);
+
+    flags = integer_default_if_nil(flags, 0);
 
     Check_Type(xmlcpus, T_ARRAY);
 
@@ -468,11 +460,10 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
 
     for (i = 0; i < ncpus; i++) {
         entry = rb_ary_entry(xmlcpus, i);
-
-        xmllist[i] = rb_string_value_cstr((VALUE *)entry);
+        xmllist[i] = StringValueCStr(entry);
     }
 
-    r = virConnectBaselineCPU(connect_get(c), xmllist, ncpus, flags);
+    r = virConnectBaselineCPU(connect_get(c), xmllist, ncpus, NUM2UINT(flags));
     _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU",
                                connect_get(c)));
 
