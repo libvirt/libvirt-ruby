@@ -213,7 +213,7 @@ VALUE gen_list(int num, char **list)
     }
     for (i = 0; i < num; i++) {
         arg.arr = result;
-        arg.value = rb_protect(rb_str_new2_wrap, (VALUE)&((*list)[i]),
+        arg.value = rb_protect(rb_str_new2_wrap, (VALUE)&(list[i]),
                                &exception);
         if (exception) {
             goto exception;
