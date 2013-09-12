@@ -3557,7 +3557,7 @@ void init_domain()
 #if HAVE_VIRDOMAINSETMETADATA
     rb_define_method(c_domain, "metadata=", libvirt_domain_set_metadata, 1);
 #endif
-#if HAVE_VIRDOMAINPROCESSSIGNAL
+#if HAVE_VIRDOMAINSENDPROCESSSIGNAL
     rb_define_const(c_domain, "PROCESS_SIGNAL_NOP",
                     INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_NOP));
     rb_define_const(c_domain, "PROCESS_SIGNAL_HUP",
