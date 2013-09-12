@@ -247,7 +247,7 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
         return Qnil;
     }
 
-    return nodedevice_new(nd);
+    return nodedevice_new(nd, conn_attr(n));
 }
 #endif
 
