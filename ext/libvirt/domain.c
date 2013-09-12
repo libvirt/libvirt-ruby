@@ -2596,7 +2596,7 @@ static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
     minimum = integer_default_if_nil(minimum, 0);
     flags = integer_default_if_nil(flags, 0);
 
-    gen_call_void(virDomainFSTrim, connect_get(d),
+    gen_call_void(virDomainFSTrim, connect_get(d), domain_get(d),
                   get_string_or_nil(mountpoint), NUM2ULL(minimum),
                   NUM2UINT(flags));
 }
