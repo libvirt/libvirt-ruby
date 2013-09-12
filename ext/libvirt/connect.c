@@ -2316,13 +2316,15 @@ struct cpu_map_field_to_value {
     int used;
 };
 
-static VALUE cpu_map_field_to_valume(VALUE input)
+static VALUE cpu_map_field_to_value(VALUE input)
 {
     struct cpu_map_field_to_value *ftv = (struct cpu_map_field_to_value *)input;
     char cpuname[10];
 
     snprintf(cpuname, sizeof(cpuname), "%d", ftv->cpu);
-    rb_hash_aset(ftv->result, cpuname, ftv->used ? Qtrue : Qfalse);
+    rb_hash_aset(ftv->result, rb_str_new2(cpuname), ftv->used ? Qtrue : Qfalse);
+
+    return Qnil;
 }
 
 /*
@@ -2336,7 +2338,7 @@ static VALUE libvirt_connect_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
 {
     VALUE flags;
     int ret;
-    char *map;
+    unsigned char *map;
     unsigned int online;
     int exception;
     int i;
