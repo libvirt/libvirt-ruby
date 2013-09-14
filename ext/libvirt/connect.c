@@ -1165,24 +1165,14 @@ static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
                                                     VALUE c)
 {
     VALUE nativeFormat, xml, flags;
-    char *ret;
-    VALUE result;
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
     flags = integer_default_if_nil(flags, 0);
 
-    ret = virConnectDomainXMLFromNative(connect_get(c),
-                                        StringValueCStr(nativeFormat),
-                                        StringValueCStr(xml), NUM2UINT(flags));
-    _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLFromNative",
-                                 connect_get(c)));
-
-    result = rb_str_new2(ret);
-
-    free(ret);
-
-    return result;
+    gen_call_string(virConnectDomainXMLFromNative, connect_get(c), 1,
+                    connect_get(c), StringValueCStr(nativeFormat),
+                    StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
 
@@ -1198,24 +1188,14 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
                                                   VALUE c)
 {
     VALUE nativeFormat, xml, flags;
-    char *ret;
-    VALUE result;
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
     flags = integer_default_if_nil(flags, 0);
 
-    ret = virConnectDomainXMLToNative(connect_get(c),
-                                      StringValueCStr(nativeFormat),
-                                      StringValueCStr(xml), NUM2UINT(flags));
-    _E(ret == NULL, create_error(e_Error, "virConnectDomainXMLToNative",
-                                 connect_get(c)));
-
-    result = rb_str_new2(ret);
-
-    free(ret);
-
-    return result;
+    gen_call_string(virConnectDomainXMLToNative, connect_get(c), 1,
+                    connect_get(c), StringValueCStr(nativeFormat),
+                    StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
 
