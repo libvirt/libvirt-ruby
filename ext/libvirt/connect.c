@@ -987,8 +987,10 @@ static VALUE libvirt_connect_list_domains(VALUE c)
     num = virConnectNumOfDomains(connect_get(c));
     _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains",
                              connect_get(c)));
+
+    result = rb_ary_new2(num);
+
     if (num == 0) {
-        result = rb_ary_new2(num);
         return result;
     }
 
@@ -996,8 +998,6 @@ static VALUE libvirt_connect_list_domains(VALUE c)
     r = virConnectListDomains(connect_get(c), ids, num);
     _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains",
                            connect_get(c)));
-
-    result = rb_ary_new2(num);
 
     for (i = 0; i < num; i++) {
         rb_ary_push(result, INT2NUM(ids[i]));
