@@ -29,8 +29,8 @@ LIBVIRT_SRC << MAKEFILE
 # Additional files for clean/clobber
 #
 
-CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE,
-                "ext/**/depend" ]
+CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE, "ext/**/depend", "ext/**/*.gcda",
+                "ext/**/*.gcno", "ext/**/*.gcov" ]
 
 CLOBBER.include [ "config.save", "ext/**/mkmf.log", "ext/**/extconf.h",
                   MAKEFILE ]
