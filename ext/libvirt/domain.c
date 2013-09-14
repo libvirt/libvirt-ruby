@@ -1869,7 +1869,7 @@ static VALUE libvirt_domain_get_scheduler_parameters(int argc, VALUE *argv,
  */
 static VALUE libvirt_domain_set_scheduler_parameters(VALUE d, VALUE input)
 {
-    return set_parameters(d, input, connect_get(d), scheduler_nparams,
+    return set_parameters(d, input, connect_get(d), 0, scheduler_nparams,
                           scheduler_get, scheduler_set);
 }
 
@@ -1940,7 +1940,7 @@ static VALUE libvirt_domain_get_memory_parameters(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   dom.memory_parameters = Hash
+ *   dom.memory_parameters = Hash,flags=0
  *
  * Call virDomainSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
  * to set the memory parameters for this domain.  The keys and values in
@@ -1948,7 +1948,7 @@ static VALUE libvirt_domain_get_memory_parameters(int argc, VALUE *argv,
  */
 static VALUE libvirt_domain_set_memory_parameters(VALUE d, VALUE in)
 {
-    return set_parameters(d, in, connect_get(d), memory_nparams, memory_get,
+    return set_parameters(d, in, connect_get(d), 1, memory_nparams, memory_get,
                           memory_set);
 }
 #endif
@@ -2019,7 +2019,7 @@ static VALUE libvirt_domain_get_blkio_parameters(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.blkio_parameters = Hash
+ *   dom.blkio_parameters = Hash,flags=0
  *
  * Call virDomainSetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
  * to set the blkio parameters for this domain.  The keys and values in
@@ -2027,7 +2027,7 @@ static VALUE libvirt_domain_get_blkio_parameters(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_set_blkio_parameters(VALUE d, VALUE in)
 {
-    return set_parameters(d, in, connect_get(d), blkio_nparams, blkio_get,
+    return set_parameters(d, in, connect_get(d), 1, blkio_nparams, blkio_get,
                           blkio_set);
 }
 #endif

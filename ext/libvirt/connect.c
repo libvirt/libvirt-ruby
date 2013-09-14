@@ -2297,14 +2297,14 @@ static VALUE libvirt_connect_node_get_memory_parameters(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   conn.node_set_memory_parameters = Hash
+ *   conn.node_set_memory_parameters = Hash,flags=0
  *
  * Call virNodeSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeSetMemoryParameters]
  * to set the memory parameters for this host node.
  */
 static VALUE libvirt_connect_node_set_memory_parameters(VALUE c, VALUE input)
 {
-    return set_parameters(c, input, connect_get(c), node_memory_nparams,
+    return set_parameters(c, input, connect_get(c), 1, node_memory_nparams,
                           node_memory_get, node_memory_set);
 }
 #endif

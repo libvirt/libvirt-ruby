@@ -300,7 +300,7 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     return result;
 }
 
-VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
+VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn, int has_flags,
                      int (*nparams_cb)(VALUE d, unsigned int flags),
                      char *(*get_cb)(VALUE d, unsigned int flags,
                                      virTypedParameterPtr params, int *nparams),
@@ -314,6 +314,10 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
     VALUE input;
     VALUE flags;
     VALUE val;
+
+    if (!has_flags && TYPE(in) != T_HASH) {
+        rb_raise(rb_eTypeError, "wrong argument type (expected Hash)");
+    }
 
     if (TYPE(in) == T_HASH) {
         input = in;
@@ -331,7 +335,11 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
         rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
     }
 
+    /* make sure input is a hash */
     Check_Type(input, T_HASH);
+
+    /* make sure flags is an integer */
+    Check_Type(flags, T_FIXNUM);
 
     if (RHASH_SIZE(input) == 0) {
         return Qnil;

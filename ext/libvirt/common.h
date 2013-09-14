@@ -172,7 +172,7 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
                      int (*nparams_cb)(VALUE d, unsigned int flags),
                      char *(*get_cb)(VALUE d, unsigned int flags,
                                      virTypedParameterPtr params, int *nparams));
-VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn,
+VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn, int has_flags,
                      int (*nparams_cb)(VALUE d, unsigned int flags),
                      char *(*get_cb)(VALUE d, unsigned int flags,
                                      virTypedParameterPtr params, int *nparams),
