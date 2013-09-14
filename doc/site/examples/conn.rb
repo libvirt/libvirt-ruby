@@ -5,8 +5,7 @@
 require 'libvirt'
 
 # open up a connection to the qemu driver
-#conn = Libvirt::open('qemu:///system')
-conn = Libvirt::open('qemu+ssh://root@laforge.usersys.redhat.com/system')
+conn = Libvirt::open('qemu:///system')
 
 # query some basic information about the connection
 puts "Connection closed?: #{conn.closed?}"
