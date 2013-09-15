@@ -181,12 +181,6 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn, int has_flags,
 
 VALUE integer_default_if_nil(VALUE in, int def);
 
-struct rb_ary_entry_arg {
-    VALUE arr;
-    int elem;
-};
-VALUE rb_ary_entry_wrap(VALUE arg);
-VALUE rb_ary_new_wrap(VALUE arg);
 struct rb_ary_push_arg {
     VALUE arr;
     VALUE value;
@@ -206,21 +200,6 @@ struct rb_str_new_arg {
     size_t size;
 };
 VALUE rb_str_new_wrap(VALUE arg);
-VALUE rb_string_value_cstr_wrap(VALUE arg);
-
-struct rb_iv_set_arg {
-    VALUE klass;
-    char *member;
-    VALUE value;
-};
-VALUE rb_iv_set_wrap(VALUE arg);
-
-struct rb_class_new_instance_arg {
-    int argc;
-    VALUE *argv;
-    VALUE klass;
-};
-VALUE rb_class_new_instance_wrap(VALUE arg);
 
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(ar) (RARRAY(ar)->len)

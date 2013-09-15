@@ -52,18 +52,6 @@ VALUE rb_ary_push_wrap(VALUE arg)
     return rb_ary_push(e->arr, e->value);
 }
 
-VALUE rb_ary_entry_wrap(VALUE arg)
-{
-    struct rb_ary_entry_arg *e = (struct rb_ary_entry_arg *)arg;
-
-    return rb_ary_entry(e->arr, e->elem);
-}
-
-VALUE rb_ary_new_wrap(VALUE arg)
-{
-    return rb_ary_new();
-}
-
 VALUE rb_ary_store_wrap(VALUE arg)
 {
     struct rb_ary_store_wrap *e = (struct rb_ary_store_wrap *)arg;
@@ -85,25 +73,6 @@ VALUE rb_str_new_wrap(VALUE arg)
     struct rb_str_new_arg *e = (struct rb_str_new_arg *)arg;
 
     return rb_str_new(e->val, e->size);
-}
-
-VALUE rb_iv_set_wrap(VALUE arg)
-{
-    struct rb_iv_set_arg *e = (struct rb_iv_set_arg *)arg;
-
-    return rb_iv_set(e->klass, e->member, e->value);
-}
-
-VALUE rb_class_new_instance_wrap(VALUE arg)
-{
-    struct rb_class_new_instance_arg *e = (struct rb_class_new_instance_arg *)arg;
-
-    return rb_class_new_instance(e->argc, e->argv, e->klass);
-}
-
-VALUE rb_string_value_cstr_wrap(VALUE arg)
-{
-    return (VALUE)rb_string_value_cstr((VALUE *)arg);
 }
 
 /* Error handling */
