@@ -54,7 +54,7 @@ VALUE rb_ary_push_wrap(VALUE arg)
 
 VALUE rb_ary_store_wrap(VALUE arg)
 {
-    struct rb_ary_store_wrap *e = (struct rb_ary_store_wrap *)arg;
+    struct rb_ary_store_arg *e = (struct rb_ary_store_arg *)arg;
 
     rb_ary_store(e->arr, e->index, e->elem);
 
@@ -172,7 +172,7 @@ VALUE gen_list(int num, char **list)
     VALUE result;
     int exception = 0;
     int i, j;
-    struct rb_ary_push_arg arg;
+    struct rb_ary_store_arg arg;
 
     i = 0;
 
@@ -182,12 +182,13 @@ VALUE gen_list(int num, char **list)
     }
     for (i = 0; i < num; i++) {
         arg.arr = result;
-        arg.value = rb_protect(rb_str_new2_wrap, (VALUE)&(list[i]),
-                               &exception);
+        arg.index = i;
+        arg.elem = rb_protect(rb_str_new2_wrap, (VALUE)&(list[i]),
+                              &exception);
         if (exception) {
             goto exception;
         }
-        rb_protect(rb_ary_push_wrap, (VALUE)&arg, &exception);
+        rb_protect(rb_ary_store_wrap, (VALUE)&arg, &exception);
         if (exception) {
             goto exception;
         }

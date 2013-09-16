@@ -187,9 +187,9 @@ struct rb_ary_push_arg {
 };
 VALUE rb_ary_push_wrap(VALUE arg);
 VALUE rb_ary_new2_wrap(VALUE arg);
-struct rb_ary_store_wrap {
+struct rb_ary_store_arg {
     VALUE arr;
-    VALUE index;
+    long index;
     VALUE elem;
 };
 VALUE rb_ary_store_wrap(VALUE arg);

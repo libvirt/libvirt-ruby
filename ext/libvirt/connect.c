@@ -326,7 +326,7 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
 
     cells = rb_ary_new2(r);
     for (i = 0; i < r; i++) {
-        rb_ary_push(cells, ULL2NUM(freeMems[i]));
+        rb_ary_store(cells, i, ULL2NUM(freeMems[i]));
     }
 
     return cells;
@@ -1000,7 +1000,7 @@ static VALUE libvirt_connect_list_domains(VALUE c)
                            connect_get(c)));
 
     for (i = 0; i < num; i++) {
-        rb_ary_push(result, INT2NUM(ids[i]));
+        rb_ary_store(result, i, INT2NUM(ids[i]));
     }
 
     return result;

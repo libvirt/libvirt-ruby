@@ -595,8 +595,8 @@ static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
         rb_iv_set(tmp, "@tag", INT2NUM(stats[i].tag));
         rb_iv_set(tmp, "@val", ULL2NUM(stats[i].val));
 
-        rb_ary_push(result, tmp);
-    }                                           \
+        rb_ary_store(result, i, tmp);
+    }
 
     return result;
 }
@@ -2394,7 +2394,7 @@ static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
     VALUE result;
     VALUE str;
     int exception = 0;
-    struct rb_ary_store_wrap arg;
+    struct rb_ary_store_arg arg;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -2406,9 +2406,13 @@ static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
                                       "virDomainSnapshotNumChildren",
                                       connect_get(d)));
 
-    children = alloca(num_children * sizeof(char *));
+    result = rb_ary_new2(num_children);
 
-    result = rb_ary_new();
+    if (num_children == 0) {
+        return result;
+    }
+
+    children = alloca(num_children * sizeof(char *));
 
     ret = virDomainSnapshotListChildrenNames(domain_snapshot_get(d), children,
                                              num_children, NUM2UINT(flags));
@@ -2423,7 +2427,7 @@ static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
         }
 
         arg.arr = result;
-        arg.index = INT2NUM(i);
+        arg.index = i;
         arg.elem = str;
         rb_protect(rb_ary_store_wrap, (VALUE)&arg, &exception);
         if (exception) {

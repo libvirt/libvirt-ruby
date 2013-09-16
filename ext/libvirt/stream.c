@@ -90,10 +90,10 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     ret = virStreamRecv(stream_get(s), data, NUM2INT(bytes));
     _E(ret < 0, create_error(e_RetrieveError, "virStreamRecv", connect_get(s)));
 
-    result = rb_ary_new();
+    result = rb_ary_new2(2);
 
-    rb_ary_push(result, INT2NUM(ret));
-    rb_ary_push(result, rb_str_new(data, ret));
+    rb_ary_store(result, 0, INT2NUM(ret));
+    rb_ary_store(result, 1, rb_str_new(data, ret));
 
     return result;
 }
@@ -273,7 +273,7 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
                  "wrong argument type (expected Symbol or Proc)");
     }
 
-    passthrough = rb_ary_new();
+    passthrough = rb_ary_new2(3);
     rb_ary_store(passthrough, 0, callback);
     rb_ary_store(passthrough, 1, opaque);
     rb_ary_store(passthrough, 2, s);

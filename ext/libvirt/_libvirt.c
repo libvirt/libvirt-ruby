@@ -75,10 +75,10 @@ static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
     result = rb_ary_new2(2);
     rargv[0] = rb_str_new2("libvirt");
     rargv[1] = ULONG2NUM(libVer);
-    rb_ary_push(result, rb_class_new_instance(2, rargv, c_libvirt_version));
+    rb_ary_store(result, 0, rb_class_new_instance(2, rargv, c_libvirt_version));
     rargv[0] = type;
     rargv[1] = ULONG2NUM(typeVer);
-    rb_ary_push(result, rb_class_new_instance(2, rargv, c_libvirt_version));
+    rb_ary_store(result, 1, rb_class_new_instance(2, rargv, c_libvirt_version));
     return result;
 }
 
