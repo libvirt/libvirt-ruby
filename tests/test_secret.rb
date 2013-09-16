@@ -7,6 +7,8 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+set_test_object("secret")
+
 conn = Libvirt::open("qemu:///system")
 
 # TESTGROUP: secret.uuid
@@ -83,6 +85,8 @@ newsecret.undefine
 expect_too_many_args(newsecret, "free", 1)
 
 expect_success(newsecret, "no args", "free")
+
+# END TESTS
 
 conn.close
 

@@ -7,17 +7,20 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+set_test_object("connect")
+
+conn = Libvirt::open("qemu:///system")
+
+cleanup_test_domain(conn)
+
 # test setup
 begin
   `rm -f /etc/sysconfig/network-scripts/ifcfg-ruby-libvirt-tester`
   `brctl delbr ruby-libvirt-tester >& /dev/null`
 rescue
 end
-`rm -f #{$GUEST_DISK} ; qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
-`rm -f /var/lib/libvirt/images/ruby-libvirt-test.save`
+`qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
 `rm -rf #{$POOL_PATH}; mkdir #{$POOL_PATH} ; echo $?`
-
-conn = Libvirt::open("qemu:///system")
 
 cpu_xml = <<EOF
 <cpu>
@@ -78,35 +81,19 @@ expect_too_many_args(conn, "node_get_info", 1)
 
 expect_success(conn, "no args", "node_get_info")
 
-begin
-  # TESTGROUP: conn.node_free_memory
-  expect_too_many_args(conn, "node_free_memory", 1)
+# TESTGROUP: conn.node_free_memory
+expect_too_many_args(conn, "node_free_memory", 1)
 
-  conn.node_free_memory
-  puts_ok "conn.node_free_memory no args"
-rescue Libvirt::RetrieveError
-  puts_skipped "conn.node_free_memory not supported on this host"
-rescue NoMethodError
-  puts_skipped "conn.node_free_memory does not exist"
-end
+expect_success(conn, "no args", "node_free_memory")
 
-begin
-  # TESTGROUP: conn.node_cells_free_memory
-  expect_too_many_args(conn, "node_cells_free_memory", 1, 2, 3)
-  expect_invalid_arg_type(conn, "node_cells_free_memory", 'start')
-  expect_invalid_arg_type(conn, "node_cells_free_memory", 0, 'end')
+# TESTGROUP: conn.node_cells_free_memory
+expect_too_many_args(conn, "node_cells_free_memory", 1, 2, 3)
+expect_invalid_arg_type(conn, "node_cells_free_memory", 'start')
+expect_invalid_arg_type(conn, "node_cells_free_memory", 0, 'end')
 
-  cell_mem = conn.node_cells_free_memory
-  puts_ok "conn.node_cells_free_memory no args = "
-  cell_mem = conn.node_cells_free_memory(0)
-  puts_ok "conn.node_cells_free_memory(0) = "
-  cell_mem = conn.node_cells_free_memory(0, 1)
-  puts_ok "conn.node_cells_free_memory(0, 1) = "
-rescue Libvirt::RetrieveError
-  puts_skipped "conn.node_cells_free_memory not supported on this host"
-rescue NoMethodError
-  puts_skipped "conn.node_cells_free_memory does not exist"
-end
+expect_success(conn, "no args", "node_cells_free_memory")
+expect_success(conn, "start cell", "node_cells_free_memory", 0)
+expect_success(conn, "start cell and max cells", "node_cells_free_memory", 0, 1)
 
 # TESTGROUP: conn.node_get_security_model
 expect_too_many_args(conn, "node_get_security_model", 1)
@@ -144,8 +131,8 @@ expect_success(conn, "CPU XML", "baseline_cpu", [cpu_xml])
 dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
 }
 
-def dom_event_callback_symbol(conn, dom, event, detail, opaque)
-end
+# def dom_event_callback_symbol(conn, dom, event, detail, opaque)
+# end
 
 expect_too_many_args(conn, "domain_event_register_any", 1, 2, 3, 4, 5)
 expect_too_few_args(conn, "domain_event_register_any")
@@ -155,58 +142,58 @@ expect_invalid_arg_type(conn, "domain_event_register_any", Libvirt::Connect::DOM
 expect_invalid_arg_type(conn, "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, 1)
 expect_fail(conn, ArgumentError, "invalid event ID", "domain_event_register_any", 456789, dom_event_callback_proc)
 
-callbackID = expect_success(conn, "eventID and proc", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc)
-conn.domain_event_deregister_any(callbackID)
+# callbackID = expect_success(conn, "eventID and proc", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc)
+# conn.domain_event_deregister_any(callbackID)
 
-callbackID = expect_success(conn, "eventID and symbol", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, :dom_event_callback_symbol)
-conn.domain_event_deregister_any(callbackID)
+# callbackID = expect_success(conn, "eventID and symbol", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, :dom_event_callback_symbol)
+# conn.domain_event_deregister_any(callbackID)
 
-callbackID = expect_success(conn, "eventID, proc, nil domain", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, nil)
-conn.domain_event_deregister_any(callbackID)
+# callbackID = expect_success(conn, "eventID, proc, nil domain", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, nil)
+# conn.domain_event_deregister_any(callbackID)
 
-callbackID = expect_success(conn, "eventID, proc, nil domain, opaque", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, nil, "opaque user data")
-conn.domain_event_deregister_any(callbackID)
+# callbackID = expect_success(conn, "eventID, proc, nil domain, opaque", "domain_event_register_any", Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc, nil, "opaque user data")
+# conn.domain_event_deregister_any(callbackID)
 
-# TESTGROUP: conn.domain_event_deregister_any
-dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
-}
+# # TESTGROUP: conn.domain_event_deregister_any
+# dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+# }
 
-callbackID = conn.domain_event_register_any(Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc)
+# callbackID = conn.domain_event_register_any(Libvirt::Connect::DOMAIN_EVENT_ID_LIFECYCLE, dom_event_callback_proc)
 
 expect_too_many_args(conn, "domain_event_deregister_any", 1, 2)
 expect_too_few_args(conn, "domain_event_deregister_any")
 expect_invalid_arg_type(conn, "domain_event_deregister_any", "hello")
 
-expect_success(conn, "callbackID", "domain_event_deregister_any", callbackID)
+# expect_success(conn, "callbackID", "domain_event_deregister_any", callbackID)
 
 # TESTGROUP: conn.domain_event_register
-dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
-}
+# dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+# }
 
-def dom_event_callback_symbol(conn, dom, event, detail, opaque)
-end
+# def dom_event_callback_symbol(conn, dom, event, detail, opaque)
+# end
 
 expect_too_many_args(conn, "domain_event_register", 1, 2, 3)
 expect_too_few_args(conn, "domain_event_register")
 expect_invalid_arg_type(conn, "domain_event_register", "hello")
 
-expect_success(conn, "proc", "domain_event_register", dom_event_callback_proc)
-conn.domain_event_deregister
+# expect_success(conn, "proc", "domain_event_register", dom_event_callback_proc)
+# conn.domain_event_deregister
 
-expect_success(conn, "symbol", "domain_event_register", :dom_event_callback_symbol)
-conn.domain_event_deregister
+# expect_success(conn, "symbol", "domain_event_register", :dom_event_callback_symbol)
+# conn.domain_event_deregister
 
-expect_success(conn, "proc and opaque", "domain_event_register", dom_event_callback_proc, "opaque user data")
-conn.domain_event_deregister
+# expect_success(conn, "proc and opaque", "domain_event_register", dom_event_callback_proc, "opaque user data")
+# conn.domain_event_deregister
 
-# TESTGROUP: conn.domain_event_deregister
-dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
-}
+# # TESTGROUP: conn.domain_event_deregister
+# dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+# }
 
-conn.domain_event_register(dom_event_callback_proc)
+# conn.domain_event_register(dom_event_callback_proc)
 
 expect_too_many_args(conn, "domain_event_deregister", 1)
-expect_success(conn, "no args", "domain_event_deregister")
+# expect_success(conn, "no args", "domain_event_deregister")
 
 # TESTGROUP: conn.num_of_domains
 expect_too_many_args(conn, "num_of_domains", 1)
@@ -667,6 +654,8 @@ expect_too_many_args(conn, "sys_info", 1, 2)
 expect_invalid_arg_type(conn, "sys_info", "foo")
 
 expect_success(conn, "system info", "sys_info")
+
+# END TESTS
 
 conn.close
 

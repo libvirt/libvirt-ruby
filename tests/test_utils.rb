@@ -2,7 +2,9 @@ $FAIL = 0
 $SUCCESS = 0
 $SKIPPED = 0
 
-$GUEST_DISK = '/var/lib/libvirt/images/ruby-libvirt-tester.qcow2'
+$GUEST_BASE = '/var/lib/libvirt/images/ruby-libvirt-tester'
+$GUEST_DISK = $GUEST_BASE + '.qcow2'
+$GUEST_SAVE = $GUEST_BASE + '.save'
 $GUEST_UUID = "93a5c045-6457-2c09-e56f-927cdf34e17a"
 
 # XML data for later tests
@@ -119,22 +121,27 @@ $new_storage_pool_xml = <<EOF
 </pool>
 EOF
 
+$test_object = "unknown"
+
+def set_test_object(obj)
+  $test_object = obj
+end
+
 def expect_success(object, msg, func, *args)
   begin
     x = object.send(func, *args)
     if block_given?
       res = yield x
       if not res
-        # FIXME: generate a proper error here
-        raise "Failed"
+        raise "block failed"
       end
     end
-    puts_ok "#{func} #{msg} succeeded"
+    puts_ok "#{$test_object}.#{func} #{msg} succeeded"
     x
   rescue NoMethodError
-    puts_skipped "#{func} does not exist"
+    puts_skipped "#{$test_object}.#{func} does not exist"
   rescue => e
-    puts_fail "#{func} #{msg} expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
+    puts_fail "#{$test_object}.#{func} #{msg} expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
   end
 end
 
@@ -142,13 +149,13 @@ def expect_fail(object, errtype, errmsg, func, *args)
   begin
     object.send(func, *args)
   rescue NoMethodError
-    puts_skipped "#{func} does not exist"
+    puts_skipped "#{$test_object}.#{func} does not exist"
   rescue errtype => e
-    puts_ok "#{func} #{errmsg} threw #{errtype.to_s}"
+    puts_ok "#{$test_object}.#{func} #{errmsg} threw #{errtype.to_s}"
   rescue => e
-    puts_fail "#{func} #{errmsg} expected to throw #{errtype.to_s}, but instead threw #{e.class.to_s}: #{e.to_s}"
+    puts_fail "#{$test_object}.#{func} #{errmsg} expected to throw #{errtype.to_s}, but instead threw #{e.class.to_s}: #{e.to_s}"
   else
-    puts_fail "#{func} #{errmsg} expected to throw #{errtype.to_s}, but threw nothing"
+    puts_fail "#{$test_object}.#{func} #{errmsg} expected to throw #{errtype.to_s}, but threw nothing"
   end
 end
 
@@ -181,4 +188,39 @@ end
 
 def finish_tests
   puts "Successfully finished #{$SUCCESS} tests, failed #{$FAIL} tests, skipped #{$SKIPPED} tests"
+end
+
+def find_valid_iface(conn)
+  conn.list_interfaces.each do |ifname|
+    iface = conn.lookup_interface_by_name(ifname)
+    if iface.mac == "00:00:00:00:00:00"
+      next
+    end
+    return iface
+  end
+  return nil
+end
+
+def cleanup_test_domain(conn)
+  # cleanup from previous runs
+  begin
+    olddom = conn.lookup_domain_by_name("ruby-libvirt-tester")
+  rescue
+    # in case we didn't find it, don't do anything
+  end
+
+  begin
+    olddom.destroy
+  rescue
+    # in case we didn't destroy it, don't do anything
+  end
+
+  begin
+    olddom.undefine
+  rescue
+    # in case we didn't undefine it, don't do anything
+  end
+
+  `rm -f #{$GUEST_DISK}`
+  `rm -f #{$GUEST_SAVE}`
 end

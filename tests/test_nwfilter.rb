@@ -7,6 +7,8 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+set_test_object("nwfilter")
+
 conn = Libvirt::open("qemu:///system")
 
 # TESTGROUP: nwfilter.undefine
@@ -50,6 +52,8 @@ newnw.undefine
 expect_too_many_args(newnw, "free", 1)
 
 expect_success(newnw, "no args", "free")
+
+# END TESTS
 
 conn.close
 

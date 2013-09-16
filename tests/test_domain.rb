@@ -11,20 +11,14 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+set_test_object("domain")
+
 conn = Libvirt::open("qemu:///system")
 
-# initial cleanup for previous runs
-begin
-  olddom = conn.lookup_domain_by_name("ruby-libvirt-tester")
-  olddom.destroy
-  olddom.undefine
-rescue
-  # in case we didn't find it, don't do anything
-end
+cleanup_test_domain(conn)
 
 # setup for later tests
-`rm -f #{$GUEST_DISK} ; qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
-`rm -f /var/lib/libvirt/images/ruby-libvirt-test.save`
+`qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
 
 new_hostdev_xml = <<EOF
 <hostdev mode='subsystem' type='pci' managed='yes'>
@@ -94,11 +88,60 @@ expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_s
 
 newdom.destroy
 
+# TESTGROUP: dom.migrate2
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+dconn = Libvirt::open("qemu:///system")
+
+expect_too_many_args(newdom, "migrate2", 1, 2, 3, 4, 5, 6, 7)
+expect_too_few_args(newdom, "migrate2")
+expect_fail(newdom, ArgumentError, "invalid connection object", "migrate2", "foo")
+expect_invalid_arg_type(newdom, "migrate2", dconn, 0)
+
+# FIXME: how can we make this work?
+#expect_success(newdom, "conn arg", "migrate2", dconn)
+
+dconn.close
+
+newdom.destroy
+
+# TESTGROUP: dom.migrate_to_uri2
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "migrate_to_uri2", 1, 2, 3, 4, 5, 6, 7)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 'bar', 'baz')
+expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 'bar', 0, 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 'bar', 0, 'foo', 'baz')
+
+#expect_success(newdom, "URI arg", "migrate_to_uri2", "qemu://remote/system")
+
+dconn.close
+
+newdom.destroy
+
+# TESTGROUP: dom.migrate_set_max_speed
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "migrate_set_max_speed", 1, 2, 3)
+expect_too_few_args(newdom, "migrate_set_max_speed")
+expect_invalid_arg_type(newdom, "migrate_set_max_speed", 'foo')
+expect_invalid_arg_type(newdom, "migrate_set_max_speed", 5, 'foo')
+
+#expect_success(newdom, "Bandwidth arg", "migrate_set_max_speed", 5)
+
+newdom.destroy
+
 # TESTGROUP: dom.shutdown
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-expect_too_many_args(newdom, "shutdown", 1)
+expect_too_many_args(newdom, "shutdown", 1, 2)
 expect_success(newdom, "no args", "shutdown")
 sleep 1
 newdom.destroy
@@ -109,22 +152,19 @@ sleep 1
 expect_too_many_args(newdom, "reboot", 1, 2)
 expect_invalid_arg_type(newdom, "reboot", "hello")
 
-# Qemu driver doesn't currently support reboot, so this is going to fail
-begin
-  newdom.reboot
-  puts_ok "dom.reboot succeeded"
-rescue Libvirt::Error => e
-  puts_skipped "dom.reboot not supported, skipped"
-end
-
+expect_success(newdom, "no args", "reboot")
 sleep 1
+
+expect_success(newdom, "flags arg", "reboot", 0)
+sleep 1
+
 newdom.destroy
 
 # TESTGROUP: dom.destroy
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-expect_too_many_args(newdom, "destroy", 1)
+expect_too_many_args(newdom, "destroy", 1, 2)
 expect_success(newdom, "no args", "destroy")
 
 # TESTGROUP: dom.suspend
@@ -151,7 +191,7 @@ newdom = conn.define_domain_xml($new_dom_xml)
 newdom.create
 sleep 1
 
-expect_too_many_args(newdom, "save", 1, 2)
+expect_too_many_args(newdom, "save", 1, 2, 3, 4)
 expect_too_few_args(newdom, "save")
 expect_invalid_arg_type(newdom, "save", 1)
 expect_invalid_arg_type(newdom, "save", nil)
@@ -170,7 +210,7 @@ sleep 1
 expect_too_many_args(newdom, "managed_save", 1, 2)
 expect_invalid_arg_type(newdom, "managed_save", "hello")
 expect_success(newdom, "no args", "managed_save")
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_MANAGED_SAVE)
 
 # TESTGROUP: dom.has_managed_save?
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -181,20 +221,20 @@ expect_too_many_args(newdom, "has_managed_save?", 1, 2)
 expect_invalid_arg_type(newdom, "has_managed_save?", "hello")
 
 if newdom.has_managed_save?
-  puts_fail "dom.has_managed_save? reports true on a new domain"
+  puts_fail "domain.has_managed_save? reports true on a new domain"
 else
-  puts_ok "dom.has_managed_save? not true on new domain"
+  puts_ok "domain.has_managed_save? not true on new domain"
 end
 
 newdom.managed_save
 
 if not newdom.has_managed_save?
-  puts_fail "dom.has_managed_save? reports false after a managed save"
+  puts_fail "domain.has_managed_save? reports false after a managed save"
 else
-  puts_ok "dom.has_managed_save? reports true after a managed save"
+  puts_ok "domain.has_managed_save? reports true after a managed save"
 end
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_MANAGED_SAVE)
 
 # TESTGROUP: dom.managed_save_remove
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -206,13 +246,13 @@ expect_too_many_args(newdom, "managed_save_remove", 1, 2)
 expect_invalid_arg_type(newdom, "managed_save_remove", "hello")
 
 if not newdom.has_managed_save?
-  puts_fail "prior to dom.managed_save_remove, no managed save file"
+  puts_fail "prior to domain.managed_save_remove, no managed save file"
 end
 expect_success(newdom, "no args", "managed_save_remove")
 if newdom.has_managed_save?
-  puts_fail "after dom.managed_save_remove, managed save file still exists"
+  puts_fail "after domain.managed_save_remove, managed save file still exists"
 else
-  puts_ok "after dom.managed_save_remove, managed save file no longer exists"
+  puts_ok "after domain.managed_save_remove, managed save file no longer exists"
 end
 
 newdom.undefine
@@ -336,12 +376,12 @@ expect_fail(newdom, Libvirt::RetrieveError, "invalid path", "block_peek", "foo",
 
 blockpeek = newdom.block_peek($GUEST_DISK, 0, 512)
 
-# 51 46 49 fb are the first 4 bytes of a qcow2 image
-if blockpeek[0] != 0x51 or blockpeek[1] != 0x46 or blockpeek[2] != 0x49 or
-    blockpeek[3] != 0xfb
-  puts_fail "dom.block_peek read did not return valid data"
+# 0x51 0x46 0x49 0xfb are the first 4 bytes of a qcow2 image
+if blockpeek[0].unpack('C')[0] != 0x51 or blockpeek[1].unpack('C')[0] != 0x46 or
+  blockpeek[2].unpack('C')[0] != 0x49 or blockpeek[3].unpack('C')[0] != 0xfb
+  puts_fail "domain.block_peek read did not return valid data"
 else
-  puts_ok "dom.block_peek read valid data"
+  puts_ok "domain.block_peek read valid data"
 end
 
 newdom.destroy
@@ -362,24 +402,22 @@ expect_success(newdom, "offset and size args", "memory_peek", 0, 512)
 newdom.destroy
 
 # TESTGROUP: dom.get_vcpus
-newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
-
 expect_too_many_args(newdom, "get_vcpus", 1)
+
+newdom = conn.define_domain_xml($new_dom_xml)
+
+expect_success(newdom, "get_vcpus on shutoff domain", "get_vcpus") {|x| x.length == 2}
+
+newdom.create
+sleep 1
 
 expect_success(newdom, "no args", "get_vcpus") {|x| x.length == 2}
 
 newdom.destroy
+newdom.undefine
 
 # TESTGROUP: dom.active?
-newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
-
 expect_too_many_args(newdom, "active?", 1)
-
-expect_success(newdom, "no args", "active?") {|x| x == true}
-
-newdom.destroy
 
 newdom = conn.define_domain_xml($new_dom_xml)
 
@@ -479,15 +517,7 @@ expect_too_many_args(newdom, "max_memory=", 1, 2)
 expect_too_few_args(newdom, "max_memory=")
 expect_invalid_arg_type(newdom, "max_memory=", 'foo')
 
-begin
-  newdom.max_memory = 200000
-  puts_ok "dom.max_memory= succeded"
-rescue NoMethodError
-  puts_skipped "dom.max_memory does not exist"
-rescue Libvirt::DefinitionError => e
-  # dom.max_memory is not supported by Qemu; skip
-  puts_skipped "dom.max_memory not supported by connection driver"
-end
+expect_success(newdom, "memory arg", "max_memory=", 200000)
 
 newdom.undefine
 
@@ -497,8 +527,8 @@ newdom = conn.define_domain_xml($new_dom_xml)
 expect_too_many_args(newdom, "memory=", 1, 2)
 expect_too_few_args(newdom, "memory=")
 expect_invalid_arg_type(newdom, "memory=", 'foo')
-
-expect_fail(newdom, Libvirt::Error, "shutoff domain", "memory=", 2)
+expect_fail(newdom, ArgumentError, "too many array arguments", "memory=", [1, 2, 3])
+expect_fail(newdom, Libvirt::Error, "shutoff domain", "memory=", [2, Libvirt::Domain::AFFECT_LIVE])
 
 newdom.undefine
 
@@ -525,16 +555,15 @@ newdom = conn.define_domain_xml($new_dom_xml)
 expect_too_many_args(newdom, "vcpus=", 1, 2)
 expect_too_few_args(newdom, "vcpus=")
 expect_invalid_arg_type(newdom, "vcpus=", 'foo')
-
-expect_fail(newdom, Libvirt::Error, "shutoff domain", "vcpus=", 2)
+expect_fail(newdom, ArgumentError, "too many array arguments", "vcpus=", [0, 1, 2])
+expect_fail(newdom, Libvirt::Error, "shutoff domain", "vcpus=", [2, Libvirt::Domain::AFFECT_LIVE])
 
 newdom.undefine
 
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-# FIXME: this kills the domain for some reason
-#expect_success(newdom, "number arg", "vcpus=", 2)
+expect_success(newdom, "number arg", "vcpus=", 2)
 
 newdom.destroy
 
@@ -542,7 +571,7 @@ newdom.destroy
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-expect_too_many_args(newdom, "pin_vcpu", 1, 2, 3)
+expect_too_many_args(newdom, "pin_vcpu", 1, 2, 3, 4)
 expect_too_few_args(newdom, "pin_vcpu")
 expect_invalid_arg_type(newdom, "pin_vcpu", 'foo', [0])
 expect_invalid_arg_type(newdom, "pin_vcpu", 0, 1)
@@ -565,7 +594,7 @@ newdom.destroy
 # TESTGROUP: dom.undefine
 newdom = conn.define_domain_xml($new_dom_xml)
 
-expect_too_many_args(newdom, "undefine", 1)
+expect_too_many_args(newdom, "undefine", 1, 2)
 
 expect_success(newdom, "no args", "undefine")
 
@@ -605,16 +634,16 @@ expect_invalid_arg_type(newdom, "autostart=", 1234)
 
 expect_success(newdom, "true arg", "autostart=", true)
 if not newdom.autostart?
-  puts_fail "dom.autostart= did not set autostart to true"
+  puts_fail "domain.autostart= did not set autostart to true"
 else
-  puts_ok "dom.autostart= set autostart to true"
+  puts_ok "domain.autostart= set autostart to true"
 end
 
 expect_success(newdom, "false arg", "autostart=", false)
 if newdom.autostart?
-  puts_fail "dom.autostart= did not set autostart to false"
+  puts_fail "domain.autostart= did not set autostart to false"
 else
-  puts_ok "dom.autostart= set autostart to false"
+  puts_ok "domain.autostart= set autostart to false"
 end
 
 newdom.undefine
@@ -681,8 +710,7 @@ newdom = conn.define_domain_xml($new_dom_xml)
 newdom.undefine
 expect_too_many_args(newdom, "free", 1)
 
-newdom.free
-puts_ok "dom.free succeeded"
+expect_success(newdom, "free", "free")
 
 # TESTGROUP: dom.snapshot_create_xml
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -697,12 +725,12 @@ expect_success(newdom, "simple XML arg", "snapshot_create_xml", "<domainsnapshot
 
 snaps = newdom.num_of_snapshots
 if snaps != 1
-  puts_fail "dom.snapshot_create_xml after one snapshot has #{snaps} snapshots"
+  puts_fail "domain.snapshot_create_xml after one snapshot has #{snaps} snapshots"
 else
-  puts_ok "dom.snapshot_create_xml after one snapshot has 1 snapshot"
+  puts_ok "domain.snapshot_create_xml after one snapshot has 1 snapshot"
 end
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.num_of_snapshots
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -716,7 +744,7 @@ newdom.snapshot_create_xml("<domainsnapshot/>")
 
 expect_success(newdom, "no args", "num_of_snapshots") {|x| x == 1}
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.list_snapshots
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -730,7 +758,7 @@ newdom.snapshot_create_xml("<domainsnapshot/>")
 
 expect_success(newdom, "no args", "list_snapshots") {|x| x.length == 1}
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.lookup_snapshot_by_name
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -743,7 +771,7 @@ expect_invalid_arg_type(newdom, "lookup_snapshot_by_name", 'foo', 'bar')
 
 expect_success(newdom, "name arg", "lookup_snapshot_by_name", "foo")
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.has_current_snapshot?
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -757,7 +785,7 @@ newdom.snapshot_create_xml("<domainsnapshot><name>foo</name></domainsnapshot>")
 
 expect_success(newdom, "no args", "has_current_snapshot?") {|x| x == true}
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.revert_to_snapshot
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -775,7 +803,7 @@ expect_invalid_arg_type(newdom, "revert_to_snapshot", snap, 'foo')
 
 expect_success(newdom, "snapshot arg", "revert_to_snapshot", snap)
 
-newdom.undefine
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.current_snapshot
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -788,36 +816,7 @@ newdom.snapshot_create_xml("<domainsnapshot><name>foo</name></domainsnapshot>")
 
 expect_success(newdom, "no args", "current_snapshot")
 
-newdom.undefine
-
-# TESTGROUP: snapshot.xml_desc
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
-
-expect_too_many_args(snap, "xml_desc", 1, 2)
-expect_invalid_arg_type(snap, "xml_desc", 'foo')
-
-expect_success(newdom, "no args", "xml_desc")
-
-newdom.undefine
-
-# TESTGROUP: snapshot.delete
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
-
-expect_too_many_args(snap, "delete", 1, 2)
-expect_invalid_arg_type(snap, "delete", 'foo')
-
-expect_success(snap, "no args", "delete")
-
-newdom.undefine
-
-# TESTGROUP: snapshot.free
-newdom = conn.define_domain_xml($new_dom_xml)
-newdom.undefine
-expect_too_many_args(newdom, "free", 1)
-
-expect_success(newdom, "no args", "free")
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.job_info
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -859,32 +858,16 @@ newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "scheduler_type", 1)
 
-begin
-  newdom.scheduler_type
-  puts_ok "dom.scheduler_type succeeded"
-rescue NoMethodError
-  puts_skipped "dom.scheduler_type does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_skipped "dom.scheduler_type not supported"
-end
+expect_success(newdom, "no args", "scheduler_type")
 
 newdom.undefine
 
 # TESTGROUP: dom.scheduler_parameters
 newdom = conn.define_domain_xml($new_dom_xml)
 
-expect_too_many_args(newdom, "scheduler_parameters", 1)
+expect_too_many_args(newdom, "scheduler_parameters", 1, 1)
 
-begin
-  newdom.scheduler_parameters
-  puts_ok "dom.scheduler_parameters succeeded"
-rescue NoMethodError
-  puts_skipped "dom.scheduler_parameters does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_ok "dom.scheduler_parameters not supported"
-end
+expect_success(newdom, "no args", "scheduler_parameters")
 
 newdom.undefine
 
@@ -895,14 +878,7 @@ expect_too_many_args(newdom, "scheduler_parameters=", 1, 2)
 expect_too_few_args(newdom, "scheduler_parameters=")
 expect_invalid_arg_type(newdom, "scheduler_parameters=", 0)
 
-begin
-  newdom.scheduler_parameters={"cpu_shares"=>512}
-rescue NoMethodError
-  puts_skipped "dom.scheduler_parameters= does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_ok "dom.scheduler_parameters= not supported"
-end
+expect_success(newdom, "cpu shares arg", "scheduler_parameters=", {"cpu_shares" => 512})
 
 newdom.undefine
 
@@ -942,11 +918,12 @@ expect_too_many_args(newdom, "qemu_monitor_command", 1, 2, 3)
 expect_too_few_args(newdom, "qemu_monitor_command")
 expect_invalid_arg_type(newdom, "qemu_monitor_command", 1)
 expect_invalid_arg_type(newdom, "qemu_monitor_command", "foo", "bar")
-testconn = Libvirt::open("test:///default")
-fakedom = testconn.create_domain_xml(new_test_xml)
-expect_invalid_arg_type(fakedom, "qemu_monitor_command", "foo")
-fakedom.destroy
-testconn.close
+# FIXME: the test driver doesn't support virDomainDestroyFlags() presently
+#testconn = Libvirt::open("test:///default")
+#fakedom = testconn.create_domain_xml(new_test_xml)
+#expect_invalid_arg_type(fakedom, "qemu_monitor_command", "foo")
+#fakedom.destroy
+#testconn.close
 expect_fail(newdom, Libvirt::RetrieveError, "invalid command", "qemu_monitor_command", "foo")
 
 expect_success(newdom, "monitor command", "qemu_monitor_command", '{"execute":"query-cpus"}')
@@ -959,7 +936,6 @@ newdom = conn.define_domain_xml($new_dom_xml)
 expect_too_many_args(newdom, "num_vcpus", 1, 2)
 expect_too_few_args(newdom, "num_vcpus")
 expect_invalid_arg_type(newdom, "num_vcpus", 'foo')
-expect_fail(newdom, Libvirt::Error, "zero flags", "num_vcpus", 0)
 expect_fail(newdom, Libvirt::Error, "active flag on shutoff domain", "num_vcpus", Libvirt::Domain::VCPU_LIVE)
 expect_fail(newdom, Libvirt::Error, "live and config flags", "num_vcpus", Libvirt::Domain::VCPU_LIVE | Libvirt::Domain::VCPU_CONFIG)
 expect_success(newdom, "config flag", "num_vcpus", Libvirt::Domain::VCPU_CONFIG) {|x| x == 2}
@@ -969,36 +945,14 @@ newdom.undefine
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-expect_success(newdom, "config flag on transient domain", "num_vcpus", Libvirt::Domain::VCPU_CONFIG)
+expect_fail(newdom, Libvirt::RetrieveError, "config flag on transient domain", "num_vcpus", Libvirt::Domain::VCPU_CONFIG)
 expect_success(newdom, "live flag on transient domain", "num_vcpus", Libvirt::Domain::VCPU_LIVE)
 
 newdom.destroy
 
 # TESTGROUP: dom.vcpus_flags=
-newdom = conn.define_domain_xml($new_dom_xml)
-
-expect_too_many_args(newdom, "vcpus_flags=", 1, 2, 3)
-expect_too_few_args(newdom, "vcpus_flags=")
-expect_invalid_arg_type(newdom, "vcpus_flags=", 1)
-expect_invalid_arg_type(newdom, "vcpus_flags=", ['foo', 2])
-expect_invalid_arg_type(newdom, "vcpus_flags=", [2, 'foo'])
-expect_fail(newdom, Libvirt::Error, "zero flags", "vcpus_flags=", [2, 0])
-expect_fail(newdom, Libvirt::Error, "zero vcpus", "vcpus_flags=", [0, Libvirt::Domain::VCPU_CONFIG])
-expect_fail(newdom, Libvirt::Error, "live vcpu on shutoff domain", "vcpus_flags=", [2, Libvirt::Domain::VCPU_LIVE])
-expect_success(newdom, "2 vcpu config", "vcpus_flags=", [2, Libvirt::Domain::VCPU_CONFIG])
-
-newdom.undefine
-
-newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
-
-expect_fail(newdom, Libvirt::Error, "vcpu config on transient domain", "vcpus_flags=", [2, Libvirt::Domain::VCPU_CONFIG])
-expect_fail(newdom, Libvirt::Error, "too many vcpus", "vcpus_flags=", [4, Libvirt::Domain::VCPU_LIVE])
-
-# FIXME: this doesn't work for some reason
-#expect_success(newdom, "vcpus to 1", "vcpus_flags=", [1, Libvirt::Domain::VCPU_LIVE])
-
-newdom.destroy
+# dom.vcpus_flags= is deprecated in favor of dom.vcpus=, so we don't do any
+# tests here for it
 
 # TESTGROUP: dom.memory_parameters=
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1010,14 +964,7 @@ expect_fail(newdom, ArgumentError, "empty array", "memory_parameters=", [])
 expect_invalid_arg_type(newdom, "memory_parameters=", [1, 0])
 expect_invalid_arg_type(newdom, "memory_parameters=", [{}, "foo"])
 
-begin
-  newdom.memory_parameters={"soft_limit" => 9007199254740999, "swap_hard_limit" => 9007199254740999}
-rescue NoMethodError
-  puts_skipped "dom.memory_parameters= does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_skipped "memory_parameters= not supported"
-end
+expect_success(newdom, "soft and hard limit", "memory_parameters=", {"soft_limit" => 9007199254740999, "swap_hard_limit" => 9007199254740999})
 
 newdom.undefine
 
@@ -1026,15 +973,7 @@ newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "memory_parameters", 1, 2)
 
-begin
-  newdom.memory_parameters
-  puts_ok "dom.memory_parameters succeeded"
-rescue NoMethodError
-  puts_skipped "memory_parameters does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_skipped "memory_parameters not supported"
-end
+expect_success(newdom, "no args", "memory_parameters")
 
 newdom.undefine
 
@@ -1051,10 +990,10 @@ expect_invalid_arg_type(newdom, "blkio_parameters=", [{}, "foo"])
 begin
   newdom.blkio_parameters={"weight" => 1}
 rescue NoMethodError
-  puts_skipped "blkio_parameters= does not exist"
+  puts_skipped "domain.blkio_parameters= does not exist"
 rescue Libvirt::RetrieveError
   # this may not be supported (if cgroups aren't configured), so skip it
-  puts_skipped "blkio_parameters= not supported"
+  puts_skipped "domain.blkio_parameters= not supported"
 end
 
 newdom.undefine
@@ -1064,20 +1003,12 @@ newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "blkio_parameters", 1, 2)
 
-begin
-  newdom.blkio_parameters
-  puts_ok "dom.blkio_parameters succeeded"
-rescue NoMethodError
-  puts_skipped "blkio_parameters does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_skipped "blkio_parameters not supported"
-end
+expect_success(newdom, "no args", "blkio_parameters")
 
 newdom.undefine
 
 # TESTGROUP: dom.open_console
-newdom = conn.create_domain_xml(new_dom_xml)
+newdom = conn.create_domain_xml($new_dom_xml)
 stream = conn.stream
 
 expect_too_many_args(newdom, "open_console", 1, 2, 3, 4)
@@ -1087,9 +1018,45 @@ expect_invalid_arg_type(newdom, "open_console", 1, stream)
 expect_invalid_arg_type(newdom, "open_console", "pty", 1)
 expect_invalid_arg_type(newdom, "open_console", "pty", stream, "wow")
 
-expect_success(newdom, "device and stream args", "open_console", "pty", stream)
+#expect_success(newdom, "device and stream args", "open_console", "pty", stream)
 
 newdom.destroy
+
+set_test_object("snapshot")
+
+# TESTGROUP: snapshot.xml_desc
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "xml_desc", 1, 2)
+expect_invalid_arg_type(snap, "xml_desc", 'foo')
+
+expect_success(newdom, "no args", "xml_desc")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: snapshot.delete
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "delete", 1, 2)
+expect_invalid_arg_type(snap, "delete", 'foo')
+
+expect_success(snap, "no args", "delete")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: snapshot.free
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "free", 1)
+
+expect_success(snap, "no args", "free")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# END TESTS
 
 conn.close
 

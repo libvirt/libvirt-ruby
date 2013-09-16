@@ -7,6 +7,8 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+set_test_object("Libvirt")
+
 def expect_connect_error(func, args)
   expect_fail(Libvirt, Libvirt::ConnectionError, "invalid driver", func, *args)
 end
@@ -80,12 +82,12 @@ begin
     res
   end
 
-  puts_ok "open_auth uri, creds, userdata, auth block succeeded"
+  puts_ok "Libvirt.open_auth uri, creds, userdata, auth block succeeded"
   conn.close
 rescue NoMethodError
-  puts_skipped "open_auth does not exist"
+  puts_skipped "Libvirt.open_auth does not exist"
 rescue => e
-  puts_fail "open_auth uri, creds, userdata, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
+  puts_fail "Libvirt.open_auth uri, creds, userdata, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
 end
 
 # equivalent to "expect_success"
@@ -109,12 +111,12 @@ begin
     res
   end
 
-  puts_ok "open_auth uri, creds, userdata, R/O flag, auth block succeeded"
+  puts_ok "Libvirt.open_auth uri, creds, userdata, R/O flag, auth block succeeded"
   conn.close
 rescue NoMethodError
-  puts_skipped "open_auth does not exist"
+  puts_skipped "Libvirt.open_auth does not exist"
 rescue => e
-  puts_fail "open_auth uri, creds, userdata, R/O flag, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
+  puts_fail "Libvirt.open_auth uri, creds, userdata, R/O flag, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
 end
 
 # TESTGROUP: Libvirt::event_invoke_handle_callback
@@ -193,5 +195,7 @@ expect_success(Libvirt, "all Symbol callbacks", "event_register_impl", :virEvent
 expect_success(Libvirt, "unregister all callbacks", "event_register_impl", nil, nil, nil, nil, nil, nil)
 expect_success(Libvirt, "all Proc callbacks", "event_register_impl", virEventAddHandleProc, virEventUpdateHandleProc, virEventRemoveHandleProc, virEventAddTimerProc, virEventUpdateTimerProc, virEventRemoveTimerProc)
 expect_success(Libvirt, "unregister all callbacks", "event_register_impl")
+
+# END TESTS
 
 finish_tests

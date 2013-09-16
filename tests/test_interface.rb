@@ -7,15 +7,7 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
-def find_valid_iface(conn)
-  conn.list_interfaces.each do |ifname|
-    iface = conn.lookup_interface_by_name(ifname)
-    if iface.mac == "00:00:00:00:00:00"
-      next
-    end
-    return iface
-  end
-end
+set_test_object("interface")
 
 conn = Libvirt::open("qemu:///system")
 
@@ -100,6 +92,8 @@ newiface.undefine
 expect_too_many_args(newiface, "free", 1)
 
 expect_success(newiface, "no args", "free")
+
+# END TESTS
 
 conn.close
 

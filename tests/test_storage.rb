@@ -7,6 +7,8 @@ $: << File.dirname(__FILE__)
 require 'libvirt'
 require 'test_utils.rb'
 
+set_test_object("storage_pool")
+
 conn = Libvirt::open("qemu:///system")
 
 begin
@@ -18,7 +20,7 @@ rescue
 end
 
 # test setup
-`rm -rf #{$POOL_PATH}; mkdir #{$POOL_PATH} ; echo $?`
+`rm -rf #{$POOL_PATH}; mkdir -p #{$POOL_PATH} ; echo $?`
 
 new_storage_vol_xml = <<EOF
 <volume>
@@ -98,9 +100,10 @@ expect_invalid_arg_type(newpool, "delete", 'foo')
 
 expect_success(newpool, "no args", "delete")
 
-`mkdir /tmp/ruby-libvirt-tester`
+`mkdir -p /tmp/ruby-libvirt-tester`
 
 newpool.undefine
+`mkdir -p #{$POOL_PATH}`
 
 # TESTGROUP: pool.refresh
 newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
@@ -172,16 +175,16 @@ expect_invalid_arg_type(newpool, "autostart=", 1234)
 
 expect_success(newpool, "no args", "autostart=", true)
 if not newpool.autostart?
-  puts_fail "pool.autostart= did not set autostart to true"
+  puts_fail "storage_pool.autostart= did not set autostart to true"
 else
-  puts_ok "pool.autostart= set autostart to true"
+  puts_ok "storage_pool.autostart= set autostart to true"
 end
 
 expect_success(newpool, "no args", "autostart=", false)
 if newpool.autostart?
-  puts_fail "pool.autostart= did not set autostart to false"
+  puts_fail "storage_pool.autostart= did not set autostart to false"
 else
-  puts_ok "pool.autostart= set autostart to false"
+  puts_ok "storage_pool.autostart= set autostart to false"
 end
 
 newpool.undefine
@@ -252,28 +255,6 @@ expect_invalid_arg_type(newpool, "lookup_volume_by_path", nil);
 expect_fail(newpool, Libvirt::RetrieveError, "non-existent path arg", "lookup_volume_by_path", "foobarbazsucker")
 
 expect_success(newpool, "name arg", "lookup_volume_by_path", newvol.path)
-
-newvol.delete
-newpool.destroy
-
-# TESTGROUP: vol.name
-newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
-newvol = newpool.create_volume_xml(new_storage_vol_xml)
-
-expect_too_many_args(newvol, "name", 1)
-
-expect_success(newvol, "no args", "name")
-
-newvol.delete
-newpool.destroy
-
-# TESTGROUP: vol.key
-newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
-newvol = newpool.create_volume_xml(new_storage_vol_xml)
-
-expect_too_many_args(newvol, "key", 1)
-
-expect_success(newvol, "no args", "key")
 
 newvol.delete
 newpool.destroy
@@ -350,6 +331,30 @@ expect_success(newpool, "no args", "persistent?") {|x| x == true}
 
 newpool.undefine
 
+set_test_object("storage_volume")
+
+# TESTGROUP: vol.name
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
+newvol = newpool.create_volume_xml(new_storage_vol_xml)
+
+expect_too_many_args(newvol, "name", 1)
+
+expect_success(newvol, "no args", "name")
+
+newvol.delete
+newpool.destroy
+
+# TESTGROUP: vol.key
+newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
+newvol = newpool.create_volume_xml(new_storage_vol_xml)
+
+expect_too_many_args(newvol, "key", 1)
+
+expect_success(newvol, "no args", "key")
+
+newvol.delete
+newpool.destroy
+
 # TESTGROUP: vol.delete
 newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 newvol = newpool.create_volume_xml(new_storage_vol_xml)
@@ -417,6 +422,8 @@ expect_too_many_args(newvol, "free", 1)
 expect_success(newvol, "no args", "free")
 
 newpool.destroy
+
+# END TESTS
 
 conn.close
 
