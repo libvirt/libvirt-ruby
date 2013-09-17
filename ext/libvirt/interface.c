@@ -31,17 +31,17 @@ static VALUE c_interface;
 
 static void interface_free(void *i)
 {
-    generic_free(Interface, i);
+    ruby_libvirt_free_struct(Interface, i);
 }
 
 static virInterfacePtr interface_get(VALUE i)
 {
-    generic_get(Interface, i);
+    ruby_libvirt_get_struct(Interface, i);
 }
 
-VALUE interface_new(virInterfacePtr i, VALUE conn)
+VALUE ruby_libvirt_interface_new(virInterfacePtr i, VALUE conn)
 {
-    return generic_new(c_interface, i, conn, interface_free);
+    return ruby_libvirt_new_class(c_interface, i, conn, interface_free);
 }
 
 /*
@@ -53,7 +53,9 @@ VALUE interface_new(virInterfacePtr i, VALUE conn)
  */
 static VALUE libvirt_interface_undefine(VALUE i)
 {
-    gen_call_void(virInterfaceUndefine, connect_get(i), interface_get(i));
+    ruby_libvirt_generate_call_nil(virInterfaceUndefine,
+                                   ruby_libvirt_connect_get(i),
+                                   interface_get(i));
 }
 
 /*
@@ -69,10 +71,11 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virInterfaceCreate, connect_get(i), interface_get(i),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virInterfaceCreate,
+                                   ruby_libvirt_connect_get(i),
+                                   interface_get(i), NUM2UINT(flags));
 }
 
 /*
@@ -88,10 +91,11 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virInterfaceDestroy, connect_get(i), interface_get(i),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virInterfaceDestroy,
+                                   ruby_libvirt_connect_get(i),
+                                   interface_get(i), NUM2UINT(flags));
 }
 
 #if HAVE_VIRINTERFACEISACTIVE
@@ -104,7 +108,9 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
  */
 static VALUE libvirt_interface_active_p(VALUE p)
 {
-    gen_call_truefalse(virInterfaceIsActive, connect_get(p), interface_get(p));
+    ruby_libvirt_generate_call_truefalse(virInterfaceIsActive,
+                                         ruby_libvirt_connect_get(p),
+                                         interface_get(p));
 }
 #endif
 
@@ -117,7 +123,9 @@ static VALUE libvirt_interface_active_p(VALUE p)
  */
 static VALUE libvirt_interface_name(VALUE i)
 {
-    gen_call_string(virInterfaceGetName, connect_get(i), 0, interface_get(i));
+    ruby_libvirt_generate_call_string(virInterfaceGetName,
+                                      ruby_libvirt_connect_get(i), 0,
+                                      interface_get(i));
 }
 
 /*
@@ -129,8 +137,9 @@ static VALUE libvirt_interface_name(VALUE i)
  */
 static VALUE libvirt_interface_mac(VALUE i)
 {
-    gen_call_string(virInterfaceGetMACString, connect_get(i), 0,
-                    interface_get(i));
+    ruby_libvirt_generate_call_string(virInterfaceGetMACString,
+                                      ruby_libvirt_connect_get(i),
+                                      0, interface_get(i));
 }
 
 /*
@@ -146,10 +155,11 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virInterfaceGetXMLDesc, connect_get(i), 1, interface_get(i),
-                    NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virInterfaceGetXMLDesc,
+                                      ruby_libvirt_connect_get(i),
+                                      1, interface_get(i), NUM2UINT(flags));
 }
 
 /*
@@ -161,14 +171,14 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
  */
 static VALUE libvirt_interface_free(VALUE i)
 {
-    gen_call_free(Interface, i);
+    ruby_libvirt_generate_call_free(Interface, i);
 }
 #endif
 
 /*
  * Class Libvirt::Interface
  */
-void init_interface()
+void ruby_libvirt_interface_init(void)
 {
 #if HAVE_TYPE_VIRINTERFACEPTR
     c_interface = rb_define_class_under(m_libvirt, "Interface", rb_cObject);

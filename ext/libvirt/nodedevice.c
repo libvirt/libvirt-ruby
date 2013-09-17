@@ -31,17 +31,17 @@ static VALUE c_nodedevice;
 
 static void nodedevice_free(void *s)
 {
-    generic_free(NodeDevice, s);
+    ruby_libvirt_free_struct(NodeDevice, s);
 }
 
 static virNodeDevicePtr nodedevice_get(VALUE n)
 {
-    generic_get(NodeDevice, n);
+    ruby_libvirt_get_struct(NodeDevice, n);
 }
 
-VALUE nodedevice_new(virNodeDevicePtr n, VALUE conn)
+VALUE ruby_libvirt_nodedevice_new(virNodeDevicePtr n, VALUE conn)
 {
-    return generic_new(c_nodedevice, n, conn, nodedevice_free);
+    return ruby_libvirt_new_class(c_nodedevice, n, conn, nodedevice_free);
 }
 
 /*
@@ -53,7 +53,9 @@ VALUE nodedevice_new(virNodeDevicePtr n, VALUE conn)
  */
 static VALUE libvirt_nodedevice_name(VALUE c)
 {
-    gen_call_string(virNodeDeviceGetName, connect_get(c), 0, nodedevice_get(c));
+    ruby_libvirt_generate_call_string(virNodeDeviceGetName,
+                                      ruby_libvirt_connect_get(c), 0,
+                                      nodedevice_get(c));
 }
 
 /*
@@ -65,8 +67,8 @@ static VALUE libvirt_nodedevice_name(VALUE c)
  */
 static VALUE libvirt_nodedevice_parent(VALUE c)
 {
-    /* unfortunately we can't use gen_call_string() here because
-     * virNodeDeviceGetParent() returns NULL as a valid value (when this
+    /* unfortunately we can't use ruby_libvirt_generate_call_string() here
+     * because virNodeDeviceGetParent() returns NULL as a valid value (when this
      * device has no parent).  Hand-code it instead
      */
 
@@ -90,7 +92,9 @@ static VALUE libvirt_nodedevice_parent(VALUE c)
  */
 static VALUE libvirt_nodedevice_num_of_caps(VALUE c)
 {
-    gen_call_int(virNodeDeviceNumOfCaps, connect_get(c), nodedevice_get(c));
+    ruby_libvirt_generate_call_int(virNodeDeviceNumOfCaps,
+                                   ruby_libvirt_connect_get(c),
+                                   nodedevice_get(c));
 }
 
 /*
@@ -106,8 +110,9 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
     char **names;
 
     num = virNodeDeviceNumOfCaps(nodedevice_get(c));
-    _E(num < 0, create_error(e_RetrieveError, "virNodeDeviceNumOfCaps",
-                             connect_get(c)));
+    _E(num < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virNodeDeviceNumOfCaps",
+                                          ruby_libvirt_connect_get(c)));
     if (num == 0) {
         /* if num is 0, don't call virNodeDeviceListCaps function */
         return rb_ary_new2(num);
@@ -115,10 +120,11 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
 
     names = alloca(sizeof(char *) * num);
     r = virNodeDeviceListCaps(nodedevice_get(c), names, num);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeDeviceListCaps",
-                           connect_get(c)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virNodeDeviceListCaps",
+                                        ruby_libvirt_connect_get(c)));
 
-    return gen_list(num, names);
+    return ruby_libvirt_generate_list(num, names);
 }
 
 /*
@@ -134,10 +140,11 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virNodeDeviceGetXMLDesc, connect_get(n), 1,
-                    nodedevice_get(n), NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virNodeDeviceGetXMLDesc,
+                                      ruby_libvirt_connect_get(n),
+                                      1, nodedevice_get(n), NUM2UINT(flags));
 }
 
 /*
@@ -153,21 +160,26 @@ static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "02", &driver, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
 #if HAVE_VIRNODEDEVICEDETACHFLAGS
-    gen_call_void(virNodeDeviceDetachFlags, connect_get(n), nodedevice_get(n),
-                  get_string_or_nil(driver), NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virNodeDeviceDetachFlags,
+                                   ruby_libvirt_connect_get(n),
+                                   nodedevice_get(n),
+                                   ruby_libvirt_get_cstring_or_null(driver),
+                                   NUM2UINT(flags));
 #else
     if (NUM2UINT(flags) != 0) {
         rb_raise(e_NoSupportError, "Non-zero flags not supported");
     }
 
-    if (get_string_or_nil(driver) != NULL) {
+    if (ruby_libvirt_get_cstring_or_null(driver) != NULL) {
         rb_raise(e_NoSupportError, "Non-NULL driver not supported");
     }
 
-    gen_call_void(virNodeDeviceDettach, connect_get(n), nodedevice_get(n));
+    ruby_libvirt_generate_call_nil(virNodeDeviceDettach,
+                                   ruby_libvirt_connect_get(n),
+                                   nodedevice_get(n));
 #endif
 }
 
@@ -180,7 +192,9 @@ static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
  */
 static VALUE libvirt_nodedevice_reattach(VALUE n)
 {
-    gen_call_void(virNodeDeviceReAttach, connect_get(n), nodedevice_get(n));
+    ruby_libvirt_generate_call_nil(virNodeDeviceReAttach,
+                                   ruby_libvirt_connect_get(n),
+                                   nodedevice_get(n));
 }
 
 /*
@@ -192,7 +206,9 @@ static VALUE libvirt_nodedevice_reattach(VALUE n)
  */
 static VALUE libvirt_nodedevice_reset(VALUE n)
 {
-    gen_call_void(virNodeDeviceReset, connect_get(n), nodedevice_get(n));
+    ruby_libvirt_generate_call_nil(virNodeDeviceReset,
+                                   ruby_libvirt_connect_get(n),
+                                   nodedevice_get(n));
 }
 
 #if HAVE_VIRNODEDEVICEDESTROY
@@ -205,7 +221,9 @@ static VALUE libvirt_nodedevice_reset(VALUE n)
  */
 static VALUE libvirt_nodedevice_destroy(VALUE n)
 {
-    gen_call_void(virNodeDeviceDestroy, connect_get(n), nodedevice_get(n));
+    ruby_libvirt_generate_call_nil(virNodeDeviceDestroy,
+                                   ruby_libvirt_connect_get(n),
+                                   nodedevice_get(n));
 }
 #endif
 
@@ -219,7 +237,7 @@ static VALUE libvirt_nodedevice_destroy(VALUE n)
  */
 static VALUE libvirt_nodedevice_free(VALUE n)
 {
-    gen_call_free(NodeDevice, n);
+    ruby_libvirt_generate_call_free(NodeDevice, n);
 }
 
 #if HAVE_VIRNODEDEVICELOOKUPSCSIHOSTBYWWN
@@ -238,16 +256,17 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &wwnn, &wwpn, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    nd = virNodeDeviceLookupSCSIHostByWWN(connect_get(n), StringValueCStr(wwnn),
+    nd = virNodeDeviceLookupSCSIHostByWWN(ruby_libvirt_connect_get(n),
+                                          StringValueCStr(wwnn),
                                           StringValueCStr(wwpn),
                                           NUM2UINT(flags));
     if (nd == NULL) {
         return Qnil;
     }
 
-    return nodedevice_new(nd, conn_attr(n));
+    return ruby_libvirt_nodedevice_new(nd, ruby_libvirt_conn_attr(n));
 }
 #endif
 
@@ -256,7 +275,7 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
 /*
  * Class Libvirt::NodeDevice
  */
-void init_nodedevice()
+void ruby_libvirt_nodedevice_init(void)
 {
 #if HAVE_TYPE_VIRNODEDEVICEPTR
     c_nodedevice = rb_define_class_under(m_libvirt, "NodeDevice", rb_cObject);

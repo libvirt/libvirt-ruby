@@ -31,17 +31,17 @@ static VALUE c_network;
 
 static void network_free(void *d)
 {
-    generic_free(Network, d);
+    ruby_libvirt_free_struct(Network, d);
 }
 
 static virNetworkPtr network_get(VALUE n)
 {
-    generic_get(Network, n);
+    ruby_libvirt_get_struct(Network, n);
 }
 
-VALUE network_new(virNetworkPtr n, VALUE conn)
+VALUE ruby_libvirt_network_new(virNetworkPtr n, VALUE conn)
 {
-    return generic_new(c_network, n, conn, network_free);
+    return ruby_libvirt_new_class(c_network, n, conn, network_free);
 }
 
 /*
@@ -53,7 +53,9 @@ VALUE network_new(virNetworkPtr n, VALUE conn)
  */
 static VALUE libvirt_network_undefine(VALUE n)
 {
-    gen_call_void(virNetworkUndefine, connect_get(n), network_get(n));
+    ruby_libvirt_generate_call_nil(virNetworkUndefine,
+                                   ruby_libvirt_connect_get(n),
+                                   network_get(n));
 }
 
 /*
@@ -65,7 +67,9 @@ static VALUE libvirt_network_undefine(VALUE n)
  */
 static VALUE libvirt_network_create(VALUE n)
 {
-    gen_call_void(virNetworkCreate, connect_get(n), network_get(n));
+    ruby_libvirt_generate_call_nil(virNetworkCreate,
+                                   ruby_libvirt_connect_get(n),
+                                   network_get(n));
 }
 
 /*
@@ -78,9 +82,11 @@ static VALUE libvirt_network_create(VALUE n)
 static VALUE libvirt_network_update(VALUE n, VALUE command, VALUE section,
                                     VALUE index, VALUE xml, VALUE flags)
 {
-    gen_call_void(virNetworkUpdate, connect_get(n), network_get(n),
-         NUM2UINT(command), NUM2UINT(section), NUM2INT(index),
-         StringValuePtr(xml), NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virNetworkUpdate,
+                                   ruby_libvirt_connect_get(n),
+                                   network_get(n), NUM2UINT(command),
+                                   NUM2UINT(section), NUM2INT(index),
+                                   StringValuePtr(xml), NUM2UINT(flags));
 }
 /*
  * call-seq:
@@ -91,7 +97,9 @@ static VALUE libvirt_network_update(VALUE n, VALUE command, VALUE section,
  */
 static VALUE libvirt_network_destroy(VALUE n)
 {
-    gen_call_void(virNetworkDestroy, connect_get(n), network_get(n));
+    ruby_libvirt_generate_call_nil(virNetworkDestroy,
+                                   ruby_libvirt_connect_get(n),
+                                   network_get(n));
 }
 
 /*
@@ -103,7 +111,9 @@ static VALUE libvirt_network_destroy(VALUE n)
  */
 static VALUE libvirt_network_name(VALUE n)
 {
-    gen_call_string(virNetworkGetName, connect_get(n), 0, network_get(n));
+    ruby_libvirt_generate_call_string(virNetworkGetName,
+                                      ruby_libvirt_connect_get(n), 0,
+                                      network_get(n));
 }
 
 /*
@@ -120,8 +130,9 @@ static VALUE libvirt_network_uuid(VALUE n)
     int r;
 
     r = virNetworkGetUUIDString(netw, uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virNetworkGetUUIDString",
-                           connect_get(n)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virNetworkGetUUIDString",
+                                        ruby_libvirt_connect_get(n)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -139,10 +150,11 @@ static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virNetworkGetXMLDesc, connect_get(n), 1, network_get(n),
-                    NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virNetworkGetXMLDesc,
+                                      ruby_libvirt_connect_get(n), 1,
+                                      network_get(n), NUM2UINT(flags));
 }
 
 /*
@@ -154,7 +166,9 @@ static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
  */
 static VALUE libvirt_network_bridge_name(VALUE n)
 {
-    gen_call_string(virNetworkGetBridgeName, connect_get(n), 1, network_get(n));
+    ruby_libvirt_generate_call_string(virNetworkGetBridgeName,
+                                      ruby_libvirt_connect_get(n),
+                                      1, network_get(n));
 }
 
 /*
@@ -170,8 +184,8 @@ static VALUE libvirt_network_autostart(VALUE n)
     int r, autostart;
 
     r = virNetworkGetAutostart(netw, &autostart);
-    _E(r < 0, create_error(e_RetrieveError, "virNetworkAutostart",
-                           connect_get(n)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNetworkAutostart",
+                                        ruby_libvirt_connect_get(n)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -190,8 +204,9 @@ static VALUE libvirt_network_autostart_set(VALUE n, VALUE autostart)
                  "wrong argument type (expected TrueClass or FalseClass)");
     }
 
-    gen_call_void(virNetworkSetAutostart, connect_get(n), network_get(n),
-                  RTEST(autostart) ? 1 : 0);
+    ruby_libvirt_generate_call_nil(virNetworkSetAutostart,
+                                   ruby_libvirt_connect_get(n),
+                                   network_get(n), RTEST(autostart) ? 1 : 0);
 }
 
 /*
@@ -203,7 +218,7 @@ static VALUE libvirt_network_autostart_set(VALUE n, VALUE autostart)
  */
 static VALUE libvirt_network_free(VALUE n)
 {
-    gen_call_free(Network, n);
+    ruby_libvirt_generate_call_free(Network, n);
 }
 
 #if HAVE_VIRNETWORKISACTIVE
@@ -216,7 +231,9 @@ static VALUE libvirt_network_free(VALUE n)
  */
 static VALUE libvirt_network_active_p(VALUE n)
 {
-    gen_call_truefalse(virNetworkIsActive, connect_get(n), network_get(n));
+    ruby_libvirt_generate_call_truefalse(virNetworkIsActive,
+                                         ruby_libvirt_connect_get(n),
+                                         network_get(n));
 }
 #endif
 
@@ -230,7 +247,9 @@ static VALUE libvirt_network_active_p(VALUE n)
  */
 static VALUE libvirt_network_persistent_p(VALUE n)
 {
-    gen_call_truefalse(virNetworkIsPersistent, connect_get(n), network_get(n));
+    ruby_libvirt_generate_call_truefalse(virNetworkIsPersistent,
+                                         ruby_libvirt_connect_get(n),
+                                         network_get(n));
 }
 #endif
 
@@ -239,7 +258,7 @@ static VALUE libvirt_network_persistent_p(VALUE n)
 /*
  * Class Libvirt::Network
  */
-void init_network()
+void ruby_libvirt_network_init(void)
 {
 #if HAVE_TYPE_VIRNETWORKPTR
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);

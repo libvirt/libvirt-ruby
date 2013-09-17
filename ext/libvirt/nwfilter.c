@@ -31,17 +31,17 @@ static VALUE c_nwfilter;
 
 static void nwfilter_free(void *n)
 {
-    generic_free(NWFilter, n);
+    ruby_libvirt_free_struct(NWFilter, n);
 }
 
 static virNWFilterPtr nwfilter_get(VALUE n)
 {
-    generic_get(NWFilter, n);
+    ruby_libvirt_get_struct(NWFilter, n);
 }
 
-VALUE nwfilter_new(virNWFilterPtr n, VALUE conn)
+VALUE ruby_libvirt_nwfilter_new(virNWFilterPtr n, VALUE conn)
 {
-    return generic_new(c_nwfilter, n, conn, nwfilter_free);
+    return ruby_libvirt_new_class(c_nwfilter, n, conn, nwfilter_free);
 }
 
 /*
@@ -53,7 +53,9 @@ VALUE nwfilter_new(virNWFilterPtr n, VALUE conn)
  */
 static VALUE libvirt_nwfilter_undefine(VALUE n)
 {
-    gen_call_void(virNWFilterUndefine, connect_get(n), nwfilter_get(n));
+    ruby_libvirt_generate_call_nil(virNWFilterUndefine,
+                                   ruby_libvirt_connect_get(n),
+                                   nwfilter_get(n));
 }
 
 /*
@@ -65,7 +67,9 @@ static VALUE libvirt_nwfilter_undefine(VALUE n)
  */
 static VALUE libvirt_nwfilter_name(VALUE n)
 {
-    gen_call_string(virNWFilterGetName, connect_get(n), 0, nwfilter_get(n));
+    ruby_libvirt_generate_call_string(virNWFilterGetName,
+                                      ruby_libvirt_connect_get(n), 0,
+                                      nwfilter_get(n));
 }
 
 /*
@@ -81,8 +85,9 @@ static VALUE libvirt_nwfilter_uuid(VALUE n)
     char uuid[VIR_UUID_STRING_BUFLEN];
 
     r = virNWFilterGetUUIDString(nwfilter_get(n), uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virNWFilterGetUUIDString",
-                           connect_get(n)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virNWFilterGetUUIDString",
+                                        ruby_libvirt_connect_get(n)));
 
     return rb_str_new2((char *)uuid);
 }
@@ -100,10 +105,11 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virNWFilterGetXMLDesc, connect_get(n), 1, nwfilter_get(n),
-                    NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virNWFilterGetXMLDesc,
+                                      ruby_libvirt_connect_get(n), 1,
+                                      nwfilter_get(n), NUM2UINT(flags));
 }
 
 /*
@@ -116,7 +122,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
  */
 static VALUE libvirt_nwfilter_free(VALUE n)
 {
-    gen_call_free(NWFilter, n);
+    ruby_libvirt_generate_call_free(NWFilter, n);
 }
 
 #endif
@@ -124,7 +130,7 @@ static VALUE libvirt_nwfilter_free(VALUE n)
 /*
  * Class Libvirt::NWFilter
  */
-void init_nwfilter()
+void ruby_libvirt_nwfilter_init(void)
 {
 #if HAVE_TYPE_VIRNWFILTERPTR
     c_nwfilter = rb_define_class_under(m_libvirt, "NWFilter", rb_cObject);

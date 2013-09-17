@@ -33,50 +33,51 @@ struct rb_exc_new2_arg {
     char *msg;
 };
 
-static VALUE rb_exc_new2_wrap(VALUE arg)
+static VALUE ruby_libvirt_exc_new2_wrap(VALUE arg)
 {
     struct rb_exc_new2_arg *e = (struct rb_exc_new2_arg *)arg;
 
     return rb_exc_new2(e->error, e->msg);
 }
 
-VALUE rb_ary_new2_wrap(VALUE arg)
+VALUE ruby_libvirt_ary_new2_wrap(VALUE arg)
 {
     return rb_ary_new2(*((int *)arg));
 }
 
-VALUE rb_ary_push_wrap(VALUE arg)
+VALUE ruby_libvirt_ary_push_wrap(VALUE arg)
 {
-    struct rb_ary_push_arg *e = (struct rb_ary_push_arg *)arg;
+    struct ruby_libvirt_ary_push_arg *e = (struct ruby_libvirt_ary_push_arg *)arg;
 
     return rb_ary_push(e->arr, e->value);
 }
 
-VALUE rb_ary_store_wrap(VALUE arg)
+VALUE ruby_libvirt_ary_store_wrap(VALUE arg)
 {
-    struct rb_ary_store_arg *e = (struct rb_ary_store_arg *)arg;
+    struct ruby_libvirt_ary_store_arg *e = (struct ruby_libvirt_ary_store_arg *)arg;
 
     rb_ary_store(e->arr, e->index, e->elem);
 
     return Qnil;
 }
 
-VALUE rb_str_new2_wrap(VALUE arg)
+VALUE ruby_libvirt_str_new2_wrap(VALUE arg)
 {
     char **str = (char **)arg;
 
     return rb_str_new2(*str);
 }
 
-VALUE rb_str_new_wrap(VALUE arg)
+VALUE ruby_libvirt_str_new_wrap(VALUE arg)
 {
-    struct rb_str_new_arg *e = (struct rb_str_new_arg *)arg;
+    struct ruby_libvirt_str_new_arg *e = (struct ruby_libvirt_str_new_arg *)arg;
 
     return rb_str_new(e->val, e->size);
 }
 
 /* Error handling */
-VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
+VALUE ruby_libvirt_create_error(VALUE error, const char* method,
+                                virConnectPtr conn)
 {
     VALUE ruby_errinfo;
     virErrorPtr err;
@@ -107,7 +108,8 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
 
     arg.error = error;
     arg.msg = msg;
-    ruby_errinfo = rb_protect(rb_exc_new2_wrap, (VALUE)&arg, &exception);
+    ruby_errinfo = rb_protect(ruby_libvirt_exc_new2_wrap, (VALUE)&arg,
+                              &exception);
     free(msg);
     if (exception) {
         rb_jump_tag(exception);
@@ -128,7 +130,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn)
     return ruby_errinfo;
 };
 
-char *get_string_or_nil(VALUE arg)
+char *ruby_libvirt_get_cstring_or_null(VALUE arg)
 {
     if (TYPE(arg) == T_NIL) {
         return NULL;
@@ -143,8 +145,8 @@ char *get_string_or_nil(VALUE arg)
     return NULL;
 }
 
-VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
-                  RUBY_DATA_FUNC free_func)
+VALUE ruby_libvirt_new_class(VALUE klass, void *ptr, VALUE conn,
+                             RUBY_DATA_FUNC free_func)
 {
     VALUE result;
     result = Data_Wrap_Struct(klass, NULL, free_func, ptr);
@@ -152,7 +154,7 @@ VALUE generic_new(VALUE klass, void *ptr, VALUE conn,
     return result;
 }
 
-int is_symbol_or_proc(VALUE handle)
+int ruby_libvirt_is_symbol_or_proc(VALUE handle)
 {
     return ((strcmp(rb_obj_classname(handle), "Symbol") == 0) ||
             (strcmp(rb_obj_classname(handle), "Proc") == 0));
@@ -167,28 +169,28 @@ int is_symbol_or_proc(VALUE handle)
  * calls with rb_protect, it also frees every individual entry in list after
  * it is done with it.  Freeing list itself is left to the callers.
  */
-VALUE gen_list(int num, char **list)
+VALUE ruby_libvirt_generate_list(int num, char **list)
 {
     VALUE result;
     int exception = 0;
     int i, j;
-    struct rb_ary_store_arg arg;
+    struct ruby_libvirt_ary_store_arg arg;
 
     i = 0;
 
-    result = rb_protect(rb_ary_new2_wrap, (VALUE)&num, &exception);
+    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&num, &exception);
     if (exception) {
         goto exception;
     }
     for (i = 0; i < num; i++) {
         arg.arr = result;
         arg.index = i;
-        arg.elem = rb_protect(rb_str_new2_wrap, (VALUE)&(list[i]),
+        arg.elem = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&(list[i]),
                               &exception);
         if (exception) {
             goto exception;
         }
-        rb_protect(rb_ary_store_wrap, (VALUE)&arg, &exception);
+        rb_protect(ruby_libvirt_ary_store_wrap, (VALUE)&arg, &exception);
         if (exception) {
             goto exception;
         }
@@ -207,10 +209,14 @@ exception:
     return Qnil;
 }
 
-VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
-                     int (*nparams_cb)(VALUE d, unsigned int flags),
-                     char *(*get_cb)(VALUE d, unsigned int flags,
-                                     virTypedParameterPtr params, int *nparams))
+VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
+                                        virConnectPtr conn,
+                                        int (*nparams_cb)(VALUE d,
+                                                          unsigned int flags),
+                                        char *(*get_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        virTypedParameterPtr params,
+                                                        int *nparams))
 {
     int nparams;
     virTypedParameterPtr params;
@@ -222,7 +228,7 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     nparams = nparams_cb(d, NUM2UINT(flags));
 
@@ -235,7 +241,8 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     params = alloca(sizeof(virTypedParameter) * nparams);
 
     errname = get_cb(d, NUM2UINT(flags), params, &nparams);
-    _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  conn));
 
     for (i = 0; i < nparams; i++) {
         switch(params[i].type) {
@@ -270,12 +277,18 @@ VALUE get_parameters(int argc, VALUE *argv, VALUE d, virConnectPtr conn,
     return result;
 }
 
-VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn, int has_flags,
-                     int (*nparams_cb)(VALUE d, unsigned int flags),
-                     char *(*get_cb)(VALUE d, unsigned int flags,
-                                     virTypedParameterPtr params, int *nparams),
-                     char *(*set_cb)(VALUE d, unsigned int flags,
-                                     virTypedParameterPtr params, int nparams))
+VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
+                                        int has_flags,
+                                        int (*nparams_cb)(VALUE d,
+                                                          unsigned int flags),
+                                        char *(*get_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        virTypedParameterPtr params,
+                                                        int *nparams),
+                                        char *(*set_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        virTypedParameterPtr params,
+                                                        int nparams))
 {
     int nparams;
     virTypedParameterPtr params;
@@ -328,7 +341,8 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn, int has_flags,
     params = alloca(sizeof(virTypedParameter) * nparams);
 
     errname = get_cb(d, NUM2UINT(flags), params, &nparams);
-    _E(errname != NULL, create_error(e_RetrieveError, errname, conn));
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  conn));
 
     for (i = 0; i < nparams; i++) {
         val = rb_hash_aref(input, rb_str_new2(params[i].field));
@@ -365,13 +379,13 @@ VALUE set_parameters(VALUE d, VALUE in, virConnectPtr conn, int has_flags,
 
     errname = set_cb(d, NUM2UINT(flags), params, nparams);
     if (errname != NULL) {
-        rb_exc_raise(create_error(e_RetrieveError, errname, conn));
+        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname, conn));
     }
 
     return Qnil;
 }
 
-VALUE integer_default_if_nil(VALUE in, int def)
+VALUE ruby_libvirt_fixnum_set(VALUE in, int def)
 {
     if (NIL_P(in)) {
         return INT2NUM(def);

@@ -224,3 +224,24 @@ def cleanup_test_domain(conn)
   `rm -f #{$GUEST_DISK}`
   `rm -f #{$GUEST_SAVE}`
 end
+
+def cleanup_test_network(conn)
+  # initial cleanup for previous run
+  begin
+    oldnet = conn.lookup_network_by_name("ruby-libvirt-tester")
+  rescue
+    # in case we didn't find it, don't do anything
+  end
+
+  begin
+    oldnet.destroy
+  rescue
+    # in case we didn't find it, don't do anything
+  end
+
+  begin
+    oldnet.undefine
+  rescue
+    # in case we didn't find it, don't do anything
+  end
+end

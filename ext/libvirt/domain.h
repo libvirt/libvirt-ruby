@@ -1,9 +1,9 @@
 #ifndef DOMAIN_H
 #define DOMAIN_H
 
-VALUE domain_new(virDomainPtr d, VALUE conn);
-virDomainPtr domain_get(VALUE s);
+void ruby_libvirt_domain_init();
 
-void init_domain();
+VALUE ruby_libvirt_domain_new(virDomainPtr d, VALUE conn);
+virDomainPtr ruby_libvirt_domain_get(VALUE s);
 
 #endif

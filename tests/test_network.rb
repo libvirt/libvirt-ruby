@@ -11,14 +11,7 @@ set_test_object("network")
 
 conn = Libvirt::open("qemu:///system")
 
-# initial cleanup for previous run
-begin
-  oldnet = conn.lookup_network_by_name("ruby-libvirt-tester")
-  oldnet.destroy
-  oldnet.undefine
-rescue
-  # in case we didn't find it, don't do anything
-end
+cleanup_test_network(conn)
 
 # TESTGROUP: net.undefine
 newnet = conn.define_network_xml($new_net_xml)

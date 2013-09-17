@@ -1,7 +1,8 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-VALUE network_new(virNetworkPtr n, VALUE conn);
-void init_network();
+void ruby_libvirt_network_init();
+
+VALUE ruby_libvirt_network_new(virNetworkPtr n, VALUE conn);
 
 #endif

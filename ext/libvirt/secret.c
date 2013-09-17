@@ -31,17 +31,17 @@ static VALUE c_secret;
 
 static void secret_free(void *s)
 {
-    generic_free(Secret, s);
+    ruby_libvirt_free_struct(Secret, s);
 }
 
 static virSecretPtr secret_get(VALUE s)
 {
-    generic_get(Secret, s);
+    ruby_libvirt_get_struct(Secret, s);
 }
 
-VALUE secret_new(virSecretPtr s, VALUE conn)
+VALUE ruby_libvirt_secret_new(virSecretPtr s, VALUE conn)
 {
-    return generic_new(c_secret, s, conn, secret_free);
+    return ruby_libvirt_new_class(c_secret, s, conn, secret_free);
 }
 
 /*
@@ -57,8 +57,9 @@ static VALUE libvirt_secret_uuid(VALUE s)
     char uuid[VIR_UUID_STRING_BUFLEN];
 
     r = virSecretGetUUIDString(secret_get(s), uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virSecretGetUUIDString",
-                           connect_get(s)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virSecretGetUUIDString",
+                                        ruby_libvirt_connect_get(s)));
 
     return rb_str_new2((char *)uuid);
 }
@@ -72,7 +73,9 @@ static VALUE libvirt_secret_uuid(VALUE s)
  */
 static VALUE libvirt_secret_usagetype(VALUE s)
 {
-    gen_call_int(virSecretGetUsageType, connect_get(s), secret_get(s));
+    ruby_libvirt_generate_call_int(virSecretGetUsageType,
+                                   ruby_libvirt_connect_get(s),
+                                   secret_get(s));
 }
 
 /*
@@ -84,7 +87,9 @@ static VALUE libvirt_secret_usagetype(VALUE s)
  */
 static VALUE libvirt_secret_usageid(VALUE s)
 {
-    gen_call_string(virSecretGetUsageID, connect_get(s), 0, secret_get(s));
+    ruby_libvirt_generate_call_string(virSecretGetUsageID,
+                                      ruby_libvirt_connect_get(s), 0,
+                                      secret_get(s));
 }
 
 /*
@@ -100,9 +105,11 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virSecretGetXMLDesc, connect_get(s), 1, secret_get(s),
+    ruby_libvirt_generate_call_string(virSecretGetXMLDesc,
+                                      ruby_libvirt_connect_get(s), 1,
+                                      secret_get(s),
                     NUM2UINT(flags));
 }
 
@@ -120,13 +127,15 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "11", &value, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     StringValue(value);
 
-    gen_call_void(virSecretSetValue, connect_get(s), secret_get(s),
-                  (unsigned char *)RSTRING_PTR(value), RSTRING_LEN(value),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virSecretSetValue,
+                                   ruby_libvirt_connect_get(s),
+                                   secret_get(s),
+                                   (unsigned char *)RSTRING_PTR(value),
+                                   RSTRING_LEN(value), NUM2UINT(flags));
 }
 
 /*
@@ -143,20 +152,21 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
     size_t value_size;
     VALUE ret;
     int exception = 0;
-    struct rb_str_new_arg args;
+    struct ruby_libvirt_str_new_arg args;
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     val = virSecretGetValue(secret_get(s), &value_size, NUM2UINT(flags));
 
-    _E(val == NULL, create_error(e_RetrieveError, "virSecretGetValue",
-                                 connect_get(s)));
+    _E(val == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virSecretGetValue",
+                                              ruby_libvirt_connect_get(s)));
 
     args.val = (char *)val;
     args.size = value_size;
-    ret = rb_protect(rb_str_new_wrap, (VALUE)&args, &exception);
+    ret = rb_protect(ruby_libvirt_str_new_wrap, (VALUE)&args, &exception);
     free(val);
     if (exception) {
         rb_jump_tag(exception);
@@ -174,7 +184,9 @@ static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_secret_undefine(VALUE s)
 {
-    gen_call_void(virSecretUndefine, connect_get(s), secret_get(s));
+    ruby_libvirt_generate_call_nil(virSecretUndefine,
+                                   ruby_libvirt_connect_get(s),
+                                   secret_get(s));
 }
 
 /*
@@ -186,7 +198,7 @@ static VALUE libvirt_secret_undefine(VALUE s)
  */
 static VALUE libvirt_secret_free(VALUE s)
 {
-    gen_call_free(Secret, s);
+    ruby_libvirt_generate_call_free(Secret, s);
 }
 
 #endif
@@ -194,7 +206,7 @@ static VALUE libvirt_secret_free(VALUE s)
 /*
  * Class Libvirt::Secret
  */
-void init_secret()
+void ruby_libvirt_secret_init(void)
 {
 #if HAVE_TYPE_VIRSECRETPTR
     c_secret = rb_define_class_under(m_libvirt, "Secret", rb_cObject);

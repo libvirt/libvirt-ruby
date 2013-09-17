@@ -69,8 +69,9 @@ static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
 
     rb_scan_args(argc, argv, "01", &type);
 
-    r = virGetVersion(&libVer, get_string_or_nil(type), &typeVer);
-    _E(r < 0, create_error(rb_eArgError, "virGetVersion", NULL));
+    r = virGetVersion(&libVer, ruby_libvirt_get_cstring_or_null(type),
+                      &typeVer);
+    _E(r < 0, ruby_libvirt_create_error(rb_eArgError, "virGetVersion", NULL));
 
     result = rb_ary_new2(2);
     rargv[0] = rb_str_new2("libvirt");
@@ -90,7 +91,7 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
 
     rb_scan_args(argc, argv, "01", &uri);
 
-    uri_c = get_string_or_nil(uri);
+    uri_c = ruby_libvirt_get_cstring_or_null(uri);
 
     if (readonly) {
         conn = virConnectOpenReadOnly(uri_c);
@@ -99,11 +100,12 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
         conn = virConnectOpen(uri_c);
     }
 
-    _E(conn == NULL, create_error(e_ConnectionError,
-                                  readonly ? "virConnectOpenReadOnly" : "virConnectOpen",
-                                  NULL));
+    _E(conn == NULL,
+       ruby_libvirt_create_error(e_ConnectionError,
+                                 readonly ? "virConnectOpenReadOnly" : "virConnectOpen",
+                                 NULL));
 
-    return connect_new(conn);
+    return ruby_libvirt_connect_new(conn);
 }
 
 /*
@@ -229,7 +231,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
 
     rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     if (rb_block_given_p()) {
         auth = alloca(sizeof(virConnectAuth));
@@ -261,12 +263,13 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
         auth = virConnectAuthPtrDefault;
     }
 
-    conn = virConnectOpenAuth(get_string_or_nil(uri), auth, NUM2UINT(flags));
+    conn = virConnectOpenAuth(ruby_libvirt_get_cstring_or_null(uri), auth,
+                              NUM2UINT(flags));
 
-    _E(conn == NULL, create_error(e_ConnectionError, "virConnectOpenAuth",
-                                  NULL));
+    _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
+                                               "virConnectOpenAuth", NULL));
 
-    return connect_new(conn);
+    return ruby_libvirt_connect_new(conn);
 }
 #endif
 
@@ -588,7 +591,7 @@ static int is_symbol_proc_or_nil(VALUE handle)
     if (NIL_P(handle)) {
         return 1;
     }
-    return is_symbol_or_proc(handle);
+    return ruby_libvirt_is_symbol_or_proc(handle);
 }
 
 /*
@@ -669,7 +672,7 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
 /*
  * Module Libvirt
  */
-void Init__libvirt()
+void Init__libvirt(void)
 {
     m_libvirt = rb_define_module("Libvirt");
     c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
@@ -967,15 +970,15 @@ void Init__libvirt()
                               libvirt_event_invoke_timeout_callback, 2);
 #endif
 
-    init_connect();
-    init_storage();
-    init_network();
-    init_nodedevice();
-    init_secret();
-    init_nwfilter();
-    init_interface();
-    init_domain();
-    init_stream();
+    ruby_libvirt_connect_init();
+    ruby_libvirt_storage_init();
+    ruby_libvirt_network_init();
+    ruby_libvirt_nodedevice_init();
+    ruby_libvirt_secret_init();
+    ruby_libvirt_nwfilter_init();
+    ruby_libvirt_interface_init();
+    ruby_libvirt_domain_init();
+    ruby_libvirt_stream_init();
 
     virSetErrorFunc(NULL, rubyLibvirtErrorFunc);
 

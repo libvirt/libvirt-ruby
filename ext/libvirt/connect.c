@@ -26,6 +26,11 @@
 #include "common.h"
 #include "domain.h"
 #include "network.h"
+#include "interface.h"
+#include "nodedevice.h"
+#include "nwfilter.h"
+#include "secret.h"
+#include "stream.h"
 
 /*
  * Generate a call to a virConnectNumOf... function. C is the Ruby VALUE
@@ -36,8 +41,8 @@
     do {                                                                \
         int r;                                                          \
                                                                         \
-        r = virConnectNumOf##objs(connect_get(c));                      \
-        _E(r < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, connect_get(c))); \
+        r = virConnectNumOf##objs(ruby_libvirt_connect_get(c));                      \
+        _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectNumOf" # objs, ruby_libvirt_connect_get(c))); \
                                                                         \
         return INT2NUM(r);                                              \
     } while(0)
@@ -53,17 +58,17 @@
         int r, num;                                                     \
         char **names;                                                   \
                                                                         \
-        num = virConnectNumOf##objs(connect_get(c));                    \
-        _E(num < 0, create_error(e_RetrieveError, "virConnectNumOf" # objs, connect_get(c))); \
+        num = virConnectNumOf##objs(ruby_libvirt_connect_get(c));                    \
+        _E(num < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectNumOf" # objs, ruby_libvirt_connect_get(c))); \
         if (num == 0) {                                                 \
             /* if num is 0, don't call virConnectList* function */      \
             return rb_ary_new2(num);                                    \
         }                                                               \
         names = alloca(sizeof(char *) * num);                           \
-        r = virConnectList##objs(connect_get(c), names, num);           \
-        _E(r < 0, create_error(e_RetrieveError, "virConnectList" # objs, connect_get(c))); \
+        r = virConnectList##objs(ruby_libvirt_connect_get(c), names, num);           \
+        _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectList" # objs, ruby_libvirt_connect_get(c))); \
                                                                         \
-        return gen_list(num, names);                                    \
+        return ruby_libvirt_generate_list(num, names);                                    \
     } while(0)
 
 static VALUE c_connect;
@@ -78,15 +83,16 @@ static void connect_close(void *c)
         return;
     }
     r = virConnectClose((virConnectPtr) c);
-    _E(r < 0, create_error(rb_eSystemCallError, "virConnectClose", c));
+    _E(r < 0, ruby_libvirt_create_error(rb_eSystemCallError, "virConnectClose",
+                                        c));
 }
 
-VALUE connect_new(virConnectPtr c)
+VALUE ruby_libvirt_connect_new(virConnectPtr c)
 {
     return Data_Wrap_Struct(c_connect, NULL, connect_close, c);
 }
 
-VALUE conn_attr(VALUE c)
+VALUE ruby_libvirt_conn_attr(VALUE c)
 {
     if (rb_obj_is_instance_of(c, c_connect) != Qtrue) {
         c = rb_iv_get(c, "@connection");
@@ -97,10 +103,10 @@ VALUE conn_attr(VALUE c)
     return c;
 }
 
-virConnectPtr connect_get(VALUE c)
+virConnectPtr ruby_libvirt_connect_get(VALUE c)
 {
-    c = conn_attr(c);
-    generic_get(Connect, c);
+    c = ruby_libvirt_conn_attr(c);
+    ruby_libvirt_get_struct(Connect, c);
 }
 
 /*
@@ -133,7 +139,7 @@ static VALUE libvirt_connect_closed_p(VALUE c)
     virConnectPtr conn;
 
     Data_Get_Struct(c, virConnect, conn);
-    return (conn==NULL) ? Qtrue : Qfalse;
+    return (conn == NULL) ? Qtrue : Qfalse;
 }
 
 /*
@@ -145,7 +151,9 @@ static VALUE libvirt_connect_closed_p(VALUE c)
  */
 static VALUE libvirt_connect_type(VALUE c)
 {
-    gen_call_string(virConnectGetType, connect_get(c), 0, connect_get(c));
+    ruby_libvirt_generate_call_string(virConnectGetType,
+                                      ruby_libvirt_connect_get(c), 0,
+                                      ruby_libvirt_connect_get(c));
 }
 
 /*
@@ -160,9 +168,9 @@ static VALUE libvirt_connect_version(VALUE c)
     int r;
     unsigned long v;
 
-    r = virConnectGetVersion(connect_get(c), &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetVersion",
-                           connect_get(c)));
+    r = virConnectGetVersion(ruby_libvirt_connect_get(c), &v);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectGetVersion",
+                                        ruby_libvirt_connect_get(c)));
 
     return ULONG2NUM(v);
 }
@@ -180,9 +188,10 @@ static VALUE libvirt_connect_libversion(VALUE c)
     int r;
     unsigned long v;
 
-    r = virConnectGetLibVersion(connect_get(c), &v);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectGetLibVersion",
-                           connect_get(c)));
+    r = virConnectGetLibVersion(ruby_libvirt_connect_get(c), &v);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virConnectGetLibVersion",
+                                        ruby_libvirt_connect_get(c)));
 
     return ULONG2NUM(v);
 }
@@ -197,7 +206,9 @@ static VALUE libvirt_connect_libversion(VALUE c)
  */
 static VALUE libvirt_connect_hostname(VALUE c)
 {
-    gen_call_string(virConnectGetHostname, connect_get(c), 1, connect_get(c));
+    ruby_libvirt_generate_call_string(virConnectGetHostname,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c));
 }
 
 /*
@@ -209,7 +220,9 @@ static VALUE libvirt_connect_hostname(VALUE c)
  */
 static VALUE libvirt_connect_uri(VALUE c)
 {
-    gen_call_string(virConnectGetURI, connect_get(c), 1, connect_get(c));
+    ruby_libvirt_generate_call_string(virConnectGetURI,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c));
 }
 
 /*
@@ -226,8 +239,10 @@ static VALUE libvirt_connect_max_vcpus(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &type);
 
-    gen_call_int(virConnectGetMaxVcpus, connect_get(c), connect_get(c),
-                 get_string_or_nil(type));
+    ruby_libvirt_generate_call_int(virConnectGetMaxVcpus,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_get_cstring_or_null(type));
 }
 
 /*
@@ -243,8 +258,9 @@ static VALUE libvirt_connect_node_get_info(VALUE c)
     virNodeInfo nodeinfo;
     VALUE result;
 
-    r = virNodeGetInfo(connect_get(c), &nodeinfo);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo", connect_get(c)));
+    r = virNodeGetInfo(ruby_libvirt_connect_get(c), &nodeinfo);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeGetInfo",
+                                        ruby_libvirt_connect_get(c)));
 
     result = rb_class_new_instance(0, NULL, c_node_info);
     rb_iv_set(result, "@model", rb_str_new2(nodeinfo.model));
@@ -271,10 +287,11 @@ static VALUE libvirt_connect_node_free_memory(VALUE c)
 {
     unsigned long long freemem;
 
-    freemem = virNodeGetFreeMemory(connect_get(c));
+    freemem = virNodeGetFreeMemory(ruby_libvirt_connect_get(c));
 
-    _E(freemem == 0, create_error(e_RetrieveError, "virNodeGetFreeMemory",
-                                  connect_get(c)));
+    _E(freemem == 0, ruby_libvirt_create_error(e_RetrieveError,
+                                               "virNodeGetFreeMemory",
+                                               ruby_libvirt_connect_get(c)));
 
     return ULL2NUM(freemem);
 }
@@ -308,9 +325,9 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
     }
 
     if (NIL_P(max)) {
-        r = virNodeGetInfo(connect_get(c), &nodeinfo);
-        _E(r < 0, create_error(e_RetrieveError, "virNodeGetInfo",
-                               connect_get(c)));
+        r = virNodeGetInfo(ruby_libvirt_connect_get(c), &nodeinfo);
+        _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeGetInfo",
+                                            ruby_libvirt_connect_get(c)));
         maxCells = nodeinfo.nodes;
     }
     else {
@@ -319,10 +336,11 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
 
     freeMems = alloca(sizeof(unsigned long long) * maxCells);
 
-    r = virNodeGetCellsFreeMemory(connect_get(c), freeMems, startCell,
-                                  maxCells);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetCellsFreeMemory",
-                           connect_get(c)));
+    r = virNodeGetCellsFreeMemory(ruby_libvirt_connect_get(c), freeMems,
+                                  startCell, maxCells);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virNodeGetCellsFreeMemory",
+                                        ruby_libvirt_connect_get(c)));
 
     cells = rb_ary_new2(r);
     for (i = 0; i < r; i++) {
@@ -346,9 +364,10 @@ static VALUE libvirt_connect_node_get_security_model(VALUE c)
     int r;
     VALUE result;
 
-    r = virNodeGetSecurityModel(connect_get(c), &secmodel);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeGetSecurityModel",
-                           connect_get(c)));
+    r = virNodeGetSecurityModel(ruby_libvirt_connect_get(c), &secmodel);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virNodeGetSecurityModel",
+                                        ruby_libvirt_connect_get(c)));
 
     result = rb_class_new_instance(0, NULL, c_node_security_model);
     rb_iv_set(result, "@model", rb_str_new2(secmodel.model));
@@ -368,7 +387,9 @@ static VALUE libvirt_connect_node_get_security_model(VALUE c)
  */
 static VALUE libvirt_connect_encrypted_p(VALUE c)
 {
-    gen_call_truefalse(virConnectIsEncrypted, connect_get(c), connect_get(c));
+    ruby_libvirt_generate_call_truefalse(virConnectIsEncrypted,
+                                         ruby_libvirt_connect_get(c),
+                                         ruby_libvirt_connect_get(c));
 }
 #endif
 
@@ -382,7 +403,9 @@ static VALUE libvirt_connect_encrypted_p(VALUE c)
  */
 static VALUE libvirt_connect_secure_p(VALUE c)
 {
-    gen_call_truefalse(virConnectIsSecure, connect_get(c), connect_get(c));
+    ruby_libvirt_generate_call_truefalse(virConnectIsSecure,
+                                         ruby_libvirt_connect_get(c),
+                                         ruby_libvirt_connect_get(c));
 }
 #endif
 
@@ -395,8 +418,9 @@ static VALUE libvirt_connect_secure_p(VALUE c)
  */
 static VALUE libvirt_connect_capabilities(VALUE c)
 {
-    gen_call_string(virConnectGetCapabilities, connect_get(c), 1,
-                    connect_get(c));
+    ruby_libvirt_generate_call_string(virConnectGetCapabilities,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c));
 }
 
 #if HAVE_VIRCONNECTCOMPARECPU
@@ -415,10 +439,13 @@ static VALUE libvirt_connect_compare_cpu(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_int(virConnectCompareCPU, connect_get(c), connect_get(c),
-                 StringValueCStr(xml), NUM2UINT(flags));
+    ruby_libvirt_generate_call_int(virConnectCompareCPU,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   StringValueCStr(xml),
+                                   NUM2UINT(flags));
 }
 #endif
 
@@ -445,7 +472,7 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xmlcpus, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     Check_Type(xmlcpus, T_ARRAY);
 
@@ -463,11 +490,13 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
         xmllist[i] = StringValueCStr(entry);
     }
 
-    r = virConnectBaselineCPU(connect_get(c), xmllist, ncpus, NUM2UINT(flags));
-    _E(r == NULL, create_error(e_RetrieveError, "virConnectBaselineCPU",
-                               connect_get(c)));
+    r = virConnectBaselineCPU(ruby_libvirt_connect_get(c), xmllist, ncpus,
+                              NUM2UINT(flags));
+    _E(r == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                            "virConnectBaselineCPU",
+                                            ruby_libvirt_connect_get(c)));
 
-    retval = rb_protect(rb_str_new2_wrap, (VALUE)&r, &exception);
+    retval = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&r, &exception);
     free(r);
     if (exception) {
         rb_jump_tag(exception);
@@ -500,15 +529,16 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 5, newc,
-                   domain_new(dom, newc), INT2NUM(event), INT2NUM(detail),
-                   cb_opaque);
+                   ruby_libvirt_domain_new(dom, newc), INT2NUM(event),
+                   INT2NUM(detail), cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 5, newc, domain_new(dom, newc),
-                   INT2NUM(event), INT2NUM(detail), cb_opaque);
+        rb_funcall(cb, rb_intern("call"), 5, newc,
+                   ruby_libvirt_domain_new(dom, newc), INT2NUM(event),
+                   INT2NUM(detail), cb_opaque);
     }
     else {
         rb_raise(rb_eTypeError,
@@ -541,14 +571,14 @@ static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 3, newc,
-                   domain_new(dom, newc), cb_opaque);
+                   ruby_libvirt_domain_new(dom, newc), cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 3, newc, domain_new(dom, newc),
-                   cb_opaque);
+        rb_funcall(cb, rb_intern("call"), 3, newc,
+                   ruby_libvirt_domain_new(dom, newc), cb_opaque);
     }
     else {
         rb_raise(rb_eTypeError,
@@ -579,14 +609,16 @@ static int domain_event_rtc_callback(virConnectPtr conn, virDomainPtr dom,
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
-                   domain_new(dom, newc), LL2NUM(utc_offset), cb_opaque);
+                   ruby_libvirt_domain_new(dom, newc), LL2NUM(utc_offset),
+                   cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
-                   LL2NUM(utc_offset), cb_opaque);
+        rb_funcall(cb, rb_intern("call"), 4, newc,
+                   ruby_libvirt_domain_new(dom, newc), LL2NUM(utc_offset),
+                   cb_opaque);
     }
     else {
         rb_raise(rb_eTypeError,
@@ -617,14 +649,16 @@ static int domain_event_watchdog_callback(virConnectPtr conn, virDomainPtr dom,
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 4, newc,
-                   domain_new(dom, newc), INT2NUM(action), cb_opaque);
+                   ruby_libvirt_domain_new(dom, newc), INT2NUM(action),
+                   cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 4, newc, domain_new(dom, newc),
-                   INT2NUM(action), cb_opaque);
+        rb_funcall(cb, rb_intern("call"), 4, newc,
+                   ruby_libvirt_domain_new(dom, newc), INT2NUM(action),
+                   cb_opaque);
     }
     else {
         rb_raise(rb_eTypeError,
@@ -658,14 +692,15 @@ static int domain_event_io_error_callback(virConnectPtr conn, virDomainPtr dom,
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 6, newc,
-                   domain_new(dom, newc), rb_str_new2(src_path),
+                   ruby_libvirt_domain_new(dom, newc), rb_str_new2(src_path),
                    rb_str_new2(dev_alias), INT2NUM(action), cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 6, newc, domain_new(dom, newc),
+        rb_funcall(cb, rb_intern("call"), 6, newc,
+                   ruby_libvirt_domain_new(dom, newc),
                    rb_str_new2(src_path), rb_str_new2(dev_alias),
                    INT2NUM(action), cb_opaque);
     }
@@ -703,15 +738,16 @@ static int domain_event_io_error_reason_callback(virConnectPtr conn,
     cb = rb_ary_entry(passthrough, 0);
     cb_opaque = rb_ary_entry(passthrough, 1);
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 7, newc,
-                   domain_new(dom, newc), rb_str_new2(src_path),
+                   ruby_libvirt_domain_new(dom, newc), rb_str_new2(src_path),
                    rb_str_new2(dev_alias), INT2NUM(action),
                    rb_str_new2(reason), cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 7, newc, domain_new(dom, newc),
+        rb_funcall(cb, rb_intern("call"), 7, newc,
+                   ruby_libvirt_domain_new(dom, newc),
                    rb_str_new2(src_path), rb_str_new2(dev_alias),
                    INT2NUM(action), rb_str_new2(reason), cb_opaque);
     }
@@ -775,17 +811,18 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
         rb_ary_store(subject_array, i, pair);
     }
 
-    newc = connect_new(conn);
+    newc = ruby_libvirt_connect_new(conn);
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 8, newc,
-                   domain_new(dom, newc), INT2NUM(phase), local_hash,
-                   remote_hash, rb_str_new2(authScheme), subject_array,
-                   cb_opaque);
+                   ruby_libvirt_domain_new(dom, newc), INT2NUM(phase),
+                   local_hash, remote_hash, rb_str_new2(authScheme),
+                   subject_array, cb_opaque);
     }
     else if (strcmp(rb_obj_classname(cb), "Proc") == 0) {
-        rb_funcall(cb, rb_intern("call"), 8, newc, domain_new(dom, newc),
-                   INT2NUM(phase), local_hash, remote_hash,
-                   rb_str_new2(authScheme), subject_array, cb_opaque);
+        rb_funcall(cb, rb_intern("call"), 8, newc,
+                   ruby_libvirt_domain_new(dom, newc), INT2NUM(phase),
+                   local_hash, remote_hash, rb_str_new2(authScheme),
+                   subject_array, cb_opaque);
     }
     else {
         rb_raise(rb_eTypeError,
@@ -830,7 +867,7 @@ static VALUE libvirt_connect_domain_event_register_any(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "22", &eventID, &cb, &dom, &opaque);
 
-    if (!is_symbol_or_proc(cb)) {
+    if (!ruby_libvirt_is_symbol_or_proc(cb)) {
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected Symbol or Proc)");
     }
@@ -839,7 +876,7 @@ static VALUE libvirt_connect_domain_event_register_any(int argc, VALUE *argv,
         domain = NULL;
     }
     else {
-        domain = domain_get(dom);
+        domain = ruby_libvirt_domain_get(dom);
     }
 
     switch(NUM2INT(eventID)) {
@@ -874,9 +911,11 @@ static VALUE libvirt_connect_domain_event_register_any(int argc, VALUE *argv,
     rb_ary_store(passthrough, 0, cb);
     rb_ary_store(passthrough, 1, opaque);
 
-    gen_call_int(virConnectDomainEventRegisterAny, connect_get(c),
-                 connect_get(c), domain, NUM2INT(eventID), internalcb,
-                 (void *)passthrough, NULL);
+    ruby_libvirt_generate_call_int(virConnectDomainEventRegisterAny,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c), domain,
+                                   NUM2INT(eventID), internalcb,
+                                   (void *)passthrough, NULL);
 }
 
 /*
@@ -890,8 +929,10 @@ static VALUE libvirt_connect_domain_event_register_any(int argc, VALUE *argv,
 static VALUE libvirt_connect_domain_event_deregister_any(VALUE c,
                                                          VALUE callbackID)
 {
-    gen_call_void(virConnectDomainEventDeregisterAny, connect_get(c),
-                  connect_get(c), NUM2INT(callbackID));
+    ruby_libvirt_generate_call_nil(virConnectDomainEventDeregisterAny,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2INT(callbackID));
 }
 #endif
 
@@ -930,7 +971,7 @@ static VALUE libvirt_connect_domain_event_register(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &cb, &opaque);
 
-    if (!is_symbol_or_proc(cb)) {
+    if (!ruby_libvirt_is_symbol_or_proc(cb)) {
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected Symbol or Proc)");
     }
@@ -939,8 +980,11 @@ static VALUE libvirt_connect_domain_event_register(int argc, VALUE *argv,
     rb_ary_store(passthrough, 0, cb);
     rb_ary_store(passthrough, 1, opaque);
 
-    gen_call_void(virConnectDomainEventRegister, connect_get(c), connect_get(c),
-                  domain_event_callback, (void *)passthrough, NULL);
+    ruby_libvirt_generate_call_nil(virConnectDomainEventRegister,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   domain_event_callback, (void *)passthrough,
+                                   NULL);
 }
 
 /*
@@ -955,8 +999,10 @@ static VALUE libvirt_connect_domain_event_register(int argc, VALUE *argv,
  */
 static VALUE libvirt_connect_domain_event_deregister(VALUE c)
 {
-    gen_call_void(virConnectDomainEventDeregister, connect_get(c),
-                  connect_get(c), domain_event_callback);
+    ruby_libvirt_generate_call_nil(virConnectDomainEventDeregister,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   domain_event_callback);
 }
 #endif
 
@@ -984,9 +1030,10 @@ static VALUE libvirt_connect_list_domains(VALUE c)
     int i, r, num, *ids;
     VALUE result;
 
-    num = virConnectNumOfDomains(connect_get(c));
-    _E(num < 0, create_error(e_RetrieveError, "virConnectNumOfDomains",
-                             connect_get(c)));
+    num = virConnectNumOfDomains(ruby_libvirt_connect_get(c));
+    _E(num < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virConnectNumOfDomains",
+                                          ruby_libvirt_connect_get(c)));
 
     result = rb_ary_new2(num);
 
@@ -995,9 +1042,10 @@ static VALUE libvirt_connect_list_domains(VALUE c)
     }
 
     ids = alloca(sizeof(int) * num);
-    r = virConnectListDomains(connect_get(c), ids, num);
-    _E(r < 0, create_error(e_RetrieveError, "virConnectListDomains",
-                           connect_get(c)));
+    r = virConnectListDomains(ruby_libvirt_connect_get(c), ids, num);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virConnectListDomains",
+                                        ruby_libvirt_connect_get(c)));
 
     for (i = 0; i < num; i++) {
         rb_ary_store(result, i, INT2NUM(ids[i]));
@@ -1045,14 +1093,15 @@ static VALUE libvirt_connect_create_linux(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    dom = virDomainCreateLinux(connect_get(c), StringValueCStr(xml),
+    dom = virDomainCreateLinux(ruby_libvirt_connect_get(c),
+                               StringValueCStr(xml),
                                NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_Error, "virDomainCreateLinux",
-                                 connect_get(c)));
+    _E(dom == NULL, ruby_libvirt_create_error(e_Error, "virDomainCreateLinux",
+                                              ruby_libvirt_connect_get(c)));
 
-    return domain_new(dom, c);
+    return ruby_libvirt_domain_new(dom, c);
 }
 
 #if HAVE_VIRDOMAINCREATEXML
@@ -1070,14 +1119,14 @@ static VALUE libvirt_connect_create_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    dom = virDomainCreateXML(connect_get(c), StringValueCStr(xml),
+    dom = virDomainCreateXML(ruby_libvirt_connect_get(c), StringValueCStr(xml),
                              NUM2UINT(flags));
-    _E(dom == NULL, create_error(e_Error, "virDomainCreateXML",
-                                 connect_get(c)));
+    _E(dom == NULL, ruby_libvirt_create_error(e_Error, "virDomainCreateXML",
+                                              ruby_libvirt_connect_get(c)));
 
-    return domain_new(dom, c);
+    return ruby_libvirt_domain_new(dom, c);
 }
 #endif
 
@@ -1092,11 +1141,13 @@ static VALUE libvirt_connect_lookup_domain_by_name(VALUE c, VALUE name)
 {
     virDomainPtr dom;
 
-    dom = virDomainLookupByName(connect_get(c), StringValueCStr(name));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByName",
-                                 connect_get(c)));
+    dom = virDomainLookupByName(ruby_libvirt_connect_get(c),
+                                StringValueCStr(name));
+    _E(dom == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virDomainLookupByName",
+                                              ruby_libvirt_connect_get(c)));
 
-    return domain_new(dom, c);
+    return ruby_libvirt_domain_new(dom, c);
 }
 
 /*
@@ -1110,11 +1161,12 @@ static VALUE libvirt_connect_lookup_domain_by_id(VALUE c, VALUE id)
 {
     virDomainPtr dom;
 
-    dom = virDomainLookupByID(connect_get(c), NUM2INT(id));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByID",
-                                 connect_get(c)));
+    dom = virDomainLookupByID(ruby_libvirt_connect_get(c), NUM2INT(id));
+    _E(dom == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virDomainLookupByID",
+                                              ruby_libvirt_connect_get(c)));
 
-    return domain_new(dom, c);
+    return ruby_libvirt_domain_new(dom, c);
 }
 
 /*
@@ -1128,11 +1180,13 @@ static VALUE libvirt_connect_lookup_domain_by_uuid(VALUE c, VALUE uuid)
 {
     virDomainPtr dom;
 
-    dom = virDomainLookupByUUIDString(connect_get(c), StringValueCStr(uuid));
-    _E(dom == NULL, create_error(e_RetrieveError, "virDomainLookupByUUID",
-                                 connect_get(c)));
+    dom = virDomainLookupByUUIDString(ruby_libvirt_connect_get(c),
+                                      StringValueCStr(uuid));
+    _E(dom == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virDomainLookupByUUID",
+                                              ruby_libvirt_connect_get(c)));
 
-    return domain_new(dom, c);
+    return ruby_libvirt_domain_new(dom, c);
 }
 
 /*
@@ -1146,11 +1200,12 @@ static VALUE libvirt_connect_define_domain_xml(VALUE c, VALUE xml)
 {
     virDomainPtr dom;
 
-    dom = virDomainDefineXML(connect_get(c), StringValueCStr(xml));
-    _E(dom == NULL, create_error(e_DefinitionError, "virDomainDefineXML",
-                                 connect_get(c)));
+    dom = virDomainDefineXML(ruby_libvirt_connect_get(c), StringValueCStr(xml));
+    _E(dom == NULL, ruby_libvirt_create_error(e_DefinitionError,
+                                              "virDomainDefineXML",
+                                              ruby_libvirt_connect_get(c)));
 
-    return domain_new(dom, c);
+    return ruby_libvirt_domain_new(dom, c);
 }
 
 #if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
@@ -1168,11 +1223,13 @@ static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virConnectDomainXMLFromNative, connect_get(c), 1,
-                    connect_get(c), StringValueCStr(nativeFormat),
-                    StringValueCStr(xml), NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virConnectDomainXMLFromNative,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c),
+                                      StringValueCStr(nativeFormat),
+                                      StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
 
@@ -1191,11 +1248,13 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virConnectDomainXMLToNative, connect_get(c), 1,
-                    connect_get(c), StringValueCStr(nativeFormat),
-                    StringValueCStr(xml), NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virConnectDomainXMLToNative,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c),
+                                      StringValueCStr(nativeFormat),
+                                      StringValueCStr(xml), NUM2UINT(flags));
 }
 #endif
 
@@ -1248,7 +1307,6 @@ static VALUE libvirt_connect_list_defined_interfaces(VALUE c)
     gen_conn_list_names(c, DefinedInterfaces);
 }
 
-extern VALUE interface_new(virInterfacePtr i, VALUE conn);
 /*
  * call-seq:
  *   conn.lookup_interface_by_name(name) -> Libvirt::Interface
@@ -1260,11 +1318,13 @@ static VALUE libvirt_connect_lookup_interface_by_name(VALUE c, VALUE name)
 {
     virInterfacePtr iface;
 
-    iface = virInterfaceLookupByName(connect_get(c), StringValueCStr(name));
-    _E(iface == NULL, create_error(e_RetrieveError, "virInterfaceLookupByName",
-                                   connect_get(c)));
+    iface = virInterfaceLookupByName(ruby_libvirt_connect_get(c),
+                                     StringValueCStr(name));
+    _E(iface == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                "virInterfaceLookupByName",
+                                                ruby_libvirt_connect_get(c)));
 
-    return interface_new(iface, c);
+    return ruby_libvirt_interface_new(iface, c);
 }
 
 /*
@@ -1278,12 +1338,13 @@ static VALUE libvirt_connect_lookup_interface_by_mac(VALUE c, VALUE mac)
 {
     virInterfacePtr iface;
 
-    iface = virInterfaceLookupByMACString(connect_get(c), StringValueCStr(mac));
-    _E(iface == NULL, create_error(e_RetrieveError,
-                                   "virInterfaceLookupByMACString",
-                                   connect_get(c)));
+    iface = virInterfaceLookupByMACString(ruby_libvirt_connect_get(c),
+                                          StringValueCStr(mac));
+    _E(iface == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                "virInterfaceLookupByMACString",
+                                                ruby_libvirt_connect_get(c)));
 
-    return interface_new(iface, c);
+    return ruby_libvirt_interface_new(iface, c);
 }
 
 /*
@@ -1301,14 +1362,15 @@ static VALUE libvirt_connect_define_interface_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    iface = virInterfaceDefineXML(connect_get(c), StringValueCStr(xml),
-                                  NUM2UINT(flags));
-    _E(iface == NULL, create_error(e_DefinitionError, "virInterfaceDefineXML",
-                                   connect_get(c)));
+    iface = virInterfaceDefineXML(ruby_libvirt_connect_get(c),
+                                  StringValueCStr(xml), NUM2UINT(flags));
+    _E(iface == NULL, ruby_libvirt_create_error(e_DefinitionError,
+                                                "virInterfaceDefineXML",
+                                                ruby_libvirt_connect_get(c)));
 
-    return interface_new(iface, c);
+    return ruby_libvirt_interface_new(iface, c);
 }
 #endif
 
@@ -1371,11 +1433,13 @@ static VALUE libvirt_connect_lookup_network_by_name(VALUE c, VALUE name)
 {
     virNetworkPtr netw;
 
-    netw = virNetworkLookupByName(connect_get(c), StringValueCStr(name));
-    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByName",
-                                  connect_get(c)));
+    netw = virNetworkLookupByName(ruby_libvirt_connect_get(c),
+                                  StringValueCStr(name));
+    _E(netw == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                               "virNetworkLookupByName",
+                                               ruby_libvirt_connect_get(c)));
 
-    return network_new(netw, c);
+    return ruby_libvirt_network_new(netw, c);
 }
 
 /*
@@ -1389,11 +1453,13 @@ static VALUE libvirt_connect_lookup_network_by_uuid(VALUE c, VALUE uuid)
 {
     virNetworkPtr netw;
 
-    netw = virNetworkLookupByUUIDString(connect_get(c), StringValueCStr(uuid));
-    _E(netw == NULL, create_error(e_RetrieveError, "virNetworkLookupByUUID",
-                                  connect_get(c)));
+    netw = virNetworkLookupByUUIDString(ruby_libvirt_connect_get(c),
+                                        StringValueCStr(uuid));
+    _E(netw == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                               "virNetworkLookupByUUID",
+                                               ruby_libvirt_connect_get(c)));
 
-    return network_new(netw, c);
+    return ruby_libvirt_network_new(netw, c);
 }
 
 /*
@@ -1407,11 +1473,12 @@ static VALUE libvirt_connect_create_network_xml(VALUE c, VALUE xml)
 {
     virNetworkPtr netw;
 
-    netw = virNetworkCreateXML(connect_get(c), StringValueCStr(xml));
-    _E(netw == NULL, create_error(e_Error, "virNetworkCreateXML",
-                                  connect_get(c)));
+    netw = virNetworkCreateXML(ruby_libvirt_connect_get(c),
+                               StringValueCStr(xml));
+    _E(netw == NULL, ruby_libvirt_create_error(e_Error, "virNetworkCreateXML",
+                                               ruby_libvirt_connect_get(c)));
 
-    return network_new(netw, c);
+    return ruby_libvirt_network_new(netw, c);
 }
 
 /*
@@ -1425,15 +1492,16 @@ static VALUE libvirt_connect_define_network_xml(VALUE c, VALUE xml)
 {
     virNetworkPtr netw;
 
-    netw = virNetworkDefineXML(connect_get(c), StringValueCStr(xml));
-    _E(netw == NULL, create_error(e_DefinitionError, "virNetworkDefineXML",
-                                  connect_get(c)));
+    netw = virNetworkDefineXML(ruby_libvirt_connect_get(c),
+                               StringValueCStr(xml));
+    _E(netw == NULL, ruby_libvirt_create_error(e_DefinitionError,
+                                               "virNetworkDefineXML",
+                                               ruby_libvirt_connect_get(c)));
 
-    return network_new(netw, c);
+    return ruby_libvirt_network_new(netw, c);
 }
 
 #if HAVE_TYPE_VIRNODEDEVICEPTR
-extern VALUE nodedevice_new(virNodeDevicePtr s, VALUE conn);
 
 /*
  * call-seq:
@@ -1449,12 +1517,14 @@ static VALUE libvirt_connect_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &cap, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    result = virNodeNumOfDevices(connect_get(c), get_string_or_nil(cap),
+    result = virNodeNumOfDevices(ruby_libvirt_connect_get(c),
+                                 ruby_libvirt_get_cstring_or_null(cap),
                                  NUM2UINT(flags));
-    _E(result < 0, create_error(e_RetrieveError, "virNodeNumOfDevices",
-                                connect_get(c)));
+    _E(result < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                             "virNodeNumOfDevices",
+                                             ruby_libvirt_connect_get(c)));
 
     return INT2NUM(result);
 }
@@ -1469,36 +1539,33 @@ static VALUE libvirt_connect_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_connect_list_nodedevices(int argc, VALUE *argv, VALUE c)
 {
     int r, num;
-    VALUE cap, flags_val;
+    VALUE cap, flags;
     char *capstr;
     char **names;
-    unsigned int flags;
 
-    rb_scan_args(argc, argv, "02", &cap, &flags_val);
+    rb_scan_args(argc, argv, "02", &cap, &flags);
 
-    if (NIL_P(flags_val)) {
-        flags = 0;
-    }
-    else {
-        flags = NUM2UINT(flags_val);
-    }
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+    Check_Type(flags, T_FIXNUM);
 
-    capstr = get_string_or_nil(cap);
+    capstr = ruby_libvirt_get_cstring_or_null(cap);
 
-    num = virNodeNumOfDevices(connect_get(c), capstr, 0);
-    _E(num < 0, create_error(e_RetrieveError, "virNodeNumOfDevices",
-                             connect_get(c)));
+    num = virNodeNumOfDevices(ruby_libvirt_connect_get(c), capstr, 0);
+    _E(num < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virNodeNumOfDevices",
+                                          ruby_libvirt_connect_get(c)));
     if (num == 0) {
         /* if num is 0, don't call virNodeListDevices function */
         return rb_ary_new2(num);
     }
 
     names = alloca(sizeof(char *) * num);
-    r = virNodeListDevices(connect_get(c), capstr, names, num, flags);
-    _E(r < 0, create_error(e_RetrieveError, "virNodeListDevices",
-                           connect_get(c)));
+    r = virNodeListDevices(ruby_libvirt_connect_get(c), capstr, names, num,
+                           NUM2UINT(flags));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeListDevices",
+                                        ruby_libvirt_connect_get(c)));
 
-    return gen_list(num, names);
+    return ruby_libvirt_generate_list(num, names);
 }
 
 /*
@@ -1512,12 +1579,13 @@ static VALUE libvirt_connect_lookup_nodedevice_by_name(VALUE c, VALUE name)
 {
     virNodeDevicePtr nodedev;
 
-    nodedev = virNodeDeviceLookupByName(connect_get(c), StringValueCStr(name));
-    _E(nodedev == NULL, create_error(e_RetrieveError,
-                                     "virNodeDeviceLookupByName",
-                                     connect_get(c)));
+    nodedev = virNodeDeviceLookupByName(ruby_libvirt_connect_get(c),
+                                        StringValueCStr(name));
+    _E(nodedev == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                  "virNodeDeviceLookupByName",
+                                                  ruby_libvirt_connect_get(c)));
 
-    return nodedevice_new(nodedev, c);
+    return ruby_libvirt_nodedevice_new(nodedev, c);
 
 }
 
@@ -1537,20 +1605,20 @@ static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    nodedev = virNodeDeviceCreateXML(connect_get(c), StringValueCStr(xml),
-                                     NUM2UINT(flags));
-    _E(nodedev == NULL, create_error(e_Error, "virNodeDeviceCreateXML",
-                                     connect_get(c)));
+    nodedev = virNodeDeviceCreateXML(ruby_libvirt_connect_get(c),
+                                     StringValueCStr(xml), NUM2UINT(flags));
+    _E(nodedev == NULL, ruby_libvirt_create_error(e_Error,
+                                                  "virNodeDeviceCreateXML",
+                                                  ruby_libvirt_connect_get(c)));
 
-    return nodedevice_new(nodedev, c);
+    return ruby_libvirt_nodedevice_new(nodedev, c);
 }
 #endif
 #endif
 
 #if HAVE_TYPE_VIRNWFILTERPTR
-extern VALUE nwfilter_new(virNWFilterPtr nw, VALUE conn);
 
 /*
  * call-seq:
@@ -1587,12 +1655,13 @@ static VALUE libvirt_connect_lookup_nwfilter_by_name(VALUE c, VALUE name)
 {
     virNWFilterPtr nwfilter;
 
-    nwfilter = virNWFilterLookupByName(connect_get(c), StringValueCStr(name));
-    _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByName",
-                                      connect_get(c)));
+    nwfilter = virNWFilterLookupByName(ruby_libvirt_connect_get(c),
+                                       StringValueCStr(name));
+    _E(nwfilter == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                   "virNWFilterLookupByName",
+                                                   ruby_libvirt_connect_get(c)));
 
-    return nwfilter_new(nwfilter, c);
+    return ruby_libvirt_nwfilter_new(nwfilter, c);
 }
 
 /*
@@ -1606,13 +1675,14 @@ static VALUE libvirt_connect_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid)
 {
     virNWFilterPtr nwfilter;
 
-    nwfilter = virNWFilterLookupByUUIDString(connect_get(c),
+    nwfilter = virNWFilterLookupByUUIDString(ruby_libvirt_connect_get(c),
                                              StringValueCStr(uuid));
-    _E(nwfilter == NULL, create_error(e_RetrieveError,
-                                      "virNWFilterLookupByUUIDString",
-                                      connect_get(c)));
+    _E(nwfilter == NULL,
+       ruby_libvirt_create_error(e_RetrieveError,
+                                 "virNWFilterLookupByUUIDString",
+                                 ruby_libvirt_connect_get(c)));
 
-    return nwfilter_new(nwfilter, c);
+    return ruby_libvirt_nwfilter_new(nwfilter, c);
 }
 
 /*
@@ -1626,16 +1696,17 @@ static VALUE libvirt_connect_define_nwfilter_xml(VALUE c, VALUE xml)
 {
     virNWFilterPtr nwfilter;
 
-    nwfilter = virNWFilterDefineXML(connect_get(c), StringValueCStr(xml));
-    _E(nwfilter == NULL, create_error(e_DefinitionError, "virNWFilterDefineXML",
-                                      connect_get(c)));
+    nwfilter = virNWFilterDefineXML(ruby_libvirt_connect_get(c),
+                                    StringValueCStr(xml));
+    _E(nwfilter == NULL, ruby_libvirt_create_error(e_DefinitionError,
+                                                   "virNWFilterDefineXML",
+                                                   ruby_libvirt_connect_get(c)));
 
-    return nwfilter_new(nwfilter, c);
+    return ruby_libvirt_nwfilter_new(nwfilter, c);
 }
 #endif
 
 #if HAVE_TYPE_VIRSECRETPTR
-extern VALUE secret_new(virSecretPtr s, VALUE conn);
 
 /*
  * call-seq:
@@ -1672,11 +1743,13 @@ static VALUE libvirt_connect_lookup_secret_by_uuid(VALUE c, VALUE uuid)
 {
     virSecretPtr secret;
 
-    secret = virSecretLookupByUUIDString(connect_get(c), StringValueCStr(uuid));
-    _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUUID",
-                                    connect_get(c)));
+    secret = virSecretLookupByUUIDString(ruby_libvirt_connect_get(c),
+                                         StringValueCStr(uuid));
+    _E(secret == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                 "virSecretLookupByUUID",
+                                                 ruby_libvirt_connect_get(c)));
 
-    return secret_new(secret, c);
+    return ruby_libvirt_secret_new(secret, c);
 }
 
 /*
@@ -1691,12 +1764,14 @@ static VALUE libvirt_connect_lookup_secret_by_usage(VALUE c, VALUE usagetype,
 {
     virSecretPtr secret;
 
-    secret = virSecretLookupByUsage(connect_get(c), NUM2UINT(usagetype),
+    secret = virSecretLookupByUsage(ruby_libvirt_connect_get(c),
+                                    NUM2UINT(usagetype),
                                     StringValueCStr(usageID));
-    _E(secret == NULL, create_error(e_RetrieveError, "virSecretLookupByUsage",
-                                    connect_get(c)));
+    _E(secret == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                 "virSecretLookupByUsage",
+                                                 ruby_libvirt_connect_get(c)));
 
-    return secret_new(secret, c);
+    return ruby_libvirt_secret_new(secret, c);
 }
 
 /*
@@ -1713,14 +1788,15 @@ static VALUE libvirt_connect_define_secret_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    secret = virSecretDefineXML(connect_get(c), StringValueCStr(xml),
-                                NUM2UINT(flags));
-    _E(secret == NULL, create_error(e_DefinitionError, "virSecretDefineXML",
-                                    connect_get(c)));
+    secret = virSecretDefineXML(ruby_libvirt_connect_get(c),
+                                StringValueCStr(xml), NUM2UINT(flags));
+    _E(secret == NULL, ruby_libvirt_create_error(e_DefinitionError,
+                                                 "virSecretDefineXML",
+                                                 ruby_libvirt_connect_get(c)));
 
-    return secret_new(secret, c);
+    return ruby_libvirt_secret_new(secret, c);
 }
 #endif
 
@@ -1787,9 +1863,11 @@ static VALUE libvirt_connect_lookup_pool_by_name(VALUE c, VALUE name)
 {
     virStoragePoolPtr pool;
 
-    pool = virStoragePoolLookupByName(connect_get(c), StringValueCStr(name));
-    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByName",
-                                  connect_get(c)));
+    pool = virStoragePoolLookupByName(ruby_libvirt_connect_get(c),
+                                      StringValueCStr(name));
+    _E(pool == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                               "virStoragePoolLookupByName",
+                                               ruby_libvirt_connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1805,10 +1883,11 @@ static VALUE libvirt_connect_lookup_pool_by_uuid(VALUE c, VALUE uuid)
 {
     virStoragePoolPtr pool;
 
-    pool = virStoragePoolLookupByUUIDString(connect_get(c),
+    pool = virStoragePoolLookupByUUIDString(ruby_libvirt_connect_get(c),
                                             StringValueCStr(uuid));
-    _E(pool == NULL, create_error(e_RetrieveError, "virStoragePoolLookupByUUID",
-                                  connect_get(c)));
+    _E(pool == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                               "virStoragePoolLookupByUUID",
+                                               ruby_libvirt_connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1827,12 +1906,13 @@ static VALUE libvirt_connect_create_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    pool = virStoragePoolCreateXML(connect_get(c), StringValueCStr(xml),
-                                   NUM2UINT(flags));
-    _E(pool == NULL, create_error(e_Error, "virStoragePoolCreateXML",
-                                  connect_get(c)));
+    pool = virStoragePoolCreateXML(ruby_libvirt_connect_get(c),
+                                   StringValueCStr(xml), NUM2UINT(flags));
+    _E(pool == NULL, ruby_libvirt_create_error(e_Error,
+                                               "virStoragePoolCreateXML",
+                                               ruby_libvirt_connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1851,12 +1931,13 @@ static VALUE libvirt_connect_define_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    pool = virStoragePoolDefineXML(connect_get(c), StringValueCStr(xml),
-                                   NUM2UINT(flags));
-    _E(pool == NULL, create_error(e_DefinitionError, "virStoragePoolDefineXML",
-                                  connect_get(c)));
+    pool = virStoragePoolDefineXML(ruby_libvirt_connect_get(c),
+                                   StringValueCStr(xml), NUM2UINT(flags));
+    _E(pool == NULL, ruby_libvirt_create_error(e_DefinitionError,
+                                               "virStoragePoolDefineXML",
+                                               ruby_libvirt_connect_get(c)));
 
     return pool_new(pool, c);
 }
@@ -1875,11 +1956,14 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virConnectFindStoragePoolSources, connect_get(c), 1,
-                    connect_get(c), StringValueCStr(type),
-                    get_string_or_nil(srcSpec_val), NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virConnectFindStoragePoolSources,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c),
+                                      StringValueCStr(type),
+                                      ruby_libvirt_get_cstring_or_null(srcSpec_val),
+                                      NUM2UINT(flags));
 }
 #endif
 
@@ -1892,21 +1976,22 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
  * to get machine-specific information about the hypervisor.  This may include
  * data such as the host UUID, the BIOS version, etc.
  */
-static VALUE libvirt_connect_get_sys_info(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_ruby_libvirt_connect_get_sys_info(int argc, VALUE *argv, VALUE c)
 {
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virConnectGetSysinfo, connect_get(c), 1, connect_get(c),
-                    NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virConnectGetSysinfo,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c),
+                                      NUM2UINT(flags));
 }
 #endif
 
 #if HAVE_TYPE_VIRSTREAMPTR
-extern VALUE stream_new(virStreamPtr s, VALUE conn);
 
 /*
  * call-seq:
@@ -1922,14 +2007,15 @@ static VALUE libvirt_connect_stream(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    stream = virStreamNew(connect_get(c), NUM2UINT(flags));
+    stream = virStreamNew(ruby_libvirt_connect_get(c), NUM2UINT(flags));
 
-    _E(stream == NULL, create_error(e_RetrieveError, "virStreamNew",
-                                    connect_get(c)));
+    _E(stream == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                                 "virStreamNew",
+                                                 ruby_libvirt_connect_get(c)));
 
-    return stream_new(stream, c);
+    return ruby_libvirt_stream_new(stream, c);
 }
 #endif
 
@@ -1950,10 +2036,12 @@ static VALUE libvirt_connect_interface_change_begin(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virInterfaceChangeBegin, connect_get(c), connect_get(c),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virInterfaceChangeBegin,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2UINT(flags));
 }
 
 /*
@@ -1970,10 +2058,12 @@ static VALUE libvirt_connect_interface_change_commit(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virInterfaceChangeCommit, connect_get(c), connect_get(c),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virInterfaceChangeCommit,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2UINT(flags));
 }
 
 /*
@@ -1990,10 +2080,12 @@ static VALUE libvirt_connect_interface_change_rollback(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virInterfaceChangeRollback, connect_get(c), connect_get(c),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virInterfaceChangeRollback,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2UINT(flags));
 }
 #endif
 
@@ -2030,16 +2122,18 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
      * respectively.  That way if NUM2*() throws an exception, it happens
      * early on, before we have allocated any memory.
      */
-    intparam = NUM2INT(integer_default_if_nil(intparam_val, -1));
-    flags = NUM2UINT(integer_default_if_nil(flags_val, 0));
+    intparam = NUM2INT(ruby_libvirt_fixnum_set(intparam_val, -1));
+    flags = NUM2UINT(ruby_libvirt_fixnum_set(flags_val, 0));
 
     /* we first call out to the get_stats callback with NULL params and 0
      * nparams to find out how many parameters we need
      */
     nparams = 0;
-    errname = get_stats(connect_get(c), intparam, NULL, &nparams, flags);
+    errname = get_stats(ruby_libvirt_connect_get(c), intparam, NULL, &nparams,
+                        flags);
     if (errname != NULL) {
-        rb_exc_raise(create_error(e_RetrieveError, errname, connect_get(c)));
+        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname,
+                                               ruby_libvirt_connect_get(c)));
     }
 
     result = rb_hash_new();
@@ -2051,10 +2145,12 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
     /* Now we allocate the params array */
     params = alloc_stats(nparams);
 
-    errname = get_stats(connect_get(c), intparam, params, &nparams, flags);
+    errname = get_stats(ruby_libvirt_connect_get(c), intparam, params, &nparams,
+                        flags);
     if (errname != NULL) {
         xfree(params);
-        rb_exc_raise(create_error(e_RetrieveError, errname, connect_get(c)));
+        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname,
+                                               ruby_libvirt_connect_get(c)));
     }
 
     for (i = 0; i < nparams; i++) {
@@ -2171,10 +2267,13 @@ static VALUE libvirt_connect_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &filename, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virDomainSaveImageGetXMLDesc, connect_get(c), 1,
-                    connect_get(c), StringValueCStr(filename), NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virDomainSaveImageGetXMLDesc,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c),
+                                      StringValueCStr(filename),
+                                      NUM2UINT(flags));
 }
 
 /*
@@ -2193,11 +2292,13 @@ static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &filename, &newxml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virDomainSaveImageDefineXML, connect_get(c), connect_get(c),
-                  StringValueCStr(filename), StringValueCStr(newxml),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virDomainSaveImageDefineXML,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   StringValueCStr(filename),
+                                   StringValueCStr(newxml), NUM2UINT(flags));
 }
 #endif
 
@@ -2218,10 +2319,13 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &target, &duration, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virNodeSuspendForDuration, connect_get(c), connect_get(c),
-                  NUM2UINT(target), NUM2UINT(duration), NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virNodeSuspendForDuration,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2UINT(target), NUM2UINT(duration),
+                                   NUM2UINT(flags));
 }
 #endif
 
@@ -2231,9 +2335,11 @@ static int node_memory_nparams(VALUE d, unsigned int flags)
     int nparams = 0;
     int ret;
 
-    ret = virNodeGetMemoryParameters(connect_get(d), NULL, &nparams, flags);
-    _E(ret < 0, create_error(e_RetrieveError, "virNodeGetMemoryParameters",
-                             connect_get(d)));
+    ret = virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), NULL,
+                                     &nparams, flags);
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virNodeGetMemoryParameters",
+                                          ruby_libvirt_connect_get(d)));
 
     return nparams;
 }
@@ -2241,7 +2347,7 @@ static int node_memory_nparams(VALUE d, unsigned int flags)
 static char *node_memory_get(VALUE d, unsigned int flags,
                              virTypedParameterPtr params, int *nparams)
 {
-    if (virNodeGetMemoryParameters(connect_get(d), params, nparams,
+    if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    NUM2UINT(flags)) < 0) {
         return "virNodeGetMemoryParameters";
     }
@@ -2254,7 +2360,7 @@ static char *node_memory_set(VALUE d, unsigned int flags,
     /* FIXME: virNodeSetMemoryParameters can take a flags parameter, so we
      * should probably implement it and pass it through.
      */
-    if (virNodeSetMemoryParameters(connect_get(d), params, nparams,
+    if (virNodeSetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    flags) < 0) {
         return "virNodeSetMemoryParameters";
     }
@@ -2271,8 +2377,10 @@ static char *node_memory_set(VALUE d, unsigned int flags,
 static VALUE libvirt_connect_node_get_memory_parameters(int argc, VALUE *argv,
                                                         VALUE c)
 {
-    return get_parameters(argc, argv, c, connect_get(c), node_memory_nparams,
-                          node_memory_get);
+    return ruby_libvirt_get_typed_parameters(argc, argv, c,
+                                             ruby_libvirt_connect_get(c),
+                                             node_memory_nparams,
+                                             node_memory_get);
 }
 
 /*
@@ -2284,8 +2392,10 @@ static VALUE libvirt_connect_node_get_memory_parameters(int argc, VALUE *argv,
  */
 static VALUE libvirt_connect_node_set_memory_parameters(VALUE c, VALUE input)
 {
-    return set_parameters(c, input, connect_get(c), 1, node_memory_nparams,
-                          node_memory_get, node_memory_set);
+    return ruby_libvirt_set_typed_parameters(c, input,
+                                             ruby_libvirt_connect_get(c), 1,
+                                             node_memory_nparams,
+                                             node_memory_get, node_memory_set);
 }
 #endif
 
@@ -2327,11 +2437,12 @@ static VALUE libvirt_connect_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    ret = virNodeGetCPUMap(connect_get(c), &map, &online, NUM2UINT(flags));
-    _E(ret < 0, create_error(e_RetrieveError, "virNodeGetCPUMap",
-                             connect_get(c)));
+    ret = virNodeGetCPUMap(ruby_libvirt_connect_get(c), &map, &online,
+                           NUM2UINT(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeGetCPUMap",
+                                          ruby_libvirt_connect_get(c)));
 
     result = rb_hash_new();
 
@@ -2362,8 +2473,10 @@ static VALUE libvirt_connect_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_set_keepalive(VALUE c, VALUE interval, VALUE count)
 {
-    gen_call_int(virConnectSetKeepAlive, connect_get(c), connect_get(c),
-                 NUM2INT(interval), NUM2UINT(count));
+    ruby_libvirt_generate_call_int(virConnectSetKeepAlive,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2INT(interval), NUM2UINT(count));
 }
 #endif
 
@@ -2377,8 +2490,10 @@ static VALUE libvirt_connect_set_keepalive(VALUE c, VALUE interval, VALUE count)
  */
 static VALUE libvirt_connect_list_all_domains(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virDomainPtr, argc, argv, virConnectListAllDomains,
-                 connect_get(c), c, domain_new, virDomainFree);
+    ruby_libvirt_generate_call_list_all(virDomainPtr, argc, argv,
+                                        virConnectListAllDomains,
+                                        ruby_libvirt_connect_get(c), c,
+                                        ruby_libvirt_domain_new, virDomainFree);
 }
 #endif
 
@@ -2392,8 +2507,11 @@ static VALUE libvirt_connect_list_all_domains(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_list_all_networks(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virNetworkPtr, argc, argv, virConnectListAllNetworks,
-                 connect_get(c), c, network_new, virNetworkFree);
+    ruby_libvirt_generate_call_list_all(virNetworkPtr, argc, argv,
+                                        virConnectListAllNetworks,
+                                        ruby_libvirt_connect_get(c), c,
+                                        ruby_libvirt_network_new,
+                                        virNetworkFree);
 }
 #endif
 
@@ -2407,8 +2525,11 @@ static VALUE libvirt_connect_list_all_networks(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_list_all_interfaces(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virInterfacePtr, argc, argv, virConnectListAllInterfaces,
-                 connect_get(c), c, interface_new, virInterfaceFree);
+    ruby_libvirt_generate_call_list_all(virInterfacePtr, argc, argv,
+                                        virConnectListAllInterfaces,
+                                        ruby_libvirt_connect_get(c), c,
+                                        ruby_libvirt_interface_new,
+                                        virInterfaceFree);
 }
 #endif
 
@@ -2422,8 +2543,10 @@ static VALUE libvirt_connect_list_all_interfaces(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_list_all_secrets(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virSecretPtr, argc, argv, virConnectListAllSecrets,
-                 connect_get(c), c, secret_new, virSecretFree);
+    ruby_libvirt_generate_call_list_all(virSecretPtr, argc, argv,
+                                        virConnectListAllSecrets,
+                                        ruby_libvirt_connect_get(c), c,
+                                        ruby_libvirt_secret_new, virSecretFree);
 }
 #endif
 
@@ -2438,8 +2561,11 @@ static VALUE libvirt_connect_list_all_secrets(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_connect_list_all_nodedevices(int argc, VALUE *argv,
                                                   VALUE c)
 {
-    gen_list_all(virNodeDevicePtr, argc, argv, virConnectListAllNodeDevices,
-                 connect_get(c), c, nodedevice_new, virNodeDeviceFree);
+    ruby_libvirt_generate_call_list_all(virNodeDevicePtr, argc, argv,
+                                        virConnectListAllNodeDevices,
+                                        ruby_libvirt_connect_get(c), c,
+                                        ruby_libvirt_nodedevice_new,
+                                        virNodeDeviceFree);
 }
 #endif
 
@@ -2454,8 +2580,10 @@ static VALUE libvirt_connect_list_all_nodedevices(int argc, VALUE *argv,
 static VALUE libvirt_connect_list_all_storage_pools(int argc, VALUE *argv,
                                                     VALUE c)
 {
-    gen_list_all(virStoragePoolPtr, argc, argv, virConnectListAllStoragePools,
-                 connect_get(c), c, pool_new, virStoragePoolFree);
+    ruby_libvirt_generate_call_list_all(virStoragePoolPtr, argc, argv,
+                                        virConnectListAllStoragePools,
+                                        ruby_libvirt_connect_get(c), c,
+                                        pool_new, virStoragePoolFree);
 }
 #endif
 
@@ -2469,8 +2597,11 @@ static VALUE libvirt_connect_list_all_storage_pools(int argc, VALUE *argv,
  */
 static VALUE libvirt_connect_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
 {
-    gen_list_all(virNWFilterPtr, argc, argv, virConnectListAllNWFilters,
-                 connect_get(c), c, nwfilter_new, virNWFilterFree);
+    ruby_libvirt_generate_call_list_all(virNWFilterPtr, argc, argv,
+                                        virConnectListAllNWFilters,
+                                        ruby_libvirt_connect_get(c), c,
+                                        ruby_libvirt_nwfilter_new,
+                                        virNWFilterFree);
 }
 #endif
 
@@ -2484,14 +2615,16 @@ static VALUE libvirt_connect_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_alive_p(VALUE c)
 {
-    gen_call_truefalse(virConnectIsAlive, connect_get(c), connect_get(c));
+    ruby_libvirt_generate_call_truefalse(virConnectIsAlive,
+                                         ruby_libvirt_connect_get(c),
+                                         ruby_libvirt_connect_get(c));
 }
 #endif
 
 /*
  * Class Libvirt::Connect
  */
-void init_connect()
+void ruby_libvirt_connect_init(void)
 {
     c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
 
@@ -2843,7 +2976,7 @@ void init_connect()
 #endif
 
 #if HAVE_VIRCONNECTGETSYSINFO
-    rb_define_method(c_connect, "sys_info", libvirt_connect_get_sys_info, -1);
+    rb_define_method(c_connect, "sys_info", libvirt_ruby_libvirt_connect_get_sys_info, -1);
 #endif
 #if HAVE_TYPE_VIRSTREAMPTR
     rb_define_method(c_connect, "stream", libvirt_connect_stream, -1);

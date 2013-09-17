@@ -33,7 +33,7 @@
  */
 static virStorageVolPtr vol_get(VALUE v)
 {
-    generic_get(StorageVol, v);
+    ruby_libvirt_get_struct(StorageVol, v);
 }
 #endif
 
@@ -47,17 +47,17 @@ static VALUE c_storage_pool_info;
 
 static void pool_free(void *d)
 {
-    generic_free(StoragePool, d);
+    ruby_libvirt_free_struct(StoragePool, d);
 }
 
 static virStoragePoolPtr pool_get(VALUE p)
 {
-    generic_get(StoragePool, p);
+    ruby_libvirt_get_struct(StoragePool, p);
 }
 
 VALUE pool_new(virStoragePoolPtr p, VALUE conn)
 {
-    return generic_new(c_storage_pool, p, conn, pool_free);
+    return ruby_libvirt_new_class(c_storage_pool, p, conn, pool_free);
 }
 
 /*
@@ -72,11 +72,11 @@ static VALUE libvirt_storage_vol_get_pool(VALUE v)
     virStoragePoolPtr pool;
 
     pool = virStoragePoolLookupByVolume(vol_get(v));
-    _E(pool == NULL, create_error(e_RetrieveError,
-                                  "virStoragePoolLookupByVolume",
-                                  connect_get(v)));
+    _E(pool == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                               "virStoragePoolLookupByVolume",
+                                               ruby_libvirt_connect_get(v)));
 
-    return pool_new(pool, conn_attr(v));
+    return pool_new(pool, ruby_libvirt_conn_attr(v));
 }
 
 /*
@@ -92,10 +92,11 @@ static VALUE libvirt_storage_pool_build(int argc, VALUE *argv, VALUE p)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStoragePoolBuild, connect_get(p), pool_get(p),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStoragePoolBuild,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p), NUM2UINT(flags));
 }
 
 /*
@@ -107,7 +108,9 @@ static VALUE libvirt_storage_pool_build(int argc, VALUE *argv, VALUE p)
  */
 static VALUE libvirt_storage_pool_undefine(VALUE p)
 {
-    gen_call_void(virStoragePoolUndefine, connect_get(p), pool_get(p));
+    ruby_libvirt_generate_call_nil(virStoragePoolUndefine,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p));
 }
 
 /*
@@ -123,10 +126,11 @@ static VALUE libvirt_storage_pool_create(int argc, VALUE *argv, VALUE p)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStoragePoolCreate, connect_get(p), pool_get(p),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStoragePoolCreate,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p), NUM2UINT(flags));
 }
 
 /*
@@ -138,7 +142,9 @@ static VALUE libvirt_storage_pool_create(int argc, VALUE *argv, VALUE p)
  */
 static VALUE libvirt_storage_pool_destroy(VALUE p)
 {
-    gen_call_void(virStoragePoolDestroy, connect_get(p), pool_get(p));
+    ruby_libvirt_generate_call_nil(virStoragePoolDestroy,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p));
 }
 
 /*
@@ -155,10 +161,11 @@ static VALUE libvirt_storage_pool_delete(int argc, VALUE *argv, VALUE p)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStoragePoolDelete, connect_get(p), pool_get(p),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStoragePoolDelete,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p), NUM2UINT(flags));
 }
 
 /*
@@ -174,10 +181,11 @@ static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStoragePoolRefresh, connect_get(p), pool_get(p),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStoragePoolRefresh,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p), NUM2UINT(flags));
 }
 
 /*
@@ -189,7 +197,9 @@ static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
  */
 static VALUE libvirt_storage_pool_name(VALUE p)
 {
-    gen_call_string(virStoragePoolGetName, connect_get(p), 0, pool_get(p));
+    ruby_libvirt_generate_call_string(virStoragePoolGetName,
+                                      ruby_libvirt_connect_get(p), 0,
+                                      pool_get(p));
 }
 
 /*
@@ -205,8 +215,9 @@ static VALUE libvirt_storage_pool_uuid(VALUE p)
     int r;
 
     r = virStoragePoolGetUUIDString(pool_get(p), uuid);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetUUIDString",
-                           connect_get(p)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virStoragePoolGetUUIDString",
+                                        ruby_libvirt_connect_get(p)));
 
     return rb_str_new2((char *) uuid);
 }
@@ -225,8 +236,9 @@ static VALUE libvirt_storage_pool_info(VALUE p)
     VALUE result;
 
     r = virStoragePoolGetInfo(pool_get(p), &info);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetInfo",
-                           connect_get(p)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virStoragePoolGetInfo",
+                                        ruby_libvirt_connect_get(p)));
 
     result = rb_class_new_instance(0, NULL, c_storage_pool_info);
     rb_iv_set(result, "@state", INT2NUM(info.state));
@@ -250,10 +262,11 @@ static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virStoragePoolGetXMLDesc, connect_get(p), 1, pool_get(p),
-                    NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virStoragePoolGetXMLDesc,
+                                      ruby_libvirt_connect_get(p),
+                                      1, pool_get(p), NUM2UINT(flags));
 }
 
 /*
@@ -268,8 +281,9 @@ static VALUE libvirt_storage_pool_autostart(VALUE p)
     int r, autostart;
 
     r = virStoragePoolGetAutostart(pool_get(p), &autostart);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolGetAutostart",
-                           connect_get(p)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virStoragePoolGetAutostart",
+                                        ruby_libvirt_connect_get(p)));
 
     return autostart ? Qtrue : Qfalse;
 }
@@ -288,8 +302,9 @@ static VALUE libvirt_storage_pool_autostart_set(VALUE p, VALUE autostart)
                  "wrong argument type (expected TrueClass or FalseClass)");
     }
 
-    gen_call_void(virStoragePoolSetAutostart, connect_get(p), pool_get(p),
-                  RTEST(autostart) ? 1 : 0);
+    ruby_libvirt_generate_call_nil(virStoragePoolSetAutostart,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p), RTEST(autostart) ? 1 : 0);
 }
 
 /*
@@ -304,8 +319,9 @@ static VALUE libvirt_storage_pool_num_of_volumes(VALUE p)
     int n;
 
     n = virStoragePoolNumOfVolumes(pool_get(p));
-    _E(n < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
-                           connect_get(p)));
+    _E(n < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virStoragePoolNumOfVolumes",
+                                        ruby_libvirt_connect_get(p)));
 
     return INT2NUM(n);
 }
@@ -323,18 +339,20 @@ static VALUE libvirt_storage_pool_list_volumes(VALUE p)
     char **names;
 
     num = virStoragePoolNumOfVolumes(pool_get(p));
-    _E(num < 0, create_error(e_RetrieveError, "virStoragePoolNumOfVolumes",
-                             connect_get(p)));
+    _E(num < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virStoragePoolNumOfVolumes",
+                                          ruby_libvirt_connect_get(p)));
     if (num == 0) {
         return rb_ary_new2(num);
     }
 
     names = alloca(sizeof(char *) * num);
     r = virStoragePoolListVolumes(pool_get(p), names, num);
-    _E(r < 0, create_error(e_RetrieveError, "virStoragePoolListVolumes",
-                           connect_get(p)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virStoragePoolListVolumes",
+                                        ruby_libvirt_connect_get(p)));
 
-    return gen_list(num, names);
+    return ruby_libvirt_generate_list(num, names);
 }
 
 /*
@@ -347,7 +365,7 @@ static VALUE libvirt_storage_pool_list_volumes(VALUE p)
  */
 static VALUE libvirt_storage_pool_free(VALUE p)
 {
-    gen_call_free(StoragePool, p);
+    ruby_libvirt_generate_call_free(StoragePool, p);
 }
 #endif
 
@@ -360,12 +378,12 @@ static VALUE c_storage_vol_info;
 
 static void vol_free(void *d)
 {
-    generic_free(StorageVol, d);
+    ruby_libvirt_free_struct(StorageVol, d);
 }
 
 static VALUE vol_new(virStorageVolPtr v, VALUE conn)
 {
-    return generic_new(c_storage_vol, v, conn, vol_free);
+    return ruby_libvirt_new_class(c_storage_vol, v, conn, vol_free);
 }
 
 /*
@@ -380,10 +398,11 @@ static VALUE libvirt_storage_pool_lookup_vol_by_name(VALUE p, VALUE name)
     virStorageVolPtr vol;
 
     vol = virStorageVolLookupByName(pool_get(p), StringValueCStr(name));
-    _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByName",
-                                 connect_get(p)));
+    _E(vol == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virStorageVolLookupByName",
+                                              ruby_libvirt_connect_get(p)));
 
-    return vol_new(vol, conn_attr(p));
+    return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 
 /*
@@ -398,11 +417,13 @@ static VALUE libvirt_storage_pool_lookup_vol_by_key(VALUE p, VALUE key)
     virStorageVolPtr vol;
 
     /* FIXME: Why does this take a connection, not a pool? */
-    vol = virStorageVolLookupByKey(connect_get(p), StringValueCStr(key));
-    _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByKey",
-                                 connect_get(p)));
+    vol = virStorageVolLookupByKey(ruby_libvirt_connect_get(p),
+                                   StringValueCStr(key));
+    _E(vol == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virStorageVolLookupByKey",
+                                              ruby_libvirt_connect_get(p)));
 
-    return vol_new(vol, conn_attr(p));
+    return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 
 /*
@@ -417,11 +438,13 @@ static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
     virStorageVolPtr vol;
 
     /* FIXME: Why does this take a connection, not a pool? */
-    vol = virStorageVolLookupByPath(connect_get(p), StringValueCStr(path));
-    _E(vol == NULL, create_error(e_RetrieveError, "virStorageVolLookupByPath",
-                                 connect_get(p)));
+    vol = virStorageVolLookupByPath(ruby_libvirt_connect_get(p),
+                                    StringValueCStr(path));
+    _E(vol == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virStorageVolLookupByPath",
+                                              ruby_libvirt_connect_get(p)));
 
-    return vol_new(vol, conn_attr(p));
+    return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 
 #if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
@@ -435,8 +458,10 @@ static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
 static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
                                                    VALUE p)
 {
-    gen_list_all(virStorageVolPtr, argc, argv, virStoragePoolListAllVolumes,
-                 pool_get(p), p, vol_new, virStorageVolFree);
+    ruby_libvirt_generate_call_list_all(virStorageVolPtr, argc, argv,
+                                        virStoragePoolListAllVolumes,
+                                        pool_get(p), p, vol_new,
+                                        virStorageVolFree);
 }
 #endif
 
@@ -449,7 +474,9 @@ static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
  */
 static VALUE libvirt_storage_vol_name(VALUE v)
 {
-    gen_call_string(virStorageVolGetName, connect_get(v), 0, vol_get(v));
+    ruby_libvirt_generate_call_string(virStorageVolGetName,
+                                      ruby_libvirt_connect_get(v), 0,
+                                      vol_get(v));
 }
 
 /*
@@ -461,7 +488,9 @@ static VALUE libvirt_storage_vol_name(VALUE v)
  */
 static VALUE libvirt_storage_vol_key(VALUE v)
 {
-    gen_call_string(virStorageVolGetKey, connect_get(v), 0, vol_get(v));
+    ruby_libvirt_generate_call_string(virStorageVolGetKey,
+                                      ruby_libvirt_connect_get(v), 0,
+                                      vol_get(v));
 }
 
 /*
@@ -478,14 +507,14 @@ static VALUE libvirt_storage_pool_vol_create_xml(int argc, VALUE *argv, VALUE p)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     vol = virStorageVolCreateXML(pool_get(p), StringValueCStr(xml),
                                  NUM2UINT(flags));
-    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXML",
-                                 connect_get(p)));
+    _E(vol == NULL, ruby_libvirt_create_error(e_Error, "virNetworkCreateXML",
+                                              ruby_libvirt_connect_get(p)));
 
-    return vol_new(vol, conn_attr(p));
+    return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 
 #if HAVE_VIRSTORAGEVOLCREATEXMLFROM
@@ -505,14 +534,15 @@ static VALUE libvirt_storage_pool_vol_create_xml_from(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &xml, &cloneval, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
     vol = virStorageVolCreateXMLFrom(pool_get(p), StringValueCStr(xml),
                                      vol_get(cloneval), NUM2UINT(flags));
-    _E(vol == NULL, create_error(e_Error, "virNetworkCreateXMLFrom",
-                                 connect_get(p)));
+    _E(vol == NULL, ruby_libvirt_create_error(e_Error,
+                                              "virNetworkCreateXMLFrom",
+                                              ruby_libvirt_connect_get(p)));
 
-    return vol_new(vol, conn_attr(p));
+    return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 #endif
 
@@ -526,7 +556,9 @@ static VALUE libvirt_storage_pool_vol_create_xml_from(int argc, VALUE *argv,
  */
 static VALUE libvirt_storage_pool_active_p(VALUE p)
 {
-    gen_call_truefalse(virStoragePoolIsActive, connect_get(p), pool_get(p));
+    ruby_libvirt_generate_call_truefalse(virStoragePoolIsActive,
+                                         ruby_libvirt_connect_get(p),
+                                         pool_get(p));
 }
 #endif
 
@@ -540,7 +572,9 @@ static VALUE libvirt_storage_pool_active_p(VALUE p)
  */
 static VALUE libvirt_storage_pool_persistent_p(VALUE p)
 {
-    gen_call_truefalse(virStoragePoolIsPersistent, connect_get(p), pool_get(p));
+    ruby_libvirt_generate_call_truefalse(virStoragePoolIsPersistent,
+                                         ruby_libvirt_connect_get(p),
+                                         pool_get(p));
 }
 #endif
 
@@ -557,10 +591,11 @@ static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStorageVolDelete, connect_get(v), vol_get(v),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStorageVolDelete,
+                                   ruby_libvirt_connect_get(v),
+                                   vol_get(v), NUM2UINT(flags));
 }
 
 #if HAVE_VIRSTORAGEVOLWIPE
@@ -577,10 +612,11 @@ static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStorageVolWipe, connect_get(v), vol_get(v),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStorageVolWipe,
+                                   ruby_libvirt_connect_get(v),
+                                   vol_get(v), NUM2UINT(flags));
 }
 #endif
 
@@ -598,8 +634,8 @@ static VALUE libvirt_storage_vol_info(VALUE v)
     VALUE result;
 
     r = virStorageVolGetInfo(vol_get(v), &info);
-    _E(r < 0, create_error(e_RetrieveError, "virStorageVolGetInfo",
-                           connect_get(v)));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virStorageVolGetInfo",
+                                        ruby_libvirt_connect_get(v)));
 
     result = rb_class_new_instance(0, NULL, c_storage_vol_info);
     rb_iv_set(result, "@type", INT2NUM(info.type));
@@ -622,10 +658,11 @@ static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_string(virStorageVolGetXMLDesc, connect_get(v), 1, vol_get(v),
-                    NUM2UINT(flags));
+    ruby_libvirt_generate_call_string(virStorageVolGetXMLDesc,
+                                      ruby_libvirt_connect_get(v),
+                                      1, vol_get(v), NUM2UINT(flags));
 }
 
 /*
@@ -637,7 +674,9 @@ static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
  */
 static VALUE libvirt_storage_vol_path(VALUE v)
 {
-    gen_call_string(virStorageVolGetPath, connect_get(v), 1, vol_get(v));
+    ruby_libvirt_generate_call_string(virStorageVolGetPath,
+                                      ruby_libvirt_connect_get(v), 1,
+                                      vol_get(v));
 }
 
 /*
@@ -650,7 +689,7 @@ static VALUE libvirt_storage_vol_path(VALUE v)
  */
 static VALUE libvirt_storage_vol_free(VALUE v)
 {
-    gen_call_free(StorageVol, v);
+    ruby_libvirt_generate_call_free(StorageVol, v);
 }
 #endif
 
@@ -668,11 +707,12 @@ static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
 
     rb_scan_args(argc, argv, "31", &st, &offset, &length, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStorageVolDownload, connect_get(v), vol_get(v),
-                  stream_get(st), NUM2ULL(offset), NUM2ULL(length),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStorageVolDownload,
+                                   ruby_libvirt_connect_get(v),
+                                   vol_get(v), ruby_libvirt_stream_get(st), NUM2ULL(offset),
+                                   NUM2ULL(length), NUM2UINT(flags));
 }
 
 /*
@@ -688,11 +728,12 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
 
     rb_scan_args(argc, argv, "31", &st, &offset, &length, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStorageVolUpload, connect_get(v), vol_get(v),
-                  stream_get(st), NUM2ULL(offset), NUM2ULL(length),
-                  NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStorageVolUpload,
+                                   ruby_libvirt_connect_get(v),
+                                   vol_get(v), ruby_libvirt_stream_get(st), NUM2ULL(offset),
+                                   NUM2ULL(length), NUM2UINT(flags));
 }
 #endif
 
@@ -710,14 +751,15 @@ static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
 
     rb_scan_args(argc, argv, "11", &alg, &flags);
 
-    flags = integer_default_if_nil(flags, 0);
+    flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    gen_call_void(virStorageVolWipePattern, connect_get(v), vol_get(v),
-                  NUM2UINT(alg), NUM2UINT(flags));
+    ruby_libvirt_generate_call_nil(virStorageVolWipePattern,
+                                   ruby_libvirt_connect_get(v),
+                                   vol_get(v), NUM2UINT(alg), NUM2UINT(flags));
 }
 #endif
 
-void init_storage(void)
+void ruby_libvirt_storage_init(void)
 {
     /*
      * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo

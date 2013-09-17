@@ -1,6 +1,6 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-void init_storage();
+void ruby_libvirt_storage_init();
 
 #endif

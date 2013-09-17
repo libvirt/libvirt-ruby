@@ -12,6 +12,7 @@ set_test_object("connect")
 conn = Libvirt::open("qemu:///system")
 
 cleanup_test_domain(conn)
+cleanup_test_network(conn)
 
 # test setup
 begin

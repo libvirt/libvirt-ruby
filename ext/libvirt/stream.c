@@ -31,17 +31,17 @@ static VALUE c_stream;
 
 static void stream_free(void *s)
 {
-    generic_free(Stream, s);
+    ruby_libvirt_free_struct(Stream, s);
 }
 
-virStreamPtr stream_get(VALUE s)
+virStreamPtr ruby_libvirt_stream_get(VALUE s)
 {
-    generic_get(Stream, s);
+    ruby_libvirt_get_struct(Stream, s);
 }
 
-VALUE stream_new(virStreamPtr s, VALUE conn)
+VALUE ruby_libvirt_stream_new(virStreamPtr s, VALUE conn)
 {
-    return generic_new(c_stream, s, conn, stream_free);
+    return ruby_libvirt_new_class(c_stream, s, conn, stream_free);
 }
 
 /*
@@ -60,10 +60,10 @@ static VALUE libvirt_stream_send(VALUE s, VALUE buffer)
 
     StringValue(buffer);
 
-    ret = virStreamSend(stream_get(s), RSTRING_PTR(buffer),
+    ret = virStreamSend(ruby_libvirt_stream_get(s), RSTRING_PTR(buffer),
                         RSTRING_LEN(buffer));
-    _E(ret == -1, create_error(e_RetrieveError, "virStreamSend",
-                               connect_get(s)));
+    _E(ret == -1, ruby_libvirt_create_error(e_RetrieveError, "virStreamSend",
+                                            ruby_libvirt_connect_get(s)));
 
     return INT2NUM(ret);
 }
@@ -87,8 +87,9 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
 
     data = alloca(sizeof(char) * NUM2INT(bytes));
 
-    ret = virStreamRecv(stream_get(s), data, NUM2INT(bytes));
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecv", connect_get(s)));
+    ret = virStreamRecv(ruby_libvirt_stream_get(s), data, NUM2INT(bytes));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamRecv",
+                                          ruby_libvirt_connect_get(s)));
 
     result = rb_ary_new2(2);
 
@@ -158,9 +159,9 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &opaque);
 
-    ret = virStreamSendAll(stream_get(s), internal_sendall, (void *)opaque);
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamSendAll",
-                             connect_get(s)));
+    ret = virStreamSendAll(ruby_libvirt_stream_get(s), internal_sendall, (void *)opaque);
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamSendAll",
+                                          ruby_libvirt_connect_get(s)));
 
     return Qnil;
 }
@@ -200,9 +201,9 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &opaque);
 
-    ret = virStreamRecvAll(stream_get(s), internal_recvall, (void *)opaque);
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamRecvAll",
-                             connect_get(s)));
+    ret = virStreamRecvAll(ruby_libvirt_stream_get(s), internal_recvall, (void *)opaque);
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamRecvAll",
+                                          ruby_libvirt_connect_get(s)));
 
     return Qnil;
 }
@@ -229,7 +230,7 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque)
     cb_opaque = rb_ary_entry(passthrough, 1);
     s = rb_ary_entry(passthrough, 2);
 
-    news = stream_new(st, conn_attr(s));
+    news = ruby_libvirt_stream_new(st, ruby_libvirt_conn_attr(s));
     if (strcmp(rb_obj_classname(cb), "Symbol") == 0) {
         rb_funcall(rb_class_of(cb), rb_to_id(cb), 3, news, INT2NUM(events),
                    cb_opaque);
@@ -268,7 +269,7 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "21", &events, &callback, &opaque);
 
-    if (!is_symbol_or_proc(callback)) {
+    if (!ruby_libvirt_is_symbol_or_proc(callback)) {
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected Symbol or Proc)");
     }
@@ -278,11 +279,12 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
     rb_ary_store(passthrough, 1, opaque);
     rb_ary_store(passthrough, 2, s);
 
-    ret = virStreamEventAddCallback(stream_get(s), NUM2INT(events),
+    ret = virStreamEventAddCallback(ruby_libvirt_stream_get(s), NUM2INT(events),
                                     stream_event_callback, (void *)passthrough,
                                     NULL);
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamEventAddCallback",
-                             connect_get(s)));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virStreamEventAddCallback",
+                                          ruby_libvirt_connect_get(s)));
 
     return Qnil;
 }
@@ -301,9 +303,10 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
 {
     int ret;
 
-    ret = virStreamEventUpdateCallback(stream_get(s), NUM2INT(events));
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamEventUpdateCallback",
-                             connect_get(s)));
+    ret = virStreamEventUpdateCallback(ruby_libvirt_stream_get(s), NUM2INT(events));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virStreamEventUpdateCallback",
+                                          ruby_libvirt_connect_get(s)));
 
     return Qnil;
 }
@@ -319,9 +322,10 @@ static VALUE libvirt_stream_event_remove_callback(VALUE s)
 {
     int ret;
 
-    ret = virStreamEventRemoveCallback(stream_get(s));
-    _E(ret < 0, create_error(e_RetrieveError, "virStreamEventRemoveCallback",
-                             connect_get(s)));
+    ret = virStreamEventRemoveCallback(ruby_libvirt_stream_get(s));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virStreamEventRemoveCallback",
+                                          ruby_libvirt_connect_get(s)));
 
     return Qnil;
 }
@@ -336,7 +340,8 @@ static VALUE libvirt_stream_event_remove_callback(VALUE s)
  */
 static VALUE libvirt_stream_finish(VALUE s)
 {
-    gen_call_void(virStreamFinish, connect_get(s), stream_get(s));
+    ruby_libvirt_generate_call_nil(virStreamFinish, ruby_libvirt_connect_get(s),
+                                   ruby_libvirt_stream_get(s));
 }
 
 /*
@@ -349,7 +354,8 @@ static VALUE libvirt_stream_finish(VALUE s)
  */
 static VALUE libvirt_stream_abort(VALUE s)
 {
-    gen_call_void(virStreamAbort, connect_get(s), stream_get(s));
+    ruby_libvirt_generate_call_nil(virStreamAbort, ruby_libvirt_connect_get(s),
+                                   ruby_libvirt_stream_get(s));
 }
 
 /*
@@ -361,14 +367,14 @@ static VALUE libvirt_stream_abort(VALUE s)
  */
 static VALUE libvirt_stream_free(VALUE s)
 {
-    gen_call_free(Stream, s);
+    ruby_libvirt_generate_call_free(Stream, s);
 }
 #endif
 
 /*
  * Class Libvirt::Domain
  */
-void init_stream()
+void ruby_libvirt_stream_init(void)
 {
 #if HAVE_TYPE_VIRSTREAMPTR
     c_stream = rb_define_class_under(m_libvirt, "Stream", rb_cObject);
