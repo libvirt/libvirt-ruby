@@ -121,7 +121,7 @@ VALUE create_error(VALUE error, const char* method, virConnectPtr conn);
                                                                         \
         rb_scan_args(argc, argv, "01", &flags);                         \
         flags = integer_default_if_nil(flags, 0);                       \
-        ret = listfunc(firstarg, &list, flags);                         \
+        ret = listfunc(firstarg, &list, NUM2UINT(flags));               \
         _E(ret < 0, create_error(e_RetrieveError, #listfunc, connect_get(val))); \
         result = rb_protect(rb_ary_new2_wrap, (VALUE)&ret, &exception); \
         if (exception) {                                                \
