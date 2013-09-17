@@ -1024,6 +1024,17 @@ newdom.destroy
 
 set_test_object("snapshot")
 
+# TESTGROUP: domain.list_all_snapshots
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(newdom, "list_all_snapshots", 1, 2)
+expect_invalid_arg_type(newdom, "list_all_snapshots", 'foo')
+
+expect_success(newdom, "no args", "list_all_snapshots")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
 # TESTGROUP: snapshot.xml_desc
 newdom = conn.define_domain_xml($new_dom_xml)
 snap = newdom.snapshot_create_xml("<domainsnapshot/>")
@@ -1043,6 +1054,36 @@ expect_too_many_args(snap, "delete", 1, 2)
 expect_invalid_arg_type(snap, "delete", 'foo')
 
 expect_success(snap, "no args", "delete")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: snapshot.name
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "name", 1)
+
+expect_success(snap, "no args", "name")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: snapshot.num_children
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "num_children", 1, 2)
+
+expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: snapshot.list_children_names
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "list_children_names", 1, 2)
+
+expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
