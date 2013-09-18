@@ -987,14 +987,7 @@ expect_fail(newdom, ArgumentError, "empty array", "blkio_parameters=", [])
 expect_invalid_arg_type(newdom, "blkio_parameters=", [1, 0])
 expect_invalid_arg_type(newdom, "blkio_parameters=", [{}, "foo"])
 
-begin
-  newdom.blkio_parameters={"weight" => 1}
-rescue NoMethodError
-  puts_skipped "domain.blkio_parameters= does not exist"
-rescue Libvirt::RetrieveError
-  # this may not be supported (if cgroups aren't configured), so skip it
-  puts_skipped "domain.blkio_parameters= not supported"
-end
+expect_success(newdom, "hash", "blkio_parameters=", {"weight" => 100})
 
 newdom.undefine
 
