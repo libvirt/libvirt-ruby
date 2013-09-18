@@ -711,8 +711,9 @@ static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
 
     ruby_libvirt_generate_call_nil(virStorageVolDownload,
                                    ruby_libvirt_connect_get(v),
-                                   vol_get(v), ruby_libvirt_stream_get(st), NUM2ULL(offset),
-                                   NUM2ULL(length), NUM2UINT(flags));
+                                   vol_get(v), ruby_libvirt_stream_get(st),
+                                   NUM2ULL(offset), NUM2ULL(length),
+                                   NUM2UINT(flags));
 }
 
 /*
@@ -732,8 +733,9 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
 
     ruby_libvirt_generate_call_nil(virStorageVolUpload,
                                    ruby_libvirt_connect_get(v),
-                                   vol_get(v), ruby_libvirt_stream_get(st), NUM2ULL(offset),
-                                   NUM2ULL(length), NUM2UINT(flags));
+                                   vol_get(v), ruby_libvirt_stream_get(st),
+                                   NUM2ULL(offset), NUM2ULL(length),
+                                   NUM2UINT(flags));
 }
 #endif
 

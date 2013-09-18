@@ -40,10 +40,8 @@
 #define gen_conn_num_of(c, objs)                                        \
     do {                                                                \
         int r;                                                          \
-                                                                        \
-        r = virConnectNumOf##objs(ruby_libvirt_connect_get(c));                      \
+        r = virConnectNumOf##objs(ruby_libvirt_connect_get(c));         \
         _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectNumOf" # objs, ruby_libvirt_connect_get(c))); \
-                                                                        \
         return INT2NUM(r);                                              \
     } while(0)
 
@@ -57,18 +55,16 @@
     do {                                                                \
         int r, num;                                                     \
         char **names;                                                   \
-                                                                        \
-        num = virConnectNumOf##objs(ruby_libvirt_connect_get(c));                    \
+        num = virConnectNumOf##objs(ruby_libvirt_connect_get(c));       \
         _E(num < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectNumOf" # objs, ruby_libvirt_connect_get(c))); \
         if (num == 0) {                                                 \
             /* if num is 0, don't call virConnectList* function */      \
             return rb_ary_new2(num);                                    \
         }                                                               \
         names = alloca(sizeof(char *) * num);                           \
-        r = virConnectList##objs(ruby_libvirt_connect_get(c), names, num);           \
+        r = virConnectList##objs(ruby_libvirt_connect_get(c), names, num); \
         _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virConnectList" # objs, ruby_libvirt_connect_get(c))); \
-                                                                        \
-        return ruby_libvirt_generate_list(num, names);                                    \
+        return ruby_libvirt_generate_list(num, names);                  \
     } while(0)
 
 static VALUE c_connect;
@@ -1952,9 +1948,9 @@ static VALUE libvirt_connect_define_pool_xml(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
                                                        VALUE c)
 {
-    VALUE type, srcSpec_val, flags;
+    VALUE type, srcSpec, flags;
 
-    rb_scan_args(argc, argv, "12", &type, &srcSpec_val, &flags);
+    rb_scan_args(argc, argv, "12", &type, &srcSpec, &flags);
 
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
@@ -1962,7 +1958,7 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
                                       ruby_libvirt_connect_get(c), 1,
                                       ruby_libvirt_connect_get(c),
                                       StringValueCStr(type),
-                                      ruby_libvirt_get_cstring_or_null(srcSpec_val),
+                                      ruby_libvirt_get_cstring_or_null(srcSpec),
                                       NUM2UINT(flags));
 }
 #endif
@@ -1976,7 +1972,7 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
  * to get machine-specific information about the hypervisor.  This may include
  * data such as the host UUID, the BIOS version, etc.
  */
-static VALUE libvirt_ruby_libvirt_connect_get_sys_info(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_connect_get_sys_info(int argc, VALUE *argv, VALUE c)
 {
     VALUE flags;
 
@@ -2976,7 +2972,7 @@ void ruby_libvirt_connect_init(void)
 #endif
 
 #if HAVE_VIRCONNECTGETSYSINFO
-    rb_define_method(c_connect, "sys_info", libvirt_ruby_libvirt_connect_get_sys_info, -1);
+    rb_define_method(c_connect, "sys_info", libvirt_connect_get_sys_info, -1);
 #endif
 #if HAVE_TYPE_VIRSTREAMPTR
     rb_define_method(c_connect, "stream", libvirt_connect_stream, -1);

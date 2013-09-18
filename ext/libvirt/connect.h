@@ -1,7 +1,7 @@
 #ifndef CONNECT_H
 #define CONNECT_H
 
-void ruby_libvirt_connect_init();
+void ruby_libvirt_connect_init(void);
 
 VALUE ruby_libvirt_connect_new(virConnectPtr p);
 virConnectPtr ruby_libvirt_connect_get(VALUE s);

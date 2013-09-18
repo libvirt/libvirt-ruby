@@ -159,7 +159,8 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &opaque);
 
-    ret = virStreamSendAll(ruby_libvirt_stream_get(s), internal_sendall, (void *)opaque);
+    ret = virStreamSendAll(ruby_libvirt_stream_get(s), internal_sendall,
+                           (void *)opaque);
     _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamSendAll",
                                           ruby_libvirt_connect_get(s)));
 
@@ -201,7 +202,8 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
 
     rb_scan_args(argc, argv, "01", &opaque);
 
-    ret = virStreamRecvAll(ruby_libvirt_stream_get(s), internal_recvall, (void *)opaque);
+    ret = virStreamRecvAll(ruby_libvirt_stream_get(s), internal_recvall,
+                           (void *)opaque);
     _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamRecvAll",
                                           ruby_libvirt_connect_get(s)));
 
@@ -303,7 +305,8 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
 {
     int ret;
 
-    ret = virStreamEventUpdateCallback(ruby_libvirt_stream_get(s), NUM2INT(events));
+    ret = virStreamEventUpdateCallback(ruby_libvirt_stream_get(s),
+                                       NUM2INT(events));
     _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
                                           "virStreamEventUpdateCallback",
                                           ruby_libvirt_connect_get(s)));

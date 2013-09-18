@@ -107,10 +107,10 @@ virDomainPtr ruby_libvirt_domain_get(VALUE d)
  */
 static VALUE libvirt_domain_migrate(int argc, VALUE *argv, VALUE d)
 {
-    VALUE dconn, flags, dname_val, uri_val, bandwidth;
+    VALUE dconn, flags, dname, uri, bandwidth;
     virDomainPtr ddom = NULL;
 
-    rb_scan_args(argc, argv, "14", &dconn, &flags, &dname_val, &uri_val,
+    rb_scan_args(argc, argv, "14", &dconn, &flags, &dname, &uri,
                  &bandwidth);
 
     bandwidth = ruby_libvirt_fixnum_set(bandwidth, 0);
@@ -118,8 +118,8 @@ static VALUE libvirt_domain_migrate(int argc, VALUE *argv, VALUE d)
 
     ddom = virDomainMigrate(ruby_libvirt_domain_get(d),
                             ruby_libvirt_connect_get(dconn), NUM2ULONG(flags),
-                            ruby_libvirt_get_cstring_or_null(dname_val),
-                            ruby_libvirt_get_cstring_or_null(uri_val),
+                            ruby_libvirt_get_cstring_or_null(dname),
+                            ruby_libvirt_get_cstring_or_null(uri),
                             NUM2ULONG(bandwidth));
 
     _E(ddom == NULL, ruby_libvirt_create_error(e_Error, "virDomainMigrate",
@@ -190,10 +190,10 @@ static VALUE libvirt_domain_migrate_set_max_downtime(int argc, VALUE *argv,
  */
 static VALUE libvirt_domain_migrate2(int argc, VALUE *argv, VALUE d)
 {
-    VALUE dconn, dxml, flags, dname_val, uri_val, bandwidth;
+    VALUE dconn, dxml, flags, dname, uri, bandwidth;
     virDomainPtr ddom = NULL;
 
-    rb_scan_args(argc, argv, "15", &dconn, &dxml, &flags, &dname_val, &uri_val,
+    rb_scan_args(argc, argv, "15", &dconn, &dxml, &flags, &dname, &uri,
                  &bandwidth);
 
     bandwidth = ruby_libvirt_fixnum_set(bandwidth, 0);
@@ -203,8 +203,8 @@ static VALUE libvirt_domain_migrate2(int argc, VALUE *argv, VALUE d)
                              ruby_libvirt_connect_get(dconn),
                              ruby_libvirt_get_cstring_or_null(dxml),
                              NUM2ULONG(flags),
-                             ruby_libvirt_get_cstring_or_null(dname_val),
-                             ruby_libvirt_get_cstring_or_null(uri_val),
+                             ruby_libvirt_get_cstring_or_null(dname),
+                             ruby_libvirt_get_cstring_or_null(uri),
                              NUM2ULONG(bandwidth));
 
     _E(ddom == NULL, ruby_libvirt_create_error(e_Error, "virDomainMigrate2",
@@ -1135,7 +1135,8 @@ static VALUE libvirt_domain_vcpus_set(VALUE d, VALUE in)
 
     ruby_libvirt_generate_call_nil(virDomainSetVcpus,
                                    ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d), NUM2UINT(nvcpus));
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2UINT(nvcpus));
 #endif
 }
 
@@ -2205,8 +2206,8 @@ static VALUE libvirt_domain_open_console(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_generate_call_nil(virDomainOpenConsole,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
-                                   StringValueCStr(dev), ruby_libvirt_stream_get(st),
-                                   NUM2INT(flags));
+                                   StringValueCStr(dev),
+                                   ruby_libvirt_stream_get(st), NUM2INT(flags));
 }
 #endif
 
@@ -2229,8 +2230,8 @@ static VALUE libvirt_domain_screenshot(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_generate_call_string(virDomainScreenshot,
                                       ruby_libvirt_connect_get(d), 1,
                                       ruby_libvirt_domain_get(d),
-                                      ruby_libvirt_stream_get(st), NUM2UINT(screen),
-                                      NUM2UINT(flags));
+                                      ruby_libvirt_stream_get(st),
+                                      NUM2UINT(screen), NUM2UINT(flags));
 }
 #endif
 
@@ -2815,7 +2816,8 @@ static VALUE libvirt_domain_open_channel(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_get_cstring_or_null(name),
-                                   ruby_libvirt_stream_get(st), NUM2UINT(flags));
+                                   ruby_libvirt_stream_get(st),
+                                   NUM2UINT(flags));
 }
 #endif
 
