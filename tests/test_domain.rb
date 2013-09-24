@@ -187,8 +187,7 @@ expect_success(newdom, "no args suspended domain", "resume")
 newdom.destroy
 
 # TESTGROUP: dom.save
-newdom = conn.define_domain_xml($new_dom_xml)
-newdom.create
+newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
 expect_too_many_args(newdom, "save", 1, 2, 3, 4)
@@ -197,10 +196,9 @@ expect_invalid_arg_type(newdom, "save", 1)
 expect_invalid_arg_type(newdom, "save", nil)
 expect_fail(newdom, Libvirt::Error, "non-existent path", "save", "/this/path/does/not/exist")
 
-expect_success(newdom, "path arg", "save", "/var/lib/libvirt/images/ruby-libvirt-test.save")
+expect_success(newdom, "path arg", "save", $GUEST_SAVE)
 
-`rm -f /var/lib/libvirt/images/ruby-libvirt-test.save`
-newdom.undefine
+`rm -f #{$GUEST_SAVE}`
 
 # TESTGROUP: dom.managed_save
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -284,7 +282,7 @@ newdom.undefine
 newdom = conn.define_domain_xml($new_dom_xml)
 newdom.create
 sleep 1
-newdom.save("/var/lib/libvirt/images/ruby-libvirt-test.save")
+newdom.save($GUEST_SAVE)
 
 expect_too_many_args(Libvirt::Domain, "restore", 1, 2, 3)
 expect_too_few_args(Libvirt::Domain, "restore")
@@ -295,9 +293,9 @@ expect_fail(Libvirt::Domain, Libvirt::Error, "invalid path", "restore", conn, "/
 expect_fail(Libvirt::Domain, Libvirt::Error, "invalid save file", "restore", conn, "/tmp/foo")
 `rm -f /tmp/foo`
 
-expect_success(Libvirt::Domain, "2 args", "restore", conn, "/var/lib/libvirt/images/ruby-libvirt-test.save")
+expect_success(Libvirt::Domain, "2 args", "restore", conn, $GUEST_SAVE)
 
-`rm -f /var/lib/libvirt/images/ruby-libvirt-test.save`
+`rm -f #{$GUEST_SAVE}`
 
 newdom.destroy
 newdom.undefine

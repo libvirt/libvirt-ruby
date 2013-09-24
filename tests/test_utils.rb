@@ -58,11 +58,14 @@ EOF
 # qemu command-line that roughly corresponds to the above XML
 $qemu_cmd_line = "/usr/bin/qemu-kvm -S -M pc-0.13 -enable-kvm -m 1024 -smp 1,sockets=1,cores=1,threads=1 -name ruby-libvirt-tester -uuid #{$GUEST_UUID} -nodefconfig -nodefaults -chardev socket,id=monitor,path=/var/lib/libvirt/qemu/ruby-libvirt-tester.monitor,server,nowait -mon chardev=monitor,mode=readline -rtc base=utc -boot c -chardev pty,id=serial0 -device isa-serial,chardev=serial0 -usb -vnc 127.0.0.1:0 -k en-us -vga cirrus -device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x5"
 
+$NEW_INTERFACE_MAC = 'aa:bb:cc:dd:ee:ff'
 $new_interface_xml = <<EOF
-<interface type="bridge" name="ruby-libvirt-tester">
+<interface type="ethernet" name="ruby-libvirt-tester">
   <start mode="onboot"/>
-  <bridge delay="0">
-  </bridge>
+  <mac address="#{$NEW_INTERFACE_MAC}"/>
+  <protocol family='ipv4'>
+    <dhcp peerdns='yes'/>
+  </protocol>
 </interface>
 EOF
 

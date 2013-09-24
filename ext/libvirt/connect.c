@@ -2344,7 +2344,7 @@ static char *node_memory_get(VALUE d, unsigned int flags,
                              virTypedParameterPtr params, int *nparams)
 {
     if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
-                                   NUM2UINT(flags)) < 0) {
+                                   flags) < 0) {
         return "virNodeGetMemoryParameters";
     }
     return NULL;
@@ -2381,7 +2381,7 @@ static VALUE libvirt_connect_node_get_memory_parameters(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   conn.node_set_memory_parameters = Hash,flags=0
+ *   conn.node_memory_parameters = Hash,flags=0
  *
  * Call virNodeSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeSetMemoryParameters]
  * to set the memory parameters for this host node.
