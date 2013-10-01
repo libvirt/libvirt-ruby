@@ -67,7 +67,7 @@ VALUE pool_new(virStoragePoolPtr p, VALUE conn)
  * Call virStoragePoolLookupByVolume[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolLookupByVolume]
  * to retrieve the storage pool for this volume.
  */
-static VALUE libvirt_storage_vol_get_pool(VALUE v)
+static VALUE libvirt_storage_vol_pool(VALUE v)
 {
     virStoragePoolPtr pool;
 
@@ -295,7 +295,7 @@ static VALUE libvirt_storage_pool_autostart(VALUE p)
  * Call virStoragePoolSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolSetAutostart]
  * to make this storage pool start when libvirtd starts.
  */
-static VALUE libvirt_storage_pool_autostart_set(VALUE p, VALUE autostart)
+static VALUE libvirt_storage_pool_autostart_equal(VALUE p, VALUE autostart)
 {
     if (autostart != Qtrue && autostart != Qfalse) {
 		rb_raise(rb_eTypeError,
@@ -828,7 +828,7 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_pool, "autostart?",
                      libvirt_storage_pool_autostart, 0);
     rb_define_method(c_storage_pool, "autostart=",
-                     libvirt_storage_pool_autostart_set, 1);
+                     libvirt_storage_pool_autostart_equal, 1);
     /* List/lookup storage volumes within a pool */
     rb_define_method(c_storage_pool, "num_of_volumes",
                      libvirt_storage_pool_num_of_volumes, 0);
@@ -890,7 +890,7 @@ void ruby_libvirt_storage_init(void)
     rb_define_const(c_storage_vol, "DELETE_ZEROED",
                     INT2NUM(VIR_STORAGE_VOL_DELETE_ZEROED));
 
-    rb_define_method(c_storage_vol, "pool", libvirt_storage_vol_get_pool, 0);
+    rb_define_method(c_storage_vol, "pool", libvirt_storage_vol_pool, 0);
     rb_define_method(c_storage_vol, "name", libvirt_storage_vol_name, 0);
     rb_define_method(c_storage_vol, "key", libvirt_storage_vol_key, 0);
     rb_define_method(c_storage_vol, "delete", libvirt_storage_vol_delete, -1);

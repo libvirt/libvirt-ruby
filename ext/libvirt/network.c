@@ -197,7 +197,7 @@ static VALUE libvirt_network_autostart(VALUE n)
  * Call virNetworkSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
  * to set this network to be autostarted when libvirtd starts.
  */
-static VALUE libvirt_network_autostart_set(VALUE n, VALUE autostart)
+static VALUE libvirt_network_autostart_equal(VALUE n, VALUE autostart)
 {
     if (autostart != Qtrue && autostart != Qfalse) {
         rb_raise(rb_eTypeError,
@@ -274,7 +274,8 @@ void ruby_libvirt_network_init(void)
     rb_define_method(c_network, "bridge_name", libvirt_network_bridge_name, 0);
     rb_define_method(c_network, "autostart", libvirt_network_autostart, 0);
     rb_define_method(c_network, "autostart?", libvirt_network_autostart, 0);
-    rb_define_method(c_network, "autostart=", libvirt_network_autostart_set, 1);
+    rb_define_method(c_network, "autostart=", libvirt_network_autostart_equal,
+                     1);
     rb_define_method(c_network, "free", libvirt_network_free, 0);
 #if HAVE_VIRNETWORKISACTIVE
     rb_define_method(c_network, "active?", libvirt_network_active_p, 0);

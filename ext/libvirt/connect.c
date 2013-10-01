@@ -243,12 +243,12 @@ static VALUE libvirt_connect_max_vcpus(int argc, VALUE *argv, VALUE c)
 
 /*
  * call-seq:
- *   conn.node_get_info -> Libvirt::Connect::Nodeinfo
+ *   conn.node_info -> Libvirt::Connect::Nodeinfo
  *
  * Call virNodeGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetInfo]
  * to retrieve information about the node for this connection.
  */
-static VALUE libvirt_connect_node_get_info(VALUE c)
+static VALUE libvirt_connect_node_info(VALUE c)
 {
     int r;
     virNodeInfo nodeinfo;
@@ -349,12 +349,12 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
 #if HAVE_VIRNODEGETSECURITYMODEL
 /*
  * call-seq:
- *   conn.node_get_security_model -> Libvirt::Connect::NodeSecurityModel
+ *   conn.node_security_model -> Libvirt::Connect::NodeSecurityModel
  *
  * Call virNodeGetSecurityModel[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetSecurityModel]
  * to retrieve the security model in use on the host for this connection.
  */
-static VALUE libvirt_connect_node_get_security_model(VALUE c)
+static VALUE libvirt_connect_node_security_model(VALUE c)
 {
     virSecurityModel secmodel;
     int r;
@@ -1972,7 +1972,7 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
  * to get machine-specific information about the hypervisor.  This may include
  * data such as the host UUID, the BIOS version, etc.
  */
-static VALUE libvirt_connect_get_sys_info(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_connect_sys_info(int argc, VALUE *argv, VALUE c)
 {
     VALUE flags;
 
@@ -2370,8 +2370,8 @@ static char *node_memory_set(VALUE d, unsigned int flags,
  * Call virNodeGetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetMemoryParameters]
  * to get information about memory on the host node.
  */
-static VALUE libvirt_connect_node_get_memory_parameters(int argc, VALUE *argv,
-                                                        VALUE c)
+static VALUE libvirt_connect_node_memory_parameters(int argc, VALUE *argv,
+                                                    VALUE c)
 {
     return ruby_libvirt_get_typed_parameters(argc, argv, c,
                                              ruby_libvirt_connect_get(c),
@@ -2386,7 +2386,7 @@ static VALUE libvirt_connect_node_get_memory_parameters(int argc, VALUE *argv,
  * Call virNodeSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeSetMemoryParameters]
  * to set the memory parameters for this host node.
  */
-static VALUE libvirt_connect_node_set_memory_parameters(VALUE c, VALUE input)
+static VALUE libvirt_connect_node_memory_parameters_equal(VALUE c, VALUE input)
 {
     return ruby_libvirt_set_typed_parameters(c, input,
                                              ruby_libvirt_connect_get(c), 1,
@@ -2415,12 +2415,12 @@ static VALUE cpu_map_field_to_value(VALUE input)
 
 /*
  * call-seq:
- *   conn.node_get_cpu_map -> Hash
+ *   conn.node_cpu_map -> Hash
  *
  * Call virNodeGetCPUMap[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetCPUMap]
  * to get a map of online host CPUs.
  */
-static VALUE libvirt_connect_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
 {
     VALUE flags;
     int ret;
@@ -2462,13 +2462,44 @@ static VALUE libvirt_connect_node_get_cpu_map(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTSETKEEPALIVE
 /*
  * call-seq:
- *   conn.set_keepalive -> fixnum
+ *   conn.set_keepalive(interval, count) -> fixnum
+ *
+ * Call virConnectSetKeepAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectSetKeepAlive]
+ * to start sending keepalive messages.  Deprecated; use conn.keepalive=
+ * instead.
+ */
+static VALUE libvirt_connect_set_keepalive(VALUE c, VALUE interval, VALUE count)
+{
+    ruby_libvirt_generate_call_int(virConnectSetKeepAlive,
+                                   ruby_libvirt_connect_get(c),
+                                   ruby_libvirt_connect_get(c),
+                                   NUM2INT(interval), NUM2UINT(count));
+}
+
+/*
+ * call-seq:
+ *   conn.keepalive = interval,count
  *
  * Call virConnectSetKeepAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectSetKeepAlive]
  * to start sending keepalive messages.
  */
-static VALUE libvirt_connect_set_keepalive(VALUE c, VALUE interval, VALUE count)
+static VALUE libvirt_connect_keepalive_equal(VALUE c, VALUE in)
 {
+    VALUE interval, count;
+
+    if (TYPE(in) != T_ARRAY) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Array)");
+    }
+
+    if (RARRAY_LEN(in) != 2) {
+        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                 RARRAY_LEN(in));
+    }
+
+    interval = rb_ary_entry(in, 0);
+    count = rb_ary_entry(in, 1);
+
     ruby_libvirt_generate_call_int(virConnectSetKeepAlive,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
@@ -2656,15 +2687,17 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "hostname", libvirt_connect_hostname, 0);
     rb_define_method(c_connect, "uri", libvirt_connect_uri, 0);
     rb_define_method(c_connect, "max_vcpus", libvirt_connect_max_vcpus, -1);
-    rb_define_method(c_connect, "node_get_info", libvirt_connect_node_get_info,
-                     0);
+    rb_define_method(c_connect, "node_info", libvirt_connect_node_info, 0);
+    rb_define_alias(c_connect, "node_get_info", "node_info");
     rb_define_method(c_connect, "node_free_memory",
                      libvirt_connect_node_free_memory, 0);
     rb_define_method(c_connect, "node_cells_free_memory",
                      libvirt_connect_node_cells_free_memory, -1);
 #if HAVE_VIRNODEGETSECURITYMODEL
-    rb_define_method(c_connect, "node_get_security_model",
-                     libvirt_connect_node_get_security_model, 0);
+    rb_define_method(c_connect, "node_security_model",
+                     libvirt_connect_node_security_model, 0);
+    rb_define_alias(c_connect, "node_get_security_model",
+                    "node_security_model");
 #endif
 #if HAVE_VIRCONNECTISENCRYPTED
     rb_define_method(c_connect, "encrypted?", libvirt_connect_encrypted_p, 0);
@@ -2972,7 +3005,7 @@ void ruby_libvirt_connect_init(void)
 #endif
 
 #if HAVE_VIRCONNECTGETSYSINFO
-    rb_define_method(c_connect, "sys_info", libvirt_connect_get_sys_info, -1);
+    rb_define_method(c_connect, "sys_info", libvirt_connect_sys_info, -1);
 #endif
 #if HAVE_TYPE_VIRSTREAMPTR
     rb_define_method(c_connect, "stream", libvirt_connect_stream, -1);
@@ -3017,19 +3050,22 @@ void ruby_libvirt_connect_init(void)
 
 #if HAVE_VIRNODEGETMEMORYPARAMETERS
     rb_define_method(c_connect, "node_memory_parameters",
-                     libvirt_connect_node_get_memory_parameters, -1);
+                     libvirt_connect_node_memory_parameters, -1);
     rb_define_method(c_connect, "node_memory_parameters=",
-                     libvirt_connect_node_set_memory_parameters, 1);
+                     libvirt_connect_node_memory_parameters_equal, 1);
 #endif
 
 #if HAVE_VIRNODEGETCPUMAP
-    rb_define_method(c_connect, "node_get_cpu_map",
-                     libvirt_connect_node_get_cpu_map, -1);
+    rb_define_method(c_connect, "node_cpu_map",
+                     libvirt_connect_node_cpu_map, -1);
+    rb_define_alias(c_connect, "node_get_cpu_map", "node_cpu_map");
 #endif
 
 #if HAVE_VIRCONNECTSETKEEPALIVE
     rb_define_method(c_connect, "set_keepalive",
                      libvirt_connect_set_keepalive, 2);
+    rb_define_method(c_connect, "keepalive=", libvirt_connect_keepalive_equal,
+                     1);
 #endif
 
 #if HAVE_VIRCONNECTLISTALLDOMAINS

@@ -118,7 +118,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
  *   secret.set_value(value, flags=0) -> nil
  *
  * Call virSecretSetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
- * to set a new value in this secret.
+ * to set a new value in this secret.  Deprecated; use secret.value= instead.
  */
 static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 {
@@ -140,12 +140,50 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 
 /*
  * call-seq:
- *   secret.get_value(flags=0) -> string
+ *   secret.value = value,flags=0
+ *
+ * Call virSecretSetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
+ * to set a new value in this secret.
+ */
+static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
+{
+    VALUE flags;
+    VALUE value;
+
+    if (TYPE(in) == T_FIXNUM) {
+        value = in;
+        flags = INT2NUM(0);
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2) {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                     RARRAY_LEN(in));
+        }
+        value = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
+
+    StringValue(value);
+
+    ruby_libvirt_generate_call_nil(virSecretSetValue,
+                                   ruby_libvirt_connect_get(s),
+                                   secret_get(s),
+                                   (unsigned char *)RSTRING_PTR(value),
+                                   RSTRING_LEN(value), NUM2UINT(flags));
+}
+
+/*
+ * call-seq:
+ *   secret.value(flags=0) -> string
  *
  * Call virSecretGetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetValue]
  * to retrieve the value from this secret.
  */
-static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags;
     unsigned char *val;
@@ -221,7 +259,9 @@ void ruby_libvirt_secret_init(void)
     rb_define_method(c_secret, "usageid", libvirt_secret_usageid, 0);
     rb_define_method(c_secret, "xml_desc", libvirt_secret_xml_desc, -1);
     rb_define_method(c_secret, "set_value", libvirt_secret_set_value, -1);
-    rb_define_method(c_secret, "get_value", libvirt_secret_get_value, -1);
+    rb_define_method(c_secret, "value=", libvirt_secret_value_equal, 1);
+    rb_define_method(c_secret, "value", libvirt_secret_value, -1);
+    rb_define_alias(c_secret, "get_value", "value");
     rb_define_method(c_secret, "undefine", libvirt_secret_undefine, 0);
     rb_define_method(c_secret, "free", libvirt_secret_free, 0);
 #endif
