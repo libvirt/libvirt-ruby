@@ -500,7 +500,8 @@ static VALUE libvirt_storage_vol_key(VALUE v)
  * Call virStorageVolCreateXML[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
  * to create a new storage volume from xml.
  */
-static VALUE libvirt_storage_pool_vol_create_xml(int argc, VALUE *argv, VALUE p)
+static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
+                                                    VALUE p)
 {
     virStorageVolPtr vol;
     VALUE xml, flags;
@@ -526,8 +527,8 @@ static VALUE libvirt_storage_pool_vol_create_xml(int argc, VALUE *argv, VALUE p)
  * to clone a volume from an existing volume with the properties specified in
  * xml.
  */
-static VALUE libvirt_storage_pool_vol_create_xml_from(int argc, VALUE *argv,
-                                                      VALUE p)
+static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
+                                                         VALUE p)
 {
     virStorageVolPtr vol;
     VALUE xml, flags, cloneval;
@@ -842,14 +843,14 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_pool, "lookup_volume_by_path",
                      libvirt_storage_pool_lookup_vol_by_path, 1);
     rb_define_method(c_storage_pool, "free", libvirt_storage_pool_free, 0);
-    rb_define_method(c_storage_pool, "create_vol_xml",
-                     libvirt_storage_pool_vol_create_xml, -1);
-    rb_define_alias(c_storage_pool, "create_volume_xml", "create_vol_xml");
+    rb_define_method(c_storage_pool, "create_volume_xml",
+                     libvirt_storage_pool_create_volume_xml, -1);
+    rb_define_alias(c_storage_pool, "create_vol_xml", "create_volume_xml");
 #if HAVE_VIRSTORAGEVOLCREATEXMLFROM
-    rb_define_method(c_storage_pool, "create_vol_xml_from",
-                     libvirt_storage_pool_vol_create_xml_from, -1);
-    rb_define_alias(c_storage_pool, "create_volume_xml_from",
-                    "create_vol_xml_from");
+    rb_define_method(c_storage_pool, "create_volume_xml_from",
+                     libvirt_storage_pool_create_volume_xml_from, -1);
+    rb_define_alias(c_storage_pool, "create_vol_xml_from",
+                    "create_volume_xml_from");
 #endif
 #if HAVE_VIRSTORAGEPOOLISACTIVE
     rb_define_method(c_storage_pool, "active?", libvirt_storage_pool_active_p,
