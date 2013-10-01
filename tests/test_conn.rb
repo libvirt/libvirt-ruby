@@ -772,7 +772,7 @@ expect_invalid_arg_type(conn, "list_all_domains", "foo")
 
 expect_success(conn, "no args", "list_all_domains")
 
-# TESTGROUP: conn.set_keepalive=
+# TESTGROUP: conn.set_keepalive
 expect_too_many_args(conn, "set_keepalive", 1, 2, 3, 4)
 expect_too_few_args(conn, "set_keepalive")
 expect_too_few_args(conn, "set_keepalive", 1)
@@ -801,6 +801,17 @@ expect_too_many_args(conn, "node_memory_parameters=", 1, 2)
 expect_invalid_arg_type(conn, "node_memory_parameters=", nil)
 expect_invalid_arg_type(conn, "node_memory_parameters=", ['foo', 0])
 expect_invalid_arg_type(conn, "node_memory_parameters=", [{}, 'foo'])
+
+# TESTGROUP: conn.keepalive=
+expect_too_many_args(conn, "keepalive=", 1, 2)
+expect_too_few_args(conn, "keepalive=", [])
+expect_too_few_args(conn, "keepalive=", [1])
+expect_invalid_arg_type(conn, "keepalive=", 1)
+expect_invalid_arg_type(conn, "keepalive=", ['foo', 1])
+expect_invalid_arg_type(conn, "keepalive=", [1, 'foo'])
+
+# FIXME: somehow we need an event loop implementation for this to work
+#expect_success(conn, "interval and count", "keepalive=", 1, 10)
 
 # END TESTS
 
