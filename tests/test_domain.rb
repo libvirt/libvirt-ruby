@@ -30,6 +30,59 @@ EOF
 
 # start tests
 
+# TESTGROUP: dom.updated?
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "updated?", 1)
+
+expect_success(newdom, "no args", "updated?")
+
+newdom.destroy
+
+# TESTGROUP: dom.inject_nmi
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "inject_nmi", 1, 2)
+expect_invalid_arg_type(newdom, "inject_nmi", 'foo')
+
+expect_success(newdom, "no args", "inject_nmi")
+
+newdom.destroy
+
+# TESTGROUP: dom.control_info
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "control_info", 1, 2)
+expect_invalid_arg_type(newdom, "control_info", 'foo')
+
+expect_success(newdom, "no args", "control_info")
+
+newdom.destroy
+
+# TESTGROUP: dom.send_key
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 30
+
+expect_too_many_args(newdom, "send_key", 1, 2, 3, 4)
+expect_too_few_args(newdom, "send_key")
+expect_too_few_args(newdom, "send_key", 1)
+expect_too_few_args(newdom, "send_key", 1, 2)
+expect_invalid_arg_type(newdom, "send_key", nil, 0, [])
+expect_invalid_arg_type(newdom, "send_key", 'foo', 0, [])
+expect_invalid_arg_type(newdom, "send_key", 0, nil, [])
+expect_invalid_arg_type(newdom, "send_key", 0, 'foo', [])
+expect_invalid_arg_type(newdom, "send_key", 0, 1, nil)
+expect_invalid_arg_type(newdom, "send_key", 0, 1, 'foo')
+expect_invalid_arg_type(newdom, "send_key", 0, 1, 2)
+
+# FIXME: this fails for reasons that are unclear to me
+#expect_success(newdom, "codeset, holdtime, keycodes args", "send_key", 0, 1, [])
+
+newdom.destroy
+
 # TESTGROUP: dom.migrate
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
@@ -523,9 +576,10 @@ newdom.undefine
 newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "memory=", 1, 2)
+expect_too_many_args(newdom, "memory=", [1, 2, 3])
 expect_too_few_args(newdom, "memory=")
+expect_too_few_args(newdom, "memory=", [])
 expect_invalid_arg_type(newdom, "memory=", 'foo')
-expect_fail(newdom, ArgumentError, "too many array arguments", "memory=", [1, 2, 3])
 expect_fail(newdom, Libvirt::Error, "shutoff domain", "memory=", [2, Libvirt::Domain::AFFECT_LIVE])
 
 newdom.undefine
@@ -551,9 +605,10 @@ newdom.destroy
 newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "vcpus=", 1, 2)
+expect_too_many_args(newdom, "vcpus=", [0, 1, 2])
 expect_too_few_args(newdom, "vcpus=")
+expect_too_few_args(newdom, "vcpus=", [])
 expect_invalid_arg_type(newdom, "vcpus=", 'foo')
-expect_fail(newdom, ArgumentError, "too many array arguments", "vcpus=", [0, 1, 2])
 expect_fail(newdom, Libvirt::Error, "shutoff domain", "vcpus=", [2, Libvirt::Domain::AFFECT_LIVE])
 
 newdom.undefine
@@ -956,9 +1011,10 @@ newdom.destroy
 newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "memory_parameters=", 1, 2, 3)
+expect_too_many_args(newdom, "memory_parameters=", [1, 2, 3])
 expect_too_few_args(newdom, "memory_parameters=")
+expect_too_few_args(newdom, "memory_parameters=", [])
 expect_invalid_arg_type(newdom, "memory_parameters=", 0)
-expect_fail(newdom, ArgumentError, "empty array", "memory_parameters=", [])
 expect_invalid_arg_type(newdom, "memory_parameters=", [1, 0])
 expect_invalid_arg_type(newdom, "memory_parameters=", [{}, "foo"])
 
@@ -979,9 +1035,10 @@ newdom.undefine
 newdom = conn.define_domain_xml($new_dom_xml)
 
 expect_too_many_args(newdom, "blkio_parameters=", 1, 2, 3)
+expect_too_many_args(newdom, "blkio_parameters=", [1, 2, 3])
 expect_too_few_args(newdom, "blkio_parameters=")
+expect_too_few_args(newdom, "blkio_parameters=", [])
 expect_invalid_arg_type(newdom, "blkio_parameters=", 0)
-expect_fail(newdom, ArgumentError, "empty array", "blkio_parameters=", [])
 expect_invalid_arg_type(newdom, "blkio_parameters=", [1, 0])
 expect_invalid_arg_type(newdom, "blkio_parameters=", [{}, "foo"])
 
@@ -1010,6 +1067,111 @@ expect_invalid_arg_type(newdom, "open_console", "pty", 1)
 expect_invalid_arg_type(newdom, "open_console", "pty", stream, "wow")
 
 #expect_success(newdom, "device and stream args", "open_console", "pty", stream)
+
+newdom.destroy
+
+# TESTGROUP: dom.block_rebase
+newdom = conn.create_domain_xml($new_dom_xml)
+
+expect_too_many_args(newdom, "block_rebase", 1, 2, 3, 4, 5)
+expect_too_few_args(newdom, "block_rebase")
+expect_invalid_arg_type(newdom, "block_rebase", 1)
+expect_invalid_arg_type(newdom, "block_rebase", "foo", 1)
+expect_invalid_arg_type(newdom, "block_rebase", "foo", "bar", "baz")
+expect_invalid_arg_type(newdom, "block_rebase", "foo", "bar", 1, "boom")
+
+# FIXME: I don't know how to make block_rebase work
+#expect_success(newdom, "disk", "block_rebase", diskname)
+
+newdom.destroy
+
+# TESTGROUP: dom.migrate_max_downtime=
+newdom = conn.define_domain_xml($new_dom_xml)
+
+expect_too_many_args(newdom, "migrate_max_downtime=", 1, 2)
+expect_too_many_args(newdom, "migrate_max_downtime=", [1, 2, 3])
+expect_too_few_args(newdom, "migrate_max_downtime=")
+expect_too_few_args(newdom, "migrate_max_downtime=", [])
+expect_invalid_arg_type(newdom, "migrate_max_downtime=", 'foo')
+expect_invalid_arg_type(newdom, "migrate_max_downtime=", nil)
+expect_fail(newdom, Libvirt::Error, "on off domain", "migrate_max_downtime=", 10)
+expect_fail(newdom, Libvirt::Error, "on off domain, two args", "migrate_max_downtime=", [10, 10])
+
+newdom.undefine
+
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_max_downtime=", 10)
+
+# FIXME: get this working
+#newdom.migrate_to_uri("qemu://remote/system")
+#expect_success(newdom, "10 second downtime", "migrate_max_downtime=", 10)
+
+newdom.destroy
+
+# TESTGROUP: dom.migrate_max_speed=
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "migrate_max_speed=", 1, 2)
+expect_too_many_args(newdom, "migrate_max_speed=", [1, 2, 3])
+expect_too_few_args(newdom, "migrate_max_speed=")
+expect_too_few_args(newdom, "migrate_max_speed=", [])
+expect_invalid_arg_type(newdom, "migrate_max_speed=", 'foo')
+expect_invalid_arg_type(newdom, "migrate_max_speed=", nil)
+expect_invalid_arg_type(newdom, "migrate_max_speed=", ['foo', 1])
+expect_invalid_arg_type(newdom, "migrate_max_speed=", [1, 'foo'])
+
+#expect_success(newdom, "Bandwidth arg", "migrate_max_speed=", 5)
+
+newdom.destroy
+
+# TESTGROUP: dom.state
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "state", 1, 2)
+expect_invalid_arg_type(newdom, "state", 'foo')
+
+expect_success(newdom, "no arg", "state")
+
+newdom.destroy
+
+# TESTGROUP: dom.screenshot
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+stream = conn.stream
+
+expect_too_many_args(newdom, "screenshot", 1, 2, 3, 4)
+expect_too_few_args(newdom, "screenshot")
+expect_too_few_args(newdom, "screenshot", stream)
+expect_invalid_arg_type(newdom, "screenshot", 1, 0)
+expect_invalid_arg_type(newdom, "screenshot", nil, 0)
+expect_invalid_arg_type(newdom, "screenshot", stream, nil)
+expect_invalid_arg_type(newdom, "screenshot", stream, 'foo')
+expect_invalid_arg_type(newdom, "screenshot", stream, 0, 'foo')
+
+expect_success(newdom, "stream and screen arg", "screenshot", stream, 0)
+
+newdom.destroy
+
+# TESTGROUP: dom.vcpus_flags=
+newdom = conn.define_domain_xml($new_dom_xml)
+
+expect_too_many_args(newdom, "vcpus_flags=", 1, 2)
+expect_too_many_args(newdom, "vcpus_flags=", [0, 1, 2])
+expect_too_few_args(newdom, "vcpus_flags=")
+expect_too_few_args(newdom, "vcpus_flags=", [])
+expect_invalid_arg_type(newdom, "vcpus_flags=", 'foo')
+expect_fail(newdom, Libvirt::Error, "shutoff domain", "vcpus_flags=", [2, Libvirt::Domain::AFFECT_LIVE])
+
+newdom.undefine
+
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_success(newdom, "number arg", "vcpus_flags=", 2)
 
 newdom.destroy
 
@@ -1085,6 +1247,18 @@ snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 expect_too_many_args(snap, "free", 1)
 
 expect_success(snap, "no args", "free")
+
+newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: snapshot.has_metadata?
+newdom = conn.define_domain_xml($new_dom_xml)
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+
+expect_too_many_args(snap, "has_metadata?", 1, 2)
+expect_invalid_arg_type(snap, "has_metadata?", "foo")
+
+# FIXME: in theory, this should work, but I get "block failed"
+#expect_success(snap, "no args", "has_metadata?") {|x| x == false}
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
