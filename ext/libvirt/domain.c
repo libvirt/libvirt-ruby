@@ -2372,8 +2372,14 @@ static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
 VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
                               VALUE keycodes)
 {
-    unsigned int codes[RARRAY_LEN(keycodes)];
+    unsigned int *codes;
     int i = 0;
+
+    if (TYPE(keycodes) != T_ARRAY) {
+        rb_raise(rb_eTypeError, "wrong argument type (expected Array)");
+    }
+
+    codes = alloca(RARRAY_LEN(keycodes) * sizeof(unsigned int));
 
     for (i = 0; i < RARRAY_LEN(keycodes); i++) {
         codes[i] = NUM2UINT(rb_ary_entry(keycodes,i));
