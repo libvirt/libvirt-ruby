@@ -375,7 +375,7 @@ static VALUE libvirt_stream_free(VALUE s)
 #endif
 
 /*
- * Class Libvirt::Domain
+ * Class Libvirt::Stream
  */
 void ruby_libvirt_stream_init(void)
 {
