@@ -61,6 +61,36 @@ conn.close
 conn = expect_success(Libvirt, "uri, full cred, and user args", "open_auth", "qemu:///system", [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], "hello") {|x| x.class == Libvirt::Connect }
 conn.close
 
+# equivalent to expect_invalid_arg_type
+begin
+  conn = Libvirt::open_auth("qemu:///system", {}) do |cred|
+  end
+rescue TypeError => e
+  puts_ok "#{$test_object}.open_auth invalid arg type threw #{TypeError.to_s}"
+else
+  puts_fail "#{$test_object}.open_auth invalid arg type expected to throw #{TypeError.to_s}, but threw nothing"
+end
+
+# equivalent to expect_invalid_arg_type
+begin
+  conn = Libvirt::open_auth("qemu:///system", 1) do |cred|
+  end
+rescue TypeError => e
+  puts_ok "#{$test_object}.open_auth invalid arg type threw #{TypeError.to_s}"
+else
+  puts_fail "#{$test_object}.open_auth invalid arg type expected to throw #{TypeError.to_s}, but threw nothing"
+end
+
+# equivalent to expect_invalid_arg_type
+begin
+  conn = Libvirt::open_auth("qemu:///system", 'foo') do |cred|
+  end
+rescue TypeError => e
+  puts_ok "#{$test_object}.open_auth invalid arg type threw #{TypeError.to_s}"
+else
+  puts_fail "#{$test_object}.open_auth invalid arg type expected to throw #{TypeError.to_s}, but threw nothing"
+end
+
 # equivalent to "expect_success"
 begin
   conn = Libvirt::open_auth("qemu:///system", [Libvirt::CRED_AUTHNAME, Libvirt::CRED_PASSPHRASE], "hello") do |cred|
@@ -88,6 +118,19 @@ rescue NoMethodError
   puts_skipped "Libvirt.open_auth does not exist"
 rescue => e
   puts_fail "Libvirt.open_auth uri, creds, userdata, auth block expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
+end
+
+# equivalent to "expect_success"
+begin
+  conn = Libvirt::open_auth("qemu:///system") do |cred|
+  end
+
+  puts_ok "Libvirt.open_auth uri, succeeded"
+  conn.close
+rescue NoMethodError
+  puts_skipped "Libvirt.open_auth does not exist"
+rescue => e
+  puts_fail "Libvirt.open_auth uri expected to succeed, threw #{e.class.to_s}: #{e.to_s}"
 end
 
 # equivalent to "expect_success"
@@ -127,6 +170,9 @@ expect_too_few_args(Libvirt, "event_invoke_handle_callback")
 expect_too_few_args(Libvirt, "event_invoke_handle_callback", 1)
 expect_too_few_args(Libvirt, "event_invoke_handle_callback", 1, 2)
 expect_too_few_args(Libvirt, "event_invoke_handle_callback", 1, 2, 3)
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", "hello", 1, 1, 1)
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", "hello", 1, 1, [])
+expect_invalid_arg_type(Libvirt, "event_invoke_handle_callback", "hello", 1, 1, nil)
 # this is a bit bizarre; I am constructing a bogus hash to pass as the 4th
 # parameter to event_invoke_handle_callback.  In a real situation, I would
 # have been given this hash from libvirt earlier, and just pass it on.  I
@@ -147,6 +193,9 @@ conn = Libvirt::open("qemu:///system")
 expect_too_many_args(Libvirt, "event_invoke_timeout_callback", 1, 2, 3)
 expect_too_few_args(Libvirt, "event_invoke_timeout_callback")
 expect_too_few_args(Libvirt, "event_invoke_timeout_callback", 1)
+expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", "hello", 1)
+expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", "hello", [])
+expect_invalid_arg_type(Libvirt, "event_invoke_timeout_callback", "hello", nil)
 # this is a bit bizarre; I am constructing a bogus hash to pass as the 4th
 # parameter to event_invoke_handle_callback.  In a real situation, I would
 # have been given this hash from libvirt earlier, and just pass it on.  I
