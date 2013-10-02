@@ -1731,7 +1731,7 @@ static VALUE libvirt_domain_current_snapshot(int argc, VALUE *argv, VALUE d)
  * Call virDomainSnapshotGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetXMLDesc]
  * to retrieve the xml description for this snapshot.
  */
-static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags;
 
@@ -1740,8 +1740,8 @@ static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE d)
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
     ruby_libvirt_generate_call_string(virDomainSnapshotGetXMLDesc,
-                                      ruby_libvirt_connect_get(d), 1,
-                                      domain_snapshot_get(d), NUM2UINT(flags));
+                                      ruby_libvirt_connect_get(s), 1,
+                                      domain_snapshot_get(s), NUM2UINT(flags));
 }
 
 /*
@@ -1751,7 +1751,7 @@ static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE d)
  * Call virDomainSnapshotDelete[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotDelete]
  * to delete this snapshot.
  */
-static VALUE libvirt_domain_snapshot_delete(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_snapshot_delete(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags;
 
@@ -1760,8 +1760,8 @@ static VALUE libvirt_domain_snapshot_delete(int argc, VALUE *argv, VALUE d)
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
     ruby_libvirt_generate_call_nil(virDomainSnapshotDelete,
-                                   ruby_libvirt_connect_get(d),
-                                   domain_snapshot_get(d), NUM2UINT(flags));
+                                   ruby_libvirt_connect_get(s),
+                                   domain_snapshot_get(s), NUM2UINT(flags));
 }
 
 /*
@@ -1772,9 +1772,9 @@ static VALUE libvirt_domain_snapshot_delete(int argc, VALUE *argv, VALUE d)
  * to free up the snapshot object.  After this call the snapshot object is
  * no longer valid.
  */
-static VALUE libvirt_domain_snapshot_free(VALUE d)
+static VALUE libvirt_domain_snapshot_free(VALUE s)
 {
-    ruby_libvirt_generate_call_free(DomainSnapshot, d);
+    ruby_libvirt_generate_call_free(DomainSnapshot, s);
 }
 
 #endif
@@ -1787,11 +1787,11 @@ static VALUE libvirt_domain_snapshot_free(VALUE d)
  * Call virDomainSnapshotGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetName]
  * to get the name associated with a snapshot.
  */
-static VALUE libvirt_domain_snapshot_name(VALUE d)
+static VALUE libvirt_domain_snapshot_name(VALUE s)
 {
     ruby_libvirt_generate_call_string(virDomainSnapshotGetName,
-                                      ruby_libvirt_connect_get(d),
-                                      0, domain_snapshot_get(d));
+                                      ruby_libvirt_connect_get(s),
+                                      0, domain_snapshot_get(s));
 }
 #endif
 
@@ -2584,7 +2584,7 @@ static VALUE libvirt_domain_list_all_snapshots(int argc, VALUE *argv, VALUE d)
  * to get the number of children snapshots of this snapshot.
  */
 static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
-                                                  VALUE d)
+                                                  VALUE s)
 {
     VALUE flags;
 
@@ -2593,8 +2593,8 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
     ruby_libvirt_generate_call_int(virDomainSnapshotNumChildren,
-                                   ruby_libvirt_connect_get(d),
-                                   domain_snapshot_get(d), NUM2UINT(flags));
+                                   ruby_libvirt_connect_get(s),
+                                   domain_snapshot_get(s), NUM2UINT(flags));
 }
 #endif
 
@@ -2607,7 +2607,7 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
  * to get an array of strings representing the children of this snapshot.
  */
 static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
-                                                         VALUE d)
+                                                         VALUE s)
 {
     VALUE flags;
     int num_children;
@@ -2623,12 +2623,12 @@ static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
 
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    num_children = virDomainSnapshotNumChildren(domain_snapshot_get(d),
+    num_children = virDomainSnapshotNumChildren(domain_snapshot_get(s),
                                                 NUM2UINT(flags));
     _E(num_children < 0,
        ruby_libvirt_create_error(e_RetrieveError,
                                  "virDomainSnapshotNumChildren",
-                                 ruby_libvirt_connect_get(d)));
+                                 ruby_libvirt_connect_get(s)));
 
     result = rb_ary_new2(num_children);
 
@@ -2638,11 +2638,11 @@ static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
 
     children = alloca(num_children * sizeof(char *));
 
-    ret = virDomainSnapshotListChildrenNames(domain_snapshot_get(d), children,
+    ret = virDomainSnapshotListChildrenNames(domain_snapshot_get(s), children,
                                              num_children, NUM2UINT(flags));
     _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
                                           "virDomainSnapshotListChildrenNames",
-                                          ruby_libvirt_connect_get(d)));
+                                          ruby_libvirt_connect_get(s)));
 
     for (i = 0; i < ret; i++) {
         str = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&(children[i]),
