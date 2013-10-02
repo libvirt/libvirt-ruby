@@ -60,6 +60,27 @@ expect_success(newsecret, "value arg", "set_value", "foo")
 
 newsecret.undefine
 
+# TESTGROUP: secret.value=
+newsecret = conn.define_secret_xml($new_secret_xml)
+
+expect_too_many_args(newsecret, "value=", 1, 2)
+expect_too_few_args(newsecret, "value=")
+expect_invalid_arg_type(newsecret, "value=", {})
+expect_invalid_arg_type(newsecret, "value=", nil)
+expect_invalid_arg_type(newsecret, "value=", 1)
+expect_invalid_arg_type(newsecret, "value=", [1, 1])
+expect_invalid_arg_type(newsecret, "value=", [nil, 1])
+expect_invalid_arg_type(newsecret, "value=", [[], 1])
+expect_invalid_arg_type(newsecret, "value=", [{}, 1])
+expect_invalid_arg_type(newsecret, "value=", ['foo', nil])
+expect_invalid_arg_type(newsecret, "value=", ['foo', 'foo'])
+expect_invalid_arg_type(newsecret, "value=", ['foo', []])
+expect_invalid_arg_type(newsecret, "value=", ['foo', {}])
+
+expect_success(newsecret, "value arg", "value=", "foo")
+
+newsecret.undefine
+
 # TESTGROUP: secret.get_value
 newsecret = conn.define_secret_xml($new_secret_xml)
 newsecret.set_value("foo")
