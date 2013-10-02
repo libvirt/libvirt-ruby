@@ -1536,6 +1536,7 @@ static VALUE domain_snapshot_new(virDomainSnapshotPtr d, VALUE domain)
     VALUE result;
     result = Data_Wrap_Struct(c_domain_snapshot, NULL, domain_snapshot_free, d);
     rb_iv_set(result, "@domain", domain);
+    rb_iv_set(result, "@connection", rb_iv_get(domain, "@connection"));
     return result;
 }
 
