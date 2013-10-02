@@ -46,6 +46,12 @@ expect_success(testnode, "no args", "xml_desc")
 testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
 
 expect_too_many_args(testnode, "detach", 1, 2, 3)
+expect_invalid_arg_type(testnode, "detach", 1)
+expect_invalid_arg_type(testnode, "detach", [])
+expect_invalid_arg_type(testnode, "detach", {})
+expect_invalid_arg_type(testnode, "detach", nil, 'foo')
+expect_invalid_arg_type(testnode, "detach", nil, [])
+expect_invalid_arg_type(testnode, "detach", nil, {})
 
 #expect_success(testnode, "no args", "detach")
 
