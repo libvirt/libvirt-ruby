@@ -2466,7 +2466,7 @@ static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETMETADATA
 /*
  * call-seq:
- *   dom.metadata(flags=0) -> string
+ *   dom.metadata(type, uri=nil, flags=0) -> string
  *
  * Call virDomainGetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMetadata]
  * to get the metadata from a domain.
