@@ -2375,9 +2375,7 @@ VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
     unsigned int *codes;
     int i = 0;
 
-    if (TYPE(keycodes) != T_ARRAY) {
-        rb_raise(rb_eTypeError, "wrong argument type (expected Array)");
-    }
+    Check_Type(keycodes, T_ARRAY);
 
     codes = alloca(RARRAY_LEN(keycodes) * sizeof(unsigned int));
 
@@ -2501,10 +2499,7 @@ static VALUE libvirt_domain_metadata_equal(VALUE d, VALUE in)
 {
     VALUE type, metadata, key, uri, flags;
 
-    if (TYPE(in) != T_ARRAY) {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Array)");
-    }
+    Check_Type(in, T_ARRAY);
 
     if (RARRAY_LEN(in) < 2 || RARRAY_LEN(in) > 5) {
         rb_raise(rb_eArgError,
