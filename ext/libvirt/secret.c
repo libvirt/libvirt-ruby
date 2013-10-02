@@ -150,7 +150,7 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
     VALUE flags;
     VALUE value;
 
-    if (TYPE(in) == T_FIXNUM) {
+    if (TYPE(in) == T_STRING) {
         value = in;
         flags = INT2NUM(0);
     }
