@@ -1534,9 +1534,12 @@ static void domain_snapshot_free(void *d)
 static VALUE domain_snapshot_new(virDomainSnapshotPtr d, VALUE domain)
 {
     VALUE result;
-    result = Data_Wrap_Struct(c_domain_snapshot, NULL, domain_snapshot_free, d);
+
+    result = ruby_libvirt_new_class(c_domain_snapshot, d,
+                                    rb_iv_get(domain, "@connection"),
+                                    domain_snapshot_free);
     rb_iv_set(result, "@domain", domain);
-    rb_iv_set(result, "@connection", rb_iv_get(domain, "@connection"));
+
     return result;
 }
 
