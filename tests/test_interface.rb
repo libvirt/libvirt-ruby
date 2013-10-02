@@ -75,7 +75,7 @@ testiface = find_valid_iface(conn)
 if not testiface.nil?
   expect_too_many_args(testiface, "mac", 1)
 
-  expect_success(testiface, "no args", "mac") {|x| x == testiface.mac}
+  expect_success(testiface, "no args", "mac")
 end
 
 # TESTGROUP: iface.xml_desc
