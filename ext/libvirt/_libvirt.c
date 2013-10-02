@@ -309,10 +309,7 @@ static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
     VALUE libvirt_cb;
     VALUE libvirt_opaque;
 
-    if (TYPE(opaque) != T_HASH) {
-        rb_raise(rb_eTypeError,
-                 "wrong event callback argument type (expected Hash)");
-    }
+    Check_Type(opaque, T_HASH);
 
     libvirt_cb = rb_hash_aref(opaque, rb_str_new2("libvirt_cb"));
 
@@ -357,10 +354,7 @@ static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
     VALUE libvirt_cb;
     VALUE libvirt_opaque;
 
-    if (TYPE(opaque) != T_HASH) {
-        rb_raise(rb_eTypeError,
-                 "wrong event callback argument type (expected Hash)");
-    }
+    Check_Type(opaque, T_HASH);
 
     libvirt_cb = rb_hash_aref(opaque, rb_str_new2("libvirt_cb"));
 
