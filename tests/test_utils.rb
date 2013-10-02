@@ -10,6 +10,7 @@ $GUEST_UUID = "93a5c045-6457-2c09-e56f-927cdf34e17a"
 # XML data for later tests
 $new_dom_xml = <<EOF
 <domain type='kvm'>
+  <description>Ruby Libvirt Tester</description>
   <name>ruby-libvirt-tester</name>
   <uuid>#{$GUEST_UUID}</uuid>
   <memory>1048576</memory>
