@@ -133,7 +133,7 @@ end
 
 def expect_success(object, msg, func, *args)
   begin
-    x = object.send(func, *args)
+    x = object.__send__(func, *args)
     if block_given?
       res = yield x
       if not res
@@ -151,7 +151,7 @@ end
 
 def expect_fail(object, errtype, errmsg, func, *args)
   begin
-    object.send(func, *args)
+    object.__send__(func, *args)
   rescue NoMethodError
     puts_skipped "#{$test_object}.#{func} does not exist"
   rescue errtype => e
