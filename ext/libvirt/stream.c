@@ -385,7 +385,6 @@ void ruby_libvirt_stream_init(void)
     rb_define_attr(c_stream, "connection", 1, 0);
 
     rb_define_const(c_stream, "NONBLOCK", INT2NUM(VIR_STREAM_NONBLOCK));
-
     rb_define_const(c_stream, "EVENT_READABLE",
                     INT2NUM(VIR_STREAM_EVENT_READABLE));
     rb_define_const(c_stream, "EVENT_WRITABLE",
@@ -394,7 +393,7 @@ void ruby_libvirt_stream_init(void)
     rb_define_const(c_stream, "EVENT_HANGUP", INT2NUM(VIR_STREAM_EVENT_HANGUP));
 
     rb_define_method(c_stream, "send", libvirt_stream_send, 1);
-    rb_define_method(c_stream, "recv", libvirt_stream_recv, 2);
+    rb_define_method(c_stream, "recv", libvirt_stream_recv, 1);
     rb_define_method(c_stream, "sendall", libvirt_stream_sendall, -1);
     rb_define_method(c_stream, "recvall", libvirt_stream_recvall, -1);
 
