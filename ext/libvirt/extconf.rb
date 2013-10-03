@@ -197,6 +197,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virStorageVolWipePattern',
                   'virStoragePoolListAllVolumes',
                   'virDomainCreateWithFiles',
+                  'virDomainCreateXMLWithFiles',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

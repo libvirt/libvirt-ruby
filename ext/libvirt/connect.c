@@ -2648,6 +2648,55 @@ static VALUE libvirt_connect_alive_p(VALUE c)
 }
 #endif
 
+#if HAVE_VIRDOMAINCREATEXMLWITHFILES
+/*
+ * call-seq:
+ *   conn.create_domain_xml_with_files(xml, fds=nil, flags=0) -> Libvirt::Domain
+ *
+ * Call virDomainCreateXMLWithFiles[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateXMLWithFiles]
+ * to launch a new guest domain with a set of open file descriptors.
+ */
+static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
+                                                          VALUE c)
+{
+    VALUE fds, flags;
+    int *files;
+    unsigned int numfiles;
+    unsigned int i;
+    virDomainPtr dom;
+
+    rb_scan_args(argc, argv, "12", &xml, &fds, &flags);
+
+    Check_Type(xml, T_STRING);
+
+    if (TYPE(fds) == T_NIL) {
+        files = NULL;
+        numfiles = 0;
+    }
+    else if (TYPE(fds) == T_ARRAY) {
+        numfiles = RARRAY_LEN(fds);
+        files = alloca(numfiles * sizeof(int));
+        for (i = 0; i < numfiles; i++) {
+            files[i] = NUM2INT(rb_ary_entry(fds, i));
+        }
+    }
+    else {
+        rb_raise(rb_eTypeError, "wrong argument type (expected Array)");
+    }
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    dom = virDomainCreateXMLWithFiles(ruby_libvirt_connect_get(d),
+                                      ruby_libvirt_get_cstring_or_null(xml),
+                                      numfiles, files, NUM2UINT(flags));
+    _E(dom == NULL, ruby_libvirt_create_error(e_Error,
+                                              "virDomainCreateXMLWithFiles",
+                                              ruby_libvirt_connect_get(c)));
+
+    return ruby_libvirt_domain_new(dom, c);
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3208,5 +3257,9 @@ void ruby_libvirt_connect_init(void)
 #endif
 #if HAVE_VIRCONNECTISALIVE
     rb_define_method(c_connect, "alive?", libvirt_connect_alive_p, 0);
+#endif
+#if HAVE_VIRDOMAINCREATEXMLWITHFILES
+    rb_define_method(c_domain, "create_domain_xml_with_files",
+                     libvirt_domain_create_domain_xml_with_files, -1);
 #endif
 }
