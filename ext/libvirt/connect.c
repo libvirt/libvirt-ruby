@@ -1108,7 +1108,7 @@ static VALUE libvirt_connect_create_linux(int argc, VALUE *argv, VALUE c)
  * Call virDomainCreateXML[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateXML]
  * to start a transient domain from the given XML.
  */
-static VALUE libvirt_connect_create_xml(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_connect_create_domain_xml(int argc, VALUE *argv, VALUE c)
 {
     virDomainPtr dom;
     VALUE flags, xml;
@@ -2884,7 +2884,7 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_create_linux, -1);
 #if HAVE_VIRDOMAINCREATEXML
     rb_define_method(c_connect, "create_domain_xml",
-                     libvirt_connect_create_xml, -1);
+                     libvirt_connect_create_domain_xml, -1);
 #endif
     rb_define_method(c_connect, "lookup_domain_by_name",
                      libvirt_connect_lookup_domain_by_name, 1);
