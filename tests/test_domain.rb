@@ -1261,8 +1261,6 @@ expect_success(newdom, "number arg", "vcpus_flags=", 2)
 
 newdom.destroy
 
-set_test_object("snapshot")
-
 # TESTGROUP: domain.list_all_snapshots
 newdom = conn.define_domain_xml($new_dom_xml)
 snap = newdom.snapshot_create_xml("<domainsnapshot/>")
@@ -1273,6 +1271,27 @@ expect_invalid_arg_type(newdom, "list_all_snapshots", 'foo')
 expect_success(newdom, "no args", "list_all_snapshots")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+
+# TESTGROUP: domain.open_graphics
+newdom = conn.create_domain_xml($new_dom_xml)
+sleep 1
+
+expect_too_many_args(newdom, "open_graphics", 1, 2, 3, 4)
+expect_too_few_args(newdom, "open_graphics")
+expect_invalid_arg_type(newdom, "open_graphics", nil)
+expect_invalid_arg_type(newdom, "open_graphics", 'foo')
+expect_invalid_arg_type(newdom, "open_graphics", [])
+expect_invalid_arg_type(newdom, "open_graphics", {})
+expect_invalid_arg_type(newdom, "open_graphics", 4, 'foo')
+expect_invalid_arg_type(newdom, "open_graphics", 4, [])
+expect_invalid_arg_type(newdom, "open_graphics", 4, {})
+expect_invalid_arg_type(newdom, "open_graphics", 4, 0, 'foo')
+expect_invalid_arg_type(newdom, "open_graphics", 4, 0, [])
+expect_invalid_arg_type(newdom, "open_graphics", 4, 0, {})
+
+#expect_success(newdom, "fd arg", "open_graphics", fd)
+
+set_test_object("snapshot")
 
 # TESTGROUP: snapshot.xml_desc
 newdom = conn.define_domain_xml($new_dom_xml)

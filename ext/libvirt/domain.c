@@ -2937,6 +2937,30 @@ static VALUE libvirt_domain_create_with_files(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINOPENGRAPHICS
+/*
+ * call-seq:
+ *   dom.open_graphics(fd, idx=0, flags=0) -> nil
+ *
+ * Call virDomainOpenGraphics[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenGraphics]
+ * to connect a file descriptor to the graphics backend of the domain.
+ */
+static VALUE libvirt_domain_open_graphics(int argc, VALUE *argv, VALUE d)
+{
+    VALUE fd, idx, flags;
+
+    rb_scan_args(argc, argv, "12", &fd, &idx, &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+    idx = ruby_libvirt_fixnum_set(idx, 0);
+
+    ruby_libvirt_generate_call_nil(virDomainOpenGraphics,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2UINT(idx), NUM2INT(fd), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4097,5 +4121,11 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINCREATEWITHFILES
     rb_define_method(c_domain, "create_with_files",
                      libvirt_domain_create_with_files, -1);
+#endif
+#if HAVE_VIRDOMAINOPENGRAPHICS
+    rb_define_const(c_domain, "OPEN_GRAPHICS_SKIPAUTH",
+                    INT2NUM(VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH));
+    rb_define_method(c_domain, "open_graphics",
+                     libvirt_domain_open_graphics, -1);
 #endif
 }

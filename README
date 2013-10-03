@@ -134,8 +134,6 @@ with the following exceptions:
 - VIR_DOMAIN_EVENT_ID_PMSUSPEND
 - VIR_DOMAIN_EVENT_ID_BALLOON_CHANGE
 - VIR_DOMAIN_EVENT_ID_PMSUSPEND_DISK
-- VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH
-- virDomainOpenGraphics
 - virDomainMigrate3
 - virDomainMigrateToURI3
 - virDomainSnapshotGetDomain
