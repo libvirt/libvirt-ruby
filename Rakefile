@@ -72,7 +72,7 @@ Rake::TestTask.new(:test) do |t|
                      'tests/test_interface.rb', 'tests/test_network.rb',
                      'tests/test_nodedevice.rb', 'tests/test_nwfilter.rb',
                      'tests/test_open.rb', 'tests/test_secret.rb',
-                     'tests/test_storage.rb' ]
+                     'tests/test_storage.rb', 'tests/test_stream.rb' ]
     t.libs = [ 'lib', 'ext/libvirt' ]
 end
 task :test => :build
