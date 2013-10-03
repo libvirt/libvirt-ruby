@@ -139,6 +139,5 @@ with the following exceptions:
 - virDomainMigrate3
 - virDomainMigrateToURI3
 - virDomainCreateXMLWithFiles
-- virDomainCreateWithFiles
 - virDomainSnapshotGetDomain
 - virDomainSnapshotGetConnect

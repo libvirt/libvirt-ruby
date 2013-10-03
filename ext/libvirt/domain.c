@@ -2896,6 +2896,47 @@ static VALUE libvirt_domain_open_channel(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINCREATEWITHFILES
+/*
+ * call-seq:
+ *   dom.create_with_files(fds=nil, flags=0) -> nil
+ *
+ * Call virDomainCreateWithFiles[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateWithFiles]
+ * to launch a defined domain with a set of open file descriptors.
+ */
+static VALUE libvirt_domain_create_with_files(int argc, VALUE *argv, VALUE d)
+{
+    VALUE fds, flags;
+    int *files;
+    unsigned int numfiles;
+    unsigned int i;
+
+    rb_scan_args(argc, argv, "02", &fds, &flags);
+
+    if (TYPE(fds) == T_NIL) {
+        files = NULL;
+        numfiles = 0;
+    }
+    else if (TYPE(fds) == T_ARRAY) {
+        numfiles = RARRAY_LEN(fds);
+        files = alloca(numfiles * sizeof(int));
+        for (i = 0; i < numfiles; i++) {
+            files[i] = NUM2INT(rb_ary_entry(fds, i));
+        }
+    }
+    else {
+        rb_raise(rb_eTypeError, "wrong argument type (expected Array)");
+    }
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    ruby_libvirt_generate_call_nil(virDomainCreateWithFiles,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   numfiles, files, NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4052,5 +4093,9 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINOPENCHANNEL
     rb_define_method(c_domain, "open_channel", libvirt_domain_open_channel, -1);
+#endif
+#if HAVE_VIRDOMAINCREATEWITHFILES
+    rb_define_method(c_domain, "create_with_files",
+                     libvirt_domain_create_with_files, -1);
 #endif
 }
