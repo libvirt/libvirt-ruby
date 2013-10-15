@@ -201,6 +201,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainOpenGraphics',
                   'virStorageVolResize',
                   'virDomainPMWakeup',
+                  'virDomainBlockResize',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
@@ -331,6 +332,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_STORAGE_VOL_WIPE_ALG_PFITZNER7',
                    'VIR_STORAGE_VOL_WIPE_ALG_PFITZNER33',
                    'VIR_STORAGE_VOL_WIPE_ALG_RANDOM',
+                   'VIR_DOMAIN_BLOCK_RESIZE_BYTES',
                  ]
 
 have_libvirt_types(libvirt_types)

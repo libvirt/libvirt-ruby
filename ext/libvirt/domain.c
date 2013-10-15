@@ -2983,6 +2983,30 @@ static VALUE libvirt_domain_pmwakeup(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKRESIZE
+/*
+ * call-seq:
+ *   dom.block_resize(disk, size, flags=0) -> nil
+ *
+ * Call virDomainBlockResize[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockResize]
+ * to resize a block device of domain.
+ */
+static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, size, flags;
+
+    rb_scan_args(argc, argv, "21", &disk, &size, &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    ruby_libvirt_generate_call_nil(virDomainBlockResize,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(size), NUM2ULL(size),
+                                   NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4152,5 +4176,12 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINPMWAKEUP
     rb_define_method(c_domain, "pmwakeup", libvirt_domain_pmwakeup, -1);
+#endif
+#if HAVE_VIRDOMAINBLOCKRESIZE
+    rb_define_method(c_domain, "block_resize", libvirt_domain_block_resize, -1);
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_RESIZE_BYTES
+    rb_define_const(c_domain, "BLOCK_RESIZE_BYTES",
+                    INT2NUM(VIR_DOMAIN_BLOCK_RESIZE_BYTES));
 #endif
 }

@@ -87,7 +87,6 @@ with the following exceptions:
 - VIR_DOMAIN_XML_MIGRATABLE
 - virDomainSetInterfaceParameters
 - virDomainGetInterfaceParameters
-- virDomainBlockResize
 - virDomainPinEmulator
 - virDomainGetEmulatorPinInfo
 - VIR_DOMAIN_BLOCK_JOB_TYPE_COPY
