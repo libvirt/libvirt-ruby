@@ -3403,6 +3403,10 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain_memory_stats, "ACTUAL_BALLOON",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_MEMORY_STATE_RSS
+    rb_define_const(c_domain_memory_stats, "RSS",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_RSS));
+#endif
 #endif
 
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
