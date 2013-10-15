@@ -289,46 +289,171 @@ void ruby_libvirt_network_init(void)
     rb_define_method(c_network, "persistent?", libvirt_network_persistent_p, 0);
 #endif
 #if HAVE_CONST_VIR_NETWORK_UPDATE_COMMAND_NONE
+    /* Ideally we would just have the "UPDATE_COMMAND_NONE" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_COMMAND_NONE" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_COMMAND_NONE",
+                    INT2NUM(VIR_NETWORK_UPDATE_COMMAND_NONE));
     rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_NONE",
                     INT2NUM(VIR_NETWORK_UPDATE_COMMAND_NONE));
+    /* Ideally we would just have the "UPDATE_COMMAND_MODIFY" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_COMMAND_MODIFY" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_COMMAND_MODIFY",
+                    INT2NUM(VIR_NETWORK_UPDATE_COMMAND_MODIFY));
     rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_MODIFY",
                     INT2NUM(VIR_NETWORK_UPDATE_COMMAND_MODIFY));
+    /* Ideally we would just have the "UPDATE_COMMAND_ADD_LAST" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_COMMAND_ADD_LAST" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_COMMAND_ADD_LAST",
+                    INT2NUM(VIR_NETWORK_UPDATE_COMMAND_ADD_LAST));
     rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_ADD_LAST",
                     INT2NUM(VIR_NETWORK_UPDATE_COMMAND_ADD_LAST));
+    /* Ideally we would just have the "UPDATE_COMMAND_ADD_FIRST" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_COMMAND_ADD_FIRST" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_COMMAND_ADD_FIRST",
+                    INT2NUM(VIR_NETWORK_UPDATE_COMMAND_ADD_FIRST));
     rb_define_const(c_network, "NETWORK_UPDATE_COMMAND_ADD_FIRST",
                     INT2NUM(VIR_NETWORK_UPDATE_COMMAND_ADD_FIRST));
+    /* Ideally we would just have the "SECTION_NONE" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_NONE" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_NONE",
+                    INT2NUM(VIR_NETWORK_SECTION_NONE));
     rb_define_const(c_network, "NETWORK_SECTION_NONE",
                     INT2NUM(VIR_NETWORK_SECTION_NONE));
+    /* Ideally we would just have the "SECTION_BRIDGE" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_BRIDGE" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_BRIDGE",
+                    INT2NUM(VIR_NETWORK_SECTION_BRIDGE));
     rb_define_const(c_network, "NETWORK_SECTION_BRIDGE",
                     INT2NUM(VIR_NETWORK_SECTION_BRIDGE));
+    /* Ideally we would just have the "SECTION_DOMAIN" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_DOMAIN" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_DOMAIN",
+                    INT2NUM(VIR_NETWORK_SECTION_DOMAIN));
     rb_define_const(c_network, "NETWORK_SECTION_DOMAIN",
                     INT2NUM(VIR_NETWORK_SECTION_DOMAIN));
+    /* Ideally we would just have the "SECTION_IP" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_IP" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_IP",
+                    INT2NUM(VIR_NETWORK_SECTION_IP));
     rb_define_const(c_network, "NETWORK_SECTION_IP",
                     INT2NUM(VIR_NETWORK_SECTION_IP));
+    /* Ideally we would just have the "SECTION_IP_DHCP_HOST" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_IP_DHCP_HOST" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_IP_DHCP_HOST",
+                    INT2NUM(VIR_NETWORK_SECTION_IP_DHCP_HOST));
     rb_define_const(c_network, "NETWORK_SECTION_IP_DHCP_HOST",
                     INT2NUM(VIR_NETWORK_SECTION_IP_DHCP_HOST));
+    /* Ideally we would just have the "SECTION_IP_DHCP_RANGE" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_IP_DHCP_RANGE" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_IP_DHCP_RANGE",
+                    INT2NUM(VIR_NETWORK_SECTION_IP_DHCP_RANGE));
     rb_define_const(c_network, "NETWORK_SECTION_IP_DHCP_RANGE",
                     INT2NUM(VIR_NETWORK_SECTION_IP_DHCP_RANGE));
+    /* Ideally we would just have the "SECTION_FORWARD" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_FORWARD" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_FORWARD",
+                    INT2NUM(VIR_NETWORK_SECTION_FORWARD));
     rb_define_const(c_network, "NETWORK_SECTION_FORWARD",
                     INT2NUM(VIR_NETWORK_SECTION_FORWARD));
+    /* Ideally we would just have the "SECTION_FORWARD_INTERFACE" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_FORWARD_INTERFACE" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_FORWARD_INTERFACE",
+                    INT2NUM(VIR_NETWORK_SECTION_FORWARD_INTERFACE));
     rb_define_const(c_network, "NETWORK_SECTION_FORWARD_INTERFACE",
                     INT2NUM(VIR_NETWORK_SECTION_FORWARD_INTERFACE));
+    /* Ideally we would just have the "SECTION_FORWARD_PF" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_FORWARD_PF" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_FORWARD_PF",
+                    INT2NUM(VIR_NETWORK_SECTION_FORWARD_PF));
     rb_define_const(c_network, "NETWORK_SECTION_FORWARD_PF",
                     INT2NUM(VIR_NETWORK_SECTION_FORWARD_PF));
+    /* Ideally we would just have the "SECTION_PORTGROUP" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_PORTGROUP" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_PORTGROUP",
+                    INT2NUM(VIR_NETWORK_SECTION_PORTGROUP));
     rb_define_const(c_network, "NETWORK_SECTION_PORTGROUP",
                     INT2NUM(VIR_NETWORK_SECTION_PORTGROUP));
+    /* Ideally we would just have the "SECTION_DNS_HOST" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_DNS_HOST" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_DNS_HOST",
+                    INT2NUM(VIR_NETWORK_SECTION_DNS_HOST));
     rb_define_const(c_network, "NETWORK_SECTION_DNS_HOST",
                     INT2NUM(VIR_NETWORK_SECTION_DNS_HOST));
+    /* Ideally we would just have the "SECTION_DNS_TXT" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_DNS_TXT" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_DNS_TXT",
+                    INT2NUM(VIR_NETWORK_SECTION_DNS_TXT));
     rb_define_const(c_network, "NETWORK_SECTION_DNS_TXT",
                     INT2NUM(VIR_NETWORK_SECTION_DNS_TXT));
+    /* Ideally we would just have the "SECTION_DNS_SRV" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_SECTION_DNS_SRV" for backwards compatibility.
+     */
+    rb_define_const(c_network, "SECTION_DNS_SRV",
+                    INT2NUM(VIR_NETWORK_SECTION_DNS_SRV));
     rb_define_const(c_network, "NETWORK_SECTION_DNS_SRV",
                     INT2NUM(VIR_NETWORK_SECTION_DNS_SRV));
+    /* Ideally we would just have the "UPDATE_AFFECT_CURRENT" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_AFFECT_CURRENT" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_AFFECT_CURRENT",
+                    INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CURRENT));
     rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_CURRENT",
                     INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CURRENT));
+    /* Ideally we would just have the "UPDATE_AFFECT_LIVE" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_AFFECT_LIVE" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_AFFECT_LIVE",
+                    INT2NUM(VIR_NETWORK_UPDATE_AFFECT_LIVE));
     rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_LIVE",
                     INT2NUM(VIR_NETWORK_UPDATE_AFFECT_LIVE));
+    /* Ideally we would just have the "UPDATE_AFFECT_CONFIG" constant.
+     * Unfortunately we screwed up long ago, and we have to
+     * leave "NETWORK_UPDATE_AFFECT_CONFIG" for backwards compatibility.
+     */
+    rb_define_const(c_network, "UPDATE_AFFECT_CONFIG",
+                    INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CONFIG));
     rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_CONFIG",
                     INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CONFIG));
+#endif
+
+#if HAVE_CONST_VIR_NETWORK_XML_INACTIVE
+    rb_define_const(c_network, "XML_INACTIVE",
+                    INT2NUM(VIR_NETWORK_XML_INACTIVE));
 #endif
 #endif
 }

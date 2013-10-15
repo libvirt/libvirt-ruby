@@ -79,7 +79,6 @@ with the following exceptions:
 - virDomainSetNumaParameters
 - virDomainGetNumaParameters
 - virDomainGetSecurityLabelList
-- VIR_DOMAIN_XML_MIGRATABLE
 - virDomainSetInterfaceParameters
 - virDomainGetInterfaceParameters
 - virDomainPinEmulator
@@ -97,7 +96,6 @@ with the following exceptions:
 - VIR_DOMAIN_DISK_ERROR_UNSPEC
 - VIR_DOMAIN_DISK_ERROR_NO_SPACE
 - virDomainGetDiskErrors
-- VIR_NETWORK_XML_INACTIVE
 - VIR_STORAGE_VOL_NETWORK
 - VIR_STORAGE_XML_INACTIVE
 - VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA

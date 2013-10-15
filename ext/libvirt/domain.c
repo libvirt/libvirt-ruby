@@ -3099,6 +3099,10 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "DOMAIN_XML_UPDATE_CPU",
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_XML_MIGRATABLE
+    rb_define_const(c_domain, "XML_MIGRATABLE",
+                    INT2NUM(VIR_DOMAIN_XML_MIGRATABLE));
+#endif
 #if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_const(c_domain, "MEMORY_VIRTUAL", INT2NUM(VIR_MEMORY_VIRTUAL));
 #endif
