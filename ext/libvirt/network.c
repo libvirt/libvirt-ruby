@@ -72,6 +72,7 @@ static VALUE libvirt_network_create(VALUE n)
                                    network_get(n));
 }
 
+#if HAVE_VIRNETWORKUPDATE
 /*
  * call-seq:
  *   net.update -> nil
@@ -88,6 +89,8 @@ static VALUE libvirt_network_update(VALUE n, VALUE command, VALUE section,
                                    NUM2UINT(section), NUM2INT(index),
                                    StringValuePtr(xml), NUM2UINT(flags));
 }
+#endif
+
 /*
  * call-seq:
  *   net.destroy -> nil
@@ -266,7 +269,9 @@ void ruby_libvirt_network_init(void)
 
     rb_define_method(c_network, "undefine", libvirt_network_undefine, 0);
     rb_define_method(c_network, "create", libvirt_network_create, 0);
+#if HAVE_VIRNETWORKUPDATE
     rb_define_method(c_network, "update", libvirt_network_update, 5);
+#endif
     rb_define_method(c_network, "destroy", libvirt_network_destroy, 0);
     rb_define_method(c_network, "name", libvirt_network_name, 0);
     rb_define_method(c_network, "uuid", libvirt_network_uuid, 0);
