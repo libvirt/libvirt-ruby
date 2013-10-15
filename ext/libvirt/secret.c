@@ -249,9 +249,15 @@ void ruby_libvirt_secret_init(void)
 #if HAVE_TYPE_VIRSECRETPTR
     c_secret = rb_define_class_under(m_libvirt, "Secret", rb_cObject);
 
+    rb_define_attr(c_secret, "connection", 1, 0);
+
     rb_define_const(c_secret, "USAGE_TYPE_VOLUME",
                     INT2NUM(VIR_SECRET_USAGE_TYPE_VOLUME));
-    rb_define_attr(c_secret, "connection", 1, 0);
+
+#if HAVE_CONST_VIR_SECRET_USAGE_TYPE_CEPH
+    rb_define_const(c_secret, "USAGE_TYPE_CEPH",
+                    INT2NUM(VIR_SECRET_USAGE_TYPE_CEPH));
+#endif
 
     /* Secret object methods */
     rb_define_method(c_secret, "uuid", libvirt_secret_uuid, 0);

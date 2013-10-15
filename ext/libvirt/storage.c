@@ -817,6 +817,11 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_POOL_INACCESSIBLE));
 #endif
 
+#if HAVE_CONST_VIR_STORAGE_XML_INACTIVE
+    rb_define_const(c_storage_pool, "XML_INACTIVE",
+                    INT2NUM(VIR_STORAGE_XML_INACTIVE));
+#endif
+
     /* virStoragePoolBuildFlags */
     rb_define_const(c_storage_pool, "BUILD_NEW",
                     INT2NUM(VIR_STORAGE_POOL_BUILD_NEW));
@@ -830,6 +835,11 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_POOL_DELETE_NORMAL));
     rb_define_const(c_storage_pool, "DELETE_ZEROED",
                     INT2NUM(VIR_STORAGE_POOL_DELETE_ZEROED));
+
+#if HAVE_CONST_VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA
+    rb_define_const(c_storage_pool, "CREATE_PREALLOC_METADATA",
+                    INT2NUM(VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA));
+#endif
 
     /* Creating/destroying pools */
     rb_define_method(c_storage_pool, "build", libvirt_storage_pool_build, -1);
@@ -904,9 +914,20 @@ void ruby_libvirt_storage_init(void)
     c_storage_vol = rb_define_class_under(m_libvirt, "StorageVol",
                                           rb_cObject);
 
+#if HAVE_CONST_VIR_STORAGE_XML_INACTIVE
+    rb_define_const(c_storage_vol, "XML_INACTIVE",
+                    INT2NUM(VIR_STORAGE_XML_INACTIVE));
+#endif
+
     /* virStorageVolType */
     rb_define_const(c_storage_vol, "FILE", INT2NUM(VIR_STORAGE_VOL_FILE));
     rb_define_const(c_storage_vol, "BLOCK", INT2NUM(VIR_STORAGE_VOL_BLOCK));
+#if HAVE_CONST_VIR_STORAGE_VOL_DIR
+    rb_define_const(c_storage_vol, "DIR", INT2NUM(VIR_STORAGE_VOL_DIR));
+#endif
+#if HAVE_CONST_VIR_STORAGE_VOL_NETWORK
+    rb_define_const(c_storage_vol, "NETWORK", INT2NUM(VIR_STORAGE_VOL_NETWORK));
+#endif
 
     /* virStorageVolDeleteFlags */
     rb_define_const(c_storage_vol, "DELETE_NORMAL",

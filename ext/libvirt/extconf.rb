@@ -341,6 +341,14 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_CONNECT_NO_ALIASES',
                    'VIR_DOMAIN_XML_MIGRATABLE',
                    'VIR_NETWORK_XML_INACTIVE',
+                   'VIR_STORAGE_VOL_DIR',
+                   'VIR_STORAGE_VOL_NETWORK',
+                   'VIR_STORAGE_XML_INACTIVE',
+                   'VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA',
+                   'VIR_SECRET_USAGE_TYPE_CEPH',
+                   'VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING',
+                   'VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED',
+                   'VIR_DOMAIN_SNAPSHOT_REVERT_FORCE',
                  ]
 
 have_libvirt_types(libvirt_types)

@@ -4207,4 +4207,16 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "BLOCK_RESIZE_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_RESIZE_BYTES));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING
+    rb_define_const(c_domain_snapshot, "REVERT_RUNNING",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED
+    rb_define_const(c_domain_snapshot, "REVERT_PAUSED",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
+    rb_define_const(c_domain_snapshot, "REVERT_FORCE",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_FORCE));
+#endif
 }
