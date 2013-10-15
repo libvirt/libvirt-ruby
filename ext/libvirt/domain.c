@@ -2961,6 +2961,28 @@ static VALUE libvirt_domain_open_graphics(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINPMWAKEUP
+/*
+ * call-seq:
+ *   dom.pmwakeup(flags=0) -> nil
+ *
+ * Call virDomainPMWakeup[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPMWakeup]
+ * to inject a wakeup into the guest.
+ */
+static VALUE libvirt_domain_pmwakeup(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    ruby_libvirt_generate_call_nil(virDomainPMWakeup,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4127,5 +4149,8 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH));
     rb_define_method(c_domain, "open_graphics",
                      libvirt_domain_open_graphics, -1);
+#endif
+#if HAVE_VIRDOMAINPMWAKEUP
+    rb_define_method(c_domain, "pmwakeup", libvirt_domain_pmwakeup, -1);
 #endif
 }

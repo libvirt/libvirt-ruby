@@ -77,7 +77,6 @@ with the following exceptions:
 - virConnectRegisterCloseCallback
 - virConnectUnregisterCloseCallback
 - virDomainPMSuspendForDuration
-- virDomainPMWakeup
 - virDomainGetCPUStats
 - VIR_DOMAIN_NUMATUNE_MEM_STRICT
 - VIR_DOMAIN_NUMATUNE_MEM_PREFERRED
