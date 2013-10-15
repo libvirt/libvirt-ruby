@@ -334,6 +334,10 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_STORAGE_VOL_WIPE_ALG_RANDOM',
                    'VIR_DOMAIN_BLOCK_RESIZE_BYTES',
                    'VIR_DOMAIN_MEMORY_STAT_RSS',
+                   'VIR_MIGRATE_UNSAFE',
+                   'VIR_MIGRATE_OFFLINE',
+                   'VIR_MIGRATE_COMPRESSED',
+                   'VIR_MIGRATE_ABORT_ON_ERROR',
                  ]
 
 have_libvirt_types(libvirt_types)

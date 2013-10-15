@@ -3060,6 +3060,21 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "MIGRATE_CHANGE_PROTECTION",
                     INT2NUM(VIR_MIGRATE_CHANGE_PROTECTION));
 #endif
+#if HAVE_CONST_VIR_MIGRATE_UNSAFE
+    rb_define_const(c_domain, "MIGRATE_UNSAFE", INT2NUM(VIR_MIGRATE_UNSAFE));
+#endif
+#if HAVE_CONST_VIR_MIGRATE_OFFLINE
+    rb_define_const(c_domain, "MIGRATE_OFFLINE", INT2NUM(VIR_MIGRATE_OFFLINE));
+#endif
+#if HAVE_CONST_VIR_MIGRATE_COMPRESSED
+    rb_define_const(c_domain, "MIGRATE_COMPRESSED",
+                    INT2NUM(VIR_MIGRATE_COMPRESSED));
+#endif
+#if HAVE_CONST_VIR_MIGRATE_ABORT_ON_ERROR
+    rb_define_const(c_domain, "MIGRATE_ABORT_ON_ERROR",
+                    INT2NUM(VIR_MIGRATE_ABORT_ON_ERROR));
+#endif
+
     /* Ideally we would just have the "XML_SECURE" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_XML_SECURE" for
      * backwards compatibility.
