@@ -686,6 +686,11 @@ void Init__libvirt(void)
     rb_define_const(m_libvirt, "CRED_EXTERNAL", INT2NUM(VIR_CRED_EXTERNAL));
 #endif
 
+#if HAVE_CONST_VIR_CONNECT_NO_ALIASES
+    rb_define_const(m_libvirt, "CONNECT_NO_ALIASES",
+                    INT2NUM(VIR_CONNECT_NO_ALIASES));
+#endif
+
     /*
      * Libvirt Errors
      */
