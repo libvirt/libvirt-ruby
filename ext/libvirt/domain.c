@@ -3450,7 +3450,7 @@ void ruby_libvirt_domain_init(void)
 
 #ifdef VIR_DOMAIN_MEMORY_PARAM_UNLIMITED
     rb_define_const(c_domain, "MEMORY_PARAM_UNLIMITED",
-                    VIR_DOMAIN_MEMORY_PARAM_UNLIMITED);
+                    LL2NUM(VIR_DOMAIN_MEMORY_PARAM_UNLIMITED));
 #endif
 
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
