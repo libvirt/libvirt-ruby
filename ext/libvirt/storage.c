@@ -762,6 +762,29 @@ static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
 }
 #endif
 
+#if HAVE_VIRSTORAGEVOLRESIZE
+/*
+ * call-seq:
+ *   vol.resize(capacity, flags=0) -> nil
+ *
+ * Call virStorageVolResize[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolResize]
+ * to resize the associated storage volume.
+ */
+static VALUE libvirt_storage_vol_resize(int argc, VALUE *argv, VALUE v)
+{
+    VALUE capacity, flags;
+
+    rb_scan_args(argc, argv, "11", &capacity, &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    ruby_libvirt_generate_call_nil(virStorageVolResize,
+                                   ruby_libvirt_connect_get(v),
+                                   vol_get(v), NUM2ULL(capacity),
+                                   NUM2UINT(flags));
+}
+#endif
+
 void ruby_libvirt_storage_init(void)
 {
     /*
@@ -949,6 +972,16 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_vol, "download", libvirt_storage_vol_download,
                      -1);
     rb_define_method(c_storage_vol, "upload", libvirt_storage_vol_upload, -1);
+#endif
+
+#if HAVE_VIRSTORAGEVOLRESIZE
+    rb_define_const(c_storage_vol, "RESIZE_ALLOCATE",
+                    INT2NUM(VIR_STORAGE_VOL_RESIZE_ALLOCATE));
+    rb_define_const(c_storage_vol, "RESIZE_DELTA",
+                    INT2NUM(VIR_STORAGE_VOL_RESIZE_DELTA));
+    rb_define_const(c_storage_vol, "RESIZE_SHRINK",
+                    INT2NUM(VIR_STORAGE_VOL_RESIZE_SHRINK));
+    rb_define_method(c_storage_vol, "resize", libvirt_storage_vol_resize, -1);
 #endif
 
 #endif
