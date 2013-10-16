@@ -3032,6 +3032,35 @@ static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
 }
 #endif
 
+#if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
+/*
+ * call-seq:
+ *   dom.migrate_compression_cache(flags=0) -> Fixnum
+ *
+ * Call virDomainMigrateGetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetCompressionCache]
+ * to get the current size of the migration cache.
+ */
+static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
+                                                      VALUE d)
+{
+    VALUE flags;
+    int ret;
+    unsigned long long cachesize;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    ret = virDomainMigrateGetCompressionCache(ruby_libvirt_domain_get(d),
+                                              &cachesize, NUM2UINT(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainMigrateGetCompressionCache",
+                                          ruby_libvirt_connect_get(d)));
+
+    return ULL2NUM(cachesize);
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4247,5 +4276,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINPMSUSPENDFORDURATION
     rb_define_method(c_domain, "pmsuspend_for_duration",
                      libvirt_domain_pmsuspend_for_duration, -1);
+#endif
+#if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
+    rb_define_method(c_domain, "migrate_compression_cache",
+                     libvirt_domain_migrate_compression_cache, -1);
 #endif
 }
