@@ -891,9 +891,10 @@ static VALUE libvirt_domain_vcpus(VALUE d)
 
         p2vcpumap = rb_ary_new();
 
-        for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++)
+        for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++) {
             rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap,
                                                    VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo)), i, j)) ? Qtrue : Qfalse);
+        }
         rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
 
         rb_ary_push(result, vcpuinfo);
@@ -3144,6 +3145,65 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETEMULATORPININFO
+/*
+ * call-seq:
+ *   dom.emulator_pin_info(flags=0) -> Array
+ *
+ * Call virDomainGetEmulatorPinInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetEmulatorPinInfo]
+ * to an array representing the mapping of emulator threads to physical CPUs.
+ * For each physical CPU in the machine, the array offset corresponding to that
+ * CPU is 'true' if an emulator thread is running on that CPU, and 'false'
+ * otherwise.
+ */
+static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
+{
+    int maxcpu;
+    virNodeInfo nodeinfo;
+    size_t cpumaplen;
+    unsigned char *cpumaps;
+    int ret;
+    VALUE emulator2cpumap;
+    int j;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    maxcpu = virNodeGetCPUMap(ruby_libvirt_connect_get(d), NULL, NULL, 0);
+    if (maxcpu < 0) {
+        /* fall back to nodeinfo */
+        if (virNodeGetInfo(ruby_libvirt_connect_get(d), &nodeinfo) < 0) {
+            rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError,
+                                                   "virNodeGetInfo",
+                                                   ruby_libvirt_connect_get(d)));
+        }
+
+        maxcpu = VIR_NODEINFO_MAXCPUS(nodeinfo);
+    }
+
+    cpumaplen = VIR_CPU_MAPLEN(maxcpu);
+
+    cpumaps = alloca(cpumaplen);
+
+    ret = virDomainGetEmulatorPinInfo(ruby_libvirt_domain_get(d), cpumaps,
+                                      cpumaplen, NUM2UINT(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainGetEmulatorPinInfo",
+                                          ruby_libvirt_connect_get(d)));
+
+    emulator2cpumap = rb_ary_new();
+
+    for (j = 0; j < maxcpu; j++) {
+        rb_ary_push(emulator2cpumap, VIR_CPU_USABLE(cpumaps, cpumaplen,
+                                                    0, j) ? Qtrue : Qfalse);
+    }
+
+    return emulator2cpumap;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4376,5 +4436,9 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "DISK_ERROR_NO_SPACE",
                     INT2NUM(VIR_DOMAIN_DISK_ERROR_NO_SPACE));
     rb_define_method(c_domain, "disk_errors", libvirt_domain_disk_errors, -1);
+#endif
+#if HAVE_VIRDOMAINGETEMULATORPININFO
+    rb_define_method(c_domain, "emulator_pin_info",
+                     libvirt_domain_emulator_pin_info, -1);
 #endif
 }

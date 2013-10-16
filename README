@@ -305,7 +305,6 @@ virDomainBlockStatsFlags
 virDomainSetInterfaceParameters
 virDomainGetInterfaceParameters
 virDomainPinEmulator
-virDomainGetEmulatorPinInfo
 virDomainBlockJobAbort
 virDomainGetBlockJobInfo
 virDomainBlockJobSetSpeed

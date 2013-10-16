@@ -206,6 +206,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainMigrateGetCompressionCache',
                   'virDomainMigrateSetCompressionCache',
                   'virDomainGetDiskErrors',
+                  'virDomainGetEmulatorPinInfo',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
