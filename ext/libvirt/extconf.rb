@@ -349,6 +349,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING',
                    'VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED',
                    'VIR_DOMAIN_SNAPSHOT_REVERT_FORCE',
+                   'VIR_SECRET_USAGE_TYPE_ISCSI',
                  ]
 
 have_libvirt_types(libvirt_types)
