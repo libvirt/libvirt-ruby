@@ -294,7 +294,6 @@ virTypedParamsClear
 virTypedParamsFree
 virDomainMigrate3
 virDomainMigrateToURI3
-virDomainMigrateSetCompressionCache
 virConnectRef
 virConnectRegisterCloseCallback
 virConnectUnregisterCloseCallback

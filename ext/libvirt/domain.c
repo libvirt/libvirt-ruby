@@ -3061,6 +3061,43 @@ static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
 }
 #endif
 
+#if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
+/*
+ * call-seq:
+ *   dom.migrate_compression_cache = Fixnum,flags=0
+ *
+ * Call virDomainMigrateSetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetCompressionCache]
+ * to set the current size of the migration cache.
+ */
+static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
+{
+    VALUE cachesize;
+    VALUE flags;
+
+    if (TYPE(in) == T_FIXNUM) {
+        cachesize = in;
+        flags = INT2NUM(0);
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2) {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                     RARRAY_LEN(in));
+        }
+        cachesize = rb_ary_entry(in, 0);
+        flags = rb_ary_entry(in, 1);
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
+
+    ruby_libvirt_generate_call_nil(virDomainMigrateSetCompressionCache,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2ULL(cachesize), NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4280,5 +4317,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
     rb_define_method(c_domain, "migrate_compression_cache",
                      libvirt_domain_migrate_compression_cache, -1);
+#endif
+#if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
+    rb_define_method(c_domain, "migrate_compression_cache=",
+                     libvirt_domain_migrate_compression_cache_equal, 1);
 #endif
 }
