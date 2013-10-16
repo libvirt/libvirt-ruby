@@ -205,6 +205,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainPMSuspendForDuration',
                   'virDomainMigrateGetCompressionCache',
                   'virDomainMigrateSetCompressionCache',
+                  'virDomainGetDiskErrors',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

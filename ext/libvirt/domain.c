@@ -3098,6 +3098,52 @@ static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETDISKERRORS
+/*
+ * call-seq:
+ *   dom.disk_errors(flags=0) -> Hash
+ *
+ * Call virDomainGetDiskErrors[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetDiskErrors]
+ * to get errors on disks in the domain.
+ */
+static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+    int maxerr;
+    int ret;
+    virDomainDiskErrorPtr errors;
+    VALUE hash;
+    int i;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    maxerr = virDomainGetDiskErrors(ruby_libvirt_domain_get(d), NULL, 0,
+                                    NUM2UINT(flags));
+    _E(maxerr < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                             "virDomainGetDiskErrors",
+                                             ruby_libvirt_connect_get(d)));
+
+    errors = alloca(maxerr * sizeof(virDomainDiskError));
+
+    ret = virDomainGetDiskErrors(ruby_libvirt_domain_get(d), errors, maxerr,
+                                 NUM2UINT(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainGetDiskErrors",
+                                          ruby_libvirt_connect_get(d)));
+
+    hash = rb_hash_new();
+
+    for (i = 0; i < ret; i++) {
+        rb_hash_aset(hash, rb_str_new2(errors[i].disk),
+                     INT2NUM(errors[i].error));
+    }
+
+    return hash;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4321,5 +4367,14 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
     rb_define_method(c_domain, "migrate_compression_cache=",
                      libvirt_domain_migrate_compression_cache_equal, 1);
+#endif
+#if HAVE_VIRDOMAINGETDISKERRORS
+    rb_define_const(c_domain, "DISK_ERROR_NONE",
+                    INT2NUM(VIR_DOMAIN_DISK_ERROR_NONE));
+    rb_define_const(c_domain, "DISK_ERROR_UNSPEC",
+                    INT2NUM(VIR_DOMAIN_DISK_ERROR_UNSPEC));
+    rb_define_const(c_domain, "DISK_ERROR_NO_SPACE",
+                    INT2NUM(VIR_DOMAIN_DISK_ERROR_NO_SPACE));
+    rb_define_method(c_domain, "disk_errors", libvirt_domain_disk_errors, -1);
 #endif
 }
