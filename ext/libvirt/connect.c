@@ -2635,7 +2635,7 @@ static VALUE libvirt_connect_alive_p(VALUE c)
 static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
                                                           VALUE c)
 {
-    VALUE fds, flags;
+    VALUE xml, fds, flags;
     int *files;
     unsigned int numfiles;
     unsigned int i;
@@ -2662,7 +2662,7 @@ static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
 
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    dom = virDomainCreateXMLWithFiles(ruby_libvirt_connect_get(d),
+    dom = virDomainCreateXMLWithFiles(ruby_libvirt_connect_get(c),
                                       ruby_libvirt_get_cstring_or_null(xml),
                                       numfiles, files, NUM2UINT(flags));
     _E(dom == NULL, ruby_libvirt_create_error(e_Error,
@@ -3235,7 +3235,7 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "alive?", libvirt_connect_alive_p, 0);
 #endif
 #if HAVE_VIRDOMAINCREATEXMLWITHFILES
-    rb_define_method(c_domain, "create_domain_xml_with_files",
-                     libvirt_domain_create_domain_xml_with_files, -1);
+    rb_define_method(c_connect, "create_domain_xml_with_files",
+                     libvirt_connect_create_domain_xml_with_files, -1);
 #endif
 }
