@@ -301,7 +301,6 @@ virConnectRegisterCloseCallback
 virConnectUnregisterCloseCallback
 virDomainGetConnect
 virDomainRef
-virDomainPMSuspendForDuration
 virDomainRestoreFlags
 virDomainGetCPUStats
 virDomainSetNumaParameters

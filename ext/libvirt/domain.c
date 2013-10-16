@@ -3007,6 +3007,31 @@ static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINPMSUSPENDFORDURATION
+/*
+ * call-seq:
+ *   dom.pmsuspend_for_duration(target, duration, flags=0) -> nil
+ *
+ * Call virDomainPMSuspendForDuration[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPMSuspendForDuration]
+ * to have the domain enter the target power management suspend level.
+ */
+static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
+                                                   VALUE d)
+{
+    VALUE target, duration, flags;
+
+    rb_scan_args(argc, argv, "21", &target, &duration, &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    ruby_libvirt_generate_call_nil(virDomainPMSuspendForDuration,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2UINT(target), NUM2ULL(duration),
+                                   NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4218,5 +4243,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
     rb_define_const(c_domain_snapshot, "REVERT_FORCE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_FORCE));
+#endif
+#if HAVE_VIRDOMAINPMSUSPENDFORDURATION
+    rb_define_method(c_domain, "pmsuspend_for_duration",
+                     libvirt_domain_pmsuspend_for_duration, -1);
 #endif
 }

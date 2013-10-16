@@ -202,6 +202,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virStorageVolResize',
                   'virDomainPMWakeup',
                   'virDomainBlockResize',
+                  'virDomainPMSuspendForDuration',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
