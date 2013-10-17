@@ -300,7 +300,6 @@ virDomainRestoreFlags
 virDomainGetCPUStats
 virDomainSetNumaParameters
 virDomainGetNumaParameters
-virDomainGetSecurityLabelList
 virDomainBlockStatsFlags
 virDomainSetInterfaceParameters
 virDomainGetInterfaceParameters

@@ -3226,6 +3226,39 @@ static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETSECURITYLABELLIST
+/*
+ * call-seq:
+ *   dom.security_label_list -> [ Libvirt::Domain::SecurityLabel ]
+ *
+ * Call virDomainGetSecurityLabelList[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabelList]
+ * to retrieve the security labels applied to this domain.
+ */
+static VALUE libvirt_domain_security_label_list(VALUE d)
+{
+    virSecurityLabelPtr seclabels;
+    int r, i;
+    VALUE result, tmp;
+
+    r = virDomainGetSecurityLabelList(ruby_libvirt_domain_get(d), &seclabels);
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virDomainGetSecurityLabel",
+                                        ruby_libvirt_connect_get(d)));
+
+    result = rb_ary_new2(r);
+
+    for (i = 0; i < r; i++) {
+        tmp = rb_class_new_instance(0, NULL, c_domain_security_label);
+        rb_iv_set(tmp, "@label", rb_str_new2(seclabels[i].label));
+        rb_iv_set(tmp, "@enforcing", INT2NUM(seclabels[i].enforcing));
+
+        rb_ary_store(result, i, tmp);
+    }
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4465,5 +4498,9 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINPINEMULATOR
     rb_define_method(c_domain, "pin_emulator", libvirt_domain_pin_emulator, -1);
+#endif
+#if HAVE_VIRDOMAINGETSECURITYLABELLIST
+    rb_define_method(c_domain, "security_label_list",
+                     libvirt_domain_security_label_list, 0);
 #endif
 }
