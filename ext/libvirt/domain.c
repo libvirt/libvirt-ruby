@@ -819,21 +819,12 @@ static VALUE libvirt_domain_memory_peek(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_vcpus(VALUE d)
 {
-    virNodeInfo nodeinfo;
     virDomainInfo dominfo;
     virVcpuInfoPtr cpuinfo = NULL;
     unsigned char *cpumap;
-    int cpumaplen;
-    int r;
-    VALUE result;
+    int cpumaplen, r, j, maxcpus;
+    VALUE result, vcpuinfo, p2vcpumap;
     unsigned short i;
-    int j;
-    VALUE vcpuinfo;
-    VALUE p2vcpumap;
-
-    r = virNodeGetInfo(ruby_libvirt_connect_get(d), &nodeinfo);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeGetInfo",
-                                        ruby_libvirt_connect_get(d)));
 
     r = virDomainGetInfo(ruby_libvirt_domain_get(d), &dominfo);
     _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virDomainGetInfo",
@@ -841,9 +832,11 @@ static VALUE libvirt_domain_vcpus(VALUE d)
 
     cpuinfo = alloca(sizeof(virVcpuInfo) * dominfo.nrVirtCpu);
 
-    cpumaplen = VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo));
+    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
 
-    cpumap = alloca(dominfo.nrVirtCpu * cpumaplen);
+    cpumaplen = VIR_CPU_MAPLEN(maxcpus);
+
+    cpumap = alloca(cpumaplen);
 
     r = virDomainGetVcpus(ruby_libvirt_domain_get(d), cpuinfo,
                           dominfo.nrVirtCpu, cpumap, cpumaplen);
@@ -891,9 +884,9 @@ static VALUE libvirt_domain_vcpus(VALUE d)
 
         p2vcpumap = rb_ary_new();
 
-        for (j = 0; j < VIR_NODEINFO_MAXCPUS(nodeinfo); j++) {
-            rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap,
-                                                   VIR_CPU_MAPLEN(VIR_NODEINFO_MAXCPUS(nodeinfo)), i, j)) ? Qtrue : Qfalse);
+        for (j = 0; j < maxcpus; j++) {
+            rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap, cpumaplen,
+                                                   i, j)) ? Qtrue : Qfalse);
         }
         rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
 
@@ -1264,29 +1257,24 @@ static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
 static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
 {
     VALUE vcpu, cpulist, flags;
-    int r, i, len, maplen;
+    int i, cpumaplen, maxcpus;
     unsigned char *cpumap;
-    virNodeInfo nodeinfo;
-    unsigned int vcpunum;
     VALUE e;
 
     rb_scan_args(argc, argv, "21", &vcpu, &cpulist, &flags);
 
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    vcpunum = NUM2UINT(vcpu);
     Check_Type(cpulist, T_ARRAY);
 
-    r = virNodeGetInfo(ruby_libvirt_connect_get(d), &nodeinfo);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeGetInfo",
-                                        ruby_libvirt_connect_get(d)));
+    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
 
-    maplen = VIR_CPU_MAPLEN(nodeinfo.cpus);
-    cpumap = alloca(sizeof(unsigned char) * maplen);
-    MEMZERO(cpumap, unsigned char, maplen);
+    cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    len = RARRAY_LEN(cpulist);
-    for(i = 0; i < len; i++) {
+    cpumap = alloca(cpumaplen);
+    MEMZERO(cpumap, unsigned char, cpumaplen);
+
+    for (i = 0; i < RARRAY_LEN(cpulist); i++) {
         e = rb_ary_entry(cpulist, i);
         VIR_USE_CPU(cpumap, NUM2UINT(e));
     }
@@ -1294,8 +1282,9 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINPINVCPUFLAGS
     ruby_libvirt_generate_call_nil(virDomainPinVcpuFlags,
                                    ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d), vcpunum, cpumap,
-                                   maplen, NUM2UINT(flags));
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2UINT(vcpu), cpumap, cpumaplen,
+                                   NUM2UINT(flags));
 #else
     if (NUM2UINT(flags) != 0) {
         rb_raise(e_NoSupportError, "Non-zero flags not supported");
@@ -1303,8 +1292,8 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
 
     ruby_libvirt_generate_call_nil(virDomainPinVcpu,
                                    ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d), vcpunum, cpumap,
-                                   maplen);
+                                   ruby_libvirt_domain_get(d), NUM2UINT(vcpu),
+                                   cpumap, cpumaplen);
 #endif
 }
 
@@ -3158,10 +3147,9 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 {
-    int maxcpu;
-    virNodeInfo nodeinfo;
+    int maxcpus;
     size_t cpumaplen;
-    unsigned char *cpumaps;
+    unsigned char *cpumap;
     int ret;
     VALUE emulator2cpumap;
     int j;
@@ -3171,23 +3159,13 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 
     flags = ruby_libvirt_fixnum_set(flags, 0);
 
-    maxcpu = virNodeGetCPUMap(ruby_libvirt_connect_get(d), NULL, NULL, 0);
-    if (maxcpu < 0) {
-        /* fall back to nodeinfo */
-        if (virNodeGetInfo(ruby_libvirt_connect_get(d), &nodeinfo) < 0) {
-            rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError,
-                                                   "virNodeGetInfo",
-                                                   ruby_libvirt_connect_get(d)));
-        }
+    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
 
-        maxcpu = VIR_NODEINFO_MAXCPUS(nodeinfo);
-    }
+    cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    cpumaplen = VIR_CPU_MAPLEN(maxcpu);
+    cpumap = alloca(cpumaplen);
 
-    cpumaps = alloca(cpumaplen);
-
-    ret = virDomainGetEmulatorPinInfo(ruby_libvirt_domain_get(d), cpumaps,
+    ret = virDomainGetEmulatorPinInfo(ruby_libvirt_domain_get(d), cpumap,
                                       cpumaplen, NUM2UINT(flags));
     _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
                                           "virDomainGetEmulatorPinInfo",
@@ -3195,12 +3173,56 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 
     emulator2cpumap = rb_ary_new();
 
-    for (j = 0; j < maxcpu; j++) {
-        rb_ary_push(emulator2cpumap, VIR_CPU_USABLE(cpumaps, cpumaplen,
+    for (j = 0; j < maxcpus; j++) {
+        rb_ary_push(emulator2cpumap, VIR_CPU_USABLE(cpumap, cpumaplen,
                                                     0, j) ? Qtrue : Qfalse);
     }
 
     return emulator2cpumap;
+}
+#endif
+
+#if HAVE_VIRDOMAINPINEMULATOR
+/*
+ * call-seq:
+ *   dom.pin_emulator(cpulist, flags=0) -> nil
+ *
+ * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
+ * to pin the emulator to a range of physical processors.  The cpulist should
+ * be an array of Fixnums representing the physical processors this domain's
+ * emulator should be allowed to be scheduled on.
+ */
+static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
+{
+    VALUE cpulist, flags;
+    int i;
+    int maxcpus;
+    int cpumaplen;
+    unsigned char *cpumap;
+    VALUE e;
+
+    rb_scan_args(argc, argv, "11", &cpulist, &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    Check_Type(cpulist, T_ARRAY);
+
+    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
+
+    cpumaplen = VIR_CPU_MAPLEN(maxcpus);
+
+    cpumap = alloca(cpumaplen);
+    MEMZERO(cpumap, unsigned char, cpumaplen);
+
+    for (i = 0; i < RARRAY_LEN(cpulist); i++) {
+        e = rb_ary_entry(cpulist, i);
+        VIR_USE_CPU(cpumap, NUM2UINT(e));
+    }
+
+    ruby_libvirt_generate_call_nil(virDomainPinEmulator,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d), cpumap,
+                                   cpumaplen, NUM2UINT(flags));
 }
 #endif
 
@@ -4440,5 +4462,8 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINGETEMULATORPININFO
     rb_define_method(c_domain, "emulator_pin_info",
                      libvirt_domain_emulator_pin_info, -1);
+#endif
+#if HAVE_VIRDOMAINPINEMULATOR
+    rb_define_method(c_domain, "pin_emulator", libvirt_domain_pin_emulator, -1);
 #endif
 }

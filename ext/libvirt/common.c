@@ -393,3 +393,22 @@ VALUE ruby_libvirt_fixnum_set(VALUE in, int def)
 
     return in;
 }
+
+int ruby_libvirt_get_maxcpus(virConnectPtr conn)
+{
+    int maxcpu;
+    virNodeInfo nodeinfo;
+
+    maxcpu = virNodeGetCPUMap(conn, NULL, NULL, 0);
+    if (maxcpu < 0) {
+        /* fall back to nodeinfo */
+        if (virNodeGetInfo(conn, &nodeinfo) < 0) {
+            rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError,
+                                                   "virNodeGetInfo", conn));
+        }
+
+        maxcpu = VIR_NODEINFO_MAXCPUS(nodeinfo);
+    }
+
+    return maxcpu;
+}

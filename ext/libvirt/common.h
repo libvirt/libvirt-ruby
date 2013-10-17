@@ -190,6 +190,8 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
                                                         virTypedParameterPtr params,
                                                         int nparams));
 
+int ruby_libvirt_get_maxcpus(virConnectPtr conn);
+
 VALUE ruby_libvirt_fixnum_set(VALUE in, int def);
 
 VALUE ruby_libvirt_ary_new2_wrap(VALUE arg);
