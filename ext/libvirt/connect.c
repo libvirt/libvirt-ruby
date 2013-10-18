@@ -3049,9 +3049,17 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "node_cpu_stats",
                      libvirt_connect_node_cpu_stats, -1);
 #endif
+#if HAVE_CONST_VIR_NODE_CPU_STATS_ALL_CPUS
+    rb_define_const(c_connect, "NODE_CPU_STATS_ALL_CPUS",
+                    INT2NUM(VIR_NODE_CPU_STATS_ALL_CPUS));
+#endif
 #if HAVE_VIRNODEGETMEMORYSTATS
     rb_define_method(c_connect, "node_memory_stats",
                      libvirt_connect_node_memory_stats, -1);
+#endif
+#if HAVE_CONST_VIR_NODE_MEMORY_STATS_ALL_CELLS
+    rb_define_const(c_connect, "NODE_MEMORY_STATS_ALL_CELLS",
+                    INT2NUM(VIR_NODE_MEMORY_STATS_ALL_CELLS));
 #endif
 
 #if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC

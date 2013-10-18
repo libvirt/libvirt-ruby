@@ -4100,6 +4100,22 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_DISK_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_RUNNING_CRASHED
+    rb_define_const(c_domain, "RUNNING_CRASHED",
+                    INT2NUM(VIR_DOMAIN_RUNNING_CRASHED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_NOSTATE_UNKNOWN
+    rb_define_const(c_domain, "NOSTATE_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_NOSTATE_UNKNOWN));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_PAUSED_CRASHED
+    rb_define_const(c_domain, "PAUSED_CRASHED",
+                    INT2NUM(VIR_DOMAIN_PAUSED_CRASHED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_CRASHED_PANICKED
+    rb_define_const(c_domain, "CRASHED_PANICKED",
+                    INT2NUM(VIR_DOMAIN_CRASHED_PANICKED));
+#endif
 
     rb_define_method(c_domain, "state", libvirt_domain_state, -1);
 #endif

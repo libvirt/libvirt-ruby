@@ -357,6 +357,12 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED',
                    'VIR_DOMAIN_SNAPSHOT_REVERT_FORCE',
                    'VIR_SECRET_USAGE_TYPE_ISCSI',
+                   'VIR_DOMAIN_NOSTATE_UNKNOWN',
+                   'VIR_DOMAIN_RUNNING_CRASHED',
+                   'VIR_DOMAIN_PAUSED_CRASHED',
+                   'VIR_DOMAIN_CRASHED_PANICKED',
+                   'VIR_NODE_CPU_STATS_ALL_CPUS',
+                   'VIR_NODE_MEMORY_STATS_ALL_CELLS',
                  ]
 
 have_libvirt_types(libvirt_types)
