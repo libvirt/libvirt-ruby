@@ -3402,6 +3402,12 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "VCPU_CONFIG", INT2NUM(VIR_DOMAIN_VCPU_CONFIG));
     rb_define_const(c_domain, "VCPU_MAXIMUM", INT2NUM(VIR_DOMAIN_VCPU_MAXIMUM));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_VCPU_CURRENT
+    rb_define_const(c_domain, "VCPU_CURRENT", INT2NUM(VIR_DOMAIN_VCPU_CURRENT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_VCPU_GUEST
+    rb_define_const(c_domain, "VCPU_GUEST", INT2NUM(VIR_DOMAIN_VCPU_GUEST));
+#endif
 
     rb_define_method(c_domain, "migrate", libvirt_domain_migrate, -1);
 #if HAVE_VIRDOMAINMIGRATETOURI
@@ -4518,5 +4524,45 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINGETSECURITYLABELLIST
     rb_define_method(c_domain, "security_label_list",
                      libvirt_domain_security_label_list, 0);
+#endif
+
+#if HAVE_CONST_VIR_KEYCODE_SET_LINUX
+    rb_define_const(c_domain, "KEYCODE_SET_LINUX",
+                    INT2NUM(VIR_KEYCODE_SET_LINUX));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_XT
+    rb_define_const(c_domain, "KEYCODE_SET_XT",
+                    INT2NUM(VIR_KEYCODE_SET_XT));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_ATSET1
+    rb_define_const(c_domain, "KEYCODE_SET_ATSET1",
+                    INT2NUM(VIR_KEYCODE_SET_ATSET1));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_ATSET2
+    rb_define_const(c_domain, "KEYCODE_SET_ATSET2",
+                    INT2NUM(VIR_KEYCODE_SET_ATSET2));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_ATSET3
+    rb_define_const(c_domain, "KEYCODE_SET_ATSET3",
+                    INT2NUM(VIR_KEYCODE_SET_ATSET3));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_OSX
+    rb_define_const(c_domain, "KEYCODE_SET_OSX",
+                    INT2NUM(VIR_KEYCODE_SET_OSX));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_XT_KBD
+    rb_define_const(c_domain, "KEYCODE_SET_XT_KBD",
+                    INT2NUM(VIR_KEYCODE_SET_XT_KBD));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_USB
+    rb_define_const(c_domain, "KEYCODE_SET_USB",
+                    INT2NUM(VIR_KEYCODE_SET_USB));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_WIN32
+    rb_define_const(c_domain, "KEYCODE_SET_WIN32",
+                    INT2NUM(VIR_KEYCODE_SET_WIN32));
+#endif
+#if HAVE_CONST_VIR_KEYCODE_SET_RFB
+    rb_define_const(c_domain, "KEYCODE_SET_RFB", INT2NUM(VIR_KEYCODE_SET_RFB));
 #endif
 }

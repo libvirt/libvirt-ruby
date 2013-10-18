@@ -899,6 +899,16 @@ void ruby_libvirt_storage_init(void)
                      libvirt_storage_pool_list_all_volumes, -1);
 #endif
 
+#if HAVE_CONST_VIR_STORAGE_POOL_BUILD_NO_OVERWRITE
+    rb_define_const(c_storage_pool, "BUILD_NO_OVERWRITE",
+                    INT2NUM(VIR_STORAGE_POOL_BUILD_NO_OVERWRITE));
+#endif
+
+#if HAVE_CONST_VIR_STORAGE_POOL_BUILD_OVERWRITE
+    rb_define_const(c_storage_pool, "BUILD_OVERWRITE",
+                    INT2NUM(VIR_STORAGE_POOL_BUILD_OVERWRITE));
+#endif
+
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR

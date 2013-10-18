@@ -455,5 +455,10 @@ void ruby_libvirt_network_init(void)
     rb_define_const(c_network, "XML_INACTIVE",
                     INT2NUM(VIR_NETWORK_XML_INACTIVE));
 #endif
+#if HAVE_CONST_VIR_NETWORK_UPDATE_COMMAND_DELETE
+    rb_define_const(c_network, "UPDATE_COMMAND_DELETE",
+                    INT2NUM(VIR_NETWORK_UPDATE_COMMAND_DELETE));
+#endif
+
 #endif
 }
