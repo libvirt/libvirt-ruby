@@ -3710,6 +3710,15 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_snapshot_delete, -1);
     rb_define_method(c_domain_snapshot, "free", libvirt_domain_snapshot_free,
                      0);
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_DELETE_METADATA_ONLY
+    rb_define_const(c_domain_snapshot, "DELETE_METADATA_ONLY",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_METADATA_ONLY));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY
+    rb_define_const(c_domain_snapshot, "DELETE_CHILDREN_ONLY",
+                    INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY));
+#endif
+
 #endif
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
     rb_define_method(c_domain_snapshot, "name", libvirt_domain_snapshot_name,

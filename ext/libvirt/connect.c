@@ -2750,6 +2750,10 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "baseline_cpu", libvirt_connect_baseline_cpu,
                      -1);
 #endif
+#if HAVE_CONST_VIR_CONNECT_BASELINE_CPU_EXPAND_FEATURES
+    rb_define_const(c_connect, "BASELINE_CPU_EXPAND_FEATURES",
+                    INT2NUM(VIR_CONNECT_BASELINE_CPU_EXPAND_FEATURES));
+#endif
 
     /* In the libvirt development history, the events were
      * first defined in commit 1509b8027fd0b73c30aeab443f81dd5a18d80544,
@@ -2880,6 +2884,58 @@ void ruby_libvirt_connect_init(void)
 #if HAVE_CONST_VIR_DOMAIN_EVENT_ID_CONTROL_ERROR
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_CONTROL_ERROR",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_CONTROL_ERROR));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_SHUTDOWN
+    rb_define_const(c_connect, "DOMAIN_EVENT_SHUTDOWN",
+                    INT2NUM(VIR_DOMAIN_EVENT_SHUTDOWN));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_PMSUSPENDED
+    rb_define_const(c_connect, "DOMAIN_EVENT_PMSUSPENDED",
+                    INT2NUM(VIR_DOMAIN_EVENT_PMSUSPENDED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_CRASHED
+    rb_define_const(c_connect, "DOMAIN_EVENT_CRASHED",
+                    INT2NUM(VIR_DOMAIN_EVENT_CRASHED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_STARTED_WAKEUP
+    rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_WAKEUP",
+                    INT2NUM(VIR_DOMAIN_EVENT_STARTED_WAKEUP));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_RESTORED
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_RESTORED",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_RESTORED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_FROM_SNAPSHOT
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_FROM_SNAPSHOT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_API_ERROR
+    rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_API_ERROR",
+                    INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_API_ERROR));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_RESUMED_FROM_SNAPSHOT
+    rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_FROM_SNAPSHOT",
+                    INT2NUM(VIR_DOMAIN_EVENT_RESUMED_FROM_SNAPSHOT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_SHUTDOWN_FINISHED
+    rb_define_const(c_connect, "DOMAIN_EVENT_SHUTDOWN_FINISHED",
+                    INT2NUM(VIR_DOMAIN_EVENT_SHUTDOWN_FINISHED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_PMSUSPENDED_MEMORY
+    rb_define_const(c_connect, "DOMAIN_EVENT_PMSUSPENDED_MEMORY",
+                    INT2NUM(VIR_DOMAIN_EVENT_PMSUSPENDED_MEMORY));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_PMSUSPENDED_DISK
+    rb_define_const(c_connect, "DOMAIN_EVENT_PMSUSPENDED_DISK",
+                    INT2NUM(VIR_DOMAIN_EVENT_PMSUSPENDED_DISK));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_CRASHED_PANICKED
+    rb_define_const(c_connect, "DOMAIN_EVENT_CRASHED_PANICKED",
+                    INT2NUM(VIR_DOMAIN_EVENT_CRASHED_PANICKED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX
+    rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX",
+                    INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX));
 #endif
 
 #if HAVE_VIRCONNECTDOMAINEVENTREGISTER
