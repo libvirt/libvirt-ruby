@@ -71,11 +71,10 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virInterfaceCreate,
                                    ruby_libvirt_connect_get(i),
-                                   interface_get(i), NUM2UINT(flags));
+                                   interface_get(i),
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 
 /*
@@ -91,11 +90,10 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virInterfaceDestroy,
                                    ruby_libvirt_connect_get(i),
-                                   interface_get(i), NUM2UINT(flags));
+                                   interface_get(i),
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 
 #if HAVE_VIRINTERFACEISACTIVE
@@ -155,11 +153,10 @@ static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virInterfaceGetXMLDesc,
                                       ruby_libvirt_connect_get(i),
-                                      1, interface_get(i), NUM2UINT(flags));
+                                      1, interface_get(i),
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 
 /*

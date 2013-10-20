@@ -231,8 +231,6 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
 
     rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     if (rb_block_given_p()) {
         auth = alloca(sizeof(virConnectAuth));
 
@@ -264,7 +262,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     }
 
     conn = virConnectOpenAuth(ruby_libvirt_get_cstring_or_null(uri), auth,
-                              NUM2UINT(flags));
+                              ruby_libvirt_flag_to_uint(flags));
 
     _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
                                                "virConnectOpenAuth", NULL));

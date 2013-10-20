@@ -435,13 +435,11 @@ static VALUE libvirt_connect_compare_cpu(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_int(virConnectCompareCPU,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
                                    StringValueCStr(xml),
-                                   NUM2UINT(flags));
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -468,8 +466,6 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xmlcpus, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     Check_Type(xmlcpus, T_ARRAY);
 
     if (RARRAY_LEN(xmlcpus) < 1) {
@@ -487,7 +483,7 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
     }
 
     r = virConnectBaselineCPU(ruby_libvirt_connect_get(c), xmllist, ncpus,
-                              NUM2UINT(flags));
+                              ruby_libvirt_flag_to_uint(flags));
     _E(r == NULL, ruby_libvirt_create_error(e_RetrieveError,
                                             "virConnectBaselineCPU",
                                             ruby_libvirt_connect_get(c)));
@@ -1068,11 +1064,9 @@ static VALUE libvirt_connect_create_linux(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     dom = virDomainCreateLinux(ruby_libvirt_connect_get(c),
                                StringValueCStr(xml),
-                               NUM2UINT(flags));
+                               ruby_libvirt_flag_to_uint(flags));
     _E(dom == NULL, ruby_libvirt_create_error(e_Error, "virDomainCreateLinux",
                                               ruby_libvirt_connect_get(c)));
 
@@ -1094,10 +1088,8 @@ static VALUE libvirt_connect_create_domain_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     dom = virDomainCreateXML(ruby_libvirt_connect_get(c), StringValueCStr(xml),
-                             NUM2UINT(flags));
+                             ruby_libvirt_flag_to_uint(flags));
     _E(dom == NULL, ruby_libvirt_create_error(e_Error, "virDomainCreateXML",
                                               ruby_libvirt_connect_get(c)));
 
@@ -1198,13 +1190,12 @@ static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virConnectDomainXMLFromNative,
                                       ruby_libvirt_connect_get(c), 1,
                                       ruby_libvirt_connect_get(c),
                                       StringValueCStr(nativeFormat),
-                                      StringValueCStr(xml), NUM2UINT(flags));
+                                      StringValueCStr(xml),
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -1223,13 +1214,12 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &nativeFormat, &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virConnectDomainXMLToNative,
                                       ruby_libvirt_connect_get(c), 1,
                                       ruby_libvirt_connect_get(c),
                                       StringValueCStr(nativeFormat),
-                                      StringValueCStr(xml), NUM2UINT(flags));
+                                      StringValueCStr(xml),
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -1337,10 +1327,9 @@ static VALUE libvirt_connect_define_interface_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     iface = virInterfaceDefineXML(ruby_libvirt_connect_get(c),
-                                  StringValueCStr(xml), NUM2UINT(flags));
+                                  StringValueCStr(xml),
+                                  ruby_libvirt_flag_to_uint(flags));
     _E(iface == NULL, ruby_libvirt_create_error(e_DefinitionError,
                                                 "virInterfaceDefineXML",
                                                 ruby_libvirt_connect_get(c)));
@@ -1492,11 +1481,9 @@ static VALUE libvirt_connect_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &cap, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     result = virNodeNumOfDevices(ruby_libvirt_connect_get(c),
                                  ruby_libvirt_get_cstring_or_null(cap),
-                                 NUM2UINT(flags));
+                                 ruby_libvirt_flag_to_uint(flags));
     _E(result < 0, ruby_libvirt_create_error(e_RetrieveError,
                                              "virNodeNumOfDevices",
                                              ruby_libvirt_connect_get(c)));
@@ -1520,8 +1507,10 @@ static VALUE libvirt_connect_list_nodedevices(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &cap, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-    Check_Type(flags, T_FIXNUM);
+    if (TYPE(flags) != T_NIL && TYPE(flags) != T_FIXNUM) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number)");
+    }
 
     capstr = ruby_libvirt_get_cstring_or_null(cap);
 
@@ -1536,7 +1525,7 @@ static VALUE libvirt_connect_list_nodedevices(int argc, VALUE *argv, VALUE c)
 
     names = alloca(sizeof(char *) * num);
     r = virNodeListDevices(ruby_libvirt_connect_get(c), capstr, names, num,
-                           NUM2UINT(flags));
+                           ruby_libvirt_flag_to_uint(flags));
     _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeListDevices",
                                         ruby_libvirt_connect_get(c)));
 
@@ -1580,10 +1569,9 @@ static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     nodedev = virNodeDeviceCreateXML(ruby_libvirt_connect_get(c),
-                                     StringValueCStr(xml), NUM2UINT(flags));
+                                     StringValueCStr(xml),
+                                     ruby_libvirt_flag_to_uint(flags));
     _E(nodedev == NULL, ruby_libvirt_create_error(e_Error,
                                                   "virNodeDeviceCreateXML",
                                                   ruby_libvirt_connect_get(c)));
@@ -1763,10 +1751,9 @@ static VALUE libvirt_connect_define_secret_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     secret = virSecretDefineXML(ruby_libvirt_connect_get(c),
-                                StringValueCStr(xml), NUM2UINT(flags));
+                                StringValueCStr(xml),
+                                ruby_libvirt_flag_to_uint(flags));
     _E(secret == NULL, ruby_libvirt_create_error(e_DefinitionError,
                                                  "virSecretDefineXML",
                                                  ruby_libvirt_connect_get(c)));
@@ -1881,10 +1868,9 @@ static VALUE libvirt_connect_create_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     pool = virStoragePoolCreateXML(ruby_libvirt_connect_get(c),
-                                   StringValueCStr(xml), NUM2UINT(flags));
+                                   StringValueCStr(xml),
+                                   ruby_libvirt_flag_to_uint(flags));
     _E(pool == NULL, ruby_libvirt_create_error(e_Error,
                                                "virStoragePoolCreateXML",
                                                ruby_libvirt_connect_get(c)));
@@ -1906,10 +1892,9 @@ static VALUE libvirt_connect_define_pool_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     pool = virStoragePoolDefineXML(ruby_libvirt_connect_get(c),
-                                   StringValueCStr(xml), NUM2UINT(flags));
+                                   StringValueCStr(xml),
+                                   ruby_libvirt_flag_to_uint(flags));
     _E(pool == NULL, ruby_libvirt_create_error(e_DefinitionError,
                                                "virStoragePoolDefineXML",
                                                ruby_libvirt_connect_get(c)));
@@ -1931,14 +1916,12 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "12", &type, &srcSpec, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virConnectFindStoragePoolSources,
                                       ruby_libvirt_connect_get(c), 1,
                                       ruby_libvirt_connect_get(c),
                                       StringValueCStr(type),
                                       ruby_libvirt_get_cstring_or_null(srcSpec),
-                                      NUM2UINT(flags));
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -1957,12 +1940,10 @@ static VALUE libvirt_connect_sys_info(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virConnectGetSysinfo,
                                       ruby_libvirt_connect_get(c), 1,
                                       ruby_libvirt_connect_get(c),
-                                      NUM2UINT(flags));
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -1982,9 +1963,8 @@ static VALUE libvirt_connect_stream(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
-    stream = virStreamNew(ruby_libvirt_connect_get(c), NUM2UINT(flags));
+    stream = virStreamNew(ruby_libvirt_connect_get(c),
+                          ruby_libvirt_flag_to_uint(flags));
 
     _E(stream == NULL, ruby_libvirt_create_error(e_RetrieveError,
                                                  "virStreamNew",
@@ -2011,12 +1991,10 @@ static VALUE libvirt_connect_interface_change_begin(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virInterfaceChangeBegin,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
-                                   NUM2UINT(flags));
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 
 /*
@@ -2033,12 +2011,10 @@ static VALUE libvirt_connect_interface_change_commit(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virInterfaceChangeCommit,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
-                                   NUM2UINT(flags));
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 
 /*
@@ -2055,12 +2031,10 @@ static VALUE libvirt_connect_interface_change_rollback(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virInterfaceChangeRollback,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
-                                   NUM2UINT(flags));
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -2242,13 +2216,11 @@ static VALUE libvirt_connect_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &filename, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virDomainSaveImageGetXMLDesc,
                                       ruby_libvirt_connect_get(c), 1,
                                       ruby_libvirt_connect_get(c),
                                       StringValueCStr(filename),
-                                      NUM2UINT(flags));
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 
 /*
@@ -2267,13 +2239,11 @@ static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &filename, &newxml, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virDomainSaveImageDefineXML,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
                                    StringValueCStr(filename),
-                                   StringValueCStr(newxml), NUM2UINT(flags));
+                                   StringValueCStr(newxml), ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -2294,13 +2264,11 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &target, &duration, &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_nil(virNodeSuspendForDuration,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_connect_get(c),
                                    NUM2UINT(target), NUM2UINT(duration),
-                                   NUM2UINT(flags));
+                                   ruby_libvirt_flag_to_uint(flags));
 }
 #endif
 
@@ -2412,10 +2380,8 @@ static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ret = virNodeGetCPUMap(ruby_libvirt_connect_get(c), &map, &online,
-                           NUM2UINT(flags));
+                           ruby_libvirt_flag_to_uint(flags));
     _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virNodeGetCPUMap",
                                           ruby_libvirt_connect_get(c)));
 
@@ -2660,11 +2626,10 @@ static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
         rb_raise(rb_eTypeError, "wrong argument type (expected Array)");
     }
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     dom = virDomainCreateXMLWithFiles(ruby_libvirt_connect_get(c),
                                       ruby_libvirt_get_cstring_or_null(xml),
-                                      numfiles, files, NUM2UINT(flags));
+                                      numfiles, files,
+                                      ruby_libvirt_flag_to_uint(flags));
     _E(dom == NULL, ruby_libvirt_create_error(e_Error,
                                               "virDomainCreateXMLWithFiles",
                                               ruby_libvirt_connect_get(c)));

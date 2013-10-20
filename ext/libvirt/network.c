@@ -153,11 +153,10 @@ static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
     ruby_libvirt_generate_call_string(virNetworkGetXMLDesc,
                                       ruby_libvirt_connect_get(n), 1,
-                                      network_get(n), NUM2UINT(flags));
+                                      network_get(n),
+                                      ruby_libvirt_flag_to_uint(flags));
 }
 
 /*

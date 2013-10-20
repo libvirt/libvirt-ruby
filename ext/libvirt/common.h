@@ -196,6 +196,7 @@ void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
                                  VALUE hash);
 
 VALUE ruby_libvirt_fixnum_set(VALUE in, int def);
+unsigned int ruby_libvirt_flag_to_uint(VALUE in);
 
 VALUE ruby_libvirt_ary_new2_wrap(VALUE arg);
 struct ruby_libvirt_ary_push_arg {

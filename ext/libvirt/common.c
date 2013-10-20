@@ -399,6 +399,15 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
     return Qnil;
 }
 
+unsigned int ruby_libvirt_flag_to_uint(VALUE in)
+{
+    if (NIL_P(in)) {
+        return 0;
+    }
+
+    return NUM2UINT(in);
+}
+
 VALUE ruby_libvirt_fixnum_set(VALUE in, int def)
 {
     if (NIL_P(in)) {
