@@ -169,31 +169,37 @@ char *ruby_libvirt_get_cstring_or_null(VALUE arg);
 
 VALUE ruby_libvirt_generate_list(int num, char **list);
 
-VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
-                                        virConnectPtr conn,
+VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
+                                        void *opaque,
                                         int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags),
+                                                          unsigned int flags,
+                                                          void *opaque),
                                         char *(*get_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
-                                                        int *nparams));
-VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
-                                        int has_flags,
+                                                        int *nparams,
+                                                        void *opaque));
+VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
+                                        unsigned int flags, void *opaque,
                                         int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags),
+                                                          unsigned int flags,
+                                                          void *opaque),
                                         char *(*get_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
-                                                        int *nparams),
+                                                        int *nparams,
+                                                        void *opaque),
                                         char *(*set_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
-                                                        int nparams));
+                                                        int nparams,
+                                                        void *opaque));
 
 int ruby_libvirt_get_maxcpus(virConnectPtr conn);
 
 void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
                                  VALUE hash);
+void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags);
 
 VALUE ruby_libvirt_fixnum_set(VALUE in, int def);
 unsigned int ruby_libvirt_flag_to_uint(VALUE in);

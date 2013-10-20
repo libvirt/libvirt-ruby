@@ -27,6 +27,7 @@
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
 #include "common.h"
+#include "connect.h"
 
 struct rb_exc_new2_arg {
     VALUE error;
@@ -253,26 +254,23 @@ void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
     }
 }
 
-VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
-                                        virConnectPtr conn,
+VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
+                                        void *opaque,
                                         int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags),
+                                                          unsigned int flags,
+                                                          void *opaque),
                                         char *(*get_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
-                                                        int *nparams))
+                                                        int *nparams,
+                                                        void *opaque))
 {
     int nparams;
     virTypedParameterPtr params;
     VALUE result;
     char *errname;
-    VALUE flags;
 
-    rb_scan_args(argc, argv, "01", &flags);
-
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
-    nparams = nparams_cb(d, NUM2UINT(flags));
+    nparams = nparams_cb(d, flags, opaque);
 
     result = rb_hash_new();
 
@@ -282,61 +280,58 @@ VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
 
     params = alloca(sizeof(virTypedParameter) * nparams);
 
-    errname = get_cb(d, NUM2UINT(flags), params, &nparams);
+    errname = get_cb(d, flags, params, &nparams, opaque);
     _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  conn));
+                                                  ruby_libvirt_connect_get(d)));
 
     ruby_libvirt_params_to_hash(params, nparams, result);
 
     return result;
 }
 
-VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
-                                        int has_flags,
-                                        int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags),
-                                        char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        virTypedParameterPtr params,
-                                                        int *nparams),
-                                        char *(*set_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        virTypedParameterPtr params,
-                                                        int nparams))
+void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags)
 {
-    int nparams;
-    virTypedParameterPtr params;
-    int i;
-    char *errname;
-    VALUE input;
-    VALUE flags;
-    VALUE val;
-
-    if (!has_flags && TYPE(in) != T_HASH) {
-        rb_raise(rb_eTypeError, "wrong argument type (expected Hash)");
-    }
-
     if (TYPE(in) == T_HASH) {
-        input = in;
-        flags = INT2NUM(0);
+        *hash = in;
+        *flags = INT2NUM(0);
     }
     else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2) {
             rb_raise(rb_eArgError, "wrong number of arguments (%ld for 1 or 2)",
                      RARRAY_LEN(in));
         }
-        input = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
+        *hash = rb_ary_entry(in, 0);
+        *flags = rb_ary_entry(in, 1);
     }
     else {
         rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
     }
+}
+
+VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
+                                        unsigned int flags, void *opaque,
+                                        int (*nparams_cb)(VALUE d,
+                                                          unsigned int flags,
+                                                          void *opaque),
+                                        char *(*get_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        virTypedParameterPtr params,
+                                                        int *nparams,
+                                                        void *opaque),
+                                        char *(*set_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        virTypedParameterPtr params,
+                                                        int nparams,
+                                                        void *opaque))
+{
+    int nparams;
+    virTypedParameterPtr params;
+    int i;
+    char *errname;
+    VALUE val;
 
     /* make sure input is a hash */
     Check_Type(input, T_HASH);
-
-    /* make sure flags is an integer */
-    Check_Type(flags, T_FIXNUM);
 
     if (RHASH_SIZE(input) == 0) {
         return Qnil;
@@ -350,13 +345,13 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
      * will throw an error.
      */
 
-    nparams = nparams_cb(d, NUM2UINT(flags));
+    nparams = nparams_cb(d, flags, opaque);
 
     params = alloca(sizeof(virTypedParameter) * nparams);
 
-    errname = get_cb(d, NUM2UINT(flags), params, &nparams);
+    errname = get_cb(d, flags, params, &nparams, opaque);
     _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  conn));
+                                                  ruby_libvirt_connect_get(d)));
 
     for (i = 0; i < nparams; i++) {
         val = rb_hash_aref(input, rb_str_new2(params[i].field));
@@ -391,9 +386,10 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
         }
     }
 
-    errname = set_cb(d, NUM2UINT(flags), params, nparams);
+    errname = set_cb(d, flags, params, nparams, opaque);
     if (errname != NULL) {
-        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname, conn));
+        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname,
+                                               ruby_libvirt_connect_get(d)));
     }
 
     return Qnil;

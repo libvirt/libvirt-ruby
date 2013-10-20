@@ -210,6 +210,8 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainPinEmulator',
                   'virDomainGetSecurityLabelList',
                   'virDomainGetJobStats',
+                  'virDomainGetBlockIoTune',
+                  'virDomainSetBlockIoTune',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

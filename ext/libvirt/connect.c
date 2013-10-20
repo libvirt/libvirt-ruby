@@ -2273,7 +2273,7 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
 #endif
 
 #if HAVE_VIRNODEGETMEMORYPARAMETERS
-static int node_memory_nparams(VALUE d, unsigned int flags)
+static int node_memory_nparams(VALUE d, unsigned int flags, void *opaque)
 {
     int nparams = 0;
     int ret;
@@ -2288,7 +2288,8 @@ static int node_memory_nparams(VALUE d, unsigned int flags)
 }
 
 static char *node_memory_get(VALUE d, unsigned int flags,
-                             virTypedParameterPtr params, int *nparams)
+                             virTypedParameterPtr params, int *nparams,
+                             void *opaque)
 {
     if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    flags) < 0) {
@@ -2298,7 +2299,8 @@ static char *node_memory_get(VALUE d, unsigned int flags,
 }
 
 static char *node_memory_set(VALUE d, unsigned int flags,
-                             virTypedParameterPtr params, int nparams)
+                             virTypedParameterPtr params, int nparams,
+                             void *opauqe)
 {
     /* FIXME: virNodeSetMemoryParameters can take a flags parameter, so we
      * should probably implement it and pass it through.
@@ -2320,9 +2322,13 @@ static char *node_memory_set(VALUE d, unsigned int flags,
 static VALUE libvirt_connect_node_memory_parameters(int argc, VALUE *argv,
                                                     VALUE c)
 {
-    return ruby_libvirt_get_typed_parameters(argc, argv, c,
-                                             ruby_libvirt_connect_get(c),
-                                             node_memory_nparams,
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    return ruby_libvirt_get_typed_parameters(c,
+                                             ruby_libvirt_flag_to_uint(flags),
+                                             NULL, node_memory_nparams,
                                              node_memory_get);
 }
 
@@ -2335,8 +2341,11 @@ static VALUE libvirt_connect_node_memory_parameters(int argc, VALUE *argv,
  */
 static VALUE libvirt_connect_node_memory_parameters_equal(VALUE c, VALUE input)
 {
-    return ruby_libvirt_set_typed_parameters(c, input,
-                                             ruby_libvirt_connect_get(c), 1,
+    VALUE hash, flags;
+
+    ruby_libvirt_assign_hash_and_flags(input, &hash, &flags);
+
+    return ruby_libvirt_set_typed_parameters(c, hash, NUM2UINT(flags), NULL,
                                              node_memory_nparams,
                                              node_memory_get, node_memory_set);
 }
