@@ -283,7 +283,6 @@ virNodeDeviceRef
 virSecretGetConnect
 virSecretRef
 virStreamRef
-virDomainGetJobStats
 virDomainSnapshotGetDomain
 virDomainSnapshotGetConnect
 virDomainSnapshotRef

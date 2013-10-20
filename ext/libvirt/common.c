@@ -75,6 +75,13 @@ VALUE ruby_libvirt_str_new_wrap(VALUE arg)
     return rb_str_new(e->val, e->size);
 }
 
+VALUE ruby_libvirt_hash_aset_wrap(VALUE arg)
+{
+    struct ruby_libvirt_hash_aset_arg *e = (struct ruby_libvirt_hash_aset_arg *)arg;
+
+    return rb_hash_aset(e->hash, rb_str_new2(e->name), e->val);
+}
+
 /* Error handling */
 VALUE ruby_libvirt_create_error(VALUE error, const char* method,
                                 virConnectPtr conn)
@@ -209,40 +216,11 @@ exception:
     return Qnil;
 }
 
-VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
-                                        virConnectPtr conn,
-                                        int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags),
-                                        char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        virTypedParameterPtr params,
-                                                        int *nparams))
+void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
+                                 VALUE hash)
 {
-    int nparams;
-    virTypedParameterPtr params;
-    VALUE result;
     int i;
-    char *errname;
-    VALUE flags;
     VALUE val;
-
-    rb_scan_args(argc, argv, "01", &flags);
-
-    flags = ruby_libvirt_fixnum_set(flags, 0);
-
-    nparams = nparams_cb(d, NUM2UINT(flags));
-
-    result = rb_hash_new();
-
-    if (nparams == 0) {
-        return result;
-    }
-
-    params = alloca(sizeof(virTypedParameter) * nparams);
-
-    errname = get_cb(d, NUM2UINT(flags), params, &nparams);
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  conn));
 
     for (i = 0; i < nparams; i++) {
         switch(params[i].type) {
@@ -271,8 +249,44 @@ VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
             rb_raise(rb_eArgError, "Invalid parameter type");
         }
 
-        rb_hash_aset(result, rb_str_new2(params[i].field), val);
+        rb_hash_aset(hash, rb_str_new2(params[i].field), val);
     }
+}
+
+VALUE ruby_libvirt_get_typed_parameters(int argc, VALUE *argv, VALUE d,
+                                        virConnectPtr conn,
+                                        int (*nparams_cb)(VALUE d,
+                                                          unsigned int flags),
+                                        char *(*get_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        virTypedParameterPtr params,
+                                                        int *nparams))
+{
+    int nparams;
+    virTypedParameterPtr params;
+    VALUE result;
+    char *errname;
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    nparams = nparams_cb(d, NUM2UINT(flags));
+
+    result = rb_hash_new();
+
+    if (nparams == 0) {
+        return result;
+    }
+
+    params = alloca(sizeof(virTypedParameter) * nparams);
+
+    errname = get_cb(d, NUM2UINT(flags), params, &nparams);
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  conn));
+
+    ruby_libvirt_params_to_hash(params, nparams, result);
 
     return result;
 }

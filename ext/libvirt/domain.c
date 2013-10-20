@@ -3259,6 +3259,80 @@ static VALUE libvirt_domain_security_label_list(VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETJOBSTATS
+struct params_to_hash_arg {
+    virTypedParameterPtr params;
+    int nparams;
+    VALUE result;
+};
+
+static VALUE params_to_hash(VALUE in)
+{
+    struct params_to_hash_arg *args = (struct params_to_hash_arg *)in;
+
+    ruby_libvirt_params_to_hash(args->params, args->nparams, args->result);
+
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   dom.job_stats -> Hash
+ *
+ * Call virDomainGetJobStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobStats]
+ * to retrieve information about progress of a background job on a domain.
+ */
+static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+    int type;
+    virTypedParameterPtr params = NULL;
+    int nparams = 0;
+    int r;
+    VALUE result;
+    int exception;
+    struct params_to_hash_arg args;
+    struct ruby_libvirt_hash_aset_arg asetargs;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    flags = ruby_libvirt_fixnum_set(flags, 0);
+
+    result = rb_hash_new();
+
+    r = virDomainGetJobStats(ruby_libvirt_domain_get(d), &type, &params,
+                             &nparams, NUM2UINT(flags));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virDomainGetJobStats",
+                                        ruby_libvirt_connect_get(d)));
+
+    /* since virDomainGetJobsStats() allocated memory, we need to wrap all
+     * calls below to make sure we don't leak memory
+     */
+
+    asetargs.hash = result;
+    asetargs.name = "type";
+    asetargs.val = INT2NUM(type);
+    rb_protect(ruby_libvirt_hash_aset_wrap, (VALUE)&asetargs, &exception);
+    if (exception) {
+        virTypedParamsFree(params, nparams);
+        rb_jump_tag(exception);
+    }
+
+    args.params = params;
+    args.nparams = nparams;
+    args.result = result;
+    result = rb_protect(params_to_hash, (VALUE)&args, &exception);
+    if (exception) {
+        virTypedParamsFree(params, nparams);
+        rb_jump_tag(exception);
+    }
+
+    virTypedParamsFree(params, nparams);
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4573,5 +4647,8 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_CONST_VIR_KEYCODE_SET_RFB
     rb_define_const(c_domain, "KEYCODE_SET_RFB", INT2NUM(VIR_KEYCODE_SET_RFB));
+#endif
+#if HAVE_VIRDOMAINGETJOBSTATS
+    rb_define_method(c_domain, "job_stats", libvirt_domain_job_stats, -1);
 #endif
 }

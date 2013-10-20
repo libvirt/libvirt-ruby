@@ -192,6 +192,9 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE in, virConnectPtr conn,
 
 int ruby_libvirt_get_maxcpus(virConnectPtr conn);
 
+void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
+                                 VALUE hash);
+
 VALUE ruby_libvirt_fixnum_set(VALUE in, int def);
 
 VALUE ruby_libvirt_ary_new2_wrap(VALUE arg);
@@ -213,6 +216,13 @@ struct ruby_libvirt_str_new_arg {
     size_t size;
 };
 VALUE ruby_libvirt_str_new_wrap(VALUE arg);
+
+struct ruby_libvirt_hash_aset_arg {
+    VALUE hash;
+    char *name;
+    VALUE val;
+};
+VALUE ruby_libvirt_hash_aset_wrap(VALUE arg);
 
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(ar) (RARRAY(ar)->len)
