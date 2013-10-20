@@ -97,6 +97,26 @@ virDomainPtr ruby_libvirt_domain_get(VALUE d)
     ruby_libvirt_get_struct(Domain, d);
 }
 
+static void domain_input_to_fixnum_and_flags(VALUE in, VALUE *hash, VALUE *flags)
+{
+    if (TYPE(in) == T_FIXNUM) {
+        *hash = in;
+        *flags = INT2NUM(0);
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) != 2) {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
+                     RARRAY_LEN(in));
+        }
+        *hash = rb_ary_entry(in, 0);
+        *flags = rb_ary_entry(in, 1);
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
+}
+
 /*
  * call-seq:
  *   dom.migrate(dconn, flags=0, dname=nil, uri=nil, bandwidth=0) -> Libvirt::Domain
@@ -188,22 +208,7 @@ static VALUE libvirt_domain_migrate_max_downtime_equal(VALUE d, VALUE in)
 {
     VALUE downtime, flags;
 
-    if (TYPE(in) == T_FIXNUM) {
-        downtime = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        downtime = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    domain_input_to_fixnum_and_flags(in, &downtime, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateSetMaxDowntime,
                                    ruby_libvirt_connect_get(d),
@@ -307,22 +312,7 @@ static VALUE libvirt_domain_migrate_max_speed_equal(VALUE d, VALUE in)
 {
     VALUE bandwidth, flags;
 
-    if (TYPE(in) == T_FIXNUM) {
-        bandwidth = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        bandwidth = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    domain_input_to_fixnum_and_flags(in, &bandwidth, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateSetMaxSpeed,
                                    ruby_libvirt_connect_get(d),
@@ -1075,22 +1065,7 @@ static VALUE libvirt_domain_memory_equal(VALUE d, VALUE in)
     VALUE flags;
     int r;
 
-    if (TYPE(in) == T_FIXNUM) {
-        memory = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        memory = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    domain_input_to_fixnum_and_flags(in, &memory, &flags);
 
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
     r = virDomainSetMemoryFlags(ruby_libvirt_domain_get(d), NUM2ULONG(memory),
@@ -1150,7 +1125,7 @@ static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
 static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
 {
     VALUE nvcpus;
-    VALUE flags;
+    VALUE flags = Qnil;
 
     if (TYPE(in) == T_FIXNUM) {
         nvcpus = in;
@@ -1204,22 +1179,7 @@ static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
     VALUE nvcpus;
     VALUE flags;
 
-    if (TYPE(in) == T_FIXNUM) {
-        nvcpus = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        nvcpus = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    domain_input_to_fixnum_and_flags(in, &nvcpus, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainSetVcpusFlags,
                                    ruby_libvirt_connect_get(d),
@@ -2724,22 +2684,7 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
     VALUE period;
     VALUE flags;
 
-    if (TYPE(in) == T_FIXNUM) {
-        period = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        period = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    domain_input_to_fixnum_and_flags(in, &period, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainSetMemoryStatsPeriod,
                                    ruby_libvirt_connect_get(d),
@@ -2996,22 +2941,7 @@ static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
     VALUE cachesize;
     VALUE flags;
 
-    if (TYPE(in) == T_FIXNUM) {
-        cachesize = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        cachesize = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    domain_input_to_fixnum_and_flags(in, &cachesize, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateSetCompressionCache,
                                    ruby_libvirt_connect_get(d),
