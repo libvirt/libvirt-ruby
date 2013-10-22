@@ -3337,6 +3337,29 @@ static VALUE libvirt_domain_block_commit(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKPULL
+/*
+ * call-seq:
+ *   dom.block_pull(disk, bandwidth=0, flags=0) -> nil
+ *
+ * Call virDomainBlockPull[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockPull]
+ * to pull changes from a backing file into a disk image.
+ */
+static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, bandwidth, flags;
+
+    rb_scan_args(argc, argv, "12", &disk, &bandwidth, &flags);
+
+    ruby_libvirt_generate_call_nil(virDomainBlockPull,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(disk),
+                                   ruby_libvirt_flag_to_uint(bandwidth),
+                                   ruby_libvirt_flag_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4665,5 +4688,8 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINBLOCKCOMMIT
     rb_define_method(c_domain, "block_commit", libvirt_domain_block_commit, -1);
+#endif
+#if HAVE_VIRDOMAINBLOCKPULL
+    rb_define_method(c_domain, "block_pull", libvirt_domain_block_pull, -1);
 #endif
 }
