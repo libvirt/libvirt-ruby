@@ -419,10 +419,12 @@ VALUE ruby_libvirt_fixnum_set(VALUE in, int def)
 
 int ruby_libvirt_get_maxcpus(virConnectPtr conn)
 {
-    int maxcpu;
+    int maxcpu = -1;
     virNodeInfo nodeinfo;
 
+#if HAVE_VIRNODEGETCPUMAP
     maxcpu = virNodeGetCPUMap(conn, NULL, NULL, 0);
+#endif
     if (maxcpu < 0) {
         /* fall back to nodeinfo */
         if (virNodeGetInfo(conn, &nodeinfo) < 0) {
