@@ -214,6 +214,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainSetBlockIoTune',
                   'virDomainBlockCommit',
                   'virDomainBlockPull',
+                  'virDomainBlockJobSetSpeed',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

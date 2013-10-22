@@ -3276,6 +3276,7 @@ static VALUE libvirt_domain_block_iotune(int argc, VALUE *argv, VALUE d)
                                              iotune_get);
 }
 #endif
+
 #if HAVE_VIRDOMAINSETBLOCKIOTUNE
 /*
  * call-seq:
@@ -3306,9 +3307,9 @@ static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
                  RARRAY_LEN(in));
     }
 
-    return ruby_libvirt_set_typed_parameters(d, hash, flags, (void *)disk,
-                                             iotune_nparams, iotune_get,
-                                             iotune_set);
+    return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags),
+                                             (void *)disk, iotune_nparams,
+                                             iotune_get, iotune_set);
 }
 #endif
 
@@ -3357,6 +3358,52 @@ static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
                                    StringValueCStr(disk),
                                    ruby_libvirt_flag_to_uint(bandwidth),
                                    ruby_libvirt_flag_to_uint(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINBLOCKJOBSETSPEED
+/*
+ * call-seq:
+ *   dom.block_job_speed = disk,bandwidth=0,flags=0
+ *
+ * Call virDomainBlockJobSetSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockJobSetSpeed]
+ * to set the maximum allowable bandwidth a block job may consume.
+ */
+static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
+{
+    VALUE disk, bandwidth, flags;
+
+    if (TYPE(in) == T_STRING) {
+        disk = in;
+        bandwidth = INT2NUM(0);
+        flags = INT2NUM(0);
+    }
+    else if (TYPE(in) == T_ARRAY) {
+        if (RARRAY_LEN(in) == 2) {
+            disk = rb_ary_entry(in, 0);
+            bandwidth = rb_ary_entry(in, 1);
+            flags = INT2NUM(0);
+        }
+        else if (RARRAY_LEN(in) == 3) {
+            disk = rb_ary_entry(in, 0);
+            bandwidth = rb_ary_entry(in, 1);
+            flags = rb_ary_entry(in, 2);
+        }
+        else {
+            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2 or 3)",
+                     RARRAY_LEN(in));
+        }
+    }
+    else {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Number or Array)");
+    }
+
+    ruby_libvirt_generate_call_nil(virDomainBlockJobSetSpeed,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(disk),
+                                   NUM2UINT(bandwidth), NUM2UINT(flags));
 }
 #endif
 
@@ -4691,5 +4738,9 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINBLOCKPULL
     rb_define_method(c_domain, "block_pull", libvirt_domain_block_pull, -1);
+#endif
+#if HAVE_VIRDOMAINBLOCKJOBSETSPEED
+    rb_define_method(c_domain, "block_job_speed=",
+                     libvirt_domain_block_job_speed_equal, 1);
 #endif
 }
