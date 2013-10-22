@@ -269,7 +269,6 @@ virDomainBlockJobAbort
 virDomainGetBlockJobInfo
 virDomainBlockJobSetSpeed
 virDomainBlockPull
-virDomainBlockCommit
 virNetworkGetConnect
 virNetworkRef
 virInterfaceGetConnect

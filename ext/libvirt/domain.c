@@ -3312,6 +3312,31 @@ static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKCOMMIT
+/*
+ * call-seq:
+ *   dom.block_commit(disk, base=nil, top=nil, bandwidth=0, flags=0) -> nil
+ *
+ * Call virDomainBlockCommit[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockCommit]
+ * to commit changes from a top-level backing file into a lower level base file.
+ */
+static VALUE libvirt_domain_block_commit(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, base, top, bandwidth, flags;
+
+    rb_scan_args(argc, argv, "14", &disk, &base, &top, &bandwidth, &flags);
+
+    ruby_libvirt_generate_call_nil(virDomainBlockCommit,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(disk),
+                                   ruby_libvirt_get_cstring_or_null(base),
+                                   ruby_libvirt_get_cstring_or_null(top),
+                                   ruby_libvirt_flag_to_uint(bandwidth),
+                                   ruby_libvirt_flag_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4637,5 +4662,8 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINSETBLOCKIOTUNE
     rb_define_method(c_domain, "block_iotune=",
                      libvirt_domain_block_iotune_equal, 1);
+#endif
+#if HAVE_VIRDOMAINBLOCKCOMMIT
+    rb_define_method(c_domain, "block_commit", libvirt_domain_block_commit, -1);
 #endif
 }
