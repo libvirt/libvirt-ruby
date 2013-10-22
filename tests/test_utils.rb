@@ -220,7 +220,7 @@ def cleanup_test_domain(conn)
   end
 
   begin
-    olddom.undefine
+    olddom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
   rescue
     # in case we didn't undefine it, don't do anything
   end

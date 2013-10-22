@@ -1271,6 +1271,7 @@ expect_invalid_arg_type(newdom, "list_all_snapshots", 'foo')
 expect_success(newdom, "no args", "list_all_snapshots")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: domain.open_graphics
 newdom = conn.create_domain_xml($new_dom_xml)
@@ -1303,6 +1304,7 @@ expect_invalid_arg_type(snap, "xml_desc", 'foo')
 expect_success(newdom, "no args", "xml_desc")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.delete
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1314,6 +1316,7 @@ expect_invalid_arg_type(snap, "delete", 'foo')
 expect_success(snap, "no args", "delete")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.name
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1324,6 +1327,7 @@ expect_too_many_args(snap, "name", 1)
 expect_success(snap, "no args", "name")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.num_children
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1334,6 +1338,7 @@ expect_too_many_args(snap, "num_children", 1, 2)
 expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.list_children_names
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1344,6 +1349,7 @@ expect_too_many_args(snap, "list_children_names", 1, 2)
 expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.free
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1354,6 +1360,7 @@ expect_too_many_args(snap, "free", 1)
 expect_success(snap, "no args", "free")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.has_metadata?
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1365,6 +1372,7 @@ expect_invalid_arg_type(snap, "has_metadata?", "foo")
 expect_success(snap, "no args", "has_metadata?") {|x| x == true}
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.list_children_names
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1379,6 +1387,7 @@ expect_invalid_arg_type(snap, "list_children_names", {})
 expect_success(snap, "no args", "list_children_names")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.list_all_children
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1392,11 +1401,12 @@ expect_invalid_arg_type(snap, "list_all_children", {})
 expect_success(snap, "no args", "list_all_children")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.parent
 newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot><name>snap</name></domainsnapshot>")
-snap2 = newdom.snapshot_create_xml("<domainsnapshot><name>snap2</name></domainsnapshot>")
+snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+snap2 = newdom.snapshot_create_xml("<domainsnapshot/>")
 
 expect_too_many_args(snap2, "parent", 1, 2)
 expect_invalid_arg_type(snap2, "parent", "foo")
@@ -1407,6 +1417,7 @@ expect_success(snap2, "no args", "parent")
 expect_success(snap, "no args", "parent")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # TESTGROUP: snapshot.current?
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1420,6 +1431,7 @@ expect_invalid_arg_type(snap, "current?", {})
 expect_success(snap, "no args", "current?")
 
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+sleep 1
 
 # END TESTS
 
