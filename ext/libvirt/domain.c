@@ -81,6 +81,9 @@ static VALUE c_domain_vcpuinfo;
 #if HAVE_VIRDOMAINGETCONTROLINFO
 static VALUE c_domain_control_info;
 #endif
+#if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
+static VALUE c_domain_block_job_info;
+#endif
 
 static void domain_free(void *d)
 {
@@ -3407,6 +3410,42 @@ static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETBLOCKJOBINFO
+/*
+ * call-seq:
+ *   dom.block_job_info(disk, flags=0) -> Libvirt::Domain::BlockJobInfo
+ *
+ * Call virDomainGetBlockJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockJobInfo]
+ * to get block job information for a given disk.
+ */
+static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, flags;
+    VALUE result;
+    virDomainBlockJobInfo info;
+    int r;
+
+    rb_scan_args(argc, argv, "11", &disk, &flags);
+
+    memset(&info, 0, sizeof(virDomainBlockJobInfo));
+
+    r = virDomainGetBlockJobInfo(ruby_libvirt_domain_get(d),
+                                 StringValueCStr(disk), &info,
+                                 ruby_libvirt_flag_to_uint(flags));
+    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                        "virDomainGetBlockJobInfo",
+                                        ruby_libvirt_connect_get(d)));
+
+    result = rb_class_new_instance(0, NULL, c_domain_block_job_info);
+    rb_iv_set(result, "@type", UINT2NUM(info.type));
+    rb_iv_set(result, "@bandwidth", ULONG2NUM(info.bandwidth));
+    rb_iv_set(result, "@cur", ULL2NUM(info.cur));
+    rb_iv_set(result, "@end", ULL2NUM(info.end));
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -3802,6 +3841,18 @@ void ruby_libvirt_domain_init(void)
     rb_define_attr(c_domain_block_stats, "wr_req", 1, 0);
     rb_define_attr(c_domain_block_stats, "wr_bytes", 1, 0);
     rb_define_attr(c_domain_block_stats, "errs", 1, 0);
+
+#if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
+    /*
+     * Class Libvirt::Domain::BlockJobInfo
+     */
+    c_domain_block_job_info = rb_define_class_under(c_domain, "BlockJobInfo",
+                                                    rb_cObject);
+    rb_define_attr(c_domain_block_job_info, "type", 1, 0);
+    rb_define_attr(c_domain_block_job_info, "bandwidth", 1, 0);
+    rb_define_attr(c_domain_block_job_info, "cur", 1, 0);
+    rb_define_attr(c_domain_block_job_info, "end", 1, 0);
+#endif
 
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
     /*
@@ -4742,5 +4793,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINBLOCKJOBSETSPEED
     rb_define_method(c_domain, "block_job_speed=",
                      libvirt_domain_block_job_speed_equal, 1);
+#endif
+#if HAVE_VIRDOMAINGETBLOCKJOBINFO
+    rb_define_method(c_domain, "block_job_info", libvirt_domain_block_job_info,
+                     -1);
 #endif
 }

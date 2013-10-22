@@ -100,6 +100,7 @@ libvirt_types = [ 'virNetworkPtr',
                   'virNodeDevicePtr',
                   'virStreamPtr',
                   'virTypedParameterPtr',
+                  'virDomainBlockJobInfoPtr',
                 ]
 
 libvirt_funcs = [ 'virStorageVolWipe',
@@ -215,6 +216,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainBlockCommit',
                   'virDomainBlockPull',
                   'virDomainBlockJobSetSpeed',
+                  'virDomainGetBlockJobInfo',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
