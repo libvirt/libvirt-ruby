@@ -3750,6 +3750,41 @@ error:
 }
 #endif
 
+#if HAVE_VIRDOMAINQEMUAGENTCOMMAND
+/*
+ * call-seq:
+ *   dom.qemu_agent_command(command, timeout=0, flags=0) -> String
+ *
+ * Call virDomainQemuAgentCommand[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainQemuAgentCommand]
+ * to run an arbitrary command on the Qemu Agent.
+ */
+static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
+{
+    VALUE command, timeout, flags;
+    char *ret;
+    VALUE result;
+    int exception;
+
+    rb_scan_args(argc, argv, "12", &command, &timeout, &flags);
+
+    ret = virDomainQemuAgentCommand(ruby_libvirt_domain_get(d),
+                                    StringValueCStr(command),
+                                    ruby_libvirt_flag_to_uint(timeout),
+                                    ruby_libvirt_flag_to_uint(flags));
+    _E(ret == NULL, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virDomainQemuAgentCommand",
+                                              ruby_libvirt_connect_get(d)));
+
+    result = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&ret, &exception);
+    free(ret);
+    if (exception) {
+        rb_jump_tag(exception);
+    }
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5125,5 +5160,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINLXCOPENNAMESPACE
     rb_define_method(c_domain, "lxc_open_namespace",
                      libvirt_domain_lxc_open_namespace, -1);
+#endif
+#if HAVE_VIRDOMAINQEMUAGENTCOMMAND
+    rb_define_method(c_domain, "qemu_agent_command",
+                     libvirt_domain_qemu_agent_command, -1);
 #endif
 }
