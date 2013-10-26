@@ -3446,6 +3446,28 @@ static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKJOBABORT
+/*
+ * call-seq:
+ *   dom.block_job_abort(disk, flags=0) -> nil
+ *
+ * Call virDomainBlockJobAbort[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockJobAbort]
+ * to cancel an active block job on the given disk.
+ */
+static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, flags;
+
+    rb_scan_args(argc, argv, "11", &disk, &flags);
+
+    ruby_libvirt_generate_call_nil(virDomainBlockJobAbort,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(disk),
+                                   ruby_libvirt_flag_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4797,5 +4819,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINGETBLOCKJOBINFO
     rb_define_method(c_domain, "block_job_info", libvirt_domain_block_job_info,
                      -1);
+#endif
+#if HAVE_VIRDOMAINBLOCKJOBABORT
+    rb_define_method(c_domain, "block_job_abort",
+                     libvirt_domain_block_job_abort, -1);
 #endif
 }

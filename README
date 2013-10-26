@@ -265,7 +265,6 @@ virDomainGetNumaParameters
 virDomainBlockStatsFlags
 virDomainSetInterfaceParameters
 virDomainGetInterfaceParameters
-virDomainBlockJobAbort
 virNetworkGetConnect
 virNetworkRef
 virInterfaceGetConnect
