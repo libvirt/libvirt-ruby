@@ -284,6 +284,5 @@ VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT
 VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT
 virDomainQemuAttach
 virDomainQemuAgentCommand
-virDomainLxcOpenNamespace
 virDomainLxcEnterNamespace
 virDomainLxcEnterSecurityLabel

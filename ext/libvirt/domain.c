@@ -20,11 +20,15 @@
  */
 
 #include <stdint.h>
+#include <unistd.h>
 #include <ruby.h>
 #include <ruby/st.h>
 #include <libvirt/libvirt.h>
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 #include <libvirt/libvirt-qemu.h>
+#endif
+#if HAVE_VIRDOMAINLXCOPENNAMESPACE
+#include <libvirt/libvirt-lxc.h>
 #endif
 #include <libvirt/virterror.h>
 #include "common.h"
@@ -3686,6 +3690,57 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINLXCOPENNAMESPACE
+static VALUE libvirt_domain_lxc_open_namespace(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+    int *fdlist = NULL;
+    int ret;
+    struct ruby_libvirt_ary_store_arg args;
+    int exception;
+    int i;
+    VALUE result;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    ret = virDomainLxcOpenNamespace(ruby_libvirt_domain_get(d),
+                                    &fdlist, ruby_libvirt_flag_to_uint(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainLxcOpenNamespace",
+                                          ruby_libvirt_connect_get(d)));
+
+    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&ret, &exception);
+    if (exception) {
+        goto error;
+    }
+
+    for (i = 0; i < ret; i++) {
+        args.arr = result;
+        args.index = i;
+        /* from reading the ruby sources, INT2NUM can't possibly throw an
+         * exception, so this can't leak.
+         */
+        args.elem = INT2NUM(fdlist[i]);
+
+        rb_protect(ruby_libvirt_ary_store_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            goto error;
+        }
+    }
+
+    free(fdlist);
+
+    return result;
+
+error:
+    for (i = 0; i < ret; i++) {
+        close(fdlist[i]);
+    }
+    free(fdlist);
+    rb_jump_tag(exception);
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5057,5 +5112,9 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_numa_parameters, -1);
     rb_define_method(c_domain, "numa_parameters=",
                      libvirt_domain_numa_parameters_equal, 1);
+#endif
+#if HAVE_VIRDOMAINLXCOPENNAMESPACE
+    rb_define_method(c_domain, "lxc_open_namespace",
+                     libvirt_domain_lxc_open_namespace, -1);
 #endif
 }

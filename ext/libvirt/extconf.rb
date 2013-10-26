@@ -416,6 +416,11 @@ if find_header("libvirt/libvirt-qemu.h")
   have_func("virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
 end
 
+if find_header("libvirt/libvirt-lxc.h")
+  have_library("virt-lxc", "virDomainLxcOpenNamespace")
+  have_func("virDomainLxcOpenNamespace", "libvirt/libvirt-lxc.h")
+end
+
 have_libvirt_consts(libvirt_consts)
 
 create_header
