@@ -143,7 +143,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
     ruby_libvirt_generate_call_string(virNodeDeviceGetXMLDesc,
                                       ruby_libvirt_connect_get(n),
                                       1, nodedevice_get(n),
-                                      ruby_libvirt_flag_to_uint(flags));
+                                      ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -164,9 +164,9 @@ static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
                                    ruby_libvirt_connect_get(n),
                                    nodedevice_get(n),
                                    ruby_libvirt_get_cstring_or_null(driver),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 #else
-    if (ruby_libvirt_flag_to_uint(flags) != 0) {
+    if (ruby_libvirt_value_to_uint(flags) != 0) {
         rb_raise(e_NoSupportError, "Non-zero flags not supported");
     }
 
@@ -256,7 +256,7 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
     nd = virNodeDeviceLookupSCSIHostByWWN(ruby_libvirt_connect_get(n),
                                           StringValueCStr(wwnn),
                                           StringValueCStr(wwpn),
-                                          ruby_libvirt_flag_to_uint(flags));
+                                          ruby_libvirt_value_to_uint(flags));
     if (nd == NULL) {
         return Qnil;
     }

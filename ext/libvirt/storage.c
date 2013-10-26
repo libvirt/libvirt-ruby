@@ -95,7 +95,7 @@ static VALUE libvirt_storage_pool_build(int argc, VALUE *argv, VALUE p)
     ruby_libvirt_generate_call_nil(virStoragePoolBuild,
                                    ruby_libvirt_connect_get(p),
                                    pool_get(p),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -128,7 +128,7 @@ static VALUE libvirt_storage_pool_create(int argc, VALUE *argv, VALUE p)
     ruby_libvirt_generate_call_nil(virStoragePoolCreate,
                                    ruby_libvirt_connect_get(p),
                                    pool_get(p),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -162,7 +162,7 @@ static VALUE libvirt_storage_pool_delete(int argc, VALUE *argv, VALUE p)
     ruby_libvirt_generate_call_nil(virStoragePoolDelete,
                                    ruby_libvirt_connect_get(p),
                                    pool_get(p),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -181,7 +181,7 @@ static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
     ruby_libvirt_generate_call_nil(virStoragePoolRefresh,
                                    ruby_libvirt_connect_get(p),
                                    pool_get(p),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -261,7 +261,7 @@ static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
     ruby_libvirt_generate_call_string(virStoragePoolGetXMLDesc,
                                       ruby_libvirt_connect_get(p),
                                       1, pool_get(p),
-                                      ruby_libvirt_flag_to_uint(flags));
+                                      ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -504,7 +504,7 @@ static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
     vol = virStorageVolCreateXML(pool_get(p), StringValueCStr(xml),
-                                 ruby_libvirt_flag_to_uint(flags));
+                                 ruby_libvirt_value_to_uint(flags));
     _E(vol == NULL, ruby_libvirt_create_error(e_Error, "virNetworkCreateXML",
                                               ruby_libvirt_connect_get(p)));
 
@@ -530,7 +530,7 @@ static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
 
     vol = virStorageVolCreateXMLFrom(pool_get(p), StringValueCStr(xml),
                                      vol_get(cloneval),
-                                     ruby_libvirt_flag_to_uint(flags));
+                                     ruby_libvirt_value_to_uint(flags));
     _E(vol == NULL, ruby_libvirt_create_error(e_Error,
                                               "virNetworkCreateXMLFrom",
                                               ruby_libvirt_connect_get(p)));
@@ -587,7 +587,7 @@ static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
     ruby_libvirt_generate_call_nil(virStorageVolDelete,
                                    ruby_libvirt_connect_get(v),
                                    vol_get(v),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 #if HAVE_VIRSTORAGEVOLWIPE
@@ -607,7 +607,7 @@ static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
     ruby_libvirt_generate_call_nil(virStorageVolWipe,
                                    ruby_libvirt_connect_get(v),
                                    vol_get(v),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
@@ -652,7 +652,7 @@ static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
     ruby_libvirt_generate_call_string(virStorageVolGetXMLDesc,
                                       ruby_libvirt_connect_get(v),
                                       1, vol_get(v),
-                                      ruby_libvirt_flag_to_uint(flags));
+                                      ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -701,7 +701,7 @@ static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
                                    ruby_libvirt_connect_get(v),
                                    vol_get(v), ruby_libvirt_stream_get(st),
                                    NUM2ULL(offset), NUM2ULL(length),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -721,7 +721,7 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
                                    ruby_libvirt_connect_get(v),
                                    vol_get(v), ruby_libvirt_stream_get(st),
                                    NUM2ULL(offset), NUM2ULL(length),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
@@ -742,7 +742,7 @@ static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
     ruby_libvirt_generate_call_nil(virStorageVolWipePattern,
                                    ruby_libvirt_connect_get(v),
                                    vol_get(v), NUM2UINT(alg),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
@@ -763,7 +763,7 @@ static VALUE libvirt_storage_vol_resize(int argc, VALUE *argv, VALUE v)
     ruby_libvirt_generate_call_nil(virStorageVolResize,
                                    ruby_libvirt_connect_get(v),
                                    vol_get(v), NUM2ULL(capacity),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 

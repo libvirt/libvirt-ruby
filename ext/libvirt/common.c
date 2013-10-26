@@ -401,7 +401,7 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
     return Qnil;
 }
 
-unsigned int ruby_libvirt_flag_to_uint(VALUE in)
+unsigned int ruby_libvirt_value_to_uint(VALUE in)
 {
     if (NIL_P(in)) {
         return 0;
@@ -410,13 +410,31 @@ unsigned int ruby_libvirt_flag_to_uint(VALUE in)
     return NUM2UINT(in);
 }
 
-VALUE ruby_libvirt_fixnum_set(VALUE in, int def)
+int ruby_libvirt_value_to_int(VALUE in)
 {
     if (NIL_P(in)) {
-        return INT2NUM(def);
+        return 0;
     }
 
-    return in;
+    return NUM2INT(in);
+}
+
+unsigned long ruby_libvirt_value_to_ulong(VALUE in)
+{
+    if (NIL_P(in)) {
+        return 0;
+    }
+
+    return NUM2ULONG(in);
+}
+
+unsigned long long ruby_libvirt_value_to_ulonglong(VALUE in)
+{
+    if (NIL_P(in)) {
+        return 0;
+    }
+
+    return NUM2ULL(in);
 }
 
 int ruby_libvirt_get_maxcpus(virConnectPtr conn)

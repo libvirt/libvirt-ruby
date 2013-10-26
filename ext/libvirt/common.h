@@ -121,8 +121,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
         struct ruby_libvirt_ary_push_arg arg;                           \
                                                                         \
         rb_scan_args(argc, argv, "01", &flags);                         \
-        flags = ruby_libvirt_fixnum_set(flags, 0);                      \
-        ret = listfunc(object, &list, NUM2UINT(flags));                 \
+        ret = listfunc(object, &list, ruby_libvirt_value_to_uint(flags)); \
         _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, #listfunc, ruby_libvirt_connect_get(val))); \
         result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&ret, &exception); \
         if (exception) {                                                \
@@ -203,8 +202,10 @@ void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
                                  VALUE hash);
 void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags);
 
-VALUE ruby_libvirt_fixnum_set(VALUE in, int def);
-unsigned int ruby_libvirt_flag_to_uint(VALUE in);
+unsigned int ruby_libvirt_value_to_uint(VALUE in);
+int ruby_libvirt_value_to_int(VALUE in);
+unsigned long ruby_libvirt_value_to_ulong(VALUE in);
+unsigned long long ruby_libvirt_value_to_ulonglong(VALUE in);
 
 VALUE ruby_libvirt_ary_new2_wrap(VALUE arg);
 struct ruby_libvirt_ary_push_arg {

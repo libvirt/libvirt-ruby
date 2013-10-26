@@ -108,7 +108,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
     ruby_libvirt_generate_call_string(virSecretGetXMLDesc,
                                       ruby_libvirt_connect_get(s), 1,
                                       secret_get(s),
-                                      ruby_libvirt_flag_to_uint(flags));
+                                      ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -132,7 +132,7 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
                                    secret_get(s),
                                    (unsigned char *)RSTRING_PTR(value),
                                    RSTRING_LEN(value),
-                                   ruby_libvirt_flag_to_uint(flags));
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
@@ -192,7 +192,7 @@ static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
     rb_scan_args(argc, argv, "01", &flags);
 
     val = virSecretGetValue(secret_get(s), &value_size,
-                            ruby_libvirt_flag_to_uint(flags));
+                            ruby_libvirt_value_to_uint(flags));
 
     _E(val == NULL, ruby_libvirt_create_error(e_RetrieveError,
                                               "virSecretGetValue",

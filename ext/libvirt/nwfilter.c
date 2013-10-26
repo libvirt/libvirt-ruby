@@ -108,7 +108,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
     ruby_libvirt_generate_call_string(virNWFilterGetXMLDesc,
                                       ruby_libvirt_connect_get(n), 1,
                                       nwfilter_get(n),
-                                      ruby_libvirt_flag_to_uint(flags));
+                                      ruby_libvirt_value_to_uint(flags));
 }
 
 /*
