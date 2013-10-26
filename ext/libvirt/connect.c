@@ -2050,40 +2050,29 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
                                                    int intparam, void *params,
                                                    int *nparams,
                                                    unsigned int flags),
-                                void *(*alloc_stats)(int nparams),
-                                VALUE (*hash_set)(VALUE in))
+                                unsigned int statsize,
+                                void (*hash_set)(void *voidparams, int i,
+                                                 VALUE result))
 {
-    VALUE flags_val;
-    VALUE intparam_val;
-    int intparam;
-    unsigned int flags;
+    VALUE intparam;
+    VALUE flags;
     int nparams;
     char *errname;
     VALUE result;
     void *params;
     int i;
-    int exception;
-    struct hash_field hf;
 
-    rb_scan_args(argc, argv, "02", &intparam_val, &flags_val);
-
-    /* here we convert intparam and flags to an integer and unsigned,
-     * respectively.  That way if NUM2*() throws an exception, it happens
-     * early on, before we have allocated any memory.
-     */
-    intparam = NUM2INT(ruby_libvirt_fixnum_set(intparam_val, -1));
-    flags = NUM2UINT(ruby_libvirt_fixnum_set(flags_val, 0));
+    rb_scan_args(argc, argv, "02", &intparam, &flags);
 
     /* we first call out to the get_stats callback with NULL params and 0
      * nparams to find out how many parameters we need
      */
     nparams = 0;
-    errname = get_stats(ruby_libvirt_connect_get(c), intparam, NULL, &nparams,
-                        flags);
-    if (errname != NULL) {
-        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname,
-                                               ruby_libvirt_connect_get(c)));
-    }
+    errname = get_stats(ruby_libvirt_connect_get(c),
+                        ruby_libvirt_flag_to_uint(intparam), NULL, &nparams,
+                        ruby_libvirt_flag_to_uint(flags));
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  ruby_libvirt_connect_get(c)));
 
     result = rb_hash_new();
 
@@ -2092,48 +2081,29 @@ static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
     }
 
     /* Now we allocate the params array */
-    params = alloc_stats(nparams);
+    params = alloca(nparams * statsize);
 
-    errname = get_stats(ruby_libvirt_connect_get(c), intparam, params, &nparams,
-                        flags);
-    if (errname != NULL) {
-        xfree(params);
-        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname,
-                                               ruby_libvirt_connect_get(c)));
-    }
+    errname = get_stats(ruby_libvirt_connect_get(c),
+                        ruby_libvirt_flag_to_uint(intparam), params, &nparams,
+                        ruby_libvirt_flag_to_uint(flags));
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  ruby_libvirt_connect_get(c)));
 
     for (i = 0; i < nparams; i++) {
-        hf.params = params;
-        hf.result = result;
-        hf.i = i;
-        rb_protect(hash_set, (VALUE)&hf, &exception);
-        if (exception) {
-            xfree(params);
-            rb_jump_tag(exception);
-        }
+        hash_set(params, result, i);
     }
-
-    xfree(params);
 
     return result;
 }
 #endif
 
 #if HAVE_VIRNODEGETCPUSTATS
-static void *cpu_alloc_stats(int nparams)
+static void cpu_hash_set(void *voidparams, int i, VALUE result)
 {
-    return ALLOC_N(virNodeCPUStats, nparams);
-}
+    virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)voidparams;
 
-static VALUE cpu_hash_set(VALUE in)
-{
-    struct hash_field *hf = (struct hash_field *)in;
-    virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)hf->params;
-
-    rb_hash_aset(hf->result, rb_str_new2(params[hf->i].field),
-                 ULL2NUM(params[hf->i].value));
-
-    return Qnil;
+    rb_hash_aset(result, rb_str_new2(params[i].field),
+                 ULL2NUM(params[i].value));
 }
 
 static char *cpu_get_stats(virConnectPtr conn, int intparam, void *params,
@@ -2155,26 +2125,18 @@ static char *cpu_get_stats(virConnectPtr conn, int intparam, void *params,
  */
 static VALUE libvirt_connect_node_cpu_stats(int argc, VALUE *argv, VALUE c)
 {
-    return internal_get_stats(c, argc, argv, cpu_get_stats, cpu_alloc_stats,
-                              cpu_hash_set);
+    return internal_get_stats(c, argc, argv, cpu_get_stats,
+                              sizeof(virNodeCPUStats), cpu_hash_set);
 }
 #endif
 
 #if HAVE_VIRNODEGETMEMORYSTATS
-static void *memory_alloc_stats(int nparams)
+static void memory_hash_set(void *voidparams, int i, VALUE result)
 {
-    return ALLOC_N(virNodeMemoryStats, nparams);
-}
+    virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)voidparams;
 
-static VALUE memory_hash_set(VALUE in)
-{
-    struct hash_field *hf = (struct hash_field *)in;
-    virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)hf->params;
-
-    rb_hash_aset(hf->result, rb_str_new2(params[hf->i].field),
-                 ULL2NUM(params[hf->i].value));
-
-    return Qnil;
+    rb_hash_aset(result, rb_str_new2(params[i].field),
+                 ULL2NUM(params[i].value));
 }
 
 static char *memory_get_stats(virConnectPtr conn, int intparam, void *params,
@@ -2197,7 +2159,7 @@ static char *memory_get_stats(virConnectPtr conn, int intparam, void *params,
 static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
 {
     return internal_get_stats(c, argc, argv, memory_get_stats,
-                              memory_alloc_stats, memory_hash_set);
+                              sizeof(virNodeMemoryStats), memory_hash_set);
 }
 #endif
 
