@@ -201,7 +201,6 @@ virConnectUnregisterCloseCallback
 virDomainGetConnect
 virDomainRef
 virDomainRestoreFlags
-virDomainGetCPUStats
 virNetworkGetConnect
 virNetworkRef
 virInterfaceGetConnect

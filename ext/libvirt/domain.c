@@ -3948,6 +3948,99 @@ static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRNODEGETCPUSTATS
+/*
+ * call-seq:
+ *   dom.cpu_stats(start_cpu=-1, numcpus=1, flags=0) -> Hash
+ *
+ * Call virDomainGetCPUStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetCPUStats]
+ * to get statistics about CPU usage attributable to a single domain.  If
+ * start_cpu is -1, then numcpus must be 1 and statistics attributable to the
+ * entire domain is returned.  If start_cpu is any positive number, then it
+ * represents which CPU to start with and numcpus represents how many
+ * consecutive processors to query.
+ */
+static VALUE libvirt_domain_cpu_stats(int argc, VALUE *argv, VALUE d)
+{
+    VALUE start_cpu, numcpus, flags, result, tmp;
+    int ret, nparams, j;
+    unsigned int i;
+    virTypedParameterPtr params;
+
+    rb_scan_args(argc, argv, "03", &start_cpu, &numcpus, &flags);
+
+    if (NIL_P(start_cpu)) {
+        start_cpu = INT2NUM(-1);
+    }
+
+    if (NIL_P(numcpus)) {
+        numcpus = INT2NUM(1);
+    }
+
+    if (NIL_P(flags)) {
+        flags = INT2NUM(0);
+    }
+
+    if (NUM2INT(start_cpu) == -1) {
+        nparams = virDomainGetCPUStats(ruby_libvirt_domain_get(d), NULL, 0,
+                                       NUM2INT(start_cpu), NUM2UINT(numcpus),
+                                       NUM2UINT(flags));
+        _E(nparams < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                                  "virDomainGetCPUStats",
+                                                  ruby_libvirt_connect_get(d)));
+
+        params = alloca(nparams * sizeof(virTypedParameter));
+
+        ret = virDomainGetCPUStats(ruby_libvirt_domain_get(d), params, nparams,
+                                   NUM2INT(start_cpu), NUM2UINT(numcpus),
+                                   NUM2UINT(flags));
+        _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virDomainGetCPUStats",
+                                              ruby_libvirt_connect_get(d)));
+
+        result = rb_hash_new();
+        tmp = rb_hash_new();
+        for (j = 0; j < nparams; j++) {
+            ruby_libvirt_typed_params_to_hash(params, j, tmp);
+        }
+
+        rb_hash_aset(result, rb_str_new2("all"), tmp);
+    }
+    else {
+        nparams = virDomainGetCPUStats(ruby_libvirt_domain_get(d), NULL, 0, 0,
+                                       1, NUM2UINT(flags));
+        _E(nparams < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                                  "virDomainGetCPUStats",
+                                                  ruby_libvirt_connect_get(d)));
+
+        params = alloca(nparams * NUM2UINT(numcpus) * sizeof(virTypedParameter));
+
+        ret = virDomainGetCPUStats(ruby_libvirt_domain_get(d), params, nparams,
+                                   NUM2INT(start_cpu), NUM2UINT(numcpus),
+                                   NUM2UINT(flags));
+        _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                              "virDomainGetCPUStats",
+                                              ruby_libvirt_connect_get(d)));
+
+        result = rb_hash_new();
+        for (i = 0; i < NUM2UINT(numcpus); i++) {
+            if (params[i * nparams].type == 0) {
+                /* cpu is not in the map */
+                continue;
+            }
+            tmp = rb_hash_new();
+            for (j = 0; j < nparams; j++) {
+                ruby_libvirt_typed_params_to_hash(params, j, tmp);
+            }
+
+            rb_hash_aset(result, INT2NUM(NUM2UINT(start_cpu) + i), tmp);
+        }
+    }
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5404,5 +5497,8 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_READY
     rb_define_const(c_domain, "BLOCK_JOB_READY",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_READY));
+#endif
+#if HAVE_VIRDOMAINGETCPUSTATS
+    rb_define_method(c_domain, "cpu_stats", libvirt_domain_cpu_stats, -1);
 #endif
 }
