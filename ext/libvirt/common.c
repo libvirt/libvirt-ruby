@@ -217,59 +217,57 @@ exception:
     return Qnil;
 }
 
-void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
-                                 VALUE hash)
+void ruby_libvirt_typed_params_to_hash(void *voidparams, int i, VALUE hash)
 {
-    int i;
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
     VALUE val;
 
-    for (i = 0; i < nparams; i++) {
-        switch(params[i].type) {
-        case VIR_TYPED_PARAM_INT:
-            val = INT2NUM(params[i].value.i);
-            break;
-        case VIR_TYPED_PARAM_UINT:
-            val = UINT2NUM(params[i].value.ui);
-            break;
-        case VIR_TYPED_PARAM_LLONG:
-            val = LL2NUM(params[i].value.l);
-            break;
-        case VIR_TYPED_PARAM_ULLONG:
-            val = ULL2NUM(params[i].value.ul);
-            break;
-        case VIR_TYPED_PARAM_DOUBLE:
-            val = rb_float_new(params[i].value.d);
-            break;
-        case VIR_TYPED_PARAM_BOOLEAN:
-            val = (params[i].value.b == 0) ? Qfalse : Qtrue;
-            break;
-        case VIR_TYPED_PARAM_STRING:
-            val = rb_str_new2(params[i].value.s);
-            break;
-        default:
-            rb_raise(rb_eArgError, "Invalid parameter type");
-        }
-
-        rb_hash_aset(hash, rb_str_new2(params[i].field), val);
+    switch (params[i].type) {
+    case VIR_TYPED_PARAM_INT:
+        val = INT2NUM(params[i].value.i);
+        break;
+    case VIR_TYPED_PARAM_UINT:
+        val = UINT2NUM(params[i].value.ui);
+        break;
+    case VIR_TYPED_PARAM_LLONG:
+        val = LL2NUM(params[i].value.l);
+        break;
+    case VIR_TYPED_PARAM_ULLONG:
+        val = ULL2NUM(params[i].value.ul);
+        break;
+    case VIR_TYPED_PARAM_DOUBLE:
+        val = rb_float_new(params[i].value.d);
+        break;
+    case VIR_TYPED_PARAM_BOOLEAN:
+        val = (params[i].value.b == 0) ? Qfalse : Qtrue;
+        break;
+    case VIR_TYPED_PARAM_STRING:
+        val = rb_str_new2(params[i].value.s);
+        break;
+    default:
+        rb_raise(rb_eArgError, "Invalid parameter type");
     }
+
+    rb_hash_aset(hash, rb_str_new2(params[i].field), val);
 }
 
-VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
-                                        void *opaque,
-                                        char *(*nparams_cb)(VALUE d,
-                                                            unsigned int flags,
-                                                            void *opaque,
-                                                            int *nparams),
-                                        char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        virTypedParameterPtr params,
-                                                        int *nparams,
-                                                        void *opaque))
+VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
+                                  unsigned int typesize,
+                                  char *(*nparams_cb)(VALUE d,
+                                                      unsigned int flags,
+                                                      void *opaque,
+                                                      int *nparams),
+                                  char *(*get_cb)(VALUE d, unsigned int flags,
+                                                  void *voidparams,
+                                                  int *nparams, void *opaque),
+                                  void (*hash_set)(void *voidparams, int i,
+                                                   VALUE result))
 {
     int nparams = 0;
-    virTypedParameterPtr params;
+    void *params;
     VALUE result;
     char *errname;
+    int i;
 
     errname = nparams_cb(d, flags, opaque, &nparams);
     _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
@@ -281,15 +279,35 @@ VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
         return result;
     }
 
-    params = alloca(sizeof(virTypedParameter) * nparams);
+    params = alloca(typesize * nparams);
 
     errname = get_cb(d, flags, params, &nparams, opaque);
     _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
                                                   ruby_libvirt_connect_get(d)));
 
-    ruby_libvirt_params_to_hash(params, nparams, result);
+    for (i = 0; i < nparams; i++) {
+        hash_set(params, i, result);
+    }
 
     return result;
+}
+
+VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
+                                        void *opaque,
+                                        char *(*nparams_cb)(VALUE d,
+                                                            unsigned int flags,
+                                                            void *opaque,
+                                                            int *nparams),
+                                        char *(*get_cb)(VALUE d,
+                                                        unsigned int flags,
+                                                        void *params,
+                                                        int *nparams,
+                                                        void *opaque))
+{
+    return ruby_libvirt_get_parameters(d, flags, opaque,
+                                       sizeof(virTypedParameter), nparams_cb,
+                                       get_cb,
+                                       ruby_libvirt_typed_params_to_hash);
 }
 
 void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags)
@@ -319,7 +337,7 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
                                                             int *nparams),
                                         char *(*get_cb)(VALUE d,
                                                         unsigned int flags,
-                                                        virTypedParameterPtr params,
+                                                        void *voidparams,
                                                         int *nparams,
                                                         void *opaque),
                                         char *(*set_cb)(VALUE d,

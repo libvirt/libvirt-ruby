@@ -1895,10 +1895,11 @@ static char *scheduler_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *scheduler_get(VALUE d, unsigned int flags,
-                           virTypedParameterPtr params, int *nparams,
-                           void *opaque)
+static char *scheduler_get(VALUE d, unsigned int flags, void *voidparams,
+                           int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
+
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
                                              nparams, flags) < 0) {
@@ -1996,9 +1997,11 @@ static char *memory_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *memory_get(VALUE d, unsigned int flags,
-                        virTypedParameterPtr params, int *nparams, void *opaque)
+static char *memory_get(VALUE d, unsigned int flags, void *voidparams,
+                        int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
+
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), params,
                                      nparams, flags) < 0) {
@@ -2081,9 +2084,11 @@ static char *blkio_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *blkio_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
+static char *blkio_get(VALUE d, unsigned int flags, void *voidparams,
                        int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
+
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), params, nparams,
                                     flags) < 0) {
@@ -3136,8 +3141,11 @@ struct params_to_hash_arg {
 static VALUE params_to_hash(VALUE in)
 {
     struct params_to_hash_arg *args = (struct params_to_hash_arg *)in;
+    int i;
 
-    ruby_libvirt_params_to_hash(args->params, args->nparams, args->result);
+    for (i = 0; i < args->nparams; i++) {
+        ruby_libvirt_typed_params_to_hash(args->params, i, args->result);
+    }
 
     return Qnil;
 }
@@ -3213,10 +3221,10 @@ static char *iotune_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *iotune_get(VALUE d, unsigned int flags,
-                        virTypedParameterPtr params, int *nparams,
-                        void *opaque)
+static char *iotune_get(VALUE d, unsigned int flags, void *voidparams,
+                        int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
     VALUE disk = (VALUE)opaque;
 
     if (virDomainGetBlockIoTune(ruby_libvirt_domain_get(d),
@@ -3466,10 +3474,10 @@ static char *interface_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *interface_get(VALUE d, unsigned int flags,
-                           virTypedParameterPtr params, int *nparams,
-                           void *opaque)
+static char *interface_get(VALUE d, unsigned int flags, void *voidparams,
+                           int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
     VALUE interface = (VALUE)opaque;
 
     if (virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
@@ -3568,10 +3576,10 @@ static char *block_stats_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *block_stats_get(VALUE d, unsigned int flags,
-                             virTypedParameterPtr params, int *nparams,
-                             void *opaque)
+static char *block_stats_get(VALUE d, unsigned int flags, void *voidparams,
+                             int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
     VALUE disk = (VALUE)opaque;
 
     if (virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
@@ -3618,9 +3626,11 @@ static char *numa_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *numa_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
+static char *numa_get(VALUE d, unsigned int flags, void *voidparams,
                       int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
+
     if (virDomainGetNumaParameters(ruby_libvirt_domain_get(d), params, nparams,
                                    flags) < 0) {
         return "virDomainGetNumaParameters";

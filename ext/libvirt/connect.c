@@ -2041,67 +2041,8 @@ static VALUE libvirt_connect_interface_change_rollback(int argc, VALUE *argv,
 }
 #endif
 
-#if HAVE_VIRNODEGETCPUSTATS || HAVE_VIRNODEGETMEMORYSTATS
-struct hash_field {
-    void *params;
-    int i;
-    VALUE result;
-};
-
-static VALUE internal_get_stats(VALUE c, int argc, VALUE *argv,
-                                char *(*get_stats)(virConnectPtr conn,
-                                                   int intparam, void *params,
-                                                   int *nparams,
-                                                   unsigned int flags),
-                                unsigned int statsize,
-                                void (*hash_set)(void *voidparams, int i,
-                                                 VALUE result))
-{
-    VALUE intparam;
-    VALUE flags;
-    int nparams;
-    char *errname;
-    VALUE result;
-    void *params;
-    int i;
-
-    rb_scan_args(argc, argv, "02", &intparam, &flags);
-
-    /* we first call out to the get_stats callback with NULL params and 0
-     * nparams to find out how many parameters we need
-     */
-    nparams = 0;
-    errname = get_stats(ruby_libvirt_connect_get(c),
-                        ruby_libvirt_value_to_int(intparam), NULL, &nparams,
-                        ruby_libvirt_value_to_uint(flags));
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(c)));
-
-    result = rb_hash_new();
-
-    if (nparams == 0) {
-        return result;
-    }
-
-    /* Now we allocate the params array */
-    params = alloca(nparams * statsize);
-
-    errname = get_stats(ruby_libvirt_connect_get(c),
-                        ruby_libvirt_value_to_int(intparam), params, &nparams,
-                        ruby_libvirt_value_to_uint(flags));
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(c)));
-
-    for (i = 0; i < nparams; i++) {
-        hash_set(params, result, i);
-    }
-
-    return result;
-}
-#endif
-
 #if HAVE_VIRNODEGETCPUSTATS
-static void cpu_hash_set(void *voidparams, int i, VALUE result)
+static void cpu_stats_set(void *voidparams, int i, VALUE result)
 {
     virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)voidparams;
 
@@ -2109,10 +2050,27 @@ static void cpu_hash_set(void *voidparams, int i, VALUE result)
                  ULL2NUM(params[i].value));
 }
 
-static char *cpu_get_stats(virConnectPtr conn, int intparam, void *params,
-                           int *nparams, unsigned int flags)
+static char *cpu_stats_nparams(VALUE d, unsigned int flags, void *opaque,
+                               int *nparams)
 {
-    if (virNodeGetCPUStats(conn, intparam, params, nparams, flags) < 0) {
+    int intparam = *((int *)opaque);
+
+    if (virNodeGetCPUStats(ruby_libvirt_connect_get(d), intparam, NULL,
+                           nparams, flags) < 0) {
+        return "virNodeGetCPUStats";
+    }
+
+    return NULL;
+}
+
+static char *cpu_stats_get(VALUE d, unsigned int flags, void *voidparams,
+                           int *nparams, void *opaque)
+{
+    int intparam = *((int *)opaque);
+    virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)voidparams;
+
+    if (virNodeGetCPUStats(ruby_libvirt_connect_get(d), intparam, params,
+                           nparams, flags) < 0) {
         return "virNodeGetCPUStats";
     }
 
@@ -2128,13 +2086,22 @@ static char *cpu_get_stats(virConnectPtr conn, int intparam, void *params,
  */
 static VALUE libvirt_connect_node_cpu_stats(int argc, VALUE *argv, VALUE c)
 {
-    return internal_get_stats(c, argc, argv, cpu_get_stats,
-                              sizeof(virNodeCPUStats), cpu_hash_set);
+    VALUE intparam, flags;
+    int tmp;
+
+    rb_scan_args(argc, argv, "02", &intparam, &flags);
+
+    tmp = ruby_libvirt_value_to_int(intparam);
+
+    return ruby_libvirt_get_parameters(c, ruby_libvirt_value_to_uint(flags),
+                                       (void *)&tmp, sizeof(virNodeCPUStats),
+                                       cpu_stats_nparams, cpu_stats_get,
+                                       cpu_stats_set);
 }
 #endif
 
 #if HAVE_VIRNODEGETMEMORYSTATS
-static void memory_hash_set(void *voidparams, int i, VALUE result)
+static void memory_stats_set(void *voidparams, int i, VALUE result)
 {
     virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)voidparams;
 
@@ -2142,10 +2109,27 @@ static void memory_hash_set(void *voidparams, int i, VALUE result)
                  ULL2NUM(params[i].value));
 }
 
-static char *memory_get_stats(virConnectPtr conn, int intparam, void *params,
-                              int *nparams, unsigned int flags)
+static char *memory_stats_nparams(VALUE d, unsigned int flags, void *opaque,
+                                  int *nparams)
 {
-    if (virNodeGetMemoryStats(conn, intparam, params, nparams, flags) < 0) {
+    int intparam = *((int *)opaque);
+
+    if (virNodeGetMemoryStats(ruby_libvirt_connect_get(d), intparam, NULL,
+                              nparams, flags) < 0) {
+        return "virNodeGetMemoryStats";
+    }
+
+    return NULL;
+}
+
+static char *memory_stats_get(VALUE d, unsigned int flags, void *voidparams,
+                              int *nparams, void *opaque)
+{
+    int intparam = *((int *)opaque);
+    virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)voidparams;
+
+    if (virNodeGetMemoryStats(ruby_libvirt_connect_get(d), intparam, params,
+                           nparams, flags) < 0) {
         return "virNodeGetMemoryStats";
     }
 
@@ -2161,8 +2145,17 @@ static char *memory_get_stats(virConnectPtr conn, int intparam, void *params,
  */
 static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
 {
-    return internal_get_stats(c, argc, argv, memory_get_stats,
-                              sizeof(virNodeMemoryStats), memory_hash_set);
+    VALUE intparam, flags;
+    int tmp;
+
+    rb_scan_args(argc, argv, "02", &intparam, &flags);
+
+    tmp = ruby_libvirt_value_to_int(intparam);
+
+    return ruby_libvirt_get_parameters(c, ruby_libvirt_value_to_uint(flags),
+                                       (void *)&tmp, sizeof(virNodeMemoryStats),
+                                       memory_stats_nparams, memory_stats_get,
+                                       memory_stats_set);
 }
 #endif
 
@@ -2250,10 +2243,11 @@ static char *node_memory_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *node_memory_get(VALUE d, unsigned int flags,
-                             virTypedParameterPtr params, int *nparams,
-                             void *opaque)
+static char *node_memory_get(VALUE d, unsigned int flags, void *voidparams,
+                             int *nparams, void *opaque)
 {
+    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
+
     if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    flags) < 0) {
         return "virNodeGetMemoryParameters";
