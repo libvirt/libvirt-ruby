@@ -21,6 +21,9 @@
 
 #include <ruby.h>
 #include <libvirt/libvirt.h>
+#if HAVE_VIRDOMAINQEMUATTACH
+#include <libvirt/libvirt-qemu.h>
+#endif
 #include <libvirt/virterror.h>
 #include "extconf.h"
 #include "common.h"
@@ -2603,6 +2606,30 @@ static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
 }
 #endif
 
+#if HAVE_VIRDOMAINQEMUATTACH
+/*
+ * call-seq:
+ *   conn.qemu_attach(pid, flags=0) -> Libvirt::Domain
+ *
+ * Call virDomainQemuAttach[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainQemuAttach]
+ * to attach to the Qemu process pid.
+ */
+static VALUE libvirt_connect_qemu_attach(int argc, VALUE *argv, VALUE c)
+{
+    VALUE pid, flags;
+    virDomainPtr dom;
+
+    rb_scan_args(argc, argv, "11", &pid, &flags);
+
+    dom = virDomainQemuAttach(ruby_libvirt_connect_get(c), NUM2UINT(pid),
+                              ruby_libvirt_flag_to_uint(flags));
+    _E(dom == NULL, ruby_libvirt_create_error(e_Error, "virDomainQemuAttach",
+                                              ruby_libvirt_connect_get(c)));
+
+    return ruby_libvirt_domain_new(dom, c);
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3231,5 +3258,8 @@ void ruby_libvirt_connect_init(void)
 #if HAVE_VIRDOMAINCREATEXMLWITHFILES
     rb_define_method(c_connect, "create_domain_xml_with_files",
                      libvirt_connect_create_domain_xml_with_files, -1);
+#endif
+#if HAVE_VIRDOMAINQEMUATTACH
+    rb_define_method(c_connect, "qemu_attach", libvirt_connect_qemu_attach, -1);
 #endif
 }

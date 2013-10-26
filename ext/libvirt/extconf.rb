@@ -414,6 +414,7 @@ have_libvirt_funcs(libvirt_funcs)
 if find_header("libvirt/libvirt-qemu.h")
   have_library("virt-qemu", "virDomainQemuMonitorCommand")
   have_func("virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
+  have_func("virDomainQemuAttach", "libvirt/libvirt-qemu.h")
 end
 
 if find_header("libvirt/libvirt-lxc.h")
