@@ -5164,4 +5164,24 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "qemu_agent_command",
                      libvirt_domain_qemu_agent_command, -1);
 #endif
+#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK
+    rb_define_const(c_domain, "QEMU_AGENT_COMMAND_BLOCK",
+                    INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT
+    rb_define_const(c_domain, "QEMU_AGENT_COMMAND_DEFAULT",
+                    INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT
+    rb_define_const(c_domain, "QEMU_AGENT_COMMAND_NOWAIT",
+                    INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT
+    rb_define_const(c_domain, "QEMU_MONITOR_COMMAND_DEFAULT",
+                    INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP
+    rb_define_const(c_domain, "QEMU_MONITOR_COMMAND_HMP",
+                    INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP));
+#endif
 }

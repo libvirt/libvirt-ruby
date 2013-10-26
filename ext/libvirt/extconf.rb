@@ -4,14 +4,6 @@ RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
 RbConfig::MAKEFILE_CONFIG['CCDLFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
 RbConfig::MAKEFILE_CONFIG['EXTDLDFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
 
-def have_libvirt_funcs(funcs)
-    funcs.each { |f| have_func(f, "libvirt/libvirt.h") }
-end
-
-def have_libvirt_types(types)
-    types.each { |t| have_type(t, "libvirt/libvirt.h") }
-end
-
 # older mkmf does not have checking_message, so implement our own here
 def libvirt_checking_message(target, place = nil, opt = nil)
   [["in", place], ["with", opt]].inject("#{target}") do |msg, (pre, noun)|
@@ -42,10 +34,6 @@ SRC
       false
     end
   end
-end
-
-def have_libvirt_consts(consts)
-  consts.each { |c| have_const(c, ["libvirt/libvirt.h", "libvirt/virterror.h"]) }
 end
 
 extension_name = '_libvirt'
@@ -223,6 +211,15 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainGetNumaParameters',
                 ]
 
+libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',
+                       'virDomainQemuAttach',
+                       'virDomainQemuAgentCommand'
+                     ]
+
+libvirt_lxc_funcs = [
+                     'virDomainLxcOpenNamespace'
+                    ]
+
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_MIGRATE_PEER2PEER',
                    'VIR_MIGRATE_TUNNELLED',
@@ -251,31 +248,6 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_EVENT_ID_REBOOT',
                    'VIR_DOMAIN_EVENT_ID_RTC_CHANGE',
                    'VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON',
-                   'VIR_FROM_VMWARE',
-                   'VIR_FROM_AUDIT',
-                   'VIR_FROM_SYSINFO',
-                   'VIR_FROM_STREAMS',
-                   'VIR_FROM_XENAPI',
-                   'VIR_FROM_HOOK',
-                   'VIR_ERR_HOOK_SCRIPT_FAILED',
-                   'VIR_ERR_MIGRATE_PERSIST_FAILED',
-                   'VIR_ERR_OPERATION_TIMEOUT',
-                   'VIR_ERR_CONFIG_UNSUPPORTED',
-                   'VIR_FROM_XENXM',
-                   'VIR_ERR_OPERATION_INVALID',
-                   'VIR_ERR_NO_SECURITY_MODEL',
-                   'VIR_ERR_AUTH_FAILED',
-                   'VIR_FROM_PHYP',
-                   'VIR_FROM_ESX',
-                   'VIR_FROM_ONE',
-                   'VIR_FROM_VBOX',
-                   'VIR_FROM_LXC',
-                   'VIR_FROM_UML',
-                   'VIR_FROM_NETWORK',
-                   'VIR_FROM_DOMAIN',
-                   'VIR_FROM_STATS_LINUX',
-                   'VIR_FROM_XEN_INOTIFY',
-                   'VIR_FROM_SECURITY',
                    'VIR_DOMAIN_AFFECT_CURRENT',
                    'VIR_DOMAIN_MEM_CURRENT',
                    'VIR_DOMAIN_EVENT_ID_CONTROL_ERROR',
@@ -409,21 +381,56 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX',
                  ]
 
-have_libvirt_types(libvirt_types)
-have_libvirt_funcs(libvirt_funcs)
+virterror_consts = [
+                    'VIR_FROM_VMWARE',
+                    'VIR_FROM_AUDIT',
+                    'VIR_FROM_SYSINFO',
+                    'VIR_FROM_STREAMS',
+                    'VIR_FROM_XENAPI',
+                    'VIR_FROM_HOOK',
+                    'VIR_ERR_HOOK_SCRIPT_FAILED',
+                    'VIR_ERR_MIGRATE_PERSIST_FAILED',
+                    'VIR_ERR_OPERATION_TIMEOUT',
+                    'VIR_ERR_CONFIG_UNSUPPORTED',
+                    'VIR_FROM_XENXM',
+                    'VIR_ERR_OPERATION_INVALID',
+                    'VIR_ERR_NO_SECURITY_MODEL',
+                    'VIR_ERR_AUTH_FAILED',
+                    'VIR_FROM_PHYP',
+                    'VIR_FROM_ESX',
+                    'VIR_FROM_ONE',
+                    'VIR_FROM_VBOX',
+                    'VIR_FROM_LXC',
+                    'VIR_FROM_UML',
+                    'VIR_FROM_NETWORK',
+                    'VIR_FROM_DOMAIN',
+                    'VIR_FROM_STATS_LINUX',
+                    'VIR_FROM_XEN_INOTIFY',
+                    'VIR_FROM_SECURITY',
+                   ]
+
+libvirt_qemu_consts = [
+                       'VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK',
+                       'VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT',
+                       'VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT',
+                       'VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT',
+                       'VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP',
+                      ]
+
+libvirt_types.each { |t| have_type(t, "libvirt/libvirt.h") }
+libvirt_funcs.each { |f| have_func(f, "libvirt/libvirt.h") }
+libvirt_consts.each { |c| have_const(c, ["libvirt/libvirt.h"]) }
+virterror_consts.each { |c| have_const(c, ["libvirt/virterror.h"]) }
 if find_header("libvirt/libvirt-qemu.h")
   have_library("virt-qemu", "virDomainQemuMonitorCommand")
-  qemu_funcs = [ 'virDomainQemuMonitorCommand', 'virDomainQemuAttach',
-                 'virDomainQemuAgentCommand' ]
-  qemu_funcs.each { |f| have_func(f, "libvirt/libvirt-qemu.h") }
+  libvirt_qemu_funcs.each { |f| have_func(f, "libvirt/libvirt-qemu.h") }
+  libvirt_qemu_consts.each { |c| have_const(c, ["libvirt/libvirt-qemu.h"]) }
 end
 
 if find_header("libvirt/libvirt-lxc.h")
   have_library("virt-lxc", "virDomainLxcOpenNamespace")
-  have_func("virDomainLxcOpenNamespace", "libvirt/libvirt-lxc.h")
+  libvirt_lxc_funcs.each{ |f| have_func(f, "libvirt/libvirt-lxc.h") }
 end
-
-have_libvirt_consts(libvirt_consts)
 
 create_header
 create_makefile(extension_name)
