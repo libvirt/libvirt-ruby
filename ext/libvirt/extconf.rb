@@ -217,7 +217,8 @@ libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',
                      ]
 
 libvirt_lxc_funcs = [
-                     'virDomainLxcOpenNamespace'
+                     'virDomainLxcOpenNamespace',
+                     'virDomainLxcEnterNamespace',
                     ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

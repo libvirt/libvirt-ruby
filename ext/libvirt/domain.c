@@ -3784,6 +3784,75 @@ static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINLXCENTERNAMESPACE
+/*
+ * call-seq:
+ *   dom.lxc_enter_namespace(fds, flags=0) -> Array
+ *
+ * Call virDomainLxcEnterNamespace[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcEnterNamespace]
+ * to attach the process to the namespaces associated with the file descriptors
+ * in the fds array.  Note that this call does not actually enter the namespace;
+ * the next call to fork will do that.  Also note that this function will return
+ * an array of old file descriptors that can be used to switch back to the
+ * current namespace later.
+ */
+static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
+{
+    VALUE fds, flags;
+    int *fdlist;
+    int i;
+    int *oldfdlist;
+    unsigned int noldfdlist;
+    VALUE result;
+    int exception;
+    struct ruby_libvirt_ary_store_arg args;
+    int ret;
+
+    rb_scan_args(argc, argv, "11", &fds, &flags);
+
+    Check_Type(fds, T_ARRAY);
+
+    fdlist = alloca(sizeof(int) * RARRAY_LEN(fds));
+    for (i = 0; i < RARRAY_LEN(fds); i++) {
+        fdlist[i] = NUM2INT(rb_ary_entry(fds, i));
+    }
+
+    ret = virDomainLxcEnterNamespace(ruby_libvirt_domain_get(d),
+                                     RARRAY_LEN(fds), fdlist, &noldfdlist,
+                                     &oldfdlist,
+                                     ruby_libvirt_value_to_uint(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainLxcEnterNamespace",
+                                          ruby_libvirt_connect_get(d)));
+
+    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&noldfdlist,
+                        &exception);
+    if (exception) {
+        free(oldfdlist);
+        rb_jump_tag(exception);
+    }
+
+    for (i = 0; i < noldfdlist; i++) {
+        args.arr = result;
+        args.index = i;
+        /* from reading the ruby sources, INT2NUM can't possibly throw an
+         * exception, so this can't leak.
+         */
+        args.elem = INT2NUM(oldfdlist[i]);
+
+        rb_protect(ruby_libvirt_ary_store_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            free(oldfdlist);
+            rb_jump_tag(exception);
+        }
+    }
+
+    free(oldfdlist);
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5183,5 +5252,9 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_CONST_VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP
     rb_define_const(c_domain, "QEMU_MONITOR_COMMAND_HMP",
                     INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP));
+#endif
+#if HAVE_VIRDOMAINLXCENTERNAMESPACE
+    rb_define_method(c_domain, "lxc_enter_namespace",
+                     libvirt_domain_lxc_enter_namespace, -1);
 #endif
 }

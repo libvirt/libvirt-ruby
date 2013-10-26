@@ -277,5 +277,4 @@ virDomainSnapshotGetConnect
 virDomainSnapshotRef
 virNWFilterRef
 VIR_DOMAIN_QEMU_AGENT_COMMAND_MIN
-virDomainLxcEnterNamespace
 virDomainLxcEnterSecurityLabel
