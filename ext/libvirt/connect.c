@@ -71,7 +71,7 @@
     } while(0)
 
 static VALUE c_connect;
-static VALUE c_node_security_model;
+VALUE c_node_security_model;
 static VALUE c_node_info;
 
 static void connect_close(void *c)

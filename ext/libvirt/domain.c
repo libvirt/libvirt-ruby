@@ -67,7 +67,7 @@ typedef virTypedParameter *virTypedParameterPtr;
 static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
-static VALUE c_domain_security_label;
+VALUE c_domain_security_label;
 static VALUE c_domain_block_stats;
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
 static VALUE c_domain_block_info;

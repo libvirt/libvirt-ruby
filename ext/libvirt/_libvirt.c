@@ -24,6 +24,9 @@
 #include <ruby.h>
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
+#if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
+#include <libvirt/libvirt-lxc.h>
+#endif
 #include "extconf.h"
 #include "common.h"
 #include "storage.h"
@@ -661,6 +664,66 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
+/*
+ * call-seq:
+ *   Libvirt::lxc_enter_security_label(model, label, flags=0) -> Libvirt::Domain::SecurityLabel
+ *
+ * Call virDomainLxcEnterSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcEnterSecurityLable]
+ * to attach to the security label specified by label in the security model
+ * specified by model.  The return object is a Libvirt::Domain::SecurityLabel
+ * which may be able to be used to move back to the previous label.
+ */
+static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
+                                                     VALUE c)
+{
+    VALUE model, label, flags, result, modiv, doiiv, labiv;
+    virSecurityModel mod;
+    char *modstr;
+    char *doistr;
+    virSecurityLabel lab;
+    char *labstr;
+    virSecurityLabel oldlab;
+    int ret;
+
+    rb_scan_args(argc, argv, "21", &model, &label, &flags);
+
+    if (rb_class_of(model) != c_node_security_model) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Libvirt::Connect::NodeSecurityModel)");
+    }
+
+    if (rb_class_of(label) != c_domain_security_label) {
+        rb_raise(rb_eTypeError,
+                 "wrong argument type (expected Libvirt::Domain::SecurityLabel)");
+    }
+
+    modiv = rb_iv_get(model, "@model");
+    modstr = StringValueCStr(modiv);
+    memcpy(mod.model, modstr, strlen(modstr));
+    doiiv = rb_iv_get(model, "@doi");
+    doistr = StringValueCStr(doiiv);
+    memcpy(mod.doi, doistr, strlen(doistr));
+
+    labiv = rb_iv_get(label, "@label");
+    labstr = StringValueCStr(labiv);
+    memcpy(lab.label, labstr, strlen(labstr));
+    lab.enforcing = NUM2INT(rb_iv_get(label, "@enforcing"));
+
+    ret = virDomainLxcEnterSecurityLabel(&mod, &lab, &oldlab,
+                                         ruby_libvirt_value_to_uint(flags));
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainLxcEnterSecurityLabel",
+                                          NULL));
+
+    result = rb_class_new_instance(0, NULL, c_domain_security_label);
+    rb_iv_set(result, "@label", rb_str_new2(oldlab.label));
+    rb_iv_set(result, "@enforcing", INT2NUM(oldlab.enforcing));
+
+    return result;
+}
+#endif
+
 /*
  * Module Libvirt
  */
@@ -965,6 +1028,11 @@ void Init__libvirt(void)
                               libvirt_event_invoke_handle_callback, 4);
     rb_define_module_function(m_libvirt, "event_invoke_timeout_callback",
                               libvirt_event_invoke_timeout_callback, 2);
+#endif
+
+#if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
+    rb_define_method(m_libvirt, "lxc_enter_security_label",
+                     libvirt_domain_lxc_enter_security_label, -1);
 #endif
 
     ruby_libvirt_connect_init();
