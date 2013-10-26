@@ -27,8 +27,8 @@ toplevel of your source checkout):
 
 Notes
 -----
-As of October 15, 2013, the ruby-libvirt bindings support all of the libvirt
-APIs up to libvirt commit hash 9f53ffcb817c0bd4ed22070c3c1fab388851d27b
+As of October 26, 2013, the ruby-libvirt bindings support all of the libvirt
+APIs up to libvirt commit hash b695aeebd52bcbd0d260893bddd5bfe1e486e980
 with the following exceptions:
 
 VIR_DOMAIN_LAST
@@ -180,6 +180,7 @@ VIR_MIGRATE_PARAM_DEST_NAME
 VIR_MIGRATE_PARAM_DEST_XML
 VIR_MIGRATE_PARAM_BANDWIDTH
 VIR_MIGRATE_PARAM_GRAPHICS_URI
+VIR_MIGRATE_PARAM_LISTEN_ADDRESS
 VIR_UUID_BUFLEN
 LIBVIR_VERSION_NUMBER
 VIR_DOMAIN_CPU_STATS_CPUTIME
@@ -250,7 +251,6 @@ virTypedParamsAddBoolean
 virTypedParamsAddString
 virTypedParamsAddFromString
 virTypedParamsClear
-virTypedParamsFree
 virDomainMigrate3
 virDomainMigrateToURI3
 virConnectRef
@@ -271,7 +271,19 @@ virNodeDeviceRef
 virSecretGetConnect
 virSecretRef
 virStreamRef
+virConnectGetCPUModelNames
 virDomainSnapshotGetDomain
 virDomainSnapshotGetConnect
 virDomainSnapshotRef
 virNWFilterRef
+VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT
+VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP
+VIR_DOMAIN_QEMU_AGENT_COMMAND_MIN
+VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK
+VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT
+VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT
+virDomainQemuAttach
+virDomainQemuAgentCommand
+virDomainLxcOpenNamespace
+virDomainLxcEnterNamespace
+virDomainLxcEnterSecurityLabel
