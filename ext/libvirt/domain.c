@@ -3572,6 +3572,61 @@ static VALUE libvirt_domain_interface_parameters_equal(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINBLOCKSTATSFLAGS
+static int block_stats_nparams(VALUE d, unsigned int flags, void *opaque)
+{
+    int nparams = 0;
+    int ret;
+    VALUE disk = (VALUE)opaque;
+
+    ret = virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
+                                   StringValueCStr(disk), NULL,
+                                   &nparams, flags);
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainBlockStatsFlags",
+                                          ruby_libvirt_connect_get(d)));
+
+    return nparams;
+}
+
+static char *block_stats_get(VALUE d, unsigned int flags,
+                             virTypedParameterPtr params, int *nparams,
+                             void *opaque)
+{
+    VALUE disk = (VALUE)opaque;
+
+    if (virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
+                                 StringValueCStr(disk), params, nparams,
+                                 flags) < 0) {
+        return "virDomainBlockStatsFlags";
+    }
+    return NULL;
+}
+
+/*
+ * call-seq:
+ *   dom.block_stats_flags(disk, flags=0) -> Hash
+ *
+ * Call virDomainGetBlockStatsFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockStatsFlags]
+ * to retrieve the block statistics for the given disk on this domain.
+ * The keys and values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
+{
+    VALUE disk, flags;
+
+    rb_scan_args(argc, argv, "11", &disk, &flags);
+
+    Check_Type(disk, T_STRING);
+
+    return ruby_libvirt_get_typed_parameters(d,
+                                             ruby_libvirt_flag_to_uint(flags),
+                                             (void *)disk,
+                                             block_stats_nparams,
+                                             block_stats_get);
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4933,5 +4988,9 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_interface_parameters, -1);
     rb_define_method(c_domain, "interface_parameters=",
                      libvirt_domain_interface_parameters_equal, 1);
+#endif
+#if HAVE_VIRDOMAINBLOCKSTATSFLAGS
+    rb_define_method(c_domain, "block_stats_flags",
+                     libvirt_domain_block_stats_flags, -1);
 #endif
 }

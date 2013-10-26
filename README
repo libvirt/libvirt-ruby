@@ -262,7 +262,6 @@ virDomainRestoreFlags
 virDomainGetCPUStats
 virDomainSetNumaParameters
 virDomainGetNumaParameters
-virDomainBlockStatsFlags
 virNetworkGetConnect
 virNetworkRef
 virInterfaceGetConnect
