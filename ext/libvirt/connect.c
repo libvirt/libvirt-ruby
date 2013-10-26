@@ -2625,6 +2625,82 @@ static VALUE libvirt_connect_qemu_attach(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTGETCPUMODELNAMES
+struct model_name_args {
+    VALUE result;
+    int i;
+    char *value;
+};
+
+static VALUE model_name_wrap(VALUE arg)
+{
+    struct model_name_args *e = (struct model_name_args *)arg;
+    VALUE elem;
+
+    elem = rb_str_new2(e->value);
+
+    rb_ary_store(e->result, e->i, elem);
+
+    return Qnil;
+}
+
+/*
+ * call-seq:
+ *   conn.cpu_model_names(arch, flags=0) -> Array
+ *
+ * Call virConnectGetCPUModelNames[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCPUModelNames]
+ * to get an array of CPU model names.
+ */
+static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
+{
+    VALUE arch, flags;
+    char **models;
+    int elems;
+    int i;
+    VALUE result;
+    struct model_name_args args;
+    int exception;
+
+    rb_scan_args(argc, argv, "11", &arch, &flags);
+
+    elems = virConnectGetCPUModelNames(ruby_libvirt_connect_get(c),
+                                       StringValueCStr(arch), &models,
+                                       ruby_libvirt_value_to_uint(flags));
+    _E(elems < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                            "virConnectGetCPUModelNames",
+                                            ruby_libvirt_connect_get(c)));
+
+    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&elems, &exception);
+    if (exception) {
+        goto error;
+    }
+
+    for (i = 0; i < elems; i++) {
+        args.result = result;
+        args.i = i;
+        args.value = models[i];
+
+        rb_protect(model_name_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            goto error;
+        }
+        free(models[i]);
+    }
+    free(models);
+
+    return result;
+
+error:
+    for (i = 0; i < elems; i++) {
+        free(models[i]);
+    }
+    free(models);
+
+    rb_jump_tag(exception);
+    return Qnil;
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3256,5 +3332,9 @@ void ruby_libvirt_connect_init(void)
 #endif
 #if HAVE_VIRDOMAINQEMUATTACH
     rb_define_method(c_connect, "qemu_attach", libvirt_connect_qemu_attach, -1);
+#endif
+#if HAVE_VIRCONNECTGETCPUMODELNAMES
+    rb_define_method(c_connect, "cpu_model_names",
+                     libvirt_connect_cpu_model_names, -1);
 #endif
 }

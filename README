@@ -271,7 +271,6 @@ virNodeDeviceRef
 virSecretGetConnect
 virSecretRef
 virStreamRef
-virConnectGetCPUModelNames
 virDomainSnapshotGetDomain
 virDomainSnapshotGetConnect
 virDomainSnapshotRef
