@@ -2235,18 +2235,15 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
 #endif
 
 #if HAVE_VIRNODEGETMEMORYPARAMETERS
-static int node_memory_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *node_memory_nparams(VALUE d, unsigned int flags, void *opaque,
+                                 int *nparams)
 {
-    int nparams = 0;
-    int ret;
+    if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), NULL, nparams,
+                                   flags) < 0) {
+        return "virNodeGetMemoryParameters";
+    }
 
-    ret = virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), NULL,
-                                     &nparams, flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virNodeGetMemoryParameters",
-                                          ruby_libvirt_connect_get(d)));
-
-    return nparams;
+    return NULL;
 }
 
 static char *node_memory_get(VALUE d, unsigned int flags,
@@ -2264,9 +2261,6 @@ static char *node_memory_set(VALUE d, unsigned int flags,
                              virTypedParameterPtr params, int nparams,
                              void *opauqe)
 {
-    /* FIXME: virNodeSetMemoryParameters can take a flags parameter, so we
-     * should probably implement it and pass it through.
-     */
     if (virNodeSetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    flags) < 0) {
         return "virNodeSetMemoryParameters";

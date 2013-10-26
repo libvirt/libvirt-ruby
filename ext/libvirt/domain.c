@@ -1883,18 +1883,19 @@ static VALUE libvirt_domain_is_updated(VALUE d)
 }
 #endif
 
-static int scheduler_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *scheduler_nparams(VALUE d, unsigned int flags, void *opaque,
+                               int *nparams)
 {
-    int nparams;
     char *type;
 
-    type = virDomainGetSchedulerType(ruby_libvirt_domain_get(d), &nparams);
-    _E(type == NULL, ruby_libvirt_create_error(e_RetrieveError,
-                                               "virDomainGetSchedulerType",
-                                               ruby_libvirt_connect_get(d)));
+    type = virDomainGetSchedulerType(ruby_libvirt_domain_get(d), nparams);
+    if (type == NULL) {
+        return "virDomainGetSchedulerType";
+    }
+
     xfree(type);
 
-    return nparams;
+    return NULL;
 }
 
 static char *scheduler_get(VALUE d, unsigned int flags,
@@ -1987,18 +1988,15 @@ static VALUE libvirt_domain_scheduler_parameters_equal(VALUE d, VALUE input)
 }
 
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-static int memory_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *memory_nparams(VALUE d, unsigned int flags, void *opaque,
+                            int *nparams)
 {
-    int nparams = 0;
-    int ret;
+    if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), NULL, nparams,
+                                     flags) < 0) {
+        return "virDomainGetMemoryParameters";
+    }
 
-    ret = virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), NULL,
-                                       &nparams, flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainGetMemoryParameters",
-                                          ruby_libvirt_connect_get(d)));
-
-    return nparams;
+    return NULL;
 }
 
 static char *memory_get(VALUE d, unsigned int flags,
@@ -2021,9 +2019,6 @@ static char *memory_get(VALUE d, unsigned int flags,
 static char *memory_set(VALUE d, unsigned int flags,
                         virTypedParameterPtr params, int nparams, void *opaque)
 {
-    /* FIXME: virDomainSetMemoryParameters can take a flags parameter, so we
-     * should probably implement it and pass it through.
-     */
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetMemoryParameters(ruby_libvirt_domain_get(d), params,
                                      nparams, flags) < 0) {
@@ -2078,18 +2073,15 @@ static VALUE libvirt_domain_memory_parameters_equal(VALUE d, VALUE in)
 #endif
 
 #if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-static int blkio_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *blkio_nparams(VALUE d, unsigned int flags, void *opaque,
+                           int *nparams)
 {
-    int nparams = 0;
-    int ret;
+    if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), NULL, nparams,
+                                    flags) < 0) {
+        return "virDomainGetBlkioParameters";
+    }
 
-    ret = virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), NULL,
-                                      &nparams, flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainGetBlkioParameters",
-                                          ruby_libvirt_connect_get(d)));
-
-    return nparams;
+    return NULL;
 }
 
 static char *blkio_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
@@ -3214,20 +3206,18 @@ static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINGETBLOCKIOTUNE
-static int iotune_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *iotune_nparams(VALUE d, unsigned int flags, void *opaque,
+                            int *nparams)
 {
-    int nparams = 0;
-    int ret;
     VALUE disk = (VALUE)opaque;
 
-    ret = virDomainGetBlockIoTune(ruby_libvirt_domain_get(d),
-                                  ruby_libvirt_get_cstring_or_null(disk), NULL,
-                                  &nparams, flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainGetBlockIoTune",
-                                          ruby_libvirt_connect_get(d)));
+    if (virDomainGetBlockIoTune(ruby_libvirt_domain_get(d),
+                                ruby_libvirt_get_cstring_or_null(disk), NULL,
+                                nparams, flags) < 0) {
+        return "virDomainGetBlockIoTune";
+    }
 
-    return nparams;
+    return NULL;
 }
 
 static char *iotune_get(VALUE d, unsigned int flags,
@@ -3469,20 +3459,18 @@ static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
-static int interface_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *interface_nparams(VALUE d, unsigned int flags, void *opaque,
+                               int *nparams)
 {
-    int nparams = 0;
-    int ret;
     VALUE device = (VALUE)opaque;
 
-    ret = virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
-                                          StringValueCStr(device), NULL,
-                                          &nparams, flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainGetInterfaceParameters",
-                                          ruby_libvirt_connect_get(d)));
+    if (virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
+                                        StringValueCStr(device), NULL, nparams,
+                                        flags) < 0) {
+        return "virDomainGetInterfaceParameters";
+    }
 
-    return nparams;
+    return NULL;
 }
 
 static char *interface_get(VALUE d, unsigned int flags,
@@ -3573,20 +3561,18 @@ static VALUE libvirt_domain_interface_parameters_equal(VALUE d, VALUE in)
 #endif
 
 #if HAVE_VIRDOMAINBLOCKSTATSFLAGS
-static int block_stats_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *block_stats_nparams(VALUE d, unsigned int flags, void *opaque,
+                                 int *nparams)
 {
-    int nparams = 0;
-    int ret;
     VALUE disk = (VALUE)opaque;
 
-    ret = virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
-                                   StringValueCStr(disk), NULL,
-                                   &nparams, flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainBlockStatsFlags",
-                                          ruby_libvirt_connect_get(d)));
+    if (virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
+                                 StringValueCStr(disk), NULL, nparams,
+                                 flags) < 0) {
+        return "virDomainBlockStatsFlags";
+    }
 
-    return nparams;
+    return NULL;
 }
 
 static char *block_stats_get(VALUE d, unsigned int flags,
@@ -3628,18 +3614,15 @@ static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINGETNUMAPARAMETERS
-static int numa_nparams(VALUE d, unsigned int flags, void *opaque)
+static char *numa_nparams(VALUE d, unsigned int flags, void *opaque,
+                          int *nparams)
 {
-    int nparams = 0;
-    int ret;
+    if (virDomainGetNumaParameters(ruby_libvirt_domain_get(d), NULL, nparams,
+                                   flags) < 0) {
+        return "virDomainGetNumaParameters";
+    }
 
-    ret = virDomainGetNumaParameters(ruby_libvirt_domain_get(d), NULL, &nparams,
-                                     flags);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainGetNumaParameters",
-                                          ruby_libvirt_connect_get(d)));
-
-    return nparams;
+    return NULL;
 }
 
 static char *numa_get(VALUE d, unsigned int flags, virTypedParameterPtr params,

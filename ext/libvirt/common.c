@@ -256,21 +256,24 @@ void ruby_libvirt_params_to_hash(virTypedParameterPtr params, int nparams,
 
 VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
                                         void *opaque,
-                                        int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags,
-                                                          void *opaque),
+                                        char *(*nparams_cb)(VALUE d,
+                                                            unsigned int flags,
+                                                            void *opaque,
+                                                            int *nparams),
                                         char *(*get_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
                                                         int *nparams,
                                                         void *opaque))
 {
-    int nparams;
+    int nparams = 0;
     virTypedParameterPtr params;
     VALUE result;
     char *errname;
 
-    nparams = nparams_cb(d, flags, opaque);
+    errname = nparams_cb(d, flags, opaque, &nparams);
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  ruby_libvirt_connect_get(d)));
 
     result = rb_hash_new();
 
@@ -310,9 +313,10 @@ void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags)
 
 VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
                                         unsigned int flags, void *opaque,
-                                        int (*nparams_cb)(VALUE d,
-                                                          unsigned int flags,
-                                                          void *opaque),
+                                        char *(*nparams_cb)(VALUE d,
+                                                            unsigned int flags,
+                                                            void *opaque,
+                                                            int *nparams),
                                         char *(*get_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
@@ -324,7 +328,7 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
                                                         int nparams,
                                                         void *opaque))
 {
-    int nparams;
+    int nparams = 0;
     virTypedParameterPtr params;
     int i;
     char *errname;
@@ -345,7 +349,9 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
      * will throw an error.
      */
 
-    nparams = nparams_cb(d, flags, opaque);
+    errname = nparams_cb(d, flags, opaque, &nparams);
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  ruby_libvirt_connect_get(d)));
 
     params = alloca(sizeof(virTypedParameter) * nparams);
 
