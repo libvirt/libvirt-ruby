@@ -3691,6 +3691,15 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
 #endif
 
 #if HAVE_VIRDOMAINLXCOPENNAMESPACE
+/*
+ * call-seq:
+ *   dom.lxc_open_namespace(flags=0) -> Array
+ *
+ * Call virDomainLxcOpenNamespace[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcOpenNamespace]
+ * to open an LXC namespace.  Note that this will only work on connections to
+ * the LXC driver.  The call will return an array of open file descriptors;
+ * these should be closed when use of them is finished.
+ */
 static VALUE libvirt_domain_lxc_open_namespace(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
