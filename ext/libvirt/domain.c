@@ -3283,11 +3283,11 @@ static VALUE libvirt_domain_block_iotune(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINSETBLOCKIOTUNE
 /*
  * call-seq:
- *   dom.block_iotune = Hash,flags=0
+ *   dom.block_iotune = disk,Hash,flags=0
  *
  * Call virDomainSetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlockIoTune]
- * to set the block IO tune parameters for this domain.  The keys and values in
- * the input hash are hypervisor specific.
+ * to set the block IO tune parameters for the supplied disk on this domain.
+ * The keys and values in the input hash are hypervisor specific.
  */
 static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
 {
@@ -3465,6 +3465,110 @@ static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_domain_get(d),
                                    StringValueCStr(disk),
                                    ruby_libvirt_flag_to_uint(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
+static int interface_nparams(VALUE d, unsigned int flags, void *opaque)
+{
+    int nparams = 0;
+    int ret;
+    VALUE device = (VALUE)opaque;
+
+    ret = virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
+                                          StringValueCStr(device), NULL,
+                                          &nparams, flags);
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainGetInterfaceParameters",
+                                          ruby_libvirt_connect_get(d)));
+
+    return nparams;
+}
+
+static char *interface_get(VALUE d, unsigned int flags,
+                           virTypedParameterPtr params, int *nparams,
+                           void *opaque)
+{
+    VALUE interface = (VALUE)opaque;
+
+    if (virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
+                                        StringValueCStr(interface), params,
+                                        nparams, flags) < 0) {
+        return "virDomainGetInterfaceParameters";
+    }
+    return NULL;
+}
+
+static char *interface_set(VALUE d, unsigned int flags,
+                           virTypedParameterPtr params, int nparams,
+                           void *opaque)
+{
+    VALUE device = (VALUE)opaque;
+
+    if (virDomainSetInterfaceParameters(ruby_libvirt_domain_get(d),
+                                        StringValueCStr(device), params,
+                                        nparams, flags) < 0) {
+        return "virDomainSetIntefaceParameters";
+    }
+
+    return NULL;
+}
+
+/*
+ * call-seq:
+ *   dom.interface_parameters(interface, flags=0) -> Hash
+ *
+ * Call virDomainGetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInterfaceParameters]
+ * to retrieve the interface parameters for the given interface on this domain.
+ * The keys and values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_domain_interface_parameters(int argc, VALUE *argv, VALUE d)
+{
+    VALUE device, flags;
+
+    rb_scan_args(argc, argv, "11", &device, &flags);
+
+    Check_Type(device, T_STRING);
+
+    return ruby_libvirt_get_typed_parameters(d,
+                                             ruby_libvirt_flag_to_uint(flags),
+                                             (void *)device,
+                                             interface_nparams, interface_get);
+}
+
+/*
+ * call-seq:
+ *   dom.interface_parameters = device,Hash,flags=0
+ *
+ * Call virDomainSetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetInterfaceParameters]
+ * to set the interface parameters for the supplied device on this domain.
+ * The keys and values in the input hash are hypervisor specific.
+ */
+static VALUE libvirt_domain_interface_parameters_equal(VALUE d, VALUE in)
+{
+    VALUE device, hash, flags;
+
+    Check_Type(in, T_ARRAY);
+
+    if (RARRAY_LEN(in) == 2) {
+        device = rb_ary_entry(in, 0);
+        hash = rb_ary_entry(in, 1);
+        flags = INT2NUM(0);
+    }
+    else if (RARRAY_LEN(in) == 3) {
+        device = rb_ary_entry(in, 0);
+        hash = rb_ary_entry(in, 1);
+        flags = rb_ary_entry(in, 2);
+    }
+    else {
+        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2 or 3)",
+                 RARRAY_LEN(in));
+    }
+
+    return ruby_libvirt_set_typed_parameters(d, hash,
+                                             ruby_libvirt_flag_to_uint(flags),
+                                             (void *)device, interface_nparams,
+                                             interface_get, interface_set);
 }
 #endif
 
@@ -4823,5 +4927,11 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINBLOCKJOBABORT
     rb_define_method(c_domain, "block_job_abort",
                      libvirt_domain_block_job_abort, -1);
+#endif
+#if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
+    rb_define_method(c_domain, "interface_parameters",
+                     libvirt_domain_interface_parameters, -1);
+    rb_define_method(c_domain, "interface_parameters=",
+                     libvirt_domain_interface_parameters_equal, 1);
 #endif
 }
