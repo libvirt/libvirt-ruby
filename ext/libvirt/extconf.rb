@@ -220,6 +220,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainBlockJobAbort',
                   'virDomainGetInterfaceParameters',
                   'virDomainBlockStatsFlags',
+                  'virDomainGetNumaParameters',
                 ]
 
 libvirt_consts = [ 'VIR_MIGRATE_LIVE',

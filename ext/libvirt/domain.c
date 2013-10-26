@@ -3627,6 +3627,82 @@ static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETNUMAPARAMETERS
+static int numa_nparams(VALUE d, unsigned int flags, void *opaque)
+{
+    int nparams = 0;
+    int ret;
+
+    ret = virDomainGetNumaParameters(ruby_libvirt_domain_get(d), NULL, &nparams,
+                                     flags);
+    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
+                                          "virDomainGetNumaParameters",
+                                          ruby_libvirt_connect_get(d)));
+
+    return nparams;
+}
+
+static char *numa_get(VALUE d, unsigned int flags, virTypedParameterPtr params,
+                      int *nparams, void *opaque)
+{
+    if (virDomainGetNumaParameters(ruby_libvirt_domain_get(d), params, nparams,
+                                   flags) < 0) {
+        return "virDomainGetNumaParameters";
+    }
+    return NULL;
+}
+
+static char *numa_set(VALUE d, unsigned int flags, virTypedParameterPtr params,
+                      int nparams, void *opaque)
+{
+    if (virDomainSetNumaParameters(ruby_libvirt_domain_get(d), params,
+                                   nparams, flags) < 0) {
+        return "virDomainSetNumaParameters";
+    }
+
+    return NULL;
+}
+
+/*
+ * call-seq:
+ *   dom.numa_parameters(flags=0) -> Hash
+ *
+ * Call virDomainGetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetNumaParameters]
+ * to retrieve the numa parameters for this domain.  The keys and values in
+ * the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_domain_numa_parameters(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    return ruby_libvirt_get_typed_parameters(d,
+                                             ruby_libvirt_flag_to_uint(flags),
+                                             NULL, numa_nparams, numa_get);
+}
+
+/*
+ * call-seq:
+ *   dom.numa_parameters = Hash,flags=0
+ *
+ * Call virDomainSetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetNumaParameters]
+ * to set the numa parameters for this domain.  The keys and values in the input
+ * hash are hypervisor specific.
+ */
+static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
+{
+    VALUE hash, flags;
+
+    ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
+
+    return ruby_libvirt_set_typed_parameters(d, hash,
+                                             ruby_libvirt_flag_to_uint(flags),
+                                             NULL, numa_nparams, numa_get,
+                                             numa_set);
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4992,5 +5068,11 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINBLOCKSTATSFLAGS
     rb_define_method(c_domain, "block_stats_flags",
                      libvirt_domain_block_stats_flags, -1);
+#endif
+#if HAVE_VIRDOMAINGETNUMAPARAMETERS
+    rb_define_method(c_domain, "numa_parameters",
+                     libvirt_domain_numa_parameters, -1);
+    rb_define_method(c_domain, "numa_parameters=",
+                     libvirt_domain_numa_parameters_equal, 1);
 #endif
 }
