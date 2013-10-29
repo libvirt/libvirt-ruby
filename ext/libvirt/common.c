@@ -329,28 +329,71 @@ void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags)
     }
 }
 
+int ruby_libvirt_typed_parameter_assign(VALUE key, VALUE val, VALUE in)
+{
+    struct ruby_libvirt_parameter_assign_args *args = (struct ruby_libvirt_parameter_assign_args *)in;
+    char *keyname;
+    unsigned int i;
+    int found;
+
+    keyname = StringValueCStr(key);
+
+    found = 0;
+    for (i = 0; i < args->num_allowed; i++) {
+        if (strcmp(args->allowed[i].name, keyname) == 0) {
+            args->params[args->i].type = args->allowed[i].type;
+            switch (args->params[args->i].type) {
+            case VIR_TYPED_PARAM_INT:
+                args->params[i].value.i = NUM2INT(val);
+                break;
+            case VIR_TYPED_PARAM_UINT:
+                args->params[i].value.ui = NUM2UINT(val);
+                break;
+            case VIR_TYPED_PARAM_LLONG:
+                args->params[i].value.l = NUM2LL(val);
+                break;
+            case VIR_TYPED_PARAM_ULLONG:
+                args->params[args->i].value.ul = NUM2ULL(val);
+                break;
+            case VIR_TYPED_PARAM_DOUBLE:
+                args->params[i].value.d = NUM2DBL(val);
+                break;
+            case VIR_TYPED_PARAM_BOOLEAN:
+                args->params[i].value.b = (val == Qtrue) ? 1 : 0;
+                break;
+            case VIR_TYPED_PARAM_STRING:
+                args->params[args->i].value.s = StringValueCStr(val);
+                break;
+            default:
+                rb_raise(rb_eArgError, "Invalid parameter type");
+            }
+            strncpy(args->params[args->i].field, keyname,
+                    VIR_TYPED_PARAM_FIELD_LENGTH);
+            (args->i)++;
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found) {
+        rb_raise(rb_eArgError, "Unknown key %s", keyname);
+    }
+
+    return ST_CONTINUE;
+}
+
 VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
                                         unsigned int flags, void *opaque,
-                                        char *(*nparams_cb)(VALUE d,
-                                                            unsigned int flags,
-                                                            void *opaque,
-                                                            int *nparams),
-                                        char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        void *voidparams,
-                                                        int *nparams,
-                                                        void *opaque),
+                                        struct ruby_libvirt_typed_param *allowed,
+                                        unsigned int num_allowed,
                                         char *(*set_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
                                                         int nparams,
                                                         void *opaque))
 {
-    int nparams = 0;
-    virTypedParameterPtr params;
-    int i;
     char *errname;
-    VALUE val;
+    struct ruby_libvirt_parameter_assign_args args;
 
     /* make sure input is a hash */
     Check_Type(input, T_HASH);
@@ -359,58 +402,14 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
         return Qnil;
     }
 
-    /* Complicated.  The below all stems from the fact that we have no way to
-     * discover what type each parameter should be based on the input.
-     * Instead, we ask libvirt to give us the current parameters and types,
-     * and then we replace the values with the new values.  That way we find
-     * out what the old types were, and if the new types don't match, libvirt
-     * will throw an error.
-     */
+    args.allowed = allowed;
+    args.num_allowed = num_allowed;
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(input));
+    args.i = 0;
 
-    errname = nparams_cb(d, flags, opaque, &nparams);
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(d)));
+    rb_hash_foreach(input, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
 
-    params = alloca(sizeof(virTypedParameter) * nparams);
-
-    errname = get_cb(d, flags, params, &nparams, opaque);
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(d)));
-
-    for (i = 0; i < nparams; i++) {
-        val = rb_hash_aref(input, rb_str_new2(params[i].field));
-        if (NIL_P(val)) {
-            continue;
-        }
-
-        switch (params[i].type) {
-        case VIR_TYPED_PARAM_INT:
-            params[i].value.i = NUM2INT(val);
-            break;
-        case VIR_TYPED_PARAM_UINT:
-            params[i].value.ui = NUM2UINT(val);
-            break;
-        case VIR_TYPED_PARAM_LLONG:
-            params[i].value.l = NUM2LL(val);
-            break;
-        case VIR_TYPED_PARAM_ULLONG:
-            params[i].value.ul = NUM2ULL(val);
-            break;
-        case VIR_TYPED_PARAM_DOUBLE:
-            params[i].value.d = NUM2DBL(val);
-            break;
-        case VIR_TYPED_PARAM_BOOLEAN:
-            params[i].value.b = (val == Qtrue) ? 1 : 0;
-            break;
-        case VIR_TYPED_PARAM_STRING:
-            params[i].value.s = StringValueCStr(val);
-            break;
-        default:
-            rb_raise(rb_eArgError, "Invalid parameter type");
-        }
-    }
-
-    errname = set_cb(d, flags, params, nparams, opaque);
+    errname = set_cb(d, flags, args.params, args.i, opaque);
     _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
                                                   ruby_libvirt_connect_get(d)));
 

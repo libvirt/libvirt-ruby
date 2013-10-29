@@ -190,17 +190,22 @@ VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
                                                         void *params,
                                                         int *nparams,
                                                         void *opaque));
+struct ruby_libvirt_typed_param {
+    char *name;
+    int type;
+};
+struct ruby_libvirt_parameter_assign_args {
+    struct ruby_libvirt_typed_param *allowed;
+    unsigned int num_allowed;
+
+    virTypedParameter *params;
+    int i;
+};
+int ruby_libvirt_typed_parameter_assign(VALUE key, VALUE val, VALUE in);
 VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
                                         unsigned int flags, void *opaque,
-                                        char *(*nparams_cb)(VALUE d,
-                                                            unsigned int flags,
-                                                            void *opaque,
-                                                            int *nparams),
-                                        char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        void *voidparams,
-                                                        int *nparams,
-                                                        void *opaque),
+                                        struct ruby_libvirt_typed_param *allowed,
+                                        unsigned int num_allowed,
                                         char *(*set_cb)(VALUE d,
                                                         unsigned int flags,
                                                         virTypedParameterPtr params,
@@ -255,5 +260,7 @@ VALUE ruby_libvirt_hash_aset_wrap(VALUE arg);
 #ifndef RSTRING_LEN
 #define RSTRING_LEN(str) (RSTRING(str)->len)
 #endif
+
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 #endif

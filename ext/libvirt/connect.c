@@ -2286,6 +2286,17 @@ static VALUE libvirt_connect_node_memory_parameters(int argc, VALUE *argv,
                                              node_memory_get);
 }
 
+static struct ruby_libvirt_typed_param memory_allowed[] = {
+    {VIR_NODE_MEMORY_SHARED_PAGES_TO_SCAN, VIR_TYPED_PARAM_UINT},
+    {VIR_NODE_MEMORY_SHARED_SLEEP_MILLISECS, VIR_TYPED_PARAM_UINT},
+    {VIR_NODE_MEMORY_SHARED_PAGES_SHARED, VIR_TYPED_PARAM_ULLONG},
+    {VIR_NODE_MEMORY_SHARED_PAGES_SHARING, VIR_TYPED_PARAM_ULLONG},
+    {VIR_NODE_MEMORY_SHARED_PAGES_UNSHARED, VIR_TYPED_PARAM_ULLONG},
+    {VIR_NODE_MEMORY_SHARED_PAGES_VOLATILE, VIR_TYPED_PARAM_ULLONG},
+    {VIR_NODE_MEMORY_SHARED_FULL_SCANS, VIR_TYPED_PARAM_ULLONG},
+    {VIR_NODE_MEMORY_SHARED_MERGE_ACROSS_NODES, VIR_TYPED_PARAM_UINT},
+};
+
 /*
  * call-seq:
  *   conn.node_memory_parameters = Hash,flags=0
@@ -2300,8 +2311,9 @@ static VALUE libvirt_connect_node_memory_parameters_equal(VALUE c, VALUE input)
     ruby_libvirt_assign_hash_and_flags(input, &hash, &flags);
 
     return ruby_libvirt_set_typed_parameters(c, hash, NUM2UINT(flags), NULL,
-                                             node_memory_nparams,
-                                             node_memory_get, node_memory_set);
+                                             memory_allowed,
+                                             ARRAY_SIZE(memory_allowed),
+                                             node_memory_set);
 }
 #endif
 

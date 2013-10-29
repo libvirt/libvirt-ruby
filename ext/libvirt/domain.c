@@ -1965,6 +1965,19 @@ static VALUE libvirt_domain_scheduler_parameters(int argc, VALUE *argv, VALUE d)
                                              scheduler_get);
 }
 
+static struct ruby_libvirt_typed_param domain_scheduler_allowed[] = {
+    {VIR_DOMAIN_SCHEDULER_CPU_SHARES, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_SCHEDULER_VCPU_PERIOD, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_SCHEDULER_VCPU_QUOTA, VIR_TYPED_PARAM_LLONG},
+    {VIR_DOMAIN_SCHEDULER_EMULATOR_PERIOD, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_SCHEDULER_EMULATOR_QUOTA, VIR_TYPED_PARAM_LLONG},
+    {VIR_DOMAIN_SCHEDULER_WEIGHT, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_SCHEDULER_CAP, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_SCHEDULER_RESERVATION, VIR_TYPED_PARAM_LLONG},
+    {VIR_DOMAIN_SCHEDULER_LIMIT, VIR_TYPED_PARAM_LLONG},
+    {VIR_DOMAIN_SCHEDULER_SHARES, VIR_TYPED_PARAM_INT},
+};
+
 /*
  * call-seq:
  *   dom.scheduler_parameters = Hash
@@ -1981,8 +1994,9 @@ static VALUE libvirt_domain_scheduler_parameters_equal(VALUE d, VALUE input)
     ruby_libvirt_assign_hash_and_flags(input, &hash, &flags);
 
     return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags), NULL,
-                                             scheduler_nparams,
-                                             scheduler_get, scheduler_set);
+                                             domain_scheduler_allowed,
+                                             ARRAY_SIZE(domain_scheduler_allowed),
+                                             scheduler_set);
 }
 
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
@@ -2052,6 +2066,13 @@ static VALUE libvirt_domain_memory_parameters(int argc, VALUE *argv, VALUE d)
                                              NULL, memory_nparams, memory_get);
 }
 
+static struct ruby_libvirt_typed_param domain_memory_allowed[] = {
+    {VIR_DOMAIN_MEMORY_HARD_LIMIT, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_MEMORY_SOFT_LIMIT, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_MEMORY_MIN_GUARANTEE, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_MEMORY_SWAP_HARD_LIMIT, VIR_TYPED_PARAM_ULLONG},
+};
+
 /*
  * call-seq:
  *   dom.memory_parameters = Hash,flags=0
@@ -2067,7 +2088,8 @@ static VALUE libvirt_domain_memory_parameters_equal(VALUE d, VALUE in)
     ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
 
     return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags), NULL,
-                                             memory_nparams, memory_get,
+                                             domain_memory_allowed,
+                                             ARRAY_SIZE(domain_memory_allowed),
                                              memory_set);
 }
 #endif
@@ -2139,6 +2161,11 @@ static VALUE libvirt_domain_blkio_parameters(int argc, VALUE *argv, VALUE d)
                                              NULL, blkio_nparams, blkio_get);
 }
 
+static struct ruby_libvirt_typed_param blkio_allowed[] = {
+    {VIR_DOMAIN_BLKIO_WEIGHT, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_BLKIO_DEVICE_WEIGHT, VIR_TYPED_PARAM_STRING},
+};
+
 /*
  * call-seq:
  *   dom.blkio_parameters = Hash,flags=0
@@ -2154,7 +2181,8 @@ static VALUE libvirt_domain_blkio_parameters_equal(VALUE d, VALUE in)
     ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
 
     return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags), NULL,
-                                             blkio_nparams, blkio_get,
+                                             blkio_allowed,
+                                             ARRAY_SIZE(blkio_allowed),
                                              blkio_set);
 }
 #endif
@@ -3272,6 +3300,15 @@ static VALUE libvirt_domain_block_iotune(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINSETBLOCKIOTUNE
+static struct ruby_libvirt_typed_param iotune_allowed[] = {
+    {VIR_DOMAIN_BLOCK_IOTUNE_TOTAL_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_BLOCK_IOTUNE_READ_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_BLOCK_IOTUNE_WRITE_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_BLOCK_IOTUNE_TOTAL_IOPS_SEC, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_BLOCK_IOTUNE_READ_IOPS_SEC, VIR_TYPED_PARAM_ULLONG},
+    {VIR_DOMAIN_BLOCK_IOTUNE_WRITE_IOPS_SEC, VIR_TYPED_PARAM_ULLONG},
+};
+
 /*
  * call-seq:
  *   dom.block_iotune = disk,Hash,flags=0
@@ -3302,8 +3339,9 @@ static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
     }
 
     return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags),
-                                             (void *)disk, iotune_nparams,
-                                             iotune_get, iotune_set);
+                                             (void *)disk, iotune_allowed,
+                                             ARRAY_SIZE(iotune_allowed),
+                                             iotune_set);
 }
 #endif
 
@@ -3525,6 +3563,15 @@ static VALUE libvirt_domain_interface_parameters(int argc, VALUE *argv, VALUE d)
                                              interface_nparams, interface_get);
 }
 
+static struct ruby_libvirt_typed_param interface_allowed[] = {
+    {VIR_DOMAIN_BANDWIDTH_IN_AVERAGE, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_BANDWIDTH_IN_PEAK, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_BANDWIDTH_IN_BURST, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_BANDWIDTH_OUT_AVERAGE, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_BANDWIDTH_OUT_PEAK, VIR_TYPED_PARAM_UINT},
+    {VIR_DOMAIN_BANDWIDTH_OUT_BURST, VIR_TYPED_PARAM_UINT},
+};
+
 /*
  * call-seq:
  *   dom.interface_parameters = device,Hash,flags=0
@@ -3556,8 +3603,9 @@ static VALUE libvirt_domain_interface_parameters_equal(VALUE d, VALUE in)
 
     return ruby_libvirt_set_typed_parameters(d, hash,
                                              ruby_libvirt_value_to_uint(flags),
-                                             (void *)device, interface_nparams,
-                                             interface_get, interface_set);
+                                             (void *)device, interface_allowed,
+                                             ARRAY_SIZE(interface_allowed),
+                                             interface_set);
 }
 #endif
 
@@ -3668,6 +3716,11 @@ static VALUE libvirt_domain_numa_parameters(int argc, VALUE *argv, VALUE d)
                                              NULL, numa_nparams, numa_get);
 }
 
+static struct ruby_libvirt_typed_param numa_allowed[] = {
+    {VIR_DOMAIN_NUMA_NODESET, VIR_TYPED_PARAM_STRING},
+    {VIR_DOMAIN_NUMA_MODE, VIR_TYPED_PARAM_INT},
+};
+
 /*
  * call-seq:
  *   dom.numa_parameters = Hash,flags=0
@@ -3684,7 +3737,8 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
 
     return ruby_libvirt_set_typed_parameters(d, hash,
                                              ruby_libvirt_value_to_uint(flags),
-                                             NULL, numa_nparams, numa_get,
+                                             NULL, numa_allowed,
+                                             ARRAY_SIZE(numa_allowed),
                                              numa_set);
 }
 #endif
@@ -3854,52 +3908,14 @@ static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINMIGRATE3
-struct parameter_args {
-    virTypedParameter *params;
-    int i;
+static struct ruby_libvirt_typed_param migrate3_allowed[] = {
+    {VIR_MIGRATE_PARAM_URI, VIR_TYPED_PARAM_STRING},
+    {VIR_MIGRATE_PARAM_DEST_NAME, VIR_TYPED_PARAM_STRING},
+    {VIR_MIGRATE_PARAM_DEST_XML, VIR_TYPED_PARAM_STRING},
+    {VIR_MIGRATE_PARAM_BANDWIDTH, VIR_TYPED_PARAM_ULLONG},
+    {VIR_MIGRATE_PARAM_GRAPHICS_URI, VIR_TYPED_PARAM_STRING},
+    {VIR_MIGRATE_PARAM_LISTEN_ADDRESS, VIR_TYPED_PARAM_STRING},
 };
-
-static int param_assign(VALUE key, VALUE val, VALUE in)
-{
-    struct parameter_args *args = (struct parameter_args *)in;
-    char *keyname;
-
-    keyname = StringValueCStr(key);
-
-    strncpy(args->params[args->i].field, keyname, VIR_TYPED_PARAM_FIELD_LENGTH);
-
-    if (strcmp(VIR_MIGRATE_PARAM_URI, keyname) == 0) {
-        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
-        args->params[args->i].value.s = StringValueCStr(val);
-    }
-    else if (strcmp(VIR_MIGRATE_PARAM_DEST_NAME, keyname) == 0) {
-        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
-        args->params[args->i].value.s = StringValueCStr(val);
-    }
-    else if (strcmp(VIR_MIGRATE_PARAM_DEST_XML, keyname) == 0) {
-        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
-        args->params[args->i].value.s = StringValueCStr(val);
-    }
-    else if (strcmp(VIR_MIGRATE_PARAM_BANDWIDTH, keyname) == 0) {
-        args->params[args->i].type = VIR_TYPED_PARAM_ULLONG;
-        args->params[args->i].value.ul = NUM2ULL(val);
-    }
-    else if (strcmp(VIR_MIGRATE_PARAM_GRAPHICS_URI, keyname) == 0) {
-        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
-        args->params[args->i].value.s = StringValueCStr(val);
-    }
-    else if (strcmp(VIR_MIGRATE_PARAM_LISTEN_ADDRESS, keyname) == 0) {
-        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
-        args->params[args->i].value.s = StringValueCStr(val);
-    }
-    else {
-        rb_raise(rb_eArgError, "Unknown key %s", keyname);
-    }
-
-    (args->i)++;
-
-    return ST_CONTINUE;
-}
 
 /*
  * call-seq:
@@ -3913,21 +3929,23 @@ static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
 {
     VALUE dconn, hash, flags;
     virDomainPtr ddom = NULL;
-    struct parameter_args args;
+    struct ruby_libvirt_parameter_assign_args args;
 
     rb_scan_args(argc, argv, "12", &dconn, &hash, &flags);
 
     Check_Type(hash, T_HASH);
 
+    args.allowed = migrate3_allowed;
+    args.num_allowed = ARRAY_SIZE(migrate3_allowed);
+
     args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
     args.i = 0;
 
-    rb_hash_foreach(hash, param_assign, (VALUE)&args);
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
 
     ddom = virDomainMigrate3(ruby_libvirt_domain_get(d),
                              ruby_libvirt_connect_get(dconn), args.params,
-                             RHASH_SIZE(hash),
-                             ruby_libvirt_value_to_uint(flags));
+                             args.i, ruby_libvirt_value_to_uint(flags));
 
     _E(ddom == NULL, ruby_libvirt_create_error(e_Error, "virDomainMigrate3",
                                                ruby_libvirt_connect_get(d)));
@@ -3946,22 +3964,25 @@ static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
 static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
 {
     VALUE duri, hash, flags;
-    struct parameter_args args;
+    struct ruby_libvirt_parameter_assign_args args;
 
     rb_scan_args(argc, argv, "03", &duri, &hash, &flags);
 
     Check_Type(hash, T_HASH);
 
+    args.allowed = migrate3_allowed;
+    args.num_allowed = ARRAY_SIZE(migrate3_allowed);
+
     args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
     args.i = 0;
 
-    rb_hash_foreach(hash, param_assign, (VALUE)&args);
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateToURI3,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_get_cstring_or_null(duri),
-                                   args.params, RHASH_SIZE(hash),
+                                   args.params, args.i,
                                    ruby_libvirt_value_to_ulong(flags));
 }
 #endif
