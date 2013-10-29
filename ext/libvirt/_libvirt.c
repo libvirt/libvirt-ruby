@@ -669,7 +669,7 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   Libvirt::lxc_enter_security_label(model, label, flags=0) -> Libvirt::Domain::SecurityLabel
  *
- * Call virDomainLxcEnterSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcEnterSecurityLable]
+ * Call virDomainLxcEnterSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcEnterSecurityLabel]
  * to attach to the security label specified by label in the security model
  * specified by model.  The return object is a Libvirt::Domain::SecurityLabel
  * which may be able to be used to move back to the previous label.
