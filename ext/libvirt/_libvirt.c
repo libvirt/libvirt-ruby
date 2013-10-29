@@ -742,7 +742,8 @@ void Init__libvirt(void)
     rb_define_const(m_libvirt, "CRED_CNONCE", INT2NUM(VIR_CRED_CNONCE));
     rb_define_const(m_libvirt, "CRED_PASSPHRASE", INT2NUM(VIR_CRED_PASSPHRASE));
     rb_define_const(m_libvirt, "CRED_ECHOPROMPT", INT2NUM(VIR_CRED_ECHOPROMPT));
-    rb_define_const(m_libvirt, "CRED_NOECHOPROMPT", INT2NUM(VIR_CRED_NOECHOPROMPT));
+    rb_define_const(m_libvirt, "CRED_NOECHOPROMPT",
+                    INT2NUM(VIR_CRED_NOECHOPROMPT));
     rb_define_const(m_libvirt, "CRED_REALM", INT2NUM(VIR_CRED_REALM));
     rb_define_const(m_libvirt, "CRED_EXTERNAL", INT2NUM(VIR_CRED_EXTERNAL));
 #endif
