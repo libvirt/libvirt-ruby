@@ -128,11 +128,10 @@ static VALUE libvirt_network_name(VALUE n)
  */
 static VALUE libvirt_network_uuid(VALUE n)
 {
-    virNetworkPtr netw = network_get(n);
     char uuid[VIR_UUID_STRING_BUFLEN];
     int r;
 
-    r = virNetworkGetUUIDString(netw, uuid);
+    r = virNetworkGetUUIDString(network_get(n), uuid);
     _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
                                         "virNetworkGetUUIDString",
                                         ruby_libvirt_connect_get(n)));
@@ -182,10 +181,9 @@ static VALUE libvirt_network_bridge_name(VALUE n)
  */
 static VALUE libvirt_network_autostart(VALUE n)
 {
-    virNetworkPtr netw = network_get(n);
     int r, autostart;
 
-    r = virNetworkGetAutostart(netw, &autostart);
+    r = virNetworkGetAutostart(network_get(n), &autostart);
     _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNetworkAutostart",
                                         ruby_libvirt_connect_get(n)));
 

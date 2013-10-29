@@ -306,12 +306,10 @@ static VALUE libvirt_connect_node_free_memory(VALUE c)
 static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
                                                     VALUE c)
 {
-    int r;
-    VALUE cells;
-    VALUE start, max;
+    int i, r;
+    VALUE cells, start, max;
     unsigned long long *freeMems;
     virNodeInfo nodeinfo;
-    int i;
     unsigned int startCell, maxCells;
 
     rb_scan_args(argc, argv, "02", &start, &max);
@@ -458,14 +456,11 @@ static VALUE libvirt_connect_compare_cpu(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
 {
-    VALUE xmlcpus, flags;
+    VALUE xmlcpus, flags, retval, entry;
     char *r;
-    VALUE retval;
     unsigned int ncpus;
-    VALUE entry;
     const char **xmllist;
-    int i;
-    int exception = 0;
+    int i, exception = 0;
 
     rb_scan_args(argc, argv, "11", &xmlcpus, &flags);
 
@@ -507,9 +502,7 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
                                            int detail, void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
+    VALUE cb, cb_opaque, newc;
 
     Check_Type(passthrough, T_ARRAY);
 
@@ -546,9 +539,7 @@ static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
                                         void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
+    VALUE cb, cb_opaque, newc;
 
     Check_Type(passthrough, T_ARRAY);
 
@@ -581,9 +572,7 @@ static int domain_event_rtc_callback(virConnectPtr conn, virDomainPtr dom,
                                      long long utc_offset, void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
+    VALUE cb, cb_opaque, newc;
 
     Check_Type(passthrough, T_ARRAY);
 
@@ -618,9 +607,7 @@ static int domain_event_watchdog_callback(virConnectPtr conn, virDomainPtr dom,
                                           int action, void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
+    VALUE cb, cb_opaque, newc;
 
     Check_Type(passthrough, T_ARRAY);
 
@@ -658,9 +645,7 @@ static int domain_event_io_error_callback(virConnectPtr conn, virDomainPtr dom,
                                           void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
+    VALUE cb, cb_opaque, newc;
 
     Check_Type(passthrough, T_ARRAY);
 
@@ -701,9 +686,7 @@ static int domain_event_io_error_reason_callback(virConnectPtr conn,
                                                  void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
+    VALUE cb, cb_opaque, newc;
 
     Check_Type(passthrough, T_ARRAY);
 
@@ -745,13 +728,7 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
                                           void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE newc;
-    VALUE local_hash;
-    VALUE remote_hash;
-    VALUE subject_array;
-    VALUE pair;
+    VALUE cb, cb_opaque, newc, local_hash, remote_hash, subject_array, pair;
     int i;
 
     Check_Type(passthrough, T_ARRAY);
@@ -834,10 +811,9 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
 static VALUE libvirt_connect_domain_event_register_any(int argc, VALUE *argv,
                                                        VALUE c)
 {
-    VALUE eventID, cb, dom, opaque;
+    VALUE eventID, cb, dom, opaque, passthrough;
     virDomainPtr domain;
     virConnectDomainEventGenericCallback internalcb = NULL;
-    VALUE passthrough;
 
     rb_scan_args(argc, argv, "22", &eventID, &cb, &dom, &opaque);
 
@@ -940,8 +916,7 @@ static int domain_event_callback(virConnectPtr conn,
 static VALUE libvirt_connect_domain_event_register(int argc, VALUE *argv,
                                                    VALUE c)
 {
-    VALUE cb, opaque;
-    VALUE passthrough;
+    VALUE cb, opaque, passthrough;
 
     rb_scan_args(argc, argv, "11", &cb, &opaque);
 
@@ -2169,8 +2144,7 @@ static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
 {
-    VALUE filename;
-    VALUE flags;
+    VALUE filename, flags;
 
     rb_scan_args(argc, argv, "11", &filename, &flags);
 
@@ -2191,9 +2165,7 @@ static VALUE libvirt_connect_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
 static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
                                                    VALUE c)
 {
-    VALUE filename;
-    VALUE newxml;
-    VALUE flags;
+    VALUE filename, newxml, flags;
 
     rb_scan_args(argc, argv, "21", &filename, &newxml, &flags);
 
@@ -2217,9 +2189,7 @@ static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
 static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
                                                        VALUE c)
 {
-    VALUE target;
-    VALUE duration;
-    VALUE flags;
+    VALUE target, duration, flags;
 
     rb_scan_args(argc, argv, "21", &target, &duration, &flags);
 
@@ -2344,14 +2314,11 @@ static VALUE cpu_map_field_to_value(VALUE input)
  */
 static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
 {
-    VALUE flags;
-    int ret;
+    VALUE flags, result;
     unsigned char *map;
     unsigned int online;
-    int exception;
-    int i;
+    int ret, i, exception = 0;
     struct cpu_map_field_to_value ftv;
-    VALUE result;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -2578,8 +2545,7 @@ static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
 {
     VALUE xml, fds, flags;
     int *files;
-    unsigned int numfiles;
-    unsigned int i;
+    unsigned int numfiles, i;
     virDomainPtr dom;
 
     rb_scan_args(argc, argv, "12", &xml, &fds, &flags);
@@ -2665,11 +2631,9 @@ static VALUE model_name_wrap(VALUE arg)
  */
 static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
 {
-    VALUE arch, flags;
+    VALUE arch, flags, result;
     char **models;
-    int elems = 0;
-    int i = 0, j;
-    VALUE result;
+    int i = 0, j, elems = 0;
     struct model_name_args args;
     int exception;
 

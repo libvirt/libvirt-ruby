@@ -120,8 +120,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 {
-    VALUE flags;
-    VALUE value;
+    VALUE flags, value;
 
     rb_scan_args(argc, argv, "11", &value, &flags);
 
@@ -144,8 +143,7 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
 {
-    VALUE flags;
-    VALUE value;
+    VALUE flags, value;
 
     if (TYPE(in) == T_STRING) {
         value = in;
@@ -182,10 +180,9 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
  */
 static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
 {
-    VALUE flags;
+    VALUE flags, ret;
     unsigned char *val;
     size_t value_size;
-    VALUE ret;
     int exception = 0;
     struct ruby_libvirt_str_new_arg args;
 

@@ -437,9 +437,7 @@ static VALUE libvirt_domain_resume(VALUE d)
  */
 static VALUE libvirt_domain_save(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
-    VALUE to;
-    VALUE dxml;
+    VALUE flags, to, dxml;
 
     rb_scan_args(argc, argv, "12", &to, &dxml, &flags);
 
@@ -651,11 +649,8 @@ static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
 static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
 {
     virDomainMemoryStatStruct stats[6];
-    int r;
-    VALUE result;
-    VALUE flags;
-    VALUE tmp;
-    int i;
+    int i, r;
+    VALUE result, flags, tmp;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -699,9 +694,7 @@ static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
 {
     virDomainBlockInfo info;
     int r;
-    VALUE result;
-    VALUE flags;
-    VALUE path;
+    VALUE result, flags, path;
 
     rb_scan_args(argc, argv, "11", &path, &flags);
 
@@ -1061,8 +1054,7 @@ static VALUE libvirt_domain_max_memory_equal(VALUE d, VALUE max_memory)
  */
 static VALUE libvirt_domain_memory_equal(VALUE d, VALUE in)
 {
-    VALUE memory;
-    VALUE flags;
+    VALUE memory, flags;
     int r;
 
     domain_input_to_fixnum_and_flags(in, &memory, &flags);
@@ -1124,8 +1116,7 @@ static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
  */
 static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
 {
-    VALUE nvcpus;
-    VALUE flags = Qnil;
+    VALUE nvcpus, flags = Qnil;
 
     if (TYPE(in) == T_FIXNUM) {
         nvcpus = in;
@@ -1176,8 +1167,7 @@ static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
 {
-    VALUE nvcpus;
-    VALUE flags;
+    VALUE nvcpus, flags;
 
     domain_input_to_fixnum_and_flags(in, &nvcpus, &flags);
 
@@ -1199,10 +1189,9 @@ static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
 {
-    VALUE vcpu, cpulist, flags;
+    VALUE vcpu, cpulist, flags, e;
     int i, cpumaplen, maxcpus;
     unsigned char *cpumap;
-    VALUE e;
 
     rb_scan_args(argc, argv, "21", &vcpu, &cpulist, &flags);
 
@@ -1361,8 +1350,7 @@ static VALUE libvirt_domain_autostart_equal(VALUE d, VALUE autostart)
  */
 static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
 {
-    VALUE xml;
-    VALUE flags;
+    VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
@@ -1392,8 +1380,7 @@ static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
 {
-    VALUE xml;
-    VALUE flags;
+    VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
@@ -1424,8 +1411,7 @@ static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_update_device(int argc, VALUE *argv, VALUE d)
 {
-    VALUE xml;
-    VALUE flags;
+    VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
@@ -1526,8 +1512,7 @@ static VALUE libvirt_domain_num_of_snapshots(int argc, VALUE *argv, VALUE d)
 static VALUE libvirt_domain_list_snapshots(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
-    int r;
-    int num;
+    int r, num;
     char **names;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -1793,10 +1778,9 @@ static VALUE create_sched_type_array(VALUE input)
  */
 static VALUE libvirt_domain_scheduler_type(VALUE d)
 {
-    int nparams;
+    int nparams, exception = 0;
     char *type;
     VALUE result;
-    int exception = 0;
     struct create_sched_type_args args;
 
     type = virDomainGetSchedulerType(ruby_libvirt_domain_get(d), &nparams);
@@ -1829,12 +1813,10 @@ static VALUE libvirt_domain_scheduler_type(VALUE d)
  */
 static VALUE libvirt_domain_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
 {
-    VALUE cmd, flags;
+    VALUE cmd, flags, ret;
     char *result;
-    VALUE ret;
-    int exception;
+    int r, exception = 0;
     const char *type;
-    int r;
 
     rb_scan_args(argc, argv, "11", &cmd, &flags);
 
@@ -1924,9 +1906,6 @@ static char *scheduler_set(VALUE d, unsigned int flags,
                            void *opaque)
 {
 #if HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    /* FIXME: virDomainSetSchedulerParametersFlags can take a flags parameter,
-     * so we should probably implement it and pass it through.
-     */
     if (virDomainSetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
                                              nparams, flags) < 0) {
         return "virDomainSetSchedulerParameters";
@@ -2197,10 +2176,8 @@ static VALUE libvirt_domain_blkio_parameters_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_state(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
-    int state, reason;
-    VALUE result;
-    int retval;
+    VALUE result, flags;
+    int state, reason, retval;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -2295,10 +2272,9 @@ static VALUE libvirt_domain_inject_nmi(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
+    VALUE flags, result;
     virDomainControlInfo info;
     int r;
-    VALUE result;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -2555,14 +2531,9 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
 static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
                                                          VALUE s)
 {
-    VALUE flags;
-    int num_children;
+    VALUE flags, result, str;
     char **children;
-    int ret;
-    int i, j;
-    VALUE result;
-    VALUE str;
-    int exception = 0;
+    int num_children, ret, i, j, exception = 0;
     struct ruby_libvirt_ary_store_arg arg;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -2728,8 +2699,7 @@ static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
  */
 static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
 {
-    VALUE period;
-    VALUE flags;
+    VALUE period, flags;
 
     domain_input_to_fixnum_and_flags(in, &period, &flags);
 
@@ -2751,9 +2721,7 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
 {
-    VALUE mountpoint;
-    VALUE minimum;
-    VALUE flags;
+    VALUE mountpoint, minimum, flags;
 
     rb_scan_args(argc, argv, "03", &mountpoint, &minimum, &flags);
 
@@ -2825,8 +2793,7 @@ static VALUE libvirt_domain_create_with_files(int argc, VALUE *argv, VALUE d)
 {
     VALUE fds, flags;
     int *files;
-    unsigned int numfiles;
-    unsigned int i;
+    unsigned int numfiles, i;
 
     rb_scan_args(argc, argv, "02", &fds, &flags);
 
@@ -2979,8 +2946,7 @@ static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
  */
 static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
 {
-    VALUE cachesize;
-    VALUE flags;
+    VALUE cachesize, flags;
 
     domain_input_to_fixnum_and_flags(in, &cachesize, &flags);
 
@@ -3002,12 +2968,9 @@ static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
-    int maxerr;
-    int ret;
+    VALUE flags, hash;
+    int maxerr, ret, i;
     virDomainDiskErrorPtr errors;
-    VALUE hash;
-    int i;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -3049,13 +3012,10 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 {
-    int maxcpus;
+    int maxcpus, ret, j;
     size_t cpumaplen;
     unsigned char *cpumap;
-    int ret;
-    VALUE emulator2cpumap;
-    int j;
-    VALUE flags;
+    VALUE emulator2cpumap, flags;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -3095,12 +3055,9 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
 {
-    VALUE cpulist, flags;
-    int i;
-    int maxcpus;
-    int cpumaplen;
+    VALUE cpulist, flags, e;
+    int i, maxcpus, cpumaplen;
     unsigned char *cpumap;
-    VALUE e;
 
     rb_scan_args(argc, argv, "11", &cpulist, &flags);
 
@@ -3187,13 +3144,9 @@ static VALUE params_to_hash(VALUE in)
  */
 static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
-    int type;
+    VALUE flags, result;
+    int type, exception = 0, nparams = 0, r;
     virTypedParameterPtr params = NULL;
-    int nparams = 0;
-    int r;
-    VALUE result;
-    int exception;
     struct params_to_hash_arg args;
     struct ruby_libvirt_hash_aset_arg asetargs;
 
@@ -3449,8 +3402,7 @@ static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
 {
-    VALUE disk, flags;
-    VALUE result;
+    VALUE disk, flags, result;
     virDomainBlockJobInfo info;
     int r;
 
@@ -3755,13 +3707,10 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_lxc_open_namespace(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
+    VALUE flags, result;
     int *fdlist = NULL;
-    int ret;
+    int ret, i, exception = 0;
     struct ruby_libvirt_ary_store_arg args;
-    int exception;
-    int i;
-    VALUE result;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -3813,10 +3762,9 @@ error:
  */
 static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
 {
-    VALUE command, timeout, flags;
+    VALUE command, timeout, flags, result;
     char *ret;
-    VALUE result;
-    int exception;
+    int exception = 0;
 
     rb_scan_args(argc, argv, "12", &command, &timeout, &flags);
 
@@ -3852,15 +3800,12 @@ static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
 {
-    VALUE fds, flags;
+    VALUE fds, flags, result;
     int *fdlist;
-    int i;
+    int i, ret, exception = 0;
     int *oldfdlist;
     unsigned int noldfdlist;
-    VALUE result;
-    int exception;
     struct ruby_libvirt_ary_store_arg args;
-    int ret;
 
     rb_scan_args(argc, argv, "11", &fds, &flags);
 

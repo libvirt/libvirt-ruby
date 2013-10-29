@@ -64,11 +64,9 @@ static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err)
  */
 static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
 {
-    unsigned long libVer;
-    VALUE type;
-    unsigned long typeVer;
+    unsigned long libVer, typeVer;
+    VALUE type, result, rargv[2];
     int r;
-    VALUE result, rargv[2];
 
     rb_scan_args(argc, argv, "01", &type);
 
@@ -139,10 +137,8 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m)
 static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
                                          unsigned int ncred, void *cbdata)
 {
-    VALUE userdata;
-    VALUE newcred;
+    VALUE userdata, newcred, result;
     int i;
-    VALUE result;
 
     userdata = (VALUE)cbdata;
 
@@ -224,13 +220,9 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
 static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
 {
     virConnectAuthPtr auth;
-    VALUE uri;
-    VALUE credlist;
-    VALUE userdata;
-    VALUE flags;
+    VALUE uri, credlist, userdata, flags, tmp;
     virConnectPtr conn;
     int i;
-    VALUE tmp;
 
     rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags);
 
@@ -307,8 +299,7 @@ static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
 {
     virEventHandleCallback cb;
     void *op;
-    VALUE libvirt_cb;
-    VALUE libvirt_opaque;
+    VALUE libvirt_cb, libvirt_opaque;
 
     Check_Type(opaque, T_HASH);
 
@@ -352,8 +343,7 @@ static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
 {
     virEventTimeoutCallback cb;
     void *op;
-    VALUE libvirt_cb;
-    VALUE libvirt_opaque;
+    VALUE libvirt_cb, libvirt_opaque;
 
     Check_Type(opaque, T_HASH);
 
@@ -378,8 +368,7 @@ static int internal_add_handle_func(int fd, int events,
                                     virEventHandleCallback cb, void *opaque,
                                     virFreeCallback ff)
 {
-    VALUE rubyargs;
-    VALUE res;
+    VALUE rubyargs, res;
 
     rubyargs = rb_hash_new();
     rb_hash_aset(rubyargs, rb_str_new2("libvirt_cb"),
@@ -430,11 +419,9 @@ static void internal_update_handle_func(int watch, int event)
 
 static int internal_remove_handle_func(int watch)
 {
-    VALUE res;
+    VALUE res, libvirt_opaque, ff;
     virFreeCallback ff_cb;
     void *op;
-    VALUE libvirt_opaque;
-    VALUE ff;
 
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(remove_handle), "Symbol") == 0) {
@@ -475,8 +462,7 @@ static int internal_remove_handle_func(int watch)
 static int internal_add_timeout_func(int interval, virEventTimeoutCallback cb,
                                      void *opaque, virFreeCallback ff)
 {
-    VALUE rubyargs;
-    VALUE res;
+    VALUE rubyargs, res;
 
     rubyargs = rb_hash_new();
 
@@ -529,11 +515,9 @@ static void internal_update_timeout_func(int timer, int timeout)
 
 static int internal_remove_timeout_func(int timer)
 {
-    VALUE res;
+    VALUE res, libvirt_opaque, ff;
     virFreeCallback ff_cb;
     void *op;
-    VALUE libvirt_opaque;
-    VALUE ff;
 
     /* call out to the ruby object */
     if (strcmp(rb_obj_classname(remove_timeout), "Symbol") == 0) {
@@ -679,11 +663,8 @@ static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
 {
     VALUE model, label, flags, result, modiv, doiiv, labiv;
     virSecurityModel mod;
-    char *modstr;
-    char *doistr;
-    virSecurityLabel lab;
-    char *labstr;
-    virSecurityLabel oldlab;
+    char *modstr, *doistr, *labstr;
+    virSecurityLabel lab, oldlab;
     int ret;
 
     rb_scan_args(argc, argv, "21", &model, &label, &flags);

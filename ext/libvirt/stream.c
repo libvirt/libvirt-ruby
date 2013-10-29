@@ -102,8 +102,7 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
 static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
                             void *opaque)
 {
-    VALUE result;
-    VALUE retcode, buffer;
+    VALUE result, retcode, buffer;
 
     result = rb_yield_values(2, (VALUE)opaque, INT2NUM(nbytes));
 
@@ -213,10 +212,7 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
 static void stream_event_callback(virStreamPtr st, int events, void *opaque)
 {
     VALUE passthrough = (VALUE)opaque;
-    VALUE cb;
-    VALUE cb_opaque;
-    VALUE news;
-    VALUE s;
+    VALUE cb, cb_opaque, news, s;
 
     if (TYPE(passthrough) != T_ARRAY) {
         rb_raise(rb_eTypeError,
@@ -263,10 +259,7 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque)
  */
 static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
 {
-    VALUE events;
-    VALUE callback;
-    VALUE opaque;
-    VALUE passthrough;
+    VALUE events, callback, opaque, passthrough;
     int ret;
 
     rb_scan_args(argc, argv, "21", &events, &callback, &opaque);
@@ -303,15 +296,9 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
 {
-    int ret;
-
-    ret = virStreamEventUpdateCallback(ruby_libvirt_stream_get(s),
-                                       NUM2INT(events));
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virStreamEventUpdateCallback",
-                                          ruby_libvirt_connect_get(s)));
-
-    return Qnil;
+    ruby_libvirt_generate_call_nil(virStreamEventUpdateCallback,
+                                   ruby_libvirt_connect_get(s),
+                                   ruby_libvirt_stream_get(s), NUM2INT(events));
 }
 
 /*
@@ -323,14 +310,9 @@ static VALUE libvirt_stream_event_update_callback(VALUE s, VALUE events)
  */
 static VALUE libvirt_stream_event_remove_callback(VALUE s)
 {
-    int ret;
-
-    ret = virStreamEventRemoveCallback(ruby_libvirt_stream_get(s));
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virStreamEventRemoveCallback",
-                                          ruby_libvirt_connect_get(s)));
-
-    return Qnil;
+    ruby_libvirt_generate_call_nil(virStreamEventRemoveCallback,
+                                   ruby_libvirt_connect_get(s),
+                                   ruby_libvirt_stream_get(s));
 }
 
 /*
