@@ -71,8 +71,6 @@
     } while(0)
 
 static VALUE c_connect;
-VALUE c_node_security_model;
-static VALUE c_node_info;
 
 static void connect_close(void *c)
 {
@@ -244,7 +242,7 @@ static VALUE libvirt_connect_max_vcpus(int argc, VALUE *argv, VALUE c)
 
 /*
  * call-seq:
- *   conn.node_info -> Libvirt::Connect::Nodeinfo
+ *   conn.node_info -> Hash
  *
  * Call virNodeGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetInfo]
  * to retrieve information about the node for this connection.
@@ -259,15 +257,15 @@ static VALUE libvirt_connect_node_info(VALUE c)
     ruby_libvirt_raise_error_if(r < 0, "virNodeGetInfo",
                                 ruby_libvirt_connect_get(c));
 
-    result = rb_class_new_instance(0, NULL, c_node_info);
-    rb_iv_set(result, "@model", rb_str_new2(nodeinfo.model));
-    rb_iv_set(result, "@memory", ULONG2NUM(nodeinfo.memory));
-    rb_iv_set(result, "@cpus", UINT2NUM(nodeinfo.cpus));
-    rb_iv_set(result, "@mhz", UINT2NUM(nodeinfo.mhz));
-    rb_iv_set(result, "@nodes", UINT2NUM(nodeinfo.nodes));
-    rb_iv_set(result, "@sockets", UINT2NUM(nodeinfo.sockets));
-    rb_iv_set(result, "@cores", UINT2NUM(nodeinfo.cores));
-    rb_iv_set(result, "@threads", UINT2NUM(nodeinfo.threads));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("model"), rb_str_new2(nodeinfo.model));
+    rb_hash_aset(result, rb_str_new2("memory"), ULONG2NUM(nodeinfo.memory));
+    rb_hash_aset(result, rb_str_new2("cpus"), UINT2NUM(nodeinfo.cpus));
+    rb_hash_aset(result, rb_str_new2("mhz"), UINT2NUM(nodeinfo.mhz));
+    rb_hash_aset(result, rb_str_new2("nodes"), UINT2NUM(nodeinfo.nodes));
+    rb_hash_aset(result, rb_str_new2("sockets"), UINT2NUM(nodeinfo.sockets));
+    rb_hash_aset(result, rb_str_new2("cores"), UINT2NUM(nodeinfo.cores));
+    rb_hash_aset(result, rb_str_new2("threads"), UINT2NUM(nodeinfo.threads));
 
     return result;
 }
@@ -346,7 +344,7 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
 #if HAVE_VIRNODEGETSECURITYMODEL
 /*
  * call-seq:
- *   conn.node_security_model -> Libvirt::Connect::NodeSecurityModel
+ *   conn.node_security_model -> Hash
  *
  * Call virNodeGetSecurityModel[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetSecurityModel]
  * to retrieve the security model in use on the host for this connection.
@@ -361,9 +359,9 @@ static VALUE libvirt_connect_node_security_model(VALUE c)
     ruby_libvirt_raise_error_if(r < 0, "virNodeGetSecurityModel",
                                 ruby_libvirt_connect_get(c));
 
-    result = rb_class_new_instance(0, NULL, c_node_security_model);
-    rb_iv_set(result, "@model", rb_str_new2(secmodel.model));
-    rb_iv_set(result, "@doi", rb_str_new2(secmodel.doi));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("model"), rb_str_new2(secmodel.model));
+    rb_hash_aset(result, rb_str_new2("doi"), rb_str_new2(secmodel.doi));
 
     return result;
 }
@@ -2712,28 +2710,6 @@ static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
 void ruby_libvirt_connect_init(void)
 {
     c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
-
-    /*
-     * Class Libvirt::Connect::Nodeinfo
-     */
-    c_node_info = rb_define_class_under(c_connect, "Nodeinfo", rb_cObject);
-    rb_define_attr(c_node_info, "model", 1, 0);
-    rb_define_attr(c_node_info, "memory", 1, 0);
-    rb_define_attr(c_node_info, "cpus", 1, 0);
-    rb_define_attr(c_node_info, "mhz", 1, 0);
-    rb_define_attr(c_node_info, "nodes", 1, 0);
-    rb_define_attr(c_node_info, "sockets", 1, 0);
-    rb_define_attr(c_node_info, "cores", 1, 0);
-    rb_define_attr(c_node_info, "threads", 1, 0);
-
-    /*
-     * Class Libvirt::Connect::NodeSecurityModel
-     */
-    c_node_security_model = rb_define_class_under(c_connect,
-                                                  "NodeSecurityModel",
-                                                  rb_cObject);
-    rb_define_attr(c_node_security_model, "model", 1, 0);
-    rb_define_attr(c_node_security_model, "doi", 1, 0);
 
     rb_define_method(c_connect, "close", libvirt_connect_close, 0);
     rb_define_method(c_connect, "closed?", libvirt_connect_closed_p, 0);

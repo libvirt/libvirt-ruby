@@ -39,7 +39,6 @@ static virStorageVolPtr vol_get(VALUE v)
 
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
 static VALUE c_storage_pool;
-static VALUE c_storage_pool_info;
 
 /*
  * Class Libvirt::StoragePool
@@ -212,7 +211,7 @@ static VALUE libvirt_storage_pool_uuid(VALUE p)
 
 /*
  * call-seq:
- *   pool.info -> Libvirt::StoragePoolInfo
+ *   pool.info -> Hash
  *
  * Call virStoragePoolGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetInfo]
  * to retrieve information about this storage pool.
@@ -227,11 +226,11 @@ static VALUE libvirt_storage_pool_info(VALUE p)
     ruby_libvirt_raise_error_if(r < 0, "virStoragePoolGetInfo",
                                 ruby_libvirt_connect_get(p));
 
-    result = rb_class_new_instance(0, NULL, c_storage_pool_info);
-    rb_iv_set(result, "@state", INT2NUM(info.state));
-    rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
-    rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
-    rb_iv_set(result, "@available", ULL2NUM(info.available));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("state"), INT2NUM(info.state));
+    rb_hash_aset(result, rb_str_new2("capacity"), ULL2NUM(info.capacity));
+    rb_hash_aset(result, rb_str_new2("allocation"), ULL2NUM(info.allocation));
+    rb_hash_aset(result, rb_str_new2("available"), ULL2NUM(info.available));
 
     return result;
 }
@@ -356,7 +355,6 @@ static VALUE libvirt_storage_pool_free(VALUE p)
  * Libvirt::StorageVol
  */
 static VALUE c_storage_vol;
-static VALUE c_storage_vol_info;
 
 static void vol_free(void *d)
 {
@@ -596,7 +594,7 @@ static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
 
 /*
  * call-seq:
- *   vol.info -> Libvirt::StorageVolInfo
+ *   vol.info -> Hash
  *
  * Call virStorageVolGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetInfo]
  * to retrieve information about this storage volume.
@@ -611,10 +609,10 @@ static VALUE libvirt_storage_vol_info(VALUE v)
     ruby_libvirt_raise_error_if(r < 0, "virStorageVolGetInfo",
                                 ruby_libvirt_connect_get(v));
 
-    result = rb_class_new_instance(0, NULL, c_storage_vol_info);
-    rb_iv_set(result, "@type", INT2NUM(info.type));
-    rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
-    rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("type"), INT2NUM(info.type));
+    rb_hash_aset(result, rb_str_new2("capacity"), ULL2NUM(info.capacity));
+    rb_hash_aset(result, rb_str_new2("allocation"), ULL2NUM(info.allocation));
 
     return result;
 }
@@ -756,13 +754,6 @@ void ruby_libvirt_storage_init(void)
      * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo
      */
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
-    c_storage_pool_info = rb_define_class_under(m_libvirt, "StoragePoolInfo",
-                                                rb_cObject);
-    rb_define_attr(c_storage_pool_info, "state", 1, 0);
-    rb_define_attr(c_storage_pool_info, "capacity", 1, 0);
-    rb_define_attr(c_storage_pool_info, "allocation", 1, 0);
-    rb_define_attr(c_storage_pool_info, "available", 1, 0);
-
     c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool",
                                            rb_cObject);
 
@@ -877,15 +868,6 @@ void ruby_libvirt_storage_init(void)
 #endif
 
 #if HAVE_TYPE_VIRSTORAGEVOLPTR
-    /*
-     * Class Libvirt::StorageVol and Libvirt::StorageVolInfo
-     */
-    c_storage_vol_info = rb_define_class_under(m_libvirt, "StorageVolInfo",
-                                               rb_cObject);
-    rb_define_attr(c_storage_vol_info, "type", 1, 0);
-    rb_define_attr(c_storage_vol_info, "capacity", 1, 0);
-    rb_define_attr(c_storage_vol_info, "allocation", 1, 0);
-
     c_storage_vol = rb_define_class_under(m_libvirt, "StorageVol",
                                           rb_cObject);
 

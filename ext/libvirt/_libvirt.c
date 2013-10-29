@@ -642,7 +642,7 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
 /*
  * call-seq:
- *   Libvirt::lxc_enter_security_label(model, label, flags=0) -> Libvirt::Domain::SecurityLabel
+ *   Libvirt::lxc_enter_security_label(model, label, flags=0) -> Hash
  *
  * Call virDomainLxcEnterSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcEnterSecurityLabel]
  * to attach to the security label specified by label in the security model
@@ -660,36 +660,30 @@ static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
 
     rb_scan_args(argc, argv, "21", &model, &label, &flags);
 
-    if (rb_class_of(model) != c_node_security_model) {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Libvirt::Connect::NodeSecurityModel)");
-    }
+    Check_Type(model, T_HASH);
 
-    if (rb_class_of(label) != c_domain_security_label) {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Libvirt::Domain::SecurityLabel)");
-    }
+    Check_Type(label, T_HASH);
 
-    modiv = rb_iv_get(model, "@model");
+    modiv = rb_hash_aref(model, rb_str_new2("@model"));
     modstr = StringValueCStr(modiv);
     memcpy(mod.model, modstr, strlen(modstr));
-    doiiv = rb_iv_get(model, "@doi");
+    doiiv = rb_hash_aref(model, rb_str_new2("@doi"));
     doistr = StringValueCStr(doiiv);
     memcpy(mod.doi, doistr, strlen(doistr));
 
-    labiv = rb_iv_get(label, "@label");
+    labiv = rb_hash_aref(label, rb_str_new2("@label"));
     labstr = StringValueCStr(labiv);
     memcpy(lab.label, labstr, strlen(labstr));
-    lab.enforcing = NUM2INT(rb_iv_get(label, "@enforcing"));
+    lab.enforcing = NUM2INT(rb_hash_aref(label, rb_str_new2("@enforcing")));
 
     ret = virDomainLxcEnterSecurityLabel(&mod, &lab, &oldlab,
                                          ruby_libvirt_value_to_uint(flags));
     ruby_libvirt_raise_error_if(ret < 0, "virDomainLxcEnterSecurityLabel",
                                 NULL);
 
-    result = rb_class_new_instance(0, NULL, c_domain_security_label);
-    rb_iv_set(result, "@label", rb_str_new2(oldlab.label));
-    rb_iv_set(result, "@enforcing", INT2NUM(oldlab.enforcing));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("label"), rb_str_new2(oldlab.label));
+    rb_hash_aset(result, rb_str_new2("enforcing"), INT2NUM(oldlab.enforcing));
 
     return result;
 }

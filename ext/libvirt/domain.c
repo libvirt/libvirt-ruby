@@ -66,31 +66,8 @@ typedef virTypedParameter *virTypedParameterPtr;
 #endif
 
 static VALUE c_domain;
-static VALUE c_domain_info;
-static VALUE c_domain_ifinfo;
-VALUE c_domain_security_label;
-static VALUE c_domain_block_stats;
-#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
-static VALUE c_domain_block_info;
-#endif
-#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
-static VALUE c_domain_memory_stats;
-#endif
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
 static VALUE c_domain_snapshot;
-#endif
-#if HAVE_TYPE_VIRDOMAINJOBINFOPTR
-static VALUE c_domain_job_info;
-#endif
-static VALUE c_domain_vcpuinfo;
-#if HAVE_VIRDOMAINGETCONTROLINFO
-static VALUE c_domain_control_info;
-#endif
-#if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
-static VALUE c_domain_block_job_info;
-#endif
-#if HAVE_TYPE_VIRDOMAINFSINFOPTR
-static VALUE c_domain_fs_info;
 #endif
 
 static void domain_free(void *d)
@@ -519,7 +496,7 @@ static VALUE libvirt_domain_s_restore(VALUE RUBY_LIBVIRT_UNUSED(klass), VALUE c,
 
 /*
  * call-seq:
- *   dom.info -> Libvirt::Domain::Info
+ *   dom.info -> Hash
  *
  * Call virDomainGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
  * to retrieve domain information.
@@ -534,12 +511,13 @@ static VALUE libvirt_domain_info(VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainGetInfo",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_info);
-    rb_iv_set(result, "@state", CHR2FIX(info.state));
-    rb_iv_set(result, "@max_mem", ULONG2NUM(info.maxMem));
-    rb_iv_set(result, "@memory", ULONG2NUM(info.memory));
-    rb_iv_set(result, "@nr_virt_cpu", INT2NUM((int) info.nrVirtCpu));
-    rb_iv_set(result, "@cpu_time", ULL2NUM(info.cpuTime));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("state"), CHR2FIX(info.state));
+    rb_hash_aset(result, rb_str_new2("max_mem"), ULONG2NUM(info.maxMem));
+    rb_hash_aset(result, rb_str_new2("memory"), ULONG2NUM(info.memory));
+    rb_hash_aset(result, rb_str_new2("nr_virt_cpu"),
+                 INT2NUM((int) info.nrVirtCpu));
+    rb_hash_aset(result, rb_str_new2("cpu_time"), ULL2NUM(info.cpuTime));
 
     return result;
 }
@@ -547,7 +525,7 @@ static VALUE libvirt_domain_info(VALUE d)
 #if HAVE_VIRDOMAINGETSECURITYLABEL
 /*
  * call-seq:
- *   dom.security_label -> Libvirt::Domain::SecurityLabel
+ *   dom.security_label -> Hash
  *
  * Call virDomainGetSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabel]
  * to retrieve the security label applied to this domain.
@@ -562,9 +540,9 @@ static VALUE libvirt_domain_security_label(VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainGetSecurityLabel",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_security_label);
-    rb_iv_set(result, "@label", rb_str_new2(seclabel.label));
-    rb_iv_set(result, "@enforcing", INT2NUM(seclabel.enforcing));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("label"), rb_str_new2(seclabel.label));
+    rb_hash_aset(result, rb_str_new2("enforcing"), INT2NUM(seclabel.enforcing));
 
     return result;
 }
@@ -572,7 +550,7 @@ static VALUE libvirt_domain_security_label(VALUE d)
 
 /*
  * call-seq:
- *   dom.block_stats(path) -> Libvirt::Domain::BlockStats
+ *   dom.block_stats(path) -> Hash
  *
  * Call virDomainBlockStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStats]
  * to retrieve statistics about domain block device path.
@@ -588,12 +566,12 @@ static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
     ruby_libvirt_raise_error_if(r < 0, "virDomainBlockStats",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_block_stats);
-    rb_iv_set(result, "@rd_req", LL2NUM(stats.rd_req));
-    rb_iv_set(result, "@rd_bytes", LL2NUM(stats.rd_bytes));
-    rb_iv_set(result, "@wr_req", LL2NUM(stats.wr_req));
-    rb_iv_set(result, "@wr_bytes", LL2NUM(stats.wr_bytes));
-    rb_iv_set(result, "@errs", LL2NUM(stats.errs));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("rd_req"), LL2NUM(stats.rd_req));
+    rb_hash_aset(result, rb_str_new2("rd_bytes"), LL2NUM(stats.rd_bytes));
+    rb_hash_aset(result, rb_str_new2("wr_req"), LL2NUM(stats.wr_req));
+    rb_hash_aset(result, rb_str_new2("wr_bytes"), LL2NUM(stats.wr_bytes));
+    rb_hash_aset(result, rb_str_new2("errs"), LL2NUM(stats.errs));
 
     return result;
 }
@@ -601,7 +579,7 @@ static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
 /*
  * call-seq:
- *   dom.memory_stats(flags=0) -> [ Libvirt::Domain::MemoryStats ]
+ *   dom.memory_stats(flags=0) -> [ Hash ]
  *
  * Call virDomainMemoryStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryStats]
  * to retrieve statistics about the amount of memory consumed by a domain.
@@ -619,21 +597,11 @@ static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainMemoryStats",
                                 ruby_libvirt_connect_get(d));
 
-    /* FIXME: the right rubyish way to have done this would have been to
-     * create a hash with the values, something like:
-     *
-     * { 'SWAP_IN' => 0, 'SWAP_OUT' => 98, 'MAJOR_FAULT' => 45,
-     *   'MINOR_FAULT' => 55, 'UNUSED' => 455, 'AVAILABLE' => 98 }
-     *
-     * Unfortunately this has already been released with the array version
-     * so we have to maintain compatibility with that.  We should probably add
-     * a new memory_stats-like call that properly creates the hash.
-     */
     result = rb_ary_new2(r);
     for (i = 0; i < r; i++) {
-        tmp = rb_class_new_instance(0, NULL, c_domain_memory_stats);
-        rb_iv_set(tmp, "@tag", INT2NUM(stats[i].tag));
-        rb_iv_set(tmp, "@val", ULL2NUM(stats[i].val));
+        tmp = rb_hash_new();
+        rb_hash_aset(tmp, rb_str_new2("tag"), INT2NUM(stats[i].tag));
+        rb_hash_aset(tmp, rb_str_new2("val"), ULL2NUM(stats[i].val));
 
         rb_ary_store(result, i, tmp);
     }
@@ -645,7 +613,7 @@ static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
 /*
  * call-seq:
- *   dom.blockinfo(path, flags=0) -> Libvirt::Domain::BlockInfo
+ *   dom.blockinfo(path, flags=0) -> Hash
  *
  * Call virDomainGetBlockInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockInfo]
  * to retrieve information about the backing file path for the domain.
@@ -663,10 +631,10 @@ static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainGetBlockInfo",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_block_info);
-    rb_iv_set(result, "@capacity", ULL2NUM(info.capacity));
-    rb_iv_set(result, "@allocation", ULL2NUM(info.allocation));
-    rb_iv_set(result, "@physical", ULL2NUM(info.physical));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("capacity"), ULL2NUM(info.capacity));
+    rb_hash_aset(result, rb_str_new2("allocation"), ULL2NUM(info.allocation));
+    rb_hash_aset(result, rb_str_new2("physical"), ULL2NUM(info.physical));
 
     return result;
 }
@@ -736,7 +704,7 @@ static VALUE libvirt_domain_memory_peek(int argc, VALUE *argv, VALUE d)
 #endif
 
 /* call-seq:
- *   dom.vcpus -> [ Libvirt::Domain::VCPUInfo ]
+ *   dom.vcpus -> [ Hash ]
  *
  * Call virDomainGetVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpus]
  * to retrieve detailed information about the state of a domain's virtual CPUs.
@@ -789,17 +757,19 @@ static VALUE libvirt_domain_vcpus(VALUE d)
     result = rb_ary_new();
 
     for (i = 0; i < dominfo.nrVirtCpu; i++) {
-        vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
-        rb_iv_set(vcpuinfo, "@number", UINT2NUM(i));
+        vcpuinfo = rb_hash_new();
+        rb_hash_aset(vcpuinfo, rb_str_new2("number"), UINT2NUM(i));
         if (cpuinfo != NULL) {
-            rb_iv_set(vcpuinfo, "@state", INT2NUM(cpuinfo[i].state));
-            rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM(cpuinfo[i].cpuTime));
-            rb_iv_set(vcpuinfo, "@cpu", INT2NUM(cpuinfo[i].cpu));
+            rb_hash_aset(vcpuinfo, rb_str_new2("state"),
+                         INT2NUM(cpuinfo[i].state));
+            rb_hash_aset(vcpuinfo, rb_str_new2("cpu_time"),
+                         ULL2NUM(cpuinfo[i].cpuTime));
+            rb_hash_aset(vcpuinfo, rb_str_new2("cpu"), INT2NUM(cpuinfo[i].cpu));
         }
         else {
-            rb_iv_set(vcpuinfo, "@state", Qnil);
-            rb_iv_set(vcpuinfo, "@cpu_time", Qnil);
-            rb_iv_set(vcpuinfo, "@cpu", Qnil);
+            rb_hash_aset(vcpuinfo, rb_str_new2("state"), Qnil);
+            rb_hash_aset(vcpuinfo, rb_str_new2("cpu_time"), Qnil);
+            rb_hash_aset(vcpuinfo, rb_str_new2("cpu"), Qnil);
         }
 
         p2vcpumap = rb_ary_new();
@@ -808,7 +778,7 @@ static VALUE libvirt_domain_vcpus(VALUE d)
             rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap, cpumaplen,
                                                    i, j)) ? Qtrue : Qfalse);
         }
-        rb_iv_set(vcpuinfo, "@cpumap", p2vcpumap);
+        rb_hash_aset(vcpuinfo, rb_str_new2("cpumap"), p2vcpumap);
 
         rb_ary_push(result, vcpuinfo);
     }
@@ -850,34 +820,33 @@ static VALUE libvirt_domain_persistent_p(VALUE d)
 
 /*
  * call-seq:
- *   dom.ifinfo(if) -> Libvirt::Domain::IfInfo
+ *   dom.ifinfo(if) -> Hash
  *
  * Call virDomainInterfaceStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInterfaceStats]
  * to retrieve statistics about domain interface if.
  */
 static VALUE libvirt_domain_if_stats(VALUE d, VALUE sif)
 {
-    char *ifname = ruby_libvirt_get_cstring_or_null(sif);
     virDomainInterfaceStatsStruct ifinfo;
     int r;
-    VALUE result = Qnil;
+    VALUE result;
 
-    if (ifname) {
-        r = virDomainInterfaceStats(ruby_libvirt_domain_get(d), ifname, &ifinfo,
-                                    sizeof(virDomainInterfaceStatsStruct));
-        ruby_libvirt_raise_error_if(r < 0, "virDomainInterfaceStats",
-                                    ruby_libvirt_connect_get(d));
+    r = virDomainInterfaceStats(ruby_libvirt_domain_get(d),
+                                StringValueCStr(sif), &ifinfo,
+                                sizeof(virDomainInterfaceStatsStruct));
+    ruby_libvirt_raise_error_if(r < 0, "virDomainInterfaceStats",
+                                ruby_libvirt_connect_get(d));
 
-        result = rb_class_new_instance(0, NULL, c_domain_ifinfo);
-        rb_iv_set(result, "@rx_bytes", LL2NUM(ifinfo.rx_bytes));
-        rb_iv_set(result, "@rx_packets", LL2NUM(ifinfo.rx_packets));
-        rb_iv_set(result, "@rx_errs", LL2NUM(ifinfo.rx_errs));
-        rb_iv_set(result, "@rx_drop", LL2NUM(ifinfo.rx_drop));
-        rb_iv_set(result, "@tx_bytes", LL2NUM(ifinfo.tx_bytes));
-        rb_iv_set(result, "@tx_packets", LL2NUM(ifinfo.tx_packets));
-        rb_iv_set(result, "@tx_errs", LL2NUM(ifinfo.tx_errs));
-        rb_iv_set(result, "@tx_drop", LL2NUM(ifinfo.tx_drop));
-    }
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("rx_bytes"), LL2NUM(ifinfo.rx_bytes));
+    rb_hash_aset(result, rb_str_new2("rx_packets"), LL2NUM(ifinfo.rx_packets));
+    rb_hash_aset(result, rb_str_new2("rx_errs"), LL2NUM(ifinfo.rx_errs));
+    rb_hash_aset(result, rb_str_new2("rx_drop"), LL2NUM(ifinfo.rx_drop));
+    rb_hash_aset(result, rb_str_new2("tx_bytes"), LL2NUM(ifinfo.tx_bytes));
+    rb_hash_aset(result, rb_str_new2("tx_packets"), LL2NUM(ifinfo.tx_packets));
+    rb_hash_aset(result, rb_str_new2("tx_errs"), LL2NUM(ifinfo.tx_errs));
+    rb_hash_aset(result, rb_str_new2("tx_drop"), LL2NUM(ifinfo.tx_drop));
+
     return result;
 }
 
@@ -1618,7 +1587,7 @@ static VALUE libvirt_domain_snapshot_name(VALUE s)
 #if HAVE_TYPE_VIRDOMAINJOBINFOPTR
 /*
  * call-seq:
- *   dom.job_info -> Libvirt::Domain::JobInfo
+ *   dom.job_info -> Hash
  *
  * Call virDomainGetJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo]
  * to retrieve the current state of the running domain job.
@@ -1633,19 +1602,27 @@ static VALUE libvirt_domain_job_info(VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainGetJobInfo",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_job_info);
-    rb_iv_set(result, "@type", INT2NUM(info.type));
-    rb_iv_set(result, "@time_elapsed", ULL2NUM(info.timeElapsed));
-    rb_iv_set(result, "@time_remaining", ULL2NUM(info.timeRemaining));
-    rb_iv_set(result, "@data_total", ULL2NUM(info.dataTotal));
-    rb_iv_set(result, "@data_processed", ULL2NUM(info.dataProcessed));
-    rb_iv_set(result, "@data_remaining", ULL2NUM(info.dataRemaining));
-    rb_iv_set(result, "@mem_total", ULL2NUM(info.memTotal));
-    rb_iv_set(result, "@mem_processed", ULL2NUM(info.memProcessed));
-    rb_iv_set(result, "@mem_remaining", ULL2NUM(info.memRemaining));
-    rb_iv_set(result, "@file_total", ULL2NUM(info.fileTotal));
-    rb_iv_set(result, "@file_processed", ULL2NUM(info.fileProcessed));
-    rb_iv_set(result, "@file_remaining", ULL2NUM(info.fileRemaining));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("type"), INT2NUM(info.type));
+    rb_hash_aset(result, rb_str_new2("time_elapsed"),
+                 ULL2NUM(info.timeElapsed));
+    rb_hash_aset(result, rb_str_new2("time_remaining"),
+                 ULL2NUM(info.timeRemaining));
+    rb_hash_aset(result, rb_str_new2("data_total"), ULL2NUM(info.dataTotal));
+    rb_hash_aset(result, rb_str_new2("data_processed"),
+                 ULL2NUM(info.dataProcessed));
+    rb_hash_aset(result, rb_str_new2("data_remaining"),
+                 ULL2NUM(info.dataRemaining));
+    rb_hash_aset(result, rb_str_new2("mem_total"), ULL2NUM(info.memTotal));
+    rb_hash_aset(result, rb_str_new2("mem_processed"),
+                 ULL2NUM(info.memProcessed));
+    rb_hash_aset(result, rb_str_new2("mem_remaining"),
+                 ULL2NUM(info.memRemaining));
+    rb_hash_aset(result, rb_str_new2("file_total"), ULL2NUM(info.fileTotal));
+    rb_hash_aset(result, rb_str_new2("file_processed"),
+                 ULL2NUM(info.fileProcessed));
+    rb_hash_aset(result, rb_str_new2("file_remaining"),
+                 ULL2NUM(info.fileRemaining));
 
     return result;
 }
@@ -1673,10 +1650,8 @@ struct create_sched_type_args {
 
 static VALUE create_sched_type_array(VALUE input)
 {
-    struct create_sched_type_args *args;
+    struct create_sched_type_args *args = (struct create_sched_type_args *)input;
     VALUE result;
-
-    args = (struct create_sched_type_args *)input;
 
     result = rb_ary_new();
     rb_ary_push(result, rb_str_new2(args->type));
@@ -2190,7 +2165,7 @@ static VALUE libvirt_domain_inject_nmi(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETCONTROLINFO
 /*
  * call-seq:
- *   dom.control_info(flags=0) -> Libvirt::Domain::ControlInfo
+ *   dom.control_info(flags=0) -> Hash
  *
  * Call virDomainGetControlInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetControlInfo]
  * to retrieve domain control interface information.
@@ -2208,10 +2183,10 @@ static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainGetControlInfo",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_control_info);
-    rb_iv_set(result, "@state", ULONG2NUM(info.state));
-    rb_iv_set(result, "@details", ULONG2NUM(info.details));
-    rb_iv_set(result, "@stateTime", ULL2NUM(info.stateTime));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("state"), ULONG2NUM(info.state));
+    rb_hash_aset(result, rb_str_new2("details"), ULONG2NUM(info.details));
+    rb_hash_aset(result, rb_str_new2("stateTime"), ULL2NUM(info.stateTime));
 
     return result;
 }
@@ -3015,9 +2990,11 @@ static VALUE libvirt_domain_security_label_list(VALUE d)
     result = rb_ary_new2(r);
 
     for (i = 0; i < r; i++) {
-        tmp = rb_class_new_instance(0, NULL, c_domain_security_label);
-        rb_iv_set(tmp, "@label", rb_str_new2(seclabels[i].label));
-        rb_iv_set(tmp, "@enforcing", INT2NUM(seclabels[i].enforcing));
+        tmp = rb_hash_new();
+        rb_hash_aset(tmp, rb_str_new2("label"),
+                     rb_str_new2(seclabels[i].label));
+        rb_hash_aset(tmp, rb_str_new2("enforcing"),
+                     INT2NUM(seclabels[i].enforcing));
 
         rb_ary_store(result, i, tmp);
     }
@@ -3308,7 +3285,7 @@ static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
 #if HAVE_VIRDOMAINGETBLOCKJOBINFO
 /*
  * call-seq:
- *   dom.block_job_info(disk, flags=0) -> Libvirt::Domain::BlockJobInfo
+ *   dom.block_job_info(disk, flags=0) -> Hash
  *
  * Call virDomainGetBlockJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockJobInfo]
  * to get block job information for a given disk.
@@ -3329,11 +3306,11 @@ static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_raise_error_if(r < 0, "virDomainGetBlockJobInfo",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_class_new_instance(0, NULL, c_domain_block_job_info);
-    rb_iv_set(result, "@type", UINT2NUM(info.type));
-    rb_iv_set(result, "@bandwidth", ULONG2NUM(info.bandwidth));
-    rb_iv_set(result, "@cur", ULL2NUM(info.cur));
-    rb_iv_set(result, "@end", ULL2NUM(info.end));
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("type"), UINT2NUM(info.type));
+    rb_hash_aset(result, rb_str_new2("bandwidth"), ULONG2NUM(info.bandwidth));
+    rb_hash_aset(result, rb_str_new2("cur"), ULL2NUM(info.cur));
+    rb_hash_aset(result, rb_str_new2("end"), ULL2NUM(info.end));
 
     return result;
 }
@@ -4535,112 +4512,27 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_current_snapshot, -1);
 #endif
 
-    /*
-     * Class Libvirt::Domain::Info
-     */
-    c_domain_info = rb_define_class_under(c_domain, "Info", rb_cObject);
-    rb_define_attr(c_domain_info, "state", 1, 0);
-    rb_define_attr(c_domain_info, "max_mem", 1, 0);
-    rb_define_attr(c_domain_info, "memory", 1, 0);
-    rb_define_attr(c_domain_info, "nr_virt_cpu", 1, 0);
-    rb_define_attr(c_domain_info, "cpu_time", 1, 0);
-
-    /*
-     * Class Libvirt::Domain::InterfaceInfo
-     */
-    c_domain_ifinfo = rb_define_class_under(c_domain, "InterfaceInfo",
-                                            rb_cObject);
-    rb_define_attr(c_domain_ifinfo, "rx_bytes", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "rx_packets", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "rx_errs", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "rx_drop", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "tx_bytes", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "tx_packets", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "tx_errs", 1, 0);
-    rb_define_attr(c_domain_ifinfo, "tx_drop", 1, 0);
-
-    /*
-     * Class Libvirt::Domain::SecurityLabel
-     */
-    c_domain_security_label = rb_define_class_under(c_domain, "SecurityLabel",
-                                                    rb_cObject);
-    rb_define_attr(c_domain_security_label, "label", 1, 0);
-    rb_define_attr(c_domain_security_label, "enforcing", 1, 0);
-
-#if HAVE_TYPE_VIRDOMAINFSINFOPTR
-    /*
-     * Class Libvirt::Domain::FSInfo
-     */
-    c_domain_fs_info = rb_define_class_under(c_domain, "FSInfo", rb_cObject);
-    rb_define_attr(c_domain_fs_info, "@mountpoint", 1, 0);
-    rb_define_attr(c_domain_fs_info, "@name", 1, 0);
-    rb_define_attr(c_domain_fs_info, "@fstype", 1, 0);
-    rb_define_attr(c_domain_fs_info, "@aliases", 1, 0);
-#endif
-
-    /*
-     * Class Libvirt::Domain::BlockStats
-     */
-    c_domain_block_stats = rb_define_class_under(c_domain, "BlockStats",
-                                                 rb_cObject);
-    rb_define_attr(c_domain_block_stats, "rd_req", 1, 0);
-    rb_define_attr(c_domain_block_stats, "rd_bytes", 1, 0);
-    rb_define_attr(c_domain_block_stats, "wr_req", 1, 0);
-    rb_define_attr(c_domain_block_stats, "wr_bytes", 1, 0);
-    rb_define_attr(c_domain_block_stats, "errs", 1, 0);
-
-#if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
-    /*
-     * Class Libvirt::Domain::BlockJobInfo
-     */
-    c_domain_block_job_info = rb_define_class_under(c_domain, "BlockJobInfo",
-                                                    rb_cObject);
-    rb_define_attr(c_domain_block_job_info, "type", 1, 0);
-    rb_define_attr(c_domain_block_job_info, "bandwidth", 1, 0);
-    rb_define_attr(c_domain_block_job_info, "cur", 1, 0);
-    rb_define_attr(c_domain_block_job_info, "end", 1, 0);
-#endif
-
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
-    /*
-     * Class Libvirt::Domain::MemoryStats
-     */
-    c_domain_memory_stats = rb_define_class_under(c_domain, "MemoryStats",
-                                                  rb_cObject);
-    rb_define_attr(c_domain_memory_stats, "tag", 1, 0);
-    rb_define_attr(c_domain_memory_stats, "value", 1, 0);
-
-    rb_define_const(c_domain_memory_stats, "SWAP_IN",
+    rb_define_const(c_domain, "MEMORY_STAT_SWAP_IN",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_SWAP_IN));
-    rb_define_const(c_domain_memory_stats, "SWAP_OUT",
+    rb_define_const(c_domain, "MEMORY_STAT_SWAP_OUT",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_SWAP_OUT));
-    rb_define_const(c_domain_memory_stats, "MAJOR_FAULT",
+    rb_define_const(c_domain, "MEMORY_STAT_MAJOR_FAULT",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_MAJOR_FAULT));
-    rb_define_const(c_domain_memory_stats, "MINOR_FAULT",
+    rb_define_const(c_domain, "MEMORY_STAT_MINOR_FAULT",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_MINOR_FAULT));
-    rb_define_const(c_domain_memory_stats, "UNUSED",
+    rb_define_const(c_domain, "MEMORY_STAT_UNUSED",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_UNUSED));
-    rb_define_const(c_domain_memory_stats, "AVAILABLE",
+    rb_define_const(c_domain, "MEMORY_STAT_AVAILABLE",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_AVAILABLE));
 #if HAVE_CONST_VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON
-    rb_define_const(c_domain_memory_stats, "ACTUAL_BALLOON",
+    rb_define_const(c_domain, "MEMORY_STAT_ACTUAL_BALLOON",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON));
 #endif
 #if HAVE_CONST_VIR_DOMAIN_MEMORY_STATE_RSS
-    rb_define_const(c_domain_memory_stats, "RSS",
+    rb_define_const(c_domain, "MEMORY_STAT_RSS",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_RSS));
 #endif
-#endif
-
-#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
-    /*
-     * Class Libvirt::Domain::BlockInfo
-     */
-    c_domain_block_info = rb_define_class_under(c_domain, "BlockInfo",
-                                                rb_cObject);
-    rb_define_attr(c_domain_block_info, "capacity", 1, 0);
-    rb_define_attr(c_domain_block_info, "allocation", 1, 0);
-    rb_define_attr(c_domain_block_info, "physical", 1, 0);
 #endif
 
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
@@ -4671,47 +4563,23 @@ void ruby_libvirt_domain_init(void)
                      0);
 #endif
 
-    /*
-     * Class Libvirt::Domain::VCPUInfo
-     */
-    c_domain_vcpuinfo = rb_define_class_under(c_domain, "VCPUInfo", rb_cObject);
-    rb_define_const(c_domain_vcpuinfo, "OFFLINE", VIR_VCPU_OFFLINE);
-    rb_define_const(c_domain_vcpuinfo, "RUNNING", VIR_VCPU_RUNNING);
-    rb_define_const(c_domain_vcpuinfo, "BLOCKED", VIR_VCPU_BLOCKED);
-    rb_define_attr(c_domain_vcpuinfo, "number", 1, 0);
-    rb_define_attr(c_domain_vcpuinfo, "state", 1, 0);
-    rb_define_attr(c_domain_vcpuinfo, "cpu_time", 1, 0);
-    rb_define_attr(c_domain_vcpuinfo, "cpu", 1, 0);
-    rb_define_attr(c_domain_vcpuinfo, "cpumap", 1, 0);
+    rb_define_const(c_domain, "VCPU_OFFLINE", VIR_VCPU_OFFLINE);
+    rb_define_const(c_domain, "VCPU_RUNNING", VIR_VCPU_RUNNING);
+    rb_define_const(c_domain, "VCPU_BLOCKED", VIR_VCPU_BLOCKED);
 
 #if HAVE_TYPE_VIRDOMAINJOBINFOPTR
-    /*
-     * Class Libvirt::Domain::JobInfo
-     */
-    c_domain_job_info = rb_define_class_under(c_domain, "JobInfo", rb_cObject);
-    rb_define_const(c_domain_job_info, "NONE", INT2NUM(VIR_DOMAIN_JOB_NONE));
-    rb_define_const(c_domain_job_info, "BOUNDED",
+    rb_define_const(c_domain, "JOB_NONE",
+                    INT2NUM(VIR_DOMAIN_JOB_NONE));
+    rb_define_const(c_domain, "JOB_BOUNDED",
                     INT2NUM(VIR_DOMAIN_JOB_BOUNDED));
-    rb_define_const(c_domain_job_info, "UNBOUNDED",
+    rb_define_const(c_domain, "JOB_UNBOUNDED",
                     INT2NUM(VIR_DOMAIN_JOB_UNBOUNDED));
-    rb_define_const(c_domain_job_info, "COMPLETED",
+    rb_define_const(c_domain, "JOB_COMPLETED",
                     INT2NUM(VIR_DOMAIN_JOB_COMPLETED));
-    rb_define_const(c_domain_job_info, "FAILED",
+    rb_define_const(c_domain, "JOB_FAILED",
                     INT2NUM(VIR_DOMAIN_JOB_FAILED));
-    rb_define_const(c_domain_job_info, "CANCELLED",
+    rb_define_const(c_domain, "JOB_CANCELLED",
                     INT2NUM(VIR_DOMAIN_JOB_CANCELLED));
-    rb_define_attr(c_domain_job_info, "type", 1, 0);
-    rb_define_attr(c_domain_job_info, "time_elapsed", 1, 0);
-    rb_define_attr(c_domain_job_info, "time_remaining", 1, 0);
-    rb_define_attr(c_domain_job_info, "data_total", 1, 0);
-    rb_define_attr(c_domain_job_info, "data_processed", 1, 0);
-    rb_define_attr(c_domain_job_info, "data_remaining", 1, 0);
-    rb_define_attr(c_domain_job_info, "mem_total", 1, 0);
-    rb_define_attr(c_domain_job_info, "mem_processed", 1, 0);
-    rb_define_attr(c_domain_job_info, "mem_remaining", 1, 0);
-    rb_define_attr(c_domain_job_info, "file_total", 1, 0);
-    rb_define_attr(c_domain_job_info, "file_processed", 1, 0);
-    rb_define_attr(c_domain_job_info, "file_remaining", 1, 0);
 
     rb_define_method(c_domain, "job_info", libvirt_domain_job_info, 0);
     rb_define_method(c_domain, "abort_job", libvirt_domain_abort_job, 0);
@@ -4890,22 +4758,11 @@ void ruby_libvirt_domain_init(void)
 #endif
 
 #if HAVE_VIRDOMAINGETCONTROLINFO
-    /*
-     * Class Libvirt::Domain::ControlInfo
-     */
-    c_domain_control_info = rb_define_class_under(c_domain, "ControlInfo",
-                                                  rb_cObject);
-    rb_define_attr(c_domain_control_info, "state", 1, 0);
-    rb_define_attr(c_domain_control_info, "details", 1, 0);
-    rb_define_attr(c_domain_control_info, "stateTime", 1, 0);
-
-    rb_define_const(c_domain_control_info, "CONTROL_OK",
-                    INT2NUM(VIR_DOMAIN_CONTROL_OK));
-    rb_define_const(c_domain_control_info, "CONTROL_JOB",
-                    INT2NUM(VIR_DOMAIN_CONTROL_JOB));
-    rb_define_const(c_domain_control_info, "CONTROL_OCCUPIED",
+    rb_define_const(c_domain, "CONTROL_OK", INT2NUM(VIR_DOMAIN_CONTROL_OK));
+    rb_define_const(c_domain, "CONTROL_JOB", INT2NUM(VIR_DOMAIN_CONTROL_JOB));
+    rb_define_const(c_domain, "CONTROL_OCCUPIED",
                     INT2NUM(VIR_DOMAIN_CONTROL_OCCUPIED));
-    rb_define_const(c_domain_control_info, "CONTROL_ERROR",
+    rb_define_const(c_domain, "CONTROL_ERROR",
                     INT2NUM(VIR_DOMAIN_CONTROL_ERROR));
 
     rb_define_method(c_domain, "control_info", libvirt_domain_control_info, -1);
