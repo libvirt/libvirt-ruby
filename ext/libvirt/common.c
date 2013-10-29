@@ -383,7 +383,7 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
             continue;
         }
 
-        switch(params[i].type) {
+        switch (params[i].type) {
         case VIR_TYPED_PARAM_INT:
             params[i].value.i = NUM2INT(val);
             break;
@@ -411,10 +411,8 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
     }
 
     errname = set_cb(d, flags, params, nparams, opaque);
-    if (errname != NULL) {
-        rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError, errname,
-                                               ruby_libvirt_connect_get(d)));
-    }
+    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
+                                                  ruby_libvirt_connect_get(d)));
 
     return Qnil;
 }

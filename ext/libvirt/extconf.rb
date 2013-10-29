@@ -210,6 +210,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainBlockStatsFlags',
                   'virDomainGetNumaParameters',
                   'virConnectGetCPUModelNames',
+                  'virDomainMigrate3',
                 ]
 
 libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',

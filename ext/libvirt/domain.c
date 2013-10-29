@@ -3853,6 +3853,119 @@ static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINMIGRATE3
+struct parameter_args {
+    virTypedParameter *params;
+    int i;
+};
+
+static int param_assign(VALUE key, VALUE val, VALUE in)
+{
+    struct parameter_args *args = (struct parameter_args *)in;
+    char *keyname;
+
+    keyname = StringValueCStr(key);
+
+    strncpy(args->params[args->i].field, keyname, VIR_TYPED_PARAM_FIELD_LENGTH);
+
+    if (strcmp(VIR_MIGRATE_PARAM_URI, keyname) == 0) {
+        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
+        args->params[args->i].value.s = StringValueCStr(val);
+    }
+    else if (strcmp(VIR_MIGRATE_PARAM_DEST_NAME, keyname) == 0) {
+        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
+        args->params[args->i].value.s = StringValueCStr(val);
+    }
+    else if (strcmp(VIR_MIGRATE_PARAM_DEST_XML, keyname) == 0) {
+        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
+        args->params[args->i].value.s = StringValueCStr(val);
+    }
+    else if (strcmp(VIR_MIGRATE_PARAM_BANDWIDTH, keyname) == 0) {
+        args->params[args->i].type = VIR_TYPED_PARAM_ULLONG;
+        args->params[args->i].value.ul = NUM2ULL(val);
+    }
+    else if (strcmp(VIR_MIGRATE_PARAM_GRAPHICS_URI, keyname) == 0) {
+        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
+        args->params[args->i].value.s = StringValueCStr(val);
+    }
+    else if (strcmp(VIR_MIGRATE_PARAM_LISTEN_ADDRESS, keyname) == 0) {
+        args->params[args->i].type = VIR_TYPED_PARAM_STRING;
+        args->params[args->i].value.s = StringValueCStr(val);
+    }
+    else {
+        rb_raise(rb_eArgError, "Unknown key %s", keyname);
+    }
+
+    (args->i)++;
+
+    return ST_CONTINUE;
+}
+
+/*
+ * call-seq:
+ *   dom.migrate3(dconn, Hash=nil, flags=0) -> Libvirt::Domain
+ *
+ * Call virDomainMigrate3[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate2]
+ * to migrate a domain from the host on this connection to the connection
+ * referenced in dconn.
+ */
+static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
+{
+    VALUE dconn, hash, flags;
+    virDomainPtr ddom = NULL;
+    struct parameter_args args;
+
+    rb_scan_args(argc, argv, "12", &dconn, &hash, &flags);
+
+    Check_Type(hash, T_HASH);
+
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, param_assign, (VALUE)&args);
+
+    ddom = virDomainMigrate3(ruby_libvirt_domain_get(d),
+                             ruby_libvirt_connect_get(dconn), args.params,
+                             RHASH_SIZE(hash),
+                             ruby_libvirt_value_to_uint(flags));
+
+    _E(ddom == NULL, ruby_libvirt_create_error(e_Error, "virDomainMigrate3",
+                                               ruby_libvirt_connect_get(d)));
+
+    return ruby_libvirt_domain_new(ddom, dconn);
+}
+
+/*
+ * call-seq:
+ *   dom.migrate_to_uri3(duri=nil, Hash=nil, flags=0) -> nil
+ *
+ * Call virDomainMigrateToURI3[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI3]
+ * to migrate a domain from the host on this connection to the host whose
+ * libvirt URI is duri.
+ */
+static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
+{
+    VALUE duri, hash, flags;
+    struct parameter_args args;
+
+    rb_scan_args(argc, argv, "03", &duri, &hash, &flags);
+
+    Check_Type(hash, T_HASH);
+
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, param_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainMigrateToURI3,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   ruby_libvirt_get_cstring_or_null(duri),
+                                   args.params, RHASH_SIZE(hash),
+                                   ruby_libvirt_value_to_ulong(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5256,5 +5369,10 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINLXCENTERNAMESPACE
     rb_define_method(c_domain, "lxc_enter_namespace",
                      libvirt_domain_lxc_enter_namespace, -1);
+#endif
+#if HAVE_VIRDOMAINMIGRATE3
+    rb_define_method(c_domain, "migrate3", libvirt_domain_migrate3, -1);
+    rb_define_method(c_domain, "migrate_to_uri3",
+                     libvirt_domain_migrate_to_uri3, -1);
 #endif
 }
