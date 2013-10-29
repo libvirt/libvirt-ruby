@@ -5396,4 +5396,52 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "migrate_to_uri3",
                      libvirt_domain_migrate_to_uri3, -1);
 #endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_SHALLOW
+    rb_define_const(c_domain, "BLOCK_COMMIT_SHALLOW",
+                    INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_SHALLOW));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_DELETE
+    rb_define_const(c_domain, "BLOCK_COMMIT_DELETE",
+                    INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_DELETE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN
+    rb_define_const(c_domain, "BLOCK_JOB_TYPE_UNKNOWN",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_PULL
+    rb_define_const(c_domain, "BLOCK_JOB_TYPE_PULL",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_PULL));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_COPY
+    rb_define_const(c_domain, "BLOCK_JOB_TYPE_COPY",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_COPY));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_COMMIT
+    rb_define_const(c_domain, "BLOCK_JOB_TYPE_COMMIT",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_COMMIT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC
+    rb_define_const(c_domain, "BLOCK_JOB_ABORT_ASYNC",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT
+    rb_define_const(c_domain, "BLOCK_JOB_ABORT_PIVOT",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_COMPLETED
+    rb_define_const(c_domain, "BLOCK_JOB_COMPLETED",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_COMPLETED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_FAILED
+    rb_define_const(c_domain, "BLOCK_JOB_FAILED",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_FAILED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_CANCELED
+    rb_define_const(c_domain, "BLOCK_JOB_CANCELED",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_CANCELED));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_READY
+    rb_define_const(c_domain, "BLOCK_JOB_READY",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_READY));
+#endif
 }

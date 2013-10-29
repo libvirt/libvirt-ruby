@@ -383,6 +383,18 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_SNAPSHOT_DELETE_METADATA_ONLY',
                    'VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY',
                    'VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX',
+                   'VIR_DOMAIN_BLOCK_COMMIT_SHALLOW',
+                   'VIR_DOMAIN_BLOCK_COMMIT_DELETE',
+                   'VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN',
+                   'VIR_DOMAIN_BLOCK_JOB_TYPE_PULL',
+                   'VIR_DOMAIN_BLOCK_JOB_TYPE_COPY',
+                   'VIR_DOMAIN_BLOCK_JOB_TYPE_COMMIT',
+                   'VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC',
+                   'VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT',
+                   'VIR_DOMAIN_BLOCK_JOB_COMPLETED',
+                   'VIR_DOMAIN_BLOCK_JOB_FAILED',
+                   'VIR_DOMAIN_BLOCK_JOB_CANCELED',
+                   'VIR_DOMAIN_BLOCK_JOB_READY',
                  ]
 
 virterror_consts = [
