@@ -394,17 +394,20 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
 {
     char *errname;
     struct ruby_libvirt_parameter_assign_args args;
+    unsigned long hashsize;
 
     /* make sure input is a hash */
     Check_Type(input, T_HASH);
 
-    if (RHASH_SIZE(input) == 0) {
+    hashsize = RHASH_SIZE(input);
+
+    if (hashsize == 0) {
         return Qnil;
     }
 
     args.allowed = allowed;
     args.num_allowed = num_allowed;
-    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(input));
+    args.params = alloca(sizeof(virTypedParameter) * hashsize);
     args.i = 0;
 
     rb_hash_foreach(input, ruby_libvirt_typed_parameter_assign, (VALUE)&args);

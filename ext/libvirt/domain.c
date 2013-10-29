@@ -3930,18 +3930,26 @@ static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
     VALUE dconn, hash, flags;
     virDomainPtr ddom = NULL;
     struct ruby_libvirt_parameter_assign_args args;
+    unsigned long hashsize;
 
     rb_scan_args(argc, argv, "12", &dconn, &hash, &flags);
 
     Check_Type(hash, T_HASH);
 
-    args.allowed = migrate3_allowed;
-    args.num_allowed = ARRAY_SIZE(migrate3_allowed);
+    hashsize = RHASH_SIZE(hash);
 
-    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
-    args.i = 0;
+    memset(&args, 0, sizeof(struct ruby_libvirt_parameter_assign_args));
 
-    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+    if (hashsize > 0) {
+        args.allowed = migrate3_allowed;
+        args.num_allowed = ARRAY_SIZE(migrate3_allowed);
+
+        args.params = alloca(sizeof(virTypedParameter) * hashsize);
+        args.i = 0;
+
+        rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign,
+                        (VALUE)&args);
+    }
 
     ddom = virDomainMigrate3(ruby_libvirt_domain_get(d),
                              ruby_libvirt_connect_get(dconn), args.params,
@@ -3965,18 +3973,26 @@ static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
 {
     VALUE duri, hash, flags;
     struct ruby_libvirt_parameter_assign_args args;
+    unsigned long hashsize;
 
     rb_scan_args(argc, argv, "03", &duri, &hash, &flags);
 
     Check_Type(hash, T_HASH);
 
-    args.allowed = migrate3_allowed;
-    args.num_allowed = ARRAY_SIZE(migrate3_allowed);
+    hashsize = RHASH_SIZE(hash);
 
-    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
-    args.i = 0;
+    memset(&args, 0, sizeof(struct ruby_libvirt_parameter_assign_args));
 
-    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+    if (hashsize > 0) {
+        args.allowed = migrate3_allowed;
+        args.num_allowed = ARRAY_SIZE(migrate3_allowed);
+
+        args.params = alloca(sizeof(virTypedParameter) * hashsize);
+        args.i = 0;
+
+        rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign,
+                        (VALUE)&args);
+    }
 
     ruby_libvirt_generate_call_nil(virDomainMigrateToURI3,
                                    ruby_libvirt_connect_get(d),

@@ -2667,8 +2667,8 @@ static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
 {
     VALUE arch, flags;
     char **models;
-    int elems;
-    int i;
+    int elems = 0;
+    int i = 0, j;
     VALUE result;
     struct model_name_args args;
     int exception;
@@ -2703,8 +2703,8 @@ static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
     return result;
 
 error:
-    for (i = 0; i < elems; i++) {
-        free(models[i]);
+    for (j = i; j < elems; j++) {
+        free(models[j]);
     }
     free(models);
 
