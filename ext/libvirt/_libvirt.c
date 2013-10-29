@@ -84,31 +84,6 @@ static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
     return result;
 }
 
-static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
-{
-    VALUE uri;
-    char *uri_c;
-    virConnectPtr conn;
-
-    rb_scan_args(argc, argv, "01", &uri);
-
-    uri_c = ruby_libvirt_get_cstring_or_null(uri);
-
-    if (readonly) {
-        conn = virConnectOpenReadOnly(uri_c);
-    }
-    else {
-        conn = virConnectOpen(uri_c);
-    }
-
-    _E(conn == NULL,
-       ruby_libvirt_create_error(e_ConnectionError,
-                                 readonly ? "virConnectOpenReadOnly" : "virConnectOpen",
-                                 NULL));
-
-    return ruby_libvirt_connect_new(conn);
-}
-
 /*
  * call-seq:
  *   Libvirt::open(uri=nil) -> Libvirt::Connect
@@ -118,7 +93,16 @@ static VALUE internal_open(int argc, VALUE *argv, VALUE m, int readonly)
  */
 static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
 {
-    return internal_open(argc, argv, m, 0);
+    VALUE uri;
+    virConnectPtr conn;
+
+    rb_scan_args(argc, argv, "01", &uri);
+
+    conn = virConnectOpen(ruby_libvirt_get_cstring_or_null(uri));
+    _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
+                                               "virConnectOpen", NULL));
+
+    return ruby_libvirt_connect_new(conn);
 }
 
 /*
@@ -130,7 +114,17 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
  */
 static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m)
 {
-    return internal_open(argc, argv, m, 1);
+    VALUE uri;
+    virConnectPtr conn;
+
+    rb_scan_args(argc, argv, "01", &uri);
+
+    conn = virConnectOpenReadOnly(ruby_libvirt_get_cstring_or_null(uri));
+
+    _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
+                                               "virConnectOpenReadOnly", NULL));
+
+    return ruby_libvirt_connect_new(conn);
 }
 
 #if HAVE_VIRCONNECTOPENAUTH
