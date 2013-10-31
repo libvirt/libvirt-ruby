@@ -46,12 +46,12 @@ VALUE ruby_libvirt_nodedevice_new(virNodeDevicePtr n, VALUE conn)
 
 /*
  * call-seq:
- *   nodedevice.name -> String
+ *   nodedevice.get_name -> String
  *
  * Call virNodeDeviceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetName]
  * to retrieve the name of the node device.
  */
-static VALUE libvirt_nodedevice_name(VALUE c)
+static VALUE libvirt_nodedevice_get_name(VALUE c)
 {
     ruby_libvirt_generate_call_string(virNodeDeviceGetName,
                                       ruby_libvirt_connect_get(c), 0,
@@ -60,12 +60,12 @@ static VALUE libvirt_nodedevice_name(VALUE c)
 
 /*
  * call-seq:
- *   nodedevice.parent -> String
+ *   nodedevice.get_parent -> String
  *
  * Call virNodeDeviceGetParent[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetParent]
  * to retrieve the parent of the node device.
  */
-static VALUE libvirt_nodedevice_parent(VALUE c)
+static VALUE libvirt_nodedevice_get_parent(VALUE c)
 {
     /* unfortunately we can't use ruby_libvirt_generate_call_string() here
      * because virNodeDeviceGetParent() returns NULL as a valid value (when this
@@ -99,19 +99,18 @@ static VALUE libvirt_nodedevice_num_of_caps(VALUE c)
 
 /*
  * call-seq:
- *   nodedevice.list_caps -> list
+ *   nodedevice.list_caps(num) -> list
  *
  * Call virNodeDeviceListCaps[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceListCaps]
  * to retrieve a list of capabilities of the node device.
  */
-static VALUE libvirt_nodedevice_list_caps(VALUE c)
+static VALUE libvirt_nodedevice_list_caps(VALUE c, VALUE num_val)
 {
     int r, num;
     char **names;
 
-    num = virNodeDeviceNumOfCaps(nodedevice_get(c));
-    ruby_libvirt_raise_error_if(num < 0, "virNodeDeviceNumOfCaps",
-                                ruby_libvirt_connect_get(c));
+    num = NUM2INT(num_val);
+
     if (num == 0) {
         /* if num is 0, don't call virNodeDeviceListCaps function */
         return rb_ary_new2(num);
@@ -127,12 +126,12 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
 
 /*
  * call-seq:
- *   nodedevice.xml_desc(flags=0) -> String
+ *   nodedevice.get_xml_desc(flags=0) -> String
  *
  * Call virNodeDeviceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetXMLDesc]
  * to retrieve the XML for the node device.
  */
-static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
+static VALUE libvirt_nodedevice_get_xml_desc(int argc, VALUE *argv, VALUE n)
 {
     VALUE flags;
 
@@ -146,37 +145,39 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
 
 /*
  * call-seq:
- *   nodedevice.detach(driver=nil, flags=0) -> nil
+ *   nodedevice.dettach -> nil
  *
  * Call virNodeDeviceDettach[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDettach]
  * to detach the node device from the node.
  */
-static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
+static VALUE libvirt_nodedevice_dettach(VALUE n)
+{
+    ruby_libvirt_generate_call_nil(virNodeDeviceDettach,
+                                   ruby_libvirt_connect_get(n),
+                                   nodedevice_get(n));
+}
+
+#if HAVE_VIRNODEDEVICEDETACHFLAGS
+/*
+ * call-seq:
+ *   nodedevice.detach_flags(driver=nil, flags=0) -> nil
+ *
+ * Call virNodeDeviceDetachFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDetachFlags]
+ * to detach the node device from the node.
+ */
+static VALUE libvirt_nodedevice_detach_flags(int argc, VALUE *argv, VALUE n)
 {
     VALUE driver, flags;
 
     rb_scan_args(argc, argv, "02", &driver, &flags);
 
-#if HAVE_VIRNODEDEVICEDETACHFLAGS
     ruby_libvirt_generate_call_nil(virNodeDeviceDetachFlags,
                                    ruby_libvirt_connect_get(n),
                                    nodedevice_get(n),
                                    ruby_libvirt_get_cstring_or_null(driver),
                                    ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-
-    if (ruby_libvirt_get_cstring_or_null(driver) != NULL) {
-        rb_raise(e_NoSupportError, "Non-NULL driver not supported");
-    }
-
-    ruby_libvirt_generate_call_nil(virNodeDeviceDettach,
-                                   ruby_libvirt_connect_get(n),
-                                   nodedevice_get(n));
-#endif
 }
+#endif
 
 /*
  * call-seq:
@@ -275,14 +276,20 @@ void ruby_libvirt_nodedevice_init(void)
 
     rb_define_attr(c_nodedevice, "connection", 1, 0);
 
-    rb_define_method(c_nodedevice, "name", libvirt_nodedevice_name, 0);
-    rb_define_method(c_nodedevice, "parent", libvirt_nodedevice_parent, 0);
+    rb_define_method(c_nodedevice, "get_name", libvirt_nodedevice_get_name, 0);
+    rb_define_method(c_nodedevice, "get_parent",
+                     libvirt_nodedevice_get_parent, 0);
     rb_define_method(c_nodedevice, "num_of_caps",
                      libvirt_nodedevice_num_of_caps, 0);
     rb_define_method(c_nodedevice, "list_caps",
-                     libvirt_nodedevice_list_caps, 0);
-    rb_define_method(c_nodedevice, "xml_desc", libvirt_nodedevice_xml_desc, -1);
-    rb_define_method(c_nodedevice, "detach", libvirt_nodedevice_detach, -1);
+                     libvirt_nodedevice_list_caps, 1);
+    rb_define_method(c_nodedevice, "get_xml_desc",
+                     libvirt_nodedevice_get_xml_desc, -1);
+    rb_define_method(c_nodedevice, "dettach", libvirt_nodedevice_dettach, 0);
+#if HAVE_VIRNODEDEVICEDETACHFLAGS
+    rb_define_method(c_nodedevice, "detach_flags",
+                     libvirt_nodedevice_detach_flags, -1);
+#endif
     rb_define_method(c_nodedevice, "reattach", libvirt_nodedevice_reattach, 0);
     rb_define_method(c_nodedevice, "reset", libvirt_nodedevice_reset, 0);
 #if HAVE_VIRNODEDEVICEDESTROY

@@ -46,12 +46,12 @@ VALUE ruby_libvirt_secret_new(virSecretPtr s, VALUE conn)
 
 /*
  * call-seq:
- *   secret.uuid -> String
+ *   secret.get_uuid_string -> String
  *
  * Call virSecretGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUUIDString]
  * to retrieve the UUID for this secret.
  */
-static VALUE libvirt_secret_uuid(VALUE s)
+static VALUE libvirt_secret_get_uuid_string(VALUE s)
 {
     ruby_libvirt_generate_uuid(virSecretGetUUIDString,
                                ruby_libvirt_connect_get(s), secret_get(s));
@@ -59,12 +59,12 @@ static VALUE libvirt_secret_uuid(VALUE s)
 
 /*
  * call-seq:
- *   secret.usagetype -> Fixnum
+ *   secret.get_usage_type -> Fixnum
  *
  * Call virSecretGetUsageType[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageType]
  * to retrieve the usagetype for this secret.
  */
-static VALUE libvirt_secret_usagetype(VALUE s)
+static VALUE libvirt_secret_get_usage_type(VALUE s)
 {
     ruby_libvirt_generate_call_int(virSecretGetUsageType,
                                    ruby_libvirt_connect_get(s),
@@ -73,12 +73,12 @@ static VALUE libvirt_secret_usagetype(VALUE s)
 
 /*
  * call-seq:
- *   secret.usageid -> String
+ *   secret.get_usage_id -> String
  *
  * Call virSecretGetUsageID[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageID]
  * to retrieve the usageid for this secret.
  */
-static VALUE libvirt_secret_usageid(VALUE s)
+static VALUE libvirt_secret_get_usage_id(VALUE s)
 {
     ruby_libvirt_generate_call_string(virSecretGetUsageID,
                                       ruby_libvirt_connect_get(s), 0,
@@ -87,12 +87,12 @@ static VALUE libvirt_secret_usageid(VALUE s)
 
 /*
  * call-seq:
- *   secret.xml_desc(flags=0) -> String
+ *   secret.get_xml_desc(flags=0) -> String
  *
  * Call virSecretGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetXMLDesc]
  * to retrieve the XML for this secret.
  */
-static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_secret_get_xml_desc(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags;
 
@@ -106,31 +106,16 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
 
 /*
  * call-seq:
- *   secret.value = value,flags=0
+ *   secret.set_value(value, flags=0) -> nil
  *
  * Call virSecretSetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretSetValue]
  * to set a new value in this secret.
  */
-static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
+static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags, value;
 
-    if (TYPE(in) == T_STRING) {
-        value = in;
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        value = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    rb_scan_args(argc, argv, "11", &value, &flags);
 
     StringValue(value);
 
@@ -144,12 +129,12 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
 
 /*
  * call-seq:
- *   secret.value(flags=0) -> String
+ *   secret.get_value(flags=0) -> String
  *
  * Call virSecretGetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetValue]
  * to retrieve the value from this secret.
  */
-static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_secret_get_value(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags, ret;
     unsigned char *val;
@@ -231,12 +216,14 @@ void ruby_libvirt_secret_init(void)
 #endif
 
     /* Secret object methods */
-    rb_define_method(c_secret, "uuid", libvirt_secret_uuid, 0);
-    rb_define_method(c_secret, "usagetype", libvirt_secret_usagetype, 0);
-    rb_define_method(c_secret, "usageid", libvirt_secret_usageid, 0);
-    rb_define_method(c_secret, "xml_desc", libvirt_secret_xml_desc, -1);
-    rb_define_method(c_secret, "value=", libvirt_secret_value_equal, 1);
-    rb_define_method(c_secret, "value", libvirt_secret_value, -1);
+    rb_define_method(c_secret, "get_uuid_string",
+                     libvirt_secret_get_uuid_string, 0);
+    rb_define_method(c_secret, "get_usage_type",
+                     libvirt_secret_get_usage_type, 0);
+    rb_define_method(c_secret, "get_usage_id", libvirt_secret_get_usage_id, 0);
+    rb_define_method(c_secret, "get_xml_desc", libvirt_secret_get_xml_desc, -1);
+    rb_define_method(c_secret, "set_value", libvirt_secret_set_value, -1);
+    rb_define_method(c_secret, "get_value", libvirt_secret_get_value, -1);
     rb_define_method(c_secret, "undefine", libvirt_secret_undefine, 0);
     rb_define_method(c_secret, "free", libvirt_secret_free, 0);
 #endif

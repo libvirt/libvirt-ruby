@@ -184,12 +184,12 @@ static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
 
 /*
  * call-seq:
- *   pool.name -> String
+ *   pool.get_name -> String
  *
  * Call virStoragePoolGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetName]
  * to retrieve the name of this storage pool.
  */
-static VALUE libvirt_storage_pool_name(VALUE p)
+static VALUE libvirt_storage_pool_get_name(VALUE p)
 {
     ruby_libvirt_generate_call_string(virStoragePoolGetName,
                                       ruby_libvirt_connect_get(p), 0,
@@ -198,12 +198,12 @@ static VALUE libvirt_storage_pool_name(VALUE p)
 
 /*
  * call-seq:
- *   pool.uuid -> String
+ *   pool.get_uuid_string -> String
  *
  * Call virStoragePoolGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetUUIDString]
  * to retrieve the UUID of this storage pool.
  */
-static VALUE libvirt_storage_pool_uuid(VALUE p)
+static VALUE libvirt_storage_pool_get_uuid_string(VALUE p)
 {
     ruby_libvirt_generate_uuid(virStoragePoolGetUUIDString,
                                ruby_libvirt_connect_get(p), pool_get(p));
@@ -211,12 +211,12 @@ static VALUE libvirt_storage_pool_uuid(VALUE p)
 
 /*
  * call-seq:
- *   pool.info -> Hash
+ *   pool.get_info -> Hash
  *
  * Call virStoragePoolGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetInfo]
  * to retrieve information about this storage pool.
  */
-static VALUE libvirt_storage_pool_info(VALUE p)
+static VALUE libvirt_storage_pool_get_info(VALUE p)
 {
     virStoragePoolInfo info;
     int r;
@@ -237,12 +237,12 @@ static VALUE libvirt_storage_pool_info(VALUE p)
 
 /*
  * call-seq:
- *   pool.xml_desc(flags=0) -> String
+ *   pool.get_xml_desc(flags=0) -> String
  *
  * Call virStoragePoolGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetXMLDesc]
  * to retrieve the XML for this storage pool.
  */
-static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
+static VALUE libvirt_storage_pool_get_xml_desc(int argc, VALUE *argv, VALUE p)
 {
     VALUE flags;
 
@@ -256,12 +256,12 @@ static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
 
 /*
  * call-seq:
- *   pool.autostart? -> [true|false]
+ *   pool.get_autostart -> [true|false]
  *
  * Call virStoragePoolGetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetAutostart]
  * to determine whether this storage pool will autostart when libvirtd starts.
  */
-static VALUE libvirt_storage_pool_autostart(VALUE p)
+static VALUE libvirt_storage_pool_get_autostart(VALUE p)
 {
     int r, autostart;
 
@@ -274,12 +274,12 @@ static VALUE libvirt_storage_pool_autostart(VALUE p)
 
 /*
  * call-seq:
- *   pool.autostart = [true|false]
+ *   pool.set_autostart([true|false])
  *
  * Call virStoragePoolSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolSetAutostart]
  * to make this storage pool start when libvirtd starts.
  */
-static VALUE libvirt_storage_pool_autostart_equal(VALUE p, VALUE autostart)
+static VALUE libvirt_storage_pool_set_autostart(VALUE p, VALUE autostart)
 {
     if (autostart != Qtrue && autostart != Qfalse) {
 		rb_raise(rb_eTypeError,
@@ -300,30 +300,25 @@ static VALUE libvirt_storage_pool_autostart_equal(VALUE p, VALUE autostart)
  */
 static VALUE libvirt_storage_pool_num_of_volumes(VALUE p)
 {
-    int n;
-
-    n = virStoragePoolNumOfVolumes(pool_get(p));
-    ruby_libvirt_raise_error_if(n < 0, "virStoragePoolNumOfVolumes",
-                                ruby_libvirt_connect_get(p));
-
-    return INT2NUM(n);
+    ruby_libvirt_generate_call_int(virStoragePoolNumOfVolumes,
+                                   ruby_libvirt_connect_get(p),
+                                   pool_get(p));
 }
 
 /*
  * call-seq:
- *   pool.list_volumes -> list
+ *   pool.list_volumes(num) -> list
  *
  * Call virStoragePoolListVolumes[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolListVolumes]
  * to retrieve a list of volume names in this storage pools.
  */
-static VALUE libvirt_storage_pool_list_volumes(VALUE p)
+static VALUE libvirt_storage_pool_list_volumes(VALUE p, VALUE numv)
 {
     int r, num;
     char **names;
 
-    num = virStoragePoolNumOfVolumes(pool_get(p));
-    ruby_libvirt_raise_error_if(num < 0, "virStoragePoolNumOfVolumes",
-                                ruby_libvirt_connect_get(p));
+    num = NUM2INT(numv);
+
     if (num == 0) {
         return rb_ary_new2(num);
     }
@@ -368,12 +363,12 @@ static VALUE vol_new(virStorageVolPtr v, VALUE conn)
 
 /*
  * call-seq:
- *   pool.lookup_volume_by_name(name) -> Libvirt::StorageVol
+ *   pool.vol_lookup_by_name(name) -> Libvirt::StorageVol
  *
  * Call virStorageVolLookupByName[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByName]
  * to retrieve a storage volume object by name.
  */
-static VALUE libvirt_storage_pool_lookup_vol_by_name(VALUE p, VALUE name)
+static VALUE libvirt_storage_pool_vol_lookup_by_name(VALUE p, VALUE name)
 {
     virStorageVolPtr vol;
 
@@ -386,12 +381,12 @@ static VALUE libvirt_storage_pool_lookup_vol_by_name(VALUE p, VALUE name)
 
 /*
  * call-seq:
- *   pool.lookup_volume_by_key(key) -> Libvirt::StorageVol
+ *   pool.vol_lookup_by_key(key) -> Libvirt::StorageVol
  *
  * Call virStorageVolLookupByKey[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByKey]
  * to retrieve a storage volume object by key.
  */
-static VALUE libvirt_storage_pool_lookup_vol_by_key(VALUE p, VALUE key)
+static VALUE libvirt_storage_pool_vol_lookup_by_key(VALUE p, VALUE key)
 {
     virStorageVolPtr vol;
 
@@ -406,12 +401,12 @@ static VALUE libvirt_storage_pool_lookup_vol_by_key(VALUE p, VALUE key)
 
 /*
  * call-seq:
- *   pool.lookup_volume_by_path(path) -> Libvirt::StorageVol
+ *   pool.vol_lookup_by_path(path) -> Libvirt::StorageVol
  *
  * Call virStorageVolLookupByPath[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolLookupByPath]
  * to retrieve a storage volume object by path.
  */
-static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
+static VALUE libvirt_storage_pool_vol_lookup_by_path(VALUE p, VALUE path)
 {
     virStorageVolPtr vol;
 
@@ -444,12 +439,12 @@ static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   vol.name -> String
+ *   vol.get_name -> String
  *
  * Call virStorageVolGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetName]
  * to retrieve the name of this storage volume.
  */
-static VALUE libvirt_storage_vol_name(VALUE v)
+static VALUE libvirt_storage_vol_get_name(VALUE v)
 {
     ruby_libvirt_generate_call_string(virStorageVolGetName,
                                       ruby_libvirt_connect_get(v), 0,
@@ -458,12 +453,12 @@ static VALUE libvirt_storage_vol_name(VALUE v)
 
 /*
  * call-seq:
- *   vol.key -> String
+ *   vol.get_key -> String
  *
  * Call virStorageVolGetKey[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetKey]
  * to retrieve the key for this storage volume.
  */
-static VALUE libvirt_storage_vol_key(VALUE v)
+static VALUE libvirt_storage_vol_get_key(VALUE v)
 {
     ruby_libvirt_generate_call_string(virStorageVolGetKey,
                                       ruby_libvirt_connect_get(v), 0,
@@ -472,13 +467,13 @@ static VALUE libvirt_storage_vol_key(VALUE v)
 
 /*
  * call-seq:
- *   pool.create_volume_xml(xml, flags=0) -> Libvirt::StorageVol
+ *   pool.vol_create_xml(xml, flags=0) -> Libvirt::StorageVol
  *
  * Call virStorageVolCreateXML[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXML]
  * to create a new storage volume from xml.
  */
-static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
-                                                    VALUE p)
+static VALUE libvirt_storage_pool_vol_create_xml(int argc, VALUE *argv,
+                                                 VALUE p)
 {
     virStorageVolPtr vol;
     VALUE xml, flags;
@@ -496,14 +491,14 @@ static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
 #if HAVE_VIRSTORAGEVOLCREATEXMLFROM
 /*
  * call-seq:
- *   pool.create_volume_xml_from(xml, clonevol, flags=0) -> Libvirt::StorageVol
+ *   pool.vol_create_xml_from(xml, clonevol, flags=0) -> Libvirt::StorageVol
  *
  * Call virStorageVolCreateXMLFrom[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolCreateXMLFrom]
  * to clone a volume from an existing volume with the properties specified in
  * xml.
  */
-static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
-                                                         VALUE p)
+static VALUE libvirt_storage_pool_vol_create_xml_from(int argc, VALUE *argv,
+                                                      VALUE p)
 {
     virStorageVolPtr vol;
     VALUE xml, flags, cloneval;
@@ -523,12 +518,12 @@ static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
 #if HAVE_VIRSTORAGEPOOLISACTIVE
 /*
  * call-seq:
- *   pool.active? -> [true|false]
+ *   pool.is_active -> [true|false]
  *
  * Call virStoragePoolIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsActive]
  * to determine if this storage pool is active.
  */
-static VALUE libvirt_storage_pool_active_p(VALUE p)
+static VALUE libvirt_storage_pool_is_active(VALUE p)
 {
     ruby_libvirt_generate_call_truefalse(virStoragePoolIsActive,
                                          ruby_libvirt_connect_get(p),
@@ -539,12 +534,12 @@ static VALUE libvirt_storage_pool_active_p(VALUE p)
 #if HAVE_VIRSTORAGEPOOLISPERSISTENT
 /*
  * call-seq:
- *   pool.persistent? -> [true|false]
+ *   pool.is_persistent -> [true|false]
  *
  * Call virStoragePoolIsPersistent[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolIsPersistent]
  * to determine if this storage pool is persistent.
  */
-static VALUE libvirt_storage_pool_persistent_p(VALUE p)
+static VALUE libvirt_storage_pool_is_persistent(VALUE p)
 {
     ruby_libvirt_generate_call_truefalse(virStoragePoolIsPersistent,
                                          ruby_libvirt_connect_get(p),
@@ -594,12 +589,12 @@ static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
 
 /*
  * call-seq:
- *   vol.info -> Hash
+ *   vol.get_info -> Hash
  *
  * Call virStorageVolGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetInfo]
  * to retrieve information about this storage volume.
  */
-static VALUE libvirt_storage_vol_info(VALUE v)
+static VALUE libvirt_storage_vol_get_info(VALUE v)
 {
     virStorageVolInfo info;
     int r;
@@ -619,12 +614,12 @@ static VALUE libvirt_storage_vol_info(VALUE v)
 
 /*
  * call-seq:
- *   vol.xml_desc(flags=0) -> String
+ *   vol.get_xml_desc(flags=0) -> String
  *
  * Call virStorageVolGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetXMLDesc]
  * to retrieve the xml for this storage volume.
  */
-static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
+static VALUE libvirt_storage_vol_get_xml_desc(int argc, VALUE *argv, VALUE v)
 {
     VALUE flags;
 
@@ -638,12 +633,12 @@ static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
 
 /*
  * call-seq:
- *   vol.path -> String
+ *   vol.get_path -> String
  *
  * Call virStorageVolGetPath[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetPath]
  * to retrieve the path for this storage volume.
  */
-static VALUE libvirt_storage_vol_path(VALUE v)
+static VALUE libvirt_storage_vol_get_path(VALUE v)
 {
     ruby_libvirt_generate_call_string(virStorageVolGetPath,
                                       ruby_libvirt_connect_get(v), 1,
@@ -751,7 +746,7 @@ static VALUE libvirt_storage_vol_resize(int argc, VALUE *argv, VALUE v)
 void ruby_libvirt_storage_init(void)
 {
     /*
-     * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo
+     * Class Libvirt::StoragePool
      */
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
     c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool",
@@ -808,46 +803,44 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_pool, "refresh", libvirt_storage_pool_refresh,
                      -1);
     /* StoragePool information */
-    rb_define_method(c_storage_pool, "name", libvirt_storage_pool_name, 0);
-    rb_define_method(c_storage_pool, "uuid", libvirt_storage_pool_uuid, 0);
-    rb_define_method(c_storage_pool, "info", libvirt_storage_pool_info, 0);
-    rb_define_method(c_storage_pool, "xml_desc", libvirt_storage_pool_xml_desc,
-                     -1);
-    rb_define_method(c_storage_pool, "autostart",
-                     libvirt_storage_pool_autostart, 0);
-    rb_define_method(c_storage_pool, "autostart?",
-                     libvirt_storage_pool_autostart, 0);
-    rb_define_method(c_storage_pool, "autostart=",
-                     libvirt_storage_pool_autostart_equal, 1);
+    rb_define_method(c_storage_pool, "get_name",
+                     libvirt_storage_pool_get_name, 0);
+    rb_define_method(c_storage_pool, "get_uuid_string",
+                     libvirt_storage_pool_get_uuid_string, 0);
+    rb_define_method(c_storage_pool, "get_info",
+                     libvirt_storage_pool_get_info, 0);
+    rb_define_method(c_storage_pool, "get_xml_desc",
+                     libvirt_storage_pool_get_xml_desc, -1);
+    rb_define_method(c_storage_pool, "get_autostart",
+                     libvirt_storage_pool_get_autostart, 0);
+    rb_define_method(c_storage_pool, "set_autostart",
+                     libvirt_storage_pool_set_autostart, 1);
     /* List/lookup storage volumes within a pool */
     rb_define_method(c_storage_pool, "num_of_volumes",
                      libvirt_storage_pool_num_of_volumes, 0);
     rb_define_method(c_storage_pool, "list_volumes",
-                     libvirt_storage_pool_list_volumes, 0);
+                     libvirt_storage_pool_list_volumes, 1);
     /* Lookup volumes based on various attributes */
-    rb_define_method(c_storage_pool, "lookup_volume_by_name",
-                     libvirt_storage_pool_lookup_vol_by_name, 1);
-    rb_define_method(c_storage_pool, "lookup_volume_by_key",
-                     libvirt_storage_pool_lookup_vol_by_key, 1);
-    rb_define_method(c_storage_pool, "lookup_volume_by_path",
-                     libvirt_storage_pool_lookup_vol_by_path, 1);
+    rb_define_method(c_storage_pool, "vol_lookup_by_name",
+                     libvirt_storage_pool_vol_lookup_by_name, 1);
+    rb_define_method(c_storage_pool, "vol_lookup_by_key",
+                     libvirt_storage_pool_vol_lookup_by_key, 1);
+    rb_define_method(c_storage_pool, "vol_lookup_by_path",
+                     libvirt_storage_pool_vol_lookup_by_path, 1);
     rb_define_method(c_storage_pool, "free", libvirt_storage_pool_free, 0);
-    rb_define_method(c_storage_pool, "create_volume_xml",
-                     libvirt_storage_pool_create_volume_xml, -1);
-    rb_define_alias(c_storage_pool, "create_vol_xml", "create_volume_xml");
+    rb_define_method(c_storage_pool, "vol_create_xml",
+                     libvirt_storage_pool_vol_create_xml, -1);
 #if HAVE_VIRSTORAGEVOLCREATEXMLFROM
-    rb_define_method(c_storage_pool, "create_volume_xml_from",
-                     libvirt_storage_pool_create_volume_xml_from, -1);
-    rb_define_alias(c_storage_pool, "create_vol_xml_from",
-                    "create_volume_xml_from");
+    rb_define_method(c_storage_pool, "vol_create_xml_from",
+                     libvirt_storage_pool_vol_create_xml_from, -1);
 #endif
 #if HAVE_VIRSTORAGEPOOLISACTIVE
-    rb_define_method(c_storage_pool, "active?", libvirt_storage_pool_active_p,
-                     0);
+    rb_define_method(c_storage_pool, "is_active",
+                     libvirt_storage_pool_is_active, 0);
 #endif
 #if HAVE_VIRSTORAGEPOOLISPERSISTENT
-    rb_define_method(c_storage_pool, "persistent?",
-                     libvirt_storage_pool_persistent_p, 0);
+    rb_define_method(c_storage_pool, "is_persistent",
+                     libvirt_storage_pool_is_persistent, 0);
 #endif
 
 #if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
@@ -896,8 +889,9 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_VOL_DELETE_ZEROED));
 
     rb_define_method(c_storage_vol, "pool", libvirt_storage_vol_pool, 0);
-    rb_define_method(c_storage_vol, "name", libvirt_storage_vol_name, 0);
-    rb_define_method(c_storage_vol, "key", libvirt_storage_vol_key, 0);
+    rb_define_method(c_storage_vol, "get_name",
+                     libvirt_storage_vol_get_name, 0);
+    rb_define_method(c_storage_vol, "get_key", libvirt_storage_vol_get_key, 0);
     rb_define_method(c_storage_vol, "delete", libvirt_storage_vol_delete, -1);
 #if HAVE_VIRSTORAGEVOLWIPE
     rb_define_method(c_storage_vol, "wipe", libvirt_storage_vol_wipe, -1);
@@ -943,10 +937,12 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_RANDOM));
 #endif
 
-    rb_define_method(c_storage_vol, "info", libvirt_storage_vol_info, 0);
-    rb_define_method(c_storage_vol, "xml_desc", libvirt_storage_vol_xml_desc,
-                     -1);
-    rb_define_method(c_storage_vol, "path", libvirt_storage_vol_path, 0);
+    rb_define_method(c_storage_vol, "get_info",
+                     libvirt_storage_vol_get_info, 0);
+    rb_define_method(c_storage_vol, "get_xml_desc",
+                     libvirt_storage_vol_get_xml_desc, -1);
+    rb_define_method(c_storage_vol, "get_path",
+                     libvirt_storage_vol_get_path, 0);
     rb_define_method(c_storage_vol, "free", libvirt_storage_vol_free, 0);
 
 #if HAVE_VIRSTORAGEVOLDOWNLOAD

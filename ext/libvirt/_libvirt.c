@@ -53,13 +53,13 @@ static void rubyLibvirtErrorFunc(void *RUBY_LIBVIRT_UNUSED(userdata),
 
 /*
  * call-seq:
- *   Libvirt::version(type=nil) -> [ libvirt_version, type_version ]
+ *   Libvirt::get_version(type=nil) -> [ libvirt_version, type_version ]
  *
  * Call virGetVersion[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
  * to get the version of libvirt and of the hypervisor TYPE.
  */
-static VALUE libvirt_version(int argc, VALUE *argv,
-                             VALUE RUBY_LIBVIRT_UNUSED(m))
+static VALUE libvirt_get_version(int argc, VALUE *argv,
+                                 VALUE RUBY_LIBVIRT_UNUSED(m))
 {
     unsigned long libVer, typeVer;
     VALUE type, result, rargv[2];
@@ -1001,7 +1001,8 @@ void Init__libvirt(void)
     rb_define_const(e_LibvirtError, "LEVEL_WARNING", INT2NUM(VIR_ERR_WARNING));
     rb_define_const(e_LibvirtError, "LEVEL_ERROR", INT2NUM(VIR_ERR_ERROR));
 
-    rb_define_module_function(m_libvirt, "version", libvirt_version, -1);
+    rb_define_module_function(m_libvirt, "get_version", libvirt_get_version,
+                              -1);
     rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
     rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, -1);

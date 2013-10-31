@@ -107,12 +107,12 @@ static VALUE libvirt_network_destroy(VALUE n)
 
 /*
  * call-seq:
- *   net.name -> String
+ *   net.get_name -> String
  *
  * Call virNetworkGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
  * to retrieve the name of this network.
  */
-static VALUE libvirt_network_name(VALUE n)
+static VALUE libvirt_network_get_name(VALUE n)
 {
     ruby_libvirt_generate_call_string(virNetworkGetName,
                                       ruby_libvirt_connect_get(n), 0,
@@ -121,12 +121,12 @@ static VALUE libvirt_network_name(VALUE n)
 
 /*
  * call-seq:
- *   net.uuid -> String
+ *   net.get_uuid_string -> String
  *
  * Call virNetworkGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetUUIDString]
  * to retrieve the UUID of this network.
  */
-static VALUE libvirt_network_uuid(VALUE n)
+static VALUE libvirt_network_get_uuid_string(VALUE n)
 {
     ruby_libvirt_generate_uuid(virNetworkGetUUIDString,
                                ruby_libvirt_connect_get(n), network_get(n));
@@ -134,12 +134,12 @@ static VALUE libvirt_network_uuid(VALUE n)
 
 /*
  * call-seq:
- *   net.xml_desc(flags=0) -> String
+ *   net.get_xml_desc(flags=0) -> String
  *
  * Call virNetworkGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
  * to retrieve the XML for this network.
  */
-static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
+static VALUE libvirt_network_get_xml_desc(int argc, VALUE *argv, VALUE n)
 {
     VALUE flags;
 
@@ -153,12 +153,12 @@ static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
 
 /*
  * call-seq:
- *   net.bridge_name -> String
+ *   net.get_bridge_name -> String
  *
  * Call virNetworkGetBridgeName[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
  * to retrieve the bridge name for this network.
  */
-static VALUE libvirt_network_bridge_name(VALUE n)
+static VALUE libvirt_network_get_bridge_name(VALUE n)
 {
     ruby_libvirt_generate_call_string(virNetworkGetBridgeName,
                                       ruby_libvirt_connect_get(n),
@@ -167,12 +167,12 @@ static VALUE libvirt_network_bridge_name(VALUE n)
 
 /*
  * call-seq:
- *   net.autostart? -> [true|false]
+ *   net.get_autostart -> [true|false]
  *
  * Call virNetworkGetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetAutostart]
  * to determine if this network will be autostarted when libvirtd starts.
  */
-static VALUE libvirt_network_autostart(VALUE n)
+static VALUE libvirt_network_get_autostart(VALUE n)
 {
     int r, autostart;
 
@@ -185,12 +185,12 @@ static VALUE libvirt_network_autostart(VALUE n)
 
 /*
  * call-seq:
- *   net.autostart = [true|false]
+ *   net.set_autostart(true|false)
  *
  * Call virNetworkSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkSetAutostart]
  * to set this network to be autostarted when libvirtd starts.
  */
-static VALUE libvirt_network_autostart_equal(VALUE n, VALUE autostart)
+static VALUE libvirt_network_set_autostart(VALUE n, VALUE autostart)
 {
     if (autostart != Qtrue && autostart != Qfalse) {
         rb_raise(rb_eTypeError,
@@ -217,12 +217,12 @@ static VALUE libvirt_network_free(VALUE n)
 #if HAVE_VIRNETWORKISACTIVE
 /*
  * call-seq:
- *   net.active? -> [true|false]
+ *   net.is_active -> [true|false]
  *
  * Call virNetworkIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsActive]
  * to determine if this network is currently active.
  */
-static VALUE libvirt_network_active_p(VALUE n)
+static VALUE libvirt_network_is_active(VALUE n)
 {
     ruby_libvirt_generate_call_truefalse(virNetworkIsActive,
                                          ruby_libvirt_connect_get(n),
@@ -233,12 +233,12 @@ static VALUE libvirt_network_active_p(VALUE n)
 #if HAVE_VIRNETWORKISPERSISTENT
 /*
  * call-seq:
- *   net.persistent? -> [true|false]
+ *   net.is_persistent -> [true|false]
  *
  * Call virNetworkIsPersistent[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkIsPersistent]
  * to determine if this network is persistent.
  */
-static VALUE libvirt_network_persistent_p(VALUE n)
+static VALUE libvirt_network_is_persistent(VALUE n)
 {
     ruby_libvirt_generate_call_truefalse(virNetworkIsPersistent,
                                          ruby_libvirt_connect_get(n),
@@ -313,20 +313,24 @@ void ruby_libvirt_network_init(void)
     rb_define_method(c_network, "update", libvirt_network_update, 5);
 #endif
     rb_define_method(c_network, "destroy", libvirt_network_destroy, 0);
-    rb_define_method(c_network, "name", libvirt_network_name, 0);
-    rb_define_method(c_network, "uuid", libvirt_network_uuid, 0);
-    rb_define_method(c_network, "xml_desc", libvirt_network_xml_desc, -1);
-    rb_define_method(c_network, "bridge_name", libvirt_network_bridge_name, 0);
-    rb_define_method(c_network, "autostart", libvirt_network_autostart, 0);
-    rb_define_method(c_network, "autostart?", libvirt_network_autostart, 0);
-    rb_define_method(c_network, "autostart=", libvirt_network_autostart_equal,
+    rb_define_method(c_network, "get_name", libvirt_network_get_name, 0);
+    rb_define_method(c_network, "get_uuid_string",
+                     libvirt_network_get_uuid_string, 0);
+    rb_define_method(c_network, "get_xml_desc",
+                     libvirt_network_get_xml_desc, -1);
+    rb_define_method(c_network, "get_bridge_name",
+                     libvirt_network_get_bridge_name, 0);
+    rb_define_method(c_network, "get_autostart",
+                     libvirt_network_get_autostart, 0);
+    rb_define_method(c_network, "set_autostart", libvirt_network_set_autostart,
                      1);
     rb_define_method(c_network, "free", libvirt_network_free, 0);
 #if HAVE_VIRNETWORKISACTIVE
-    rb_define_method(c_network, "active?", libvirt_network_active_p, 0);
+    rb_define_method(c_network, "is_active", libvirt_network_is_active, 0);
 #endif
 #if HAVE_VIRNETWORKISPERSISTENT
-    rb_define_method(c_network, "persistent?", libvirt_network_persistent_p, 0);
+    rb_define_method(c_network, "is_persistent",
+                     libvirt_network_is_persistent, 0);
 #endif
 #if HAVE_CONST_VIR_NETWORK_UPDATE_COMMAND_NONE
     rb_define_const(c_network, "UPDATE_COMMAND_NONE",

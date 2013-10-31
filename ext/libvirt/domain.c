@@ -37,34 +37,6 @@
 #include "extconf.h"
 #include "stream.h"
 
-#ifndef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-#define VIR_TYPED_PARAM_INT VIR_DOMAIN_SCHED_FIELD_INT
-#define VIR_TYPED_PARAM_UINT VIR_DOMAIN_SCHED_FIELD_UINT
-#define VIR_TYPED_PARAM_LLONG VIR_DOMAIN_SCHED_FIELD_LLONG
-#define VIR_TYPED_PARAM_ULLONG VIR_DOMAIN_SCHED_FIELD_ULLONG
-#define VIR_TYPED_PARAM_DOUBLE VIR_DOMAIN_SCHED_FIELD_DOUBLE
-#define VIR_TYPED_PARAM_BOOLEAN VIR_DOMAIN_SCHED_FIELD_BOOLEAN
-#define VIR_TYPED_PARAM_STRING 7
-
-#define VIR_TYPED_PARAM_FIELD_LENGTH 80
-typedef struct _virTypedParameter virTypedParameter;
-struct _virTypedParameter {
-    char field[VIR_TYPED_PARAM_FIELD_LENGTH];  /* parameter name */
-    int type;   /* parameter type, virTypedParameterType */
-    union {
-        int i;                      /* type is INT */
-        unsigned int ui;            /* type is UINT */
-        long long int l;            /* type is LLONG */
-        unsigned long long int ul;  /* type is ULLONG */
-        double d;                   /* type is DOUBLE */
-        char b;                     /* type is BOOLEAN */
-        char *s;                    /* type is STRING, may not be NULL */
-    } value; /* parameter value */
-};
-typedef virTypedParameter *virTypedParameterPtr;
-
-#endif
-
 static VALUE c_domain;
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
 static VALUE c_domain_snapshot;
@@ -83,26 +55,6 @@ VALUE ruby_libvirt_domain_new(virDomainPtr d, VALUE conn)
 virDomainPtr ruby_libvirt_domain_get(VALUE d)
 {
     ruby_libvirt_get_struct(Domain, d);
-}
-
-static void domain_input_to_fixnum_and_flags(VALUE in, VALUE *hash, VALUE *flags)
-{
-    if (TYPE(in) == T_FIXNUM) {
-        *hash = in;
-        *flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        *hash = rb_ary_entry(in, 0);
-        *flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
 }
 
 /*
@@ -161,16 +113,17 @@ static VALUE libvirt_domain_migrate_to_uri(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
 /*
  * call-seq:
- *   dom.migrate_max_downtime = downtime,flags=0
+ *   dom.migrate_set_max_downtime(downtime, flags=0) -> nil
  *
  * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
  * to set the maximum downtime desired for live migration.
  */
-static VALUE libvirt_domain_migrate_max_downtime_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_migrate_set_max_downtime(int argc, VALUE *argv,
+                                                     VALUE d)
 {
     VALUE downtime, flags;
 
-    domain_input_to_fixnum_and_flags(in, &downtime, &flags);
+    rb_scan_args(argc, argv, "11", &downtime, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateSetMaxDowntime,
                                    ruby_libvirt_connect_get(d),
@@ -239,16 +192,17 @@ static VALUE libvirt_domain_migrate_to_uri2(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.migrate_max_speed = bandwidth,flags=0
+ *   dom.migrate_set_max_speed(bandwidth, flags=0) -> nil
  *
  * Call virDomainMigrateSetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxSpeed]
  * to set the maximum bandwidth allowed for live migration.
  */
-static VALUE libvirt_domain_migrate_max_speed_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_migrate_set_max_speed(int argc, VALUE *argv,
+                                                  VALUE d)
 {
     VALUE bandwidth, flags;
 
-    domain_input_to_fixnum_and_flags(in, &bandwidth, &flags);
+    rb_scan_args(argc, argv, "11", &bandwidth, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateSetMaxSpeed,
                                    ruby_libvirt_connect_get(d),
@@ -366,37 +320,42 @@ static VALUE libvirt_domain_resume(VALUE d)
 
 /*
  * call-seq:
- *   dom.save(filename, dxml=nil, flags=0) -> nil
+ *   dom.save(filename) -> nil
  *
  * Call virDomainSave[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSave]
  * to save the domain state to filename.  After this call, the domain will no
  * longer be consuming any resources.
  */
-static VALUE libvirt_domain_save(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_save(VALUE d, VALUE filename)
+{
+    ruby_libvirt_generate_call_nil(virDomainSave, ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(filename));
+}
+
+#if HAVE_VIRDOMAINSAVEFLAGS
+/*
+ * call-seq:
+ *   dom.save_flags(filename, dxml=nil, flags=0) -> nil
+ *
+ * Call virDomainSaveFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSaveFlags]
+ * to save the domain state to filename.  After this call, the domain will no
+ * longer be consuming any resources.
+ */
+static VALUE libvirt_domain_save_flags(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags, to, dxml;
 
     rb_scan_args(argc, argv, "12", &to, &dxml, &flags);
 
-#if HAVE_VIRDOMAINSAVEFLAGS
     ruby_libvirt_generate_call_nil(virDomainSaveFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    StringValueCStr(to),
                                    ruby_libvirt_get_cstring_or_null(dxml),
                                    ruby_libvirt_value_to_uint(flags));
-#else
-    if (TYPE(dxml) != T_NIL) {
-        rb_raise(e_NoSupportError, "Non-nil dxml not supported");
-    }
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    ruby_libvirt_generate_call_nil(virDomainSave, ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(to));
-#endif
 }
+#endif
 
 #if HAVE_VIRDOMAINMANAGEDSAVE
 /*
@@ -421,12 +380,13 @@ static VALUE libvirt_domain_managed_save(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.has_managed_save?(flags=0) -> [True|False]
+ *   dom.has_managed_save_image(flags=0) -> [True|False]
  *
  * Call virDomainHasManagedSaveImage[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasManagedSaveImage]
  * to determine if a particular domain has a managed save image.
  */
-static VALUE libvirt_domain_has_managed_save(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_has_managed_save_image(int argc, VALUE *argv,
+                                                   VALUE d)
 {
     VALUE flags;
 
@@ -496,12 +456,12 @@ static VALUE libvirt_domain_s_restore(VALUE RUBY_LIBVIRT_UNUSED(klass), VALUE c,
 
 /*
  * call-seq:
- *   dom.info -> Hash
+ *   dom.get_info -> Hash
  *
  * Call virDomainGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
  * to retrieve domain information.
  */
-static VALUE libvirt_domain_info(VALUE d)
+static VALUE libvirt_domain_get_info(VALUE d)
 {
     virDomainInfo info;
     int r;
@@ -525,12 +485,12 @@ static VALUE libvirt_domain_info(VALUE d)
 #if HAVE_VIRDOMAINGETSECURITYLABEL
 /*
  * call-seq:
- *   dom.security_label -> Hash
+ *   dom.get_security_label -> Hash
  *
  * Call virDomainGetSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabel]
  * to retrieve the security label applied to this domain.
  */
-static VALUE libvirt_domain_security_label(VALUE d)
+static VALUE libvirt_domain_get_security_label(VALUE d)
 {
     virSecurityLabel seclabel;
     int r;
@@ -613,12 +573,12 @@ static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
 /*
  * call-seq:
- *   dom.blockinfo(path, flags=0) -> Hash
+ *   dom.get_block_info(path, flags=0) -> Hash
  *
  * Call virDomainGetBlockInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockInfo]
  * to retrieve information about the backing file path for the domain.
  */
-static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_block_info(int argc, VALUE *argv, VALUE d)
 {
     virDomainBlockInfo info;
     int r;
@@ -704,77 +664,46 @@ static VALUE libvirt_domain_memory_peek(int argc, VALUE *argv, VALUE d)
 #endif
 
 /* call-seq:
- *   dom.vcpus -> [ Hash ]
+ *   dom.get_vcpus(num_vcpus, max_host_cpus=nil) -> [ Hash ]
  *
  * Call virDomainGetVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpus]
  * to retrieve detailed information about the state of a domain's virtual CPUs.
  */
-static VALUE libvirt_domain_vcpus(VALUE d)
+static VALUE libvirt_domain_get_vcpus(VALUE d, VALUE numv, VALUE maxhost)
 {
-    virDomainInfo dominfo;
+    int r, j, num_vcpus, max_host_cpus = 0, cpumaplen = 0;
     virVcpuInfoPtr cpuinfo = NULL;
-    unsigned char *cpumap;
-    int cpumaplen, r, j, maxcpus;
-    VALUE result, vcpuinfo, p2vcpumap;
+    unsigned char *cpumap = NULL;
     unsigned short i;
+    VALUE vcpuinfo, result, p2vcpumap;
 
-    r = virDomainGetInfo(ruby_libvirt_domain_get(d), &dominfo);
-    ruby_libvirt_raise_error_if(r < 0, "virDomainGetInfo",
-                                ruby_libvirt_connect_get(d));
+    num_vcpus = NUM2INT(numv);
+    cpuinfo = alloca(sizeof(virVcpuInfo) * num_vcpus);
 
-    cpuinfo = alloca(sizeof(virVcpuInfo) * dominfo.nrVirtCpu);
-
-    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
-
-    cpumaplen = VIR_CPU_MAPLEN(maxcpus);
-
-    cpumap = alloca(sizeof(unsigned char) * cpumaplen);
-
-    r = virDomainGetVcpus(ruby_libvirt_domain_get(d), cpuinfo,
-                          dominfo.nrVirtCpu, cpumap, cpumaplen);
-    if (r < 0) {
-#if HAVE_VIRDOMAINGETVCPUPININFO
-        /* if the domain is not shutoff, then this is an error */
-        ruby_libvirt_raise_error_if(dominfo.state != VIR_DOMAIN_SHUTOFF,
-                                    "virDomainGetVcpus",
-                                    ruby_libvirt_connect_get(d));
-
-        /* otherwise, we can try to call virDomainGetVcpuPinInfo to get the
-         * information instead
-         */
-        r = virDomainGetVcpuPinInfo(ruby_libvirt_domain_get(d),
-                                    dominfo.nrVirtCpu, cpumap, cpumaplen,
-                                    VIR_DOMAIN_AFFECT_CONFIG);
-        ruby_libvirt_raise_error_if(r < 0, "virDomainGetVcpuPinInfo",
-                                    ruby_libvirt_connect_get(d));
-
-#else
-        ruby_libvirt_raise_error_if(r < 0, "virDomainGetVcpus",
-                                    ruby_libvirt_connect_get(d));
-#endif
+    if (TYPE(maxhost) != T_NIL) {
+        max_host_cpus = NUM2INT(maxhost);
+        cpumaplen = VIR_CPU_MAPLEN(max_host_cpus);
+        cpumap = alloca(cpumaplen);
     }
+
+    r = virDomainGetVcpus(ruby_libvirt_domain_get(d), cpuinfo, num_vcpus,
+                          cpumap, cpumaplen);
+    ruby_libvirt_raise_error_if(r < 0, "virDomainGetVcpus",
+                                ruby_libvirt_connect_get(d));
 
     result = rb_ary_new();
 
-    for (i = 0; i < dominfo.nrVirtCpu; i++) {
+    for (i = 0; i < num_vcpus; i++) {
         vcpuinfo = rb_hash_new();
         rb_hash_aset(vcpuinfo, rb_str_new2("number"), UINT2NUM(i));
-        if (cpuinfo != NULL) {
-            rb_hash_aset(vcpuinfo, rb_str_new2("state"),
-                         INT2NUM(cpuinfo[i].state));
-            rb_hash_aset(vcpuinfo, rb_str_new2("cpu_time"),
-                         ULL2NUM(cpuinfo[i].cpuTime));
-            rb_hash_aset(vcpuinfo, rb_str_new2("cpu"), INT2NUM(cpuinfo[i].cpu));
-        }
-        else {
-            rb_hash_aset(vcpuinfo, rb_str_new2("state"), Qnil);
-            rb_hash_aset(vcpuinfo, rb_str_new2("cpu_time"), Qnil);
-            rb_hash_aset(vcpuinfo, rb_str_new2("cpu"), Qnil);
-        }
+        rb_hash_aset(vcpuinfo, rb_str_new2("state"), INT2NUM(cpuinfo[i].state));
+        rb_hash_aset(vcpuinfo, rb_str_new2("cpu_time"),
+                     ULL2NUM(cpuinfo[i].cpuTime));
+        rb_hash_aset(vcpuinfo, rb_str_new2("cpu"), INT2NUM(cpuinfo[i].cpu));
 
         p2vcpumap = rb_ary_new();
 
-        for (j = 0; j < maxcpus; j++) {
+        for (j = 0; j < max_host_cpus; j++) {
             rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap, cpumaplen,
                                                    i, j)) ? Qtrue : Qfalse);
         }
@@ -786,15 +715,63 @@ static VALUE libvirt_domain_vcpus(VALUE d)
     return result;
 }
 
+#if HAVE_VIRDOMAINGETVCPUPININFO
+/* call-seq:
+ *   dom.get_vcpu_pin_info(num_vcpus, max_host_cpus, flags=0) -> [ Hash ]
+ *
+ * Call virDomainGetVcpuPinInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpuPinInfo]
+ * to retrieve detailed information about the state of a domain's virtual CPUs.
+ */
+static VALUE libvirt_domain_get_vcpu_pin_info(int argc, VALUE *argv, VALUE d)
+{
+    VALUE numv, maxhost, flags, result, vcpuinfo, p2vcpumap;
+    int r, max_host_cpus, cpumaplen, num_vcpus, i, j;
+    unsigned char *cpumap = NULL;
+
+    rb_scan_args(argc, argv, "21", &numv, &maxhost, &flags);
+
+    num_vcpus = NUM2INT(numv);
+    max_host_cpus = NUM2INT(maxhost);
+
+    cpumaplen = VIR_CPU_MAPLEN(max_host_cpus);
+    cpumap = alloca(cpumaplen);
+
+    r = virDomainGetVcpuPinInfo(ruby_libvirt_domain_get(d), num_vcpus,
+                                cpumap, cpumaplen, NUM2UINT(flags));
+    ruby_libvirt_raise_error_if(r < 0, "virDomainGetVcpuPinInfo",
+                                ruby_libvirt_connect_get(d));
+
+    /* FIXME: we may be able to share this code with get_vcpus */
+    result = rb_ary_new();
+
+    for (i = 0; i < num_vcpus; i++) {
+        vcpuinfo = rb_hash_new();
+        rb_hash_aset(vcpuinfo, rb_str_new2("number"), UINT2NUM(i));
+
+        p2vcpumap = rb_ary_new();
+
+        for (j = 0; j < max_host_cpus; j++) {
+            rb_ary_push(p2vcpumap, (VIR_CPU_USABLE(cpumap, cpumaplen,
+                                                   i, j)) ? Qtrue : Qfalse);
+        }
+        rb_hash_aset(vcpuinfo, rb_str_new2("cpumap"), p2vcpumap);
+
+        rb_ary_push(result, vcpuinfo);
+    }
+
+    return result;
+}
+#endif
+
 #if HAVE_VIRDOMAINISACTIVE
 /*
  * call-seq:
- *   dom.active? -> [true|false]
+ *   dom.is_active -> [true|false]
  *
  * Call virDomainIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsActive]
  * to determine if this domain is currently active.
  */
-static VALUE libvirt_domain_active_p(VALUE d)
+static VALUE libvirt_domain_is_active(VALUE d)
 {
     ruby_libvirt_generate_call_truefalse(virDomainIsActive,
                                          ruby_libvirt_connect_get(d),
@@ -805,12 +782,12 @@ static VALUE libvirt_domain_active_p(VALUE d)
 #if HAVE_VIRDOMAINISPERSISTENT
 /*
  * call-seq:
- *   dom.persistent? -> [true|false]
+ *   dom.is_persistent -> [true|false]
  *
  * Call virDomainIsPersistent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsPersistent]
  * to determine if this is a persistent domain.
  */
-static VALUE libvirt_domain_persistent_p(VALUE d)
+static VALUE libvirt_domain_is_persistent(VALUE d)
 {
     ruby_libvirt_generate_call_truefalse(virDomainIsPersistent,
                                          ruby_libvirt_connect_get(d),
@@ -820,12 +797,12 @@ static VALUE libvirt_domain_persistent_p(VALUE d)
 
 /*
  * call-seq:
- *   dom.ifinfo(if) -> Hash
+ *   dom.interface_stats(if) -> Hash
  *
  * Call virDomainInterfaceStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInterfaceStats]
  * to retrieve statistics about domain interface if.
  */
-static VALUE libvirt_domain_if_stats(VALUE d, VALUE sif)
+static VALUE libvirt_domain_interface_stats(VALUE d, VALUE sif)
 {
     virDomainInterfaceStatsStruct ifinfo;
     int r;
@@ -852,12 +829,12 @@ static VALUE libvirt_domain_if_stats(VALUE d, VALUE sif)
 
 /*
  * call-seq:
- *   dom.name -> String
+ *   dom.get_name -> String
  *
  * Call virDomainGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
  * to retrieve the name of this domain.
  */
-static VALUE libvirt_domain_name(VALUE d)
+static VALUE libvirt_domain_get_name(VALUE d)
 {
     ruby_libvirt_generate_call_string(virDomainGetName,
                                       ruby_libvirt_connect_get(d), 0,
@@ -866,13 +843,13 @@ static VALUE libvirt_domain_name(VALUE d)
 
 /*
  * call-seq:
- *   dom.id -> Fixnum
+ *   dom.get_id -> Fixnum
  *
  * Call virDomainGetID[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetID]
  * to retrieve the ID of this domain.  If the domain isn't running, this will
  * be -1.
  */
-static VALUE libvirt_domain_id(VALUE d)
+static VALUE libvirt_domain_get_id(VALUE d)
 {
     unsigned int id;
     int out;
@@ -891,12 +868,12 @@ static VALUE libvirt_domain_id(VALUE d)
 
 /*
  * call-seq:
- *   dom.uuid -> String
+ *   dom.get_uuid_string -> String
  *
  * Call virDomainGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetUUIDString]
  * to retrieve the UUID of this domain.
  */
-static VALUE libvirt_domain_uuid(VALUE d)
+static VALUE libvirt_domain_get_uuid_string(VALUE d)
 {
     ruby_libvirt_generate_uuid(virDomainGetUUIDString,
                                ruby_libvirt_connect_get(d),
@@ -905,13 +882,13 @@ static VALUE libvirt_domain_uuid(VALUE d)
 
 /*
  * call-seq:
- *   dom.os_type -> String
+ *   dom.get_os_type -> String
  *
  * Call virDomainGetOSType[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetOSType]
  * to retrieve the os_type of this domain.  In libvirt terms, os_type determines
  * whether this domain is fully virtualized, paravirtualized, or a container.
  */
-static VALUE libvirt_domain_os_type(VALUE d)
+static VALUE libvirt_domain_get_os_type(VALUE d)
 {
     ruby_libvirt_generate_call_string(virDomainGetOSType,
                                       ruby_libvirt_connect_get(d), 1,
@@ -920,14 +897,14 @@ static VALUE libvirt_domain_os_type(VALUE d)
 
 /*
  * call-seq:
- *   dom.max_memory -> Fixnum
+ *   dom.get_max_memory -> Fixnum
  *
  * Call virDomainGetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxMemory]
  * to retrieve the maximum amount of memory this domain is allowed to access.
  * Note that the current amount of memory this domain is allowed to access may
  * be different (see dom.memory_set).
  */
-static VALUE libvirt_domain_max_memory(VALUE d)
+static VALUE libvirt_domain_get_max_memory(VALUE d)
 {
     unsigned long max_memory;
 
@@ -940,64 +917,69 @@ static VALUE libvirt_domain_max_memory(VALUE d)
 
 /*
  * call-seq:
- *   dom.max_memory = Fixnum
+ *   dom.set_max_memory(memory)
  *
  * Call virDomainSetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMaxMemory]
  * to set the maximum amount of memory (in kilobytes) this domain should be
  * allowed to access.
  */
-static VALUE libvirt_domain_max_memory_equal(VALUE d, VALUE max_memory)
+static VALUE libvirt_domain_set_max_memory(VALUE d, VALUE max_memory)
 {
-    int r;
-
-    r = virDomainSetMaxMemory(ruby_libvirt_domain_get(d),
-                              NUM2ULONG(max_memory));
-    ruby_libvirt_raise_error_if(r < 0, "virDomainSetMaxMemory",
-                                ruby_libvirt_connect_get(d));
-
-    return ULONG2NUM(max_memory);
+    ruby_libvirt_generate_call_nil(virDomainSetMaxMemory,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2ULONG(max_memory));
 }
 
 /*
  * call-seq:
- *   dom.memory = Fixnum,flags=0
+ *   dom.set_memory(memory)
  *
  * Call virDomainSetMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemory]
  * to set the amount of memory (in kilobytes) this domain should currently
  * have.  Note this will only succeed if both the hypervisor and the domain on
  * this connection support ballooning.
  */
-static VALUE libvirt_domain_memory_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_memory(VALUE d, VALUE memory)
 {
-    VALUE memory, flags;
-    int r;
-
-    domain_input_to_fixnum_and_flags(in, &memory, &flags);
+    ruby_libvirt_generate_call_nil(virDomainSetMemory,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2ULONG(memory));
+}
 
 #if HAVE_VIRDOMAINSETMEMORYFLAGS
-    r = virDomainSetMemoryFlags(ruby_libvirt_domain_get(d), NUM2ULONG(memory),
-                                ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    r = virDomainSetMemory(ruby_libvirt_domain_get(d), NUM2ULONG(memory));
-#endif
+/*
+ * call-seq:
+ *   dom.set_memory_flags(memory, flags=0)
+ *
+ * Call virDomainSetMemoryFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryFlags]
+ * to set the amount of memory (in kilobytes) this domain should currently
+ * have.  Note this will only succeed if both the hypervisor and the domain on
+ * this connection support ballooning.
+ */
+static VALUE libvirt_domain_set_memory_flags(int argc, VALUE *argv, VALUE d)
+{
+    VALUE memory, flags;
 
-    ruby_libvirt_raise_error_if(r < 0, "virDomainSetMemory",
-                                ruby_libvirt_connect_get(d));
+    rb_scan_args(argc, argv, "11", &memory, &flags);
 
-    return ULONG2NUM(memory);
+    ruby_libvirt_generate_call_nil(virDomainSetMemoryFlags,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2ULONG(memory),
+                                   ruby_libvirt_value_to_uint(flags));
 }
+#endif
 
 /*
  * call-seq:
- *   dom.max_vcpus -> Fixnum
+ *   dom.get_max_vcpus -> Fixnum
  *
  * Call virDomainGetMaxVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxVcpus]
  * to retrieve the maximum number of virtual CPUs this domain can use.
  */
-static VALUE libvirt_domain_max_vcpus(VALUE d)
+static VALUE libvirt_domain_get_max_vcpus(VALUE d)
 {
     ruby_libvirt_generate_call_int(virDomainGetMaxVcpus,
                                    ruby_libvirt_connect_get(d),
@@ -1006,13 +988,17 @@ static VALUE libvirt_domain_max_vcpus(VALUE d)
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
 /* call-seq:
- *   dom.num_vcpus(flags) -> Fixnum
+ *   dom.get_vcpus_flags(flags=0) -> Fixnum
  *
  * Call virDomainGetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpusFlags]
  * to retrieve the number of virtual CPUs assigned to this domain.
  */
-static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
+static VALUE libvirt_domain_get_vcpus_flags(int argc, VALUE *argv, VALUE d)
 {
+    VALUE flags;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
     ruby_libvirt_generate_call_int(virDomainGetVcpusFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
@@ -1022,75 +1008,100 @@ static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
 
 /*
  * call-seq:
- *   dom.vcpus = Fixnum,flags=0
+ *   dom.set_vcpus(num_vcpus) -> nil
  *
  * Call virDomainSetVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpus]
  * to set the current number of virtual CPUs this domain should have.  Note
  * that this will only work if both the hypervisor and domain on this
  * connection support virtual CPU hotplug/hot-unplug.
  */
-static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_vcpus(VALUE d, VALUE nvcpus)
 {
-    VALUE nvcpus, flags = Qnil;
+    ruby_libvirt_generate_call_nil(virDomainSetVcpus,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2UINT(nvcpus));
+}
 
-    if (TYPE(in) == T_FIXNUM) {
-        nvcpus = in;
-        flags = INT2NUM(0);
-    }
 #if HAVE_VIRDOMAINSETVCPUSFLAGS
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
-                     RARRAY_LEN(in));
-        }
-        nvcpus = rb_ary_entry(in, 0);
-        flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+/*
+ * call-seq:
+ *   dom.set_vcpus_flags(num_vcpus, flags=0) -> nil
+ *
+ * Call virDomainSetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpusFlags]
+ * to set the current number of virtual CPUs this domain should have.  Note
+ * that this will only work if both the hypervisor and domain on this
+ * connection support virtual CPU hotplug/hot-unplug.
+ */
+static VALUE libvirt_domain_set_vcpus_flags(int argc, VALUE *argv, VALUE d)
+{
+    VALUE nvcpus, flags;
+
+    rb_scan_args(argc, argv, "11", &nvcpus, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainSetVcpusFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d), NUM2UINT(nvcpus),
                                    NUM2UINT(flags));
-#else
-
-    if (NUM2UINT(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-
-    ruby_libvirt_generate_call_nil(virDomainSetVcpus,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   NUM2UINT(nvcpus));
-#endif
 }
+#endif
 
 /*
  * call-seq:
- *   dom.pin_vcpu(vcpu, cpulist, flags=0) -> nil
+ *   dom.pin_vcpu(vcpu, cpulist, max_host_cpus) -> nil
  *
  * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
  * to pin a particular virtual CPU to a range of physical processors.  The
  * cpulist should be an array of Fixnums representing the physical processors
  * this virtual CPU should be allowed to be scheduled on.
  */
-static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_pin_vcpu(VALUE d, VALUE vcpu, VALUE cpulist,
+                                     VALUE maxhost)
 {
-    VALUE vcpu, cpulist, flags, e;
-    int i, cpumaplen, maxcpus;
+    VALUE e;
+    int i, cpumaplen, max_host_cpus;
     unsigned char *cpumap;
 
-    rb_scan_args(argc, argv, "21", &vcpu, &cpulist, &flags);
+    Check_Type(cpulist, T_ARRAY);
+    max_host_cpus = NUM2INT(maxhost);
+
+    cpumaplen = VIR_CPU_MAPLEN(max_host_cpus);
+    cpumap = alloca(cpumaplen);
+    MEMZERO(cpumap, unsigned char, cpumaplen);
+
+    for (i = 0; i < RARRAY_LEN(cpulist); i++) {
+        e = rb_ary_entry(cpulist, i);
+        VIR_USE_CPU(cpumap, NUM2UINT(e));
+    }
+
+    ruby_libvirt_generate_call_nil(virDomainPinVcpu,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d), NUM2UINT(vcpu),
+                                   cpumap, cpumaplen);
+}
+
+#if HAVE_VIRDOMAINPINVCPUFLAGS
+/*
+ * call-seq:
+ *   dom.pin_vcpu_flags(vcpu, cpulist, max_host_cpus, flags=0) -> nil
+ *
+ * Call virDomainPinVcpuFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpuFlags]
+ * to pin a particular virtual CPU to a range of physical processors.  The
+ * cpulist should be an array of Fixnums representing the physical processors
+ * this virtual CPU should be allowed to be scheduled on.
+ */
+static VALUE libvirt_domain_pin_vcpu_flags(int argc, VALUE *argv, VALUE d)
+{
+    VALUE vcpu, cpulist, e, flags, maxhost;
+    int i, cpumaplen, max_host_cpus;
+    unsigned char *cpumap;
+
+    rb_scan_args(argc, argv, "31", &vcpu, &cpulist, &maxhost, &flags);
 
     Check_Type(cpulist, T_ARRAY);
+    max_host_cpus = NUM2INT(maxhost);
 
-    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
-
-    cpumaplen = VIR_CPU_MAPLEN(maxcpus);
-
+    cpumaplen = VIR_CPU_MAPLEN(max_host_cpus);
     cpumap = alloca(sizeof(unsigned char) * cpumaplen);
     MEMZERO(cpumap, unsigned char, cpumaplen);
 
@@ -1099,32 +1110,21 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
         VIR_USE_CPU(cpumap, NUM2UINT(e));
     }
 
-#if HAVE_VIRDOMAINPINVCPUFLAGS
-    ruby_libvirt_generate_call_nil(virDomainPinVcpuFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   NUM2UINT(vcpu), cpumap, cpumaplen,
-                                   ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-
     ruby_libvirt_generate_call_nil(virDomainPinVcpu,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d), NUM2UINT(vcpu),
                                    cpumap, cpumaplen);
-#endif
 }
+#endif
 
 /*
  * call-seq:
- *   dom.xml_desc(flags=0) -> String
+ *   dom.get_xml_desc(flags=0) -> String
  *
  * Call virDomainGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
  * to retrieve the XML describing this domain.
  */
-static VALUE libvirt_domain_xml_desc(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_xml_desc(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
 
@@ -1138,69 +1138,83 @@ static VALUE libvirt_domain_xml_desc(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.undefine(flags=0) -> nil
+ *   dom.undefine -> nil
  *
  * Call virDomainUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUndefine]
  * to undefine the domain.  After this call, the domain object is no longer
  * valid.
  */
-static VALUE libvirt_domain_undefine(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_undefine(VALUE d)
+{
+    ruby_libvirt_generate_call_nil(virDomainUndefine,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d));
+}
+
+#if HAVE_VIRDOMAINUNDEFINEFLAGS
+/*
+ * call-seq:
+ *   dom.undefine_flags(flags=0) -> nil
+ *
+ * Call virDomainUndefineFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUndefineFlags]
+ * to undefine the domain.  After this call, the domain object is no longer
+ * valid.
+ */
+static VALUE libvirt_domain_undefine_flags(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
 
-#if HAVE_VIRDOMAINUNDEFINEFLAGS
     ruby_libvirt_generate_call_nil(virDomainUndefineFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-
-    ruby_libvirt_generate_call_nil(virDomainUndefine,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d));
-#endif
 }
+#endif
 
 /*
  * call-seq:
- *   dom.create(flags=0) -> nil
+ *   dom.create -> nil
  *
  * Call virDomainCreate[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreate]
  * to start an already defined domain.
  */
-static VALUE libvirt_domain_create(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_create(VALUE d)
+{
+    ruby_libvirt_generate_call_nil(virDomainCreate, ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d));
+}
+
+#if HAVE_VIRDOMAINCREATEWITHFLAGS
+/*
+ * call-seq:
+ *   dom.create_with_flags(flags=0) -> nil
+ *
+ * Call virDomainCreateWithFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateWithFlags]
+ * to start an already defined domain.
+ */
+static VALUE libvirt_domain_create_with_flags(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
 
     rb_scan_args(argc, argv, "01", &flags);
 
-#if HAVE_VIRDOMAINCREATEWITHFLAGS
     ruby_libvirt_generate_call_nil(virDomainCreateWithFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    ruby_libvirt_generate_call_nil(virDomainCreate, ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d));
-#endif
 }
+#endif
 
 /*
  * call-seq:
- *   dom.autostart -> [true|false]
+ *   dom.get_autostart -> [true|false]
  *
  * Call virDomainGetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetAutostart]
  * to find out the state of the autostart flag for a domain.
  */
-static VALUE libvirt_domain_autostart(VALUE d)
+static VALUE libvirt_domain_get_autostart(VALUE d)
 {
     int r, autostart;
 
@@ -1213,12 +1227,12 @@ static VALUE libvirt_domain_autostart(VALUE d)
 
 /*
  * call-seq:
- *   dom.autostart = [true|false]
+ *   dom.set_autostart([true|false])
  *
  * Call virDomainSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetAutostart]
  * to make this domain autostart when libvirtd starts up.
  */
-static VALUE libvirt_domain_autostart_equal(VALUE d, VALUE autostart)
+static VALUE libvirt_domain_set_autostart(VALUE d, VALUE autostart)
 {
     if (autostart != Qtrue && autostart != Qfalse) {
 		rb_raise(rb_eTypeError,
@@ -1233,73 +1247,87 @@ static VALUE libvirt_domain_autostart_equal(VALUE d, VALUE autostart)
 
 /*
  * call-seq:
- *   dom.attach_device(device_xml, flags=0) -> nil
+ *   dom.attach_device(device_xml) -> nil
  *
  * Call virDomainAttachDevice[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAttachDevice]
  * to attach the device described by the device_xml to the domain.
  */
-static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_attach_device(VALUE d, VALUE xml)
+{
+    ruby_libvirt_generate_call_nil(virDomainAttachDevice,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(xml));
+}
+
+#if HAVE_VIRDOMAINATTACHDEVICEFLAGS
+/*
+ * call-seq:
+ *   dom.attach_device_flags(device_xml, flags=0) -> nil
+ *
+ * Call virDomainAttachDeviceFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAttachDeviceFlags]
+ * to attach the device described by the device_xml to the domain.
+ */
+static VALUE libvirt_domain_attach_device_flags(int argc, VALUE *argv, VALUE d)
 {
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-#if HAVE_VIRDOMAINATTACHDEVICEFLAGS
     ruby_libvirt_generate_call_nil(virDomainAttachDeviceFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    StringValueCStr(xml),
                                    ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    ruby_libvirt_generate_call_nil(virDomainAttachDevice,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(xml));
-#endif
 }
+#endif
 
 /*
  * call-seq:
- *   dom.detach_device(device_xml, flags=0) -> nil
+ *   dom.detach_device(device_xml) -> nil
  *
  * Call virDomainDetachDevice[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
  * to detach the device described by the device_xml from the domain.
  */
-static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_detach_device(VALUE d, VALUE xml)
+{
+    ruby_libvirt_generate_call_nil(virDomainDetachDevice,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(xml));
+}
+
+#if HAVE_VIRDOMAINDETACHDEVICEFLAGS
+/*
+ * call-seq:
+ *   dom.detach_device_flags(device_xml, flags=0) -> nil
+ *
+ * Call virDomainDetachDevice[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
+ * to detach the device described by the device_xml from the domain.
+ */
+static VALUE libvirt_domain_detach_device_flags(int argc, VALUE *argv, VALUE d)
 {
     VALUE xml, flags;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-#if HAVE_VIRDOMAINDETACHDEVICEFLAGS
     ruby_libvirt_generate_call_nil(virDomainDetachDeviceFlags,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    StringValueCStr(xml),
                                    ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    ruby_libvirt_generate_call_nil(virDomainDetachDevice,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(xml));
-#endif
 }
+#endif
 
 #if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
 /*
  * call-seq:
- *   dom.update_device(device_xml, flags=0) -> nil
+ *   dom.update_device_flags(device_xml, flags=0) -> nil
  *
  * Call virDomainUpdateDeviceFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUpdateDeviceFlags]
  * to update the device described by the device_xml.
  */
-static VALUE libvirt_domain_update_device(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_update_device_flags(int argc, VALUE *argv, VALUE d)
 {
     VALUE xml, flags;
 
@@ -1393,27 +1421,21 @@ static VALUE libvirt_domain_num_of_snapshots(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.list_snapshots(flags=0) -> list
+ *   dom.snapshot_list_names(num_snapshots, flags=0) -> list
  *
  * Call virDomainSnapshotListNames[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames]
  * to retrieve a list of snapshot names available for this domain.
  */
-static VALUE libvirt_domain_list_snapshots(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_snapshot_list_names(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
+    VALUE snapnum, flags;
     int r, num;
     char **names;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "01", &snapnum, &flags);
 
-    if (TYPE(flags) != T_NIL && TYPE(flags) != T_FIXNUM) {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number)");
-    }
+    num = NUM2INT(snapnum);
 
-    num = virDomainSnapshotNum(ruby_libvirt_domain_get(d), 0);
-    ruby_libvirt_raise_error_if(num < 0, "virDomainSnapshotNum",
-                                ruby_libvirt_connect_get(d));
     if (num == 0) {
         /* if num is 0, don't call virDomainSnapshotListNames function */
         return rb_ary_new2(num);
@@ -1431,12 +1453,12 @@ static VALUE libvirt_domain_list_snapshots(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.lookup_snapshot_by_name(name, flags=0) -> Libvirt::Domain::Snapshot
+ *   dom.snapshot_lookup_by_name(name, flags=0) -> Libvirt::Domain::Snapshot
  *
  * Call virDomainSnapshotLookupByName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotLookupByName]
  * to retrieve a snapshot object corresponding to snapshot name.
  */
-static VALUE libvirt_domain_lookup_snapshot_by_name(int argc, VALUE *argv,
+static VALUE libvirt_domain_snapshot_lookup_by_name(int argc, VALUE *argv,
                                                     VALUE d)
 {
     virDomainSnapshotPtr snap;
@@ -1455,13 +1477,13 @@ static VALUE libvirt_domain_lookup_snapshot_by_name(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   dom.has_current_snapshot?(flags=0) -> [true|false]
+ *   dom.has_current_snapshot(flags=0) -> [true|false]
  *
  * Call virDomainHasCurrentSnapshot[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasCurrentSnapshot]
  * to find out if this domain has a snapshot active.
  */
-static VALUE libvirt_domain_has_current_snapshot_p(int argc, VALUE *argv,
-                                                   VALUE d)
+static VALUE libvirt_domain_has_current_snapshot(int argc, VALUE *argv,
+                                                 VALUE d)
 {
     VALUE flags;
 
@@ -1516,12 +1538,13 @@ static VALUE libvirt_domain_current_snapshot(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   snapshot.xml_desc(flags=0) -> String
+ *   snapshot.get_xml_desc(flags=0) -> String
  *
  * Call virDomainSnapshotGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetXMLDesc]
  * to retrieve the xml description for this snapshot.
  */
-static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_domain_snapshot_get_xml_desc(int argc, VALUE *argv,
+                                                  VALUE s)
 {
     VALUE flags;
 
@@ -1570,12 +1593,12 @@ static VALUE libvirt_domain_snapshot_free(VALUE s)
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
 /*
  * call-seq:
- *   snapshot.name -> String
+ *   snapshot.get_name -> String
  *
  * Call virDomainSnapshotGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetName]
  * to get the name associated with a snapshot.
  */
-static VALUE libvirt_domain_snapshot_name(VALUE s)
+static VALUE libvirt_domain_snapshot_get_name(VALUE s)
 {
     ruby_libvirt_generate_call_string(virDomainSnapshotGetName,
                                       ruby_libvirt_connect_get(s),
@@ -1587,12 +1610,12 @@ static VALUE libvirt_domain_snapshot_name(VALUE s)
 #if HAVE_TYPE_VIRDOMAINJOBINFOPTR
 /*
  * call-seq:
- *   dom.job_info -> Hash
+ *   dom.get_job_info -> Hash
  *
  * Call virDomainGetJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo]
  * to retrieve the current state of the running domain job.
  */
-static VALUE libvirt_domain_job_info(VALUE d)
+static VALUE libvirt_domain_get_job_info(VALUE d)
 {
     int r;
     virDomainJobInfo info;
@@ -1662,12 +1685,12 @@ static VALUE create_sched_type_array(VALUE input)
 
 /*
  * call-seq:
- *   dom.scheduler_type -> [type, #params]
+ *   dom.get_scheduler_type -> [type, #params]
  *
  * Call virDomainGetSchedulerType[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerType]
  * to retrieve the scheduler type used on this domain.
  */
-static VALUE libvirt_domain_scheduler_type(VALUE d)
+static VALUE libvirt_domain_get_scheduler_type(VALUE d)
 {
     int nparams, exception = 0;
     char *type;
@@ -1706,18 +1729,8 @@ static VALUE libvirt_domain_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
     VALUE cmd, flags, ret;
     char *result;
     int r, exception = 0;
-    const char *type;
 
     rb_scan_args(argc, argv, "11", &cmd, &flags);
-
-    type = virConnectGetType(ruby_libvirt_connect_get(d));
-    ruby_libvirt_raise_error_if(type == NULL, "virConnectGetType",
-                                ruby_libvirt_connect_get(d));
-    if (strcmp(type, "QEMU") != 0) {
-        rb_raise(rb_eTypeError,
-                 "Tried to use virDomainQemuMonitor command on %s connection",
-                 type);
-    }
 
     r = virDomainQemuMonitorCommand(ruby_libvirt_domain_get(d),
                                     StringValueCStr(cmd), &result,
@@ -1738,7 +1751,7 @@ static VALUE libvirt_domain_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINISUPDATED
 /*
  * call-seq:
- *   dom.updated? ->  [True|False]
+ *   dom.is_updated ->  [True|False]
  *
  * Call virDomainIsUpdated[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsUpdated]
  * to determine whether the definition for this domain has been updated.
@@ -1751,90 +1764,75 @@ static VALUE libvirt_domain_is_updated(VALUE d)
 }
 #endif
 
-static const char *scheduler_nparams(VALUE d,
-                                     unsigned int RUBY_LIBVIRT_UNUSED(flags),
-                                     void *RUBY_LIBVIRT_UNUSED(opaque),
-                                     int *nparams)
-{
-    char *type;
-
-    type = virDomainGetSchedulerType(ruby_libvirt_domain_get(d), nparams);
-    if (type == NULL) {
-        return "virDomainGetSchedulerType";
-    }
-
-    xfree(type);
-
-    return NULL;
-}
-
-static const char *scheduler_get(VALUE d, unsigned int flags, void *voidparams,
-                                 int *nparams,
-                                 void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainGetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
-                                             nparams, flags) < 0) {
-        return "virDomainGetSchedulerParameters";
-    }
-#else
-    if (flags != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    if (virDomainGetSchedulerParameters(ruby_libvirt_domain_get(d),
-                                        (virSchedParameterPtr)params,
-                                        nparams) < 0) {
-        return "virDomainGetSchedulerParameters";
-    }
-#endif
-
-    return NULL;
-}
-
-static const char *scheduler_set(VALUE d, unsigned int flags,
-                                 virTypedParameterPtr params, int nparams,
-                                 void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-#if HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainSetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
-                                             nparams, flags) < 0) {
-        return "virDomainSetSchedulerParameters";
-    }
-#else
-    if (flags != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    if (virDomainSetSchedulerParameters(ruby_libvirt_domain_get(d),
-                                        (virSchedParameterPtr)params,
-                                        nparams) < 0) {
-        return "virDomainSetSchedulerParameters";
-    }
-#endif
-
-    return NULL;
-}
-
 /*
  * call-seq:
- *   dom.scheduler_parameters(flags=0) -> Hash
+ *   dom.get_scheduler_parameters(nparams) -> Hash
  *
  * Call virDomainGetSchedulerParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerParameters]
  * to retrieve all of the scheduler parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_scheduler_parameters(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_scheduler_parameters(VALUE d, VALUE np)
 {
-    VALUE flags;
+    int nparams, i, ret;
+    virTypedParameter *params;
+    VALUE result;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    nparams = NUM2UINT(np);
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             NULL, scheduler_nparams,
-                                             scheduler_get);
+    params = alloca(nparams * sizeof(virTypedParameter));
+
+    ret = virDomainGetSchedulerParameters(ruby_libvirt_domain_get(d), params,
+                                          &nparams);
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetSchedulerParameters",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+
+    for (i = 0; i < nparams; i++) {
+        ruby_libvirt_typed_params_to_hash(params, i, result);
+    }
+
+    return result;
 }
+
+#if HAVE_VIRDOMAINGETSCHEDULERPARAMETERSFLAGS
+/*
+ * call-seq:
+ *   dom.get_scheduler_parameters_flags(nparams, flags=0) -> Hash
+ *
+ * Call virDomainGetSchedulerParametersFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerParametersFlags]
+ * to retrieve all of the scheduler parameters for this domain.  The keys and
+ * values in the hash that is returned are hypervisor specific.
+ */
+static VALUE libvirt_domain_get_scheduler_parameters_flags(int argc,
+                                                           VALUE *argv, VALUE d)
+{
+    int nparams, i, ret;
+    virTypedParameter *params;
+    VALUE result, flags, np;
+
+    rb_scan_args(argc, argv, "11", &np, &flags);
+
+    nparams = NUM2UINT(np);
+
+    params = alloca(nparams * sizeof(virTypedParameter));
+
+    ret = virDomainGetSchedulerParametersFlags(ruby_libvirt_domain_get(d),
+                                               params, &nparams,
+                                               NUM2UINT(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetSchedulerParametersFlags",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+
+    for (i = 0; i < nparams; i++) {
+        ruby_libvirt_typed_params_to_hash(params, i, result);
+    }
+
+    return result;
+}
+#endif
 
 static struct ruby_libvirt_typed_param domain_scheduler_allowed[] = {
     {VIR_DOMAIN_SCHEDULER_CPU_SHARES, VIR_TYPED_PARAM_ULLONG},
@@ -1855,94 +1853,119 @@ static struct ruby_libvirt_typed_param domain_scheduler_allowed[] = {
 
 /*
  * call-seq:
- *   dom.scheduler_parameters = Hash
+ *   dom.set_scheduler_parameters(hash)
  *
  * Call virDomainSetSchedulerParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
  * to set the scheduler parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.  If an empty hash is given, no
  * changes are made (and no error is raised).
  */
-static VALUE libvirt_domain_scheduler_parameters_equal(VALUE d, VALUE input)
+static VALUE libvirt_domain_set_scheduler_parameters(VALUE d, VALUE hash)
 {
-    VALUE hash, flags;
+    struct ruby_libvirt_parameter_assign_args args;
 
-    ruby_libvirt_assign_hash_and_flags(input, &hash, &flags);
+    Check_Type(hash, T_HASH);
 
-    return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags), NULL,
-                                             domain_scheduler_allowed,
-                                             ARRAY_SIZE(domain_scheduler_allowed),
-                                             scheduler_set);
+    args.allowed = domain_scheduler_allowed;
+    args.num_allowed = ARRAY_SIZE(domain_scheduler_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetSchedulerParameters,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   args.params, args.i);
 }
 
-#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-static const char *memory_nparams(VALUE d, unsigned int flags,
-                                  void *RUBY_LIBVIRT_UNUSED(opaque),
-                                  int *nparams)
-{
-    if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), NULL, nparams,
-                                     flags) < 0) {
-        return "virDomainGetMemoryParameters";
-    }
-
-    return NULL;
-}
-
-static const char *memory_get(VALUE d, unsigned int flags, void *voidparams,
-                              int *nparams, void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), params,
-                                     nparams, flags) < 0) {
-#else
-    if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d),
-                                     (virMemoryParameterPtr)params, nparams,
-                                     flags) < 0) {
-#endif
-        return "virDomainGetMemoryParameters";
-    }
-
-    return NULL;
-}
-
-static const char *memory_set(VALUE d, unsigned int flags,
-                              virTypedParameterPtr params, int nparams,
-                              void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainSetMemoryParameters(ruby_libvirt_domain_get(d), params,
-                                     nparams, flags) < 0) {
-#else
-    if (virDomainSetMemoryParameters(ruby_libvirt_domain_get(d),
-                                     (virMemoryParameterPtr)params, nparams,
-                                     flags) < 0) {
-#endif
-        return "virDomainSetMemoryParameters";
-    }
-
-    return NULL;
-}
-
+#if HAVE_VIRDOMAINSETSCHEDULERPARAMATERSFLAGS
 /*
  * call-seq:
- *   dom.memory_parameters(flags=0) -> Hash
+ *   dom.set_scheduler_parameters_flags(hash, flags=0)
+ *
+ * Call virDomainSetSchedulerParametersFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParametersFlags]
+ * to set the scheduler parameters for this domain.  The keys and values in
+ * the input hash are hypervisor specific.  If an empty hash is given, no
+ * changes are made (and no error is raised).
+ */
+static VALUE libvirt_domain_set_scheduler_parameters_flags(int argc,
+                                                           VALUE *argv, VALUE d)
+{
+    struct ruby_libvirt_parameter_assign_args args;
+    VALUE hash, flags;
+
+    rb_scan_args(argc, argv, "11", &hash, &flags);
+
+    Check_Type(hash, T_HASH);
+
+    args.allowed = domain_scheduler_allowed;
+    args.num_allowed = ARRAY_SIZE(domain_scheduler_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetSchedulerParametersFlags,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   args.params, args.i,
+                                   ruby_libvirt_value_to_uint(flags));
+}
+#endif
+
+#if HAVE_VIRDOMAINGETMEMORYPARAMETERS
+/*
+ * call-seq:
+ *   dom.get_memory_parameters(nparams=0, flags=0) -> Hash
  *
  * Call virDomainGetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMemoryParameters]
  * to retrieve all of the memory parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_memory_parameters(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_memory_parameters(int argc, VALUE *argv,
+                                                  VALUE d)
 {
-    VALUE flags;
+    VALUE nparams_val, flags, result;
+    virTypedParameter *params = NULL;
+    int nparams, i, ret, nparams_orig;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "02", &nparams_val, &flags);
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             NULL, memory_nparams, memory_get);
+    if (NIL_P(nparams_val)) {
+        nparams = 0;
+    }
+    else {
+        nparams = NUM2INT(nparams_val);
+    }
+
+    nparams_orig = nparams;
+
+    if (nparams > 0) {
+        params = alloca(sizeof(virTypedParameter) * nparams);
+    }
+
+    ret = virDomainGetMemoryParameters(ruby_libvirt_domain_get(d),
+                                       params, &nparams,
+                                       ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetMemoryParameters",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        if (nparams_orig == 0) {
+            rb_hash_aset(result, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            ruby_libvirt_typed_params_to_hash(params, i, result);
+        }
+    }
+
+    return result;
 }
+#endif
 
+#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
 static struct ruby_libvirt_typed_param domain_memory_allowed[] = {
     {VIR_DOMAIN_MEMORY_HARD_LIMIT, VIR_TYPED_PARAM_ULLONG},
     {VIR_DOMAIN_MEMORY_SOFT_LIMIT, VIR_TYPED_PARAM_ULLONG},
@@ -1952,129 +1975,135 @@ static struct ruby_libvirt_typed_param domain_memory_allowed[] = {
 
 /*
  * call-seq:
- *   dom.memory_parameters = Hash,flags=0
+ *   dom.set_memory_parameters(hash, flags=0)
  *
  * Call virDomainSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
  * to set the memory parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
-static VALUE libvirt_domain_memory_parameters_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_memory_parameters(int argc, VALUE *argv,
+                                                  VALUE d)
 {
+    struct ruby_libvirt_parameter_assign_args args;
     VALUE hash, flags;
 
-    ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
+    rb_scan_args(argc, argv, "11", &hash, &flags);
 
-    return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags), NULL,
-                                             domain_memory_allowed,
-                                             ARRAY_SIZE(domain_memory_allowed),
-                                             memory_set);
+    Check_Type(hash, T_HASH);
+
+    args.allowed = domain_memory_allowed;
+    args.num_allowed = ARRAY_SIZE(domain_memory_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetMemoryParameters,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   args.params, args.i,
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
-#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-static const char *blkio_nparams(VALUE d, unsigned int flags,
-                                 void *RUBY_LIBVIRT_UNUSED(opaque),
-                                 int *nparams)
-{
-    if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), NULL, nparams,
-                                    flags) < 0) {
-        return "virDomainGetBlkioParameters";
-    }
-
-    return NULL;
-}
-
-static const char *blkio_get(VALUE d, unsigned int flags, void *voidparams,
-                             int *nparams, void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), params, nparams,
-                                    flags) < 0) {
-#else
-    if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d),
-                                    (virBlkioParameterPtr)params, nparams,
-                                    flags) < 0) {
-#endif
-        return "virDomainGetBlkioParameters";
-    }
-
-    return NULL;
-}
-
-static const char *blkio_set(VALUE d, unsigned int flags,
-                             virTypedParameterPtr params, int nparams,
-                             void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainSetBlkioParameters(ruby_libvirt_domain_get(d), params, nparams,
-                                    flags) < 0) {
-#else
-    if (virDomainSetBlkioParameters(ruby_libvirt_domain_get(d),
-                                    (virBlkioParameterPtr)params, nparams,
-                                    flags) < 0) {
-#endif
-        return "virDomainSetBlkioParameters";
-    }
-
-    return NULL;
-}
-
+#if HAVE_VIRDOMAINGETBLKIOPARAMETERS
 /*
  * call-seq:
- *   dom.blkio_parameters(flags=0) -> Hash
+ *   dom.get_blkio_parameters(nparams=0, flags=0) -> Hash
  *
  * Call virDomainGetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlkioParameters]
  * to retrieve all of the blkio parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_blkio_parameters(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_blkio_parameters(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
+    VALUE nparams_val, flags, result;
+    virTypedParameter *params = NULL;
+    int nparams, i, ret, nparams_orig;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "02", &nparams_val, &flags);
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             NULL, blkio_nparams, blkio_get);
+    if (NIL_P(nparams_val)) {
+        nparams = 0;
+    }
+    else {
+        nparams = NUM2INT(nparams_val);
+    }
+
+    nparams_orig = nparams;
+
+    if (nparams > 0) {
+        params = alloca(sizeof(virTypedParameter) * nparams);
+    }
+
+    ret = virDomainGetBlkioParameters(ruby_libvirt_domain_get(d),
+                                      params, &nparams,
+                                      ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetBlkioParameters",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        if (nparams_orig == 0) {
+            rb_hash_aset(result, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            ruby_libvirt_typed_params_to_hash(params, i, result);
+        }
+    }
+
+    return result;
 }
+#endif
 
-static struct ruby_libvirt_typed_param blkio_allowed[] = {
+#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
+static struct ruby_libvirt_typed_param domain_blkio_allowed[] = {
     {VIR_DOMAIN_BLKIO_WEIGHT, VIR_TYPED_PARAM_UINT},
     {VIR_DOMAIN_BLKIO_DEVICE_WEIGHT, VIR_TYPED_PARAM_STRING},
 };
 
 /*
  * call-seq:
- *   dom.blkio_parameters = Hash,flags=0
+ *   dom.set_blkio_parameters(Hash, flags=0)
  *
  * Call virDomainSetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
  * to set the blkio parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
-static VALUE libvirt_domain_blkio_parameters_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_blkio_parameters(int argc, VALUE *argv,
+                                                 VALUE d)
 {
+    struct ruby_libvirt_parameter_assign_args args;
     VALUE hash, flags;
 
-    ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
+    rb_scan_args(argc, argv, "11", &hash, &flags);
 
-    return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags), NULL,
-                                             blkio_allowed,
-                                             ARRAY_SIZE(blkio_allowed),
-                                             blkio_set);
+    Check_Type(hash, T_HASH);
+
+    args.allowed = domain_blkio_allowed;
+    args.num_allowed = ARRAY_SIZE(domain_blkio_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetBlkioParameters,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   args.params, args.i,
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
 #if HAVE_VIRDOMAINGETSTATE
 /*
  * call-seq:
- *   dom.state(flags=0) -> state, reason
+ *   dom.get_state(flags=0) -> state, reason
  *
  * Call virDomainGetState[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetState]
  * to get the current state of the domain.
  */
-static VALUE libvirt_domain_state(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_state(int argc, VALUE *argv, VALUE d)
 {
     VALUE result, flags;
     int state, reason, retval;
@@ -2165,12 +2194,12 @@ static VALUE libvirt_domain_inject_nmi(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETCONTROLINFO
 /*
  * call-seq:
- *   dom.control_info(flags=0) -> Hash
+ *   dom.get_control_info(flags=0) -> Hash
  *
  * Call virDomainGetControlInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetControlInfo]
  * to retrieve domain control interface information.
  */
-static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_control_info(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags, result;
     virDomainControlInfo info;
@@ -2225,12 +2254,13 @@ VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
 #if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
 /*
  * call-seq:
- *   dom.migrate_max_speed(flags=0) -> Fixnum
+ *   dom.migrate_get_max_speed(flags=0) -> Fixnum
  *
  * Call virDomainMigrateGetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetMaxSpeed]
  * to retrieve the maximum speed a migration can use.
  */
-static VALUE libvirt_domain_migrate_max_speed(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_migrate_get_max_speed(int argc, VALUE *argv,
+                                                  VALUE d)
 {
     VALUE flags;
     int r;
@@ -2270,12 +2300,12 @@ static VALUE libvirt_domain_reset(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETHOSTNAME
 /*
  * call-seq:
- *   dom.hostname(flags=0) -> nil
+ *   dom.get_hostname(flags=0) -> nil
  *
  * Call virDomainGetHostname[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetHostname]
  * to get the hostname from a domain.
  */
-static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_hostname(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
 
@@ -2291,12 +2321,12 @@ static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETMETADATA
 /*
  * call-seq:
- *   dom.metadata(type, uri=nil, flags=0) -> String
+ *   dom.get_metadata(type, uri=nil, flags=0) -> String
  *
  * Call virDomainGetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMetadata]
  * to get the metadata from a domain.
  */
-static VALUE libvirt_domain_metadata(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_metadata(int argc, VALUE *argv, VALUE d)
 {
     VALUE uri, flags, type;
 
@@ -2313,38 +2343,16 @@ static VALUE libvirt_domain_metadata(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINSETMETADATA
 /*
  * call-seq:
- *   dom.metadata = Fixnum,string/nil,key=nil,uri=nil,flags=0 -> nil
+ *   dom.set_metadata(type, metadata, key=nil, uri=nil, flags=0) -> nil
  *
  * Call virDomainSetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMetadata]
  * to set the metadata for a domain.
  */
-static VALUE libvirt_domain_metadata_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_metadata(int argc, VALUE *argv, VALUE d)
 {
     VALUE type, metadata, key, uri, flags;
 
-    Check_Type(in, T_ARRAY);
-
-    if (RARRAY_LEN(in) < 2 || RARRAY_LEN(in) > 5) {
-        rb_raise(rb_eArgError,
-                 "wrong number of arguments (%ld for 2, 3, 4, or 5)",
-                 RARRAY_LEN(in));
-    }
-
-    type = rb_ary_entry(in, 0);
-    metadata = rb_ary_entry(in, 1);
-    key = Qnil;
-    uri = Qnil;
-    flags = INT2NUM(0);
-
-    if (RARRAY_LEN(in) >= 3) {
-        key = rb_ary_entry(in, 2);
-    }
-    if (RARRAY_LEN(in) >= 4) {
-        uri = rb_ary_entry(in, 3);
-    }
-    if (RARRAY_LEN(in) == 5) {
-        flags = rb_ary_entry(in, 4);
-    }
+    rb_scan_args(argc, argv, "23", &type, &metadata, &key, &uri, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainSetMetadata,
                                    ruby_libvirt_connect_get(d),
@@ -2421,7 +2429,7 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
 /*
  * call-seq:
- *   snapshot.list_children_names(flags=0) -> Array
+ *   snapshot.list_children_names(num, flags=0) -> Array
  *
  * Call virDomainSnapshotListChildrenNames[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListChildrenNames]
  * to get an array of strings representing the children of this snapshot.
@@ -2429,18 +2437,14 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
 static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
                                                          VALUE s)
 {
-    VALUE flags, result;
+    VALUE num, flags, result, str;
     char **children;
     int num_children, ret, i, j, exception = 0;
     struct ruby_libvirt_str_new2_and_ary_store_arg arg;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "11", &num, &flags);
 
-    num_children = virDomainSnapshotNumChildren(domain_snapshot_get(s),
-                                                ruby_libvirt_value_to_uint(flags));
-    ruby_libvirt_raise_error_if(num_children < 0,
-                                "virDomainSnapshotNumChildren",
-                                ruby_libvirt_connect_get(s));
+    num_children = NUM2INT(num);
 
     result = rb_ary_new2(num_children);
 
@@ -2503,13 +2507,13 @@ static VALUE libvirt_domain_snapshot_list_all_children(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINSNAPSHOTGETPARENT
 /*
  * call-seq:
- *   snapshot.parent(flags=0) -> [Libvirt::Domain::Snapshot|nil]
+ *   snapshot.get_parent(flags=0) -> [Libvirt::Domain::Snapshot|nil]
  *
  * Call virDomainSnapshotGetParent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetParent]
  * to get the parent of this snapshot (nil will be returned if this is a root
  * snapshot).
  */
-static VALUE libvirt_domain_snapshot_parent(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_domain_snapshot_get_parent(int argc, VALUE *argv, VALUE s)
 {
     virDomainSnapshotPtr snap;
     VALUE flags;
@@ -2539,12 +2543,12 @@ static VALUE libvirt_domain_snapshot_parent(int argc, VALUE *argv, VALUE s)
 #if HAVE_VIRDOMAINSNAPSHOTISCURRENT
 /*
  * call-seq:
- *   snapshot.current?(flags=0) -> [true|false]
+ *   snapshot.is_current(flags=0) -> [true|false]
  *
  * Call virDomainSnapshotIsCurrent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotIsCurrent]
  * to determine if the snapshot is the domain's current snapshot.
  */
-static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
+static VALUE libvirt_domain_snapshot_is_current(int argc, VALUE *argv, VALUE s)
 {
     VALUE flags;
 
@@ -2560,13 +2564,13 @@ static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
 #if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
 /*
  * call-seq:
- *   snapshot.has_metadata?(flags=0) -> [true|false]
+ *   snapshot.has_metadata(flags=0) -> [true|false]
  *
  * Call virDomainSnapshotHasMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotHasMetadata]
  * to determine if the snapshot is associated with libvirt metadata.
  */
-static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
-                                                    VALUE s)
+static VALUE libvirt_domain_snapshot_has_metadata(int argc, VALUE *argv,
+                                                  VALUE s)
 {
     VALUE flags;
 
@@ -2582,16 +2586,17 @@ static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
 /*
  * call-seq:
- *   dom.memory_stats_period = Fixnum,flags=0
+ *   dom.set_memory_stats_period(period, flags=0) -> nil
  *
  * Call virDomainSetMemoryStatsPeriod[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryStatsPeriod]
  * to set the memory statistics collection period.
  */
-static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_memory_stats_period(int argc, VALUE *argv,
+                                                    VALUE d)
 {
     VALUE period, flags;
 
-    domain_input_to_fixnum_and_flags(in, &period, &flags);
+    rb_scan_args(argc, argv, "11", &period, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainSetMemoryStatsPeriod,
                                    ruby_libvirt_connect_get(d),
@@ -2604,12 +2609,12 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
 #if HAVE_VIRDOMAINFSTRIM
 /*
  * call-seq:
- *   dom.fstrim(mountpoint=nil, minimum=0, flags=0) -> nil
+ *   dom.fs_trim(mountpoint=nil, minimum=0, flags=0) -> nil
  *
  * Call virDomainFSTrim[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSTrim]
  * to call FITRIM within the guest.
  */
-static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_fs_trim(int argc, VALUE *argv, VALUE d)
 {
     VALUE mountpoint, minimum, flags;
 
@@ -2735,12 +2740,12 @@ static VALUE libvirt_domain_open_graphics(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINPMWAKEUP
 /*
  * call-seq:
- *   dom.pmwakeup(flags=0) -> nil
+ *   dom.pm_wakeup(flags=0) -> nil
  *
  * Call virDomainPMWakeup[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPMWakeup]
  * to inject a wakeup into the guest.
  */
-static VALUE libvirt_domain_pmwakeup(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_pm_wakeup(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags;
 
@@ -2778,13 +2783,13 @@ static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINPMSUSPENDFORDURATION
 /*
  * call-seq:
- *   dom.pmsuspend_for_duration(target, duration, flags=0) -> nil
+ *   dom.pm_suspend_for_duration(target, duration, flags=0) -> nil
  *
  * Call virDomainPMSuspendForDuration[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPMSuspendForDuration]
  * to have the domain enter the target power management suspend level.
  */
-static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
-                                                   VALUE d)
+static VALUE libvirt_domain_pm_suspend_for_duration(int argc, VALUE *argv,
+                                                    VALUE d)
 {
     VALUE target, duration, flags;
 
@@ -2801,13 +2806,13 @@ static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
 /*
  * call-seq:
- *   dom.migrate_compression_cache(flags=0) -> Fixnum
+ *   dom.migrate_get_compression_cache(flags=0) -> Fixnum
  *
  * Call virDomainMigrateGetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetCompressionCache]
  * to get the current size of the migration cache.
  */
-static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
-                                                      VALUE d)
+static VALUE libvirt_domain_migrate_get_compression_cache(int argc, VALUE *argv,
+                                                          VALUE d)
 {
     VALUE flags;
     int ret;
@@ -2828,16 +2833,17 @@ static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
 /*
  * call-seq:
- *   dom.migrate_compression_cache = Fixnum,flags=0
+ *   dom.migrate_set_compression_cache(cachesize, flags=0) -> nil
  *
  * Call virDomainMigrateSetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetCompressionCache]
  * to set the current size of the migration cache.
  */
-static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_migrate_set_compression_cache(int argc, VALUE *argv,
+                                                          VALUE d)
 {
     VALUE cachesize, flags;
 
-    domain_input_to_fixnum_and_flags(in, &cachesize, &flags);
+    rb_scan_args(argc, argv, "11", &cachesize, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainMigrateSetCompressionCache,
                                    ruby_libvirt_connect_get(d),
@@ -2850,25 +2856,29 @@ static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
 #if HAVE_VIRDOMAINGETDISKERRORS
 /*
  * call-seq:
- *   dom.disk_errors(flags=0) -> Hash
+ *   dom.get_disk_errors(num, flags=0) -> Hash
  *
  * Call virDomainGetDiskErrors[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetDiskErrors]
  * to get errors on disks in the domain.
  */
-static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_disk_errors(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags, hash;
+    VALUE num, flags, hash;
     int maxerr, ret, i;
-    virDomainDiskErrorPtr errors;
+    virDomainDiskError *errors = NULL;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "02", &num, &flags);
 
-    maxerr = virDomainGetDiskErrors(ruby_libvirt_domain_get(d), NULL, 0,
-                                    ruby_libvirt_value_to_uint(flags));
-    ruby_libvirt_raise_error_if(maxerr < 0, "virDomainGetDiskErrors",
-                                ruby_libvirt_connect_get(d));
+    if (NIL_P(num)) {
+        maxerr = 0;
+    }
+    else {
+        maxerr = NUM2INT(num);
+    }
 
-    errors = alloca(maxerr * sizeof(virDomainDiskError));
+    if (maxerr > 0) {
+        errors = alloca(maxerr * sizeof(virDomainDiskError));
+    }
 
     ret = virDomainGetDiskErrors(ruby_libvirt_domain_get(d), errors, maxerr,
                                  ruby_libvirt_value_to_uint(flags));
@@ -2878,8 +2888,13 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
     hash = rb_hash_new();
 
     for (i = 0; i < ret; i++) {
-        rb_hash_aset(hash, rb_str_new2(errors[i].disk),
-                     INT2NUM(errors[i].error));
+        if (maxerr == 0) {
+            rb_hash_aset(hash, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            rb_hash_aset(hash, rb_str_new2(errors[i].disk),
+                         INT2NUM(errors[i].error));
+        }
     }
 
     return hash;
@@ -2889,7 +2904,7 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETEMULATORPININFO
 /*
  * call-seq:
- *   dom.emulator_pin_info(flags=0) -> Array
+ *   dom.get_emulator_pin_info(max_host_cpus, flags=0) -> Array
  *
  * Call virDomainGetEmulatorPinInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetEmulatorPinInfo]
  * to an array representing the mapping of emulator threads to physical CPUs.
@@ -2897,16 +2912,17 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
  * CPU is 'true' if an emulator thread is running on that CPU, and 'false'
  * otherwise.
  */
-static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_emulator_pin_info(int argc, VALUE *argv,
+                                                  VALUE d)
 {
     int maxcpus, ret, j;
     size_t cpumaplen;
     unsigned char *cpumap;
-    VALUE emulator2cpumap, flags;
+    VALUE emulator2cpumap, flags, maxhost;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "11", &maxhost, &flags);
 
-    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
+    maxcpus = NUM2INT(maxhost);
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
@@ -2932,24 +2948,24 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINPINEMULATOR
 /*
  * call-seq:
- *   dom.pin_emulator(cpulist, flags=0) -> nil
+ *   dom.pin_emulator(max_host_cpus, cpulist, flags=0) -> nil
  *
- * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
+ * Call virDomainPinEmulator[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinEmulator]
  * to pin the emulator to a range of physical processors.  The cpulist should
  * be an array of Fixnums representing the physical processors this domain's
  * emulator should be allowed to be scheduled on.
  */
 static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
 {
-    VALUE cpulist, flags, e;
+    VALUE cpulist, flags, e, maxhost;
     int i, maxcpus, cpumaplen;
     unsigned char *cpumap;
 
-    rb_scan_args(argc, argv, "11", &cpulist, &flags);
+    rb_scan_args(argc, argv, "21", &maxhost, &cpulist, &flags);
 
     Check_Type(cpulist, T_ARRAY);
 
-    maxcpus = ruby_libvirt_get_maxcpus(ruby_libvirt_connect_get(d));
+    maxcpus = NUM2INT(maxhost);
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
@@ -2972,12 +2988,12 @@ static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETSECURITYLABELLIST
 /*
  * call-seq:
- *   dom.security_label_list -> [ Libvirt::Domain::SecurityLabel ]
+ *   dom.get_security_label_list -> [ Hash ]
  *
  * Call virDomainGetSecurityLabelList[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabelList]
  * to retrieve the security labels applied to this domain.
  */
-static VALUE libvirt_domain_security_label_list(VALUE d)
+static VALUE libvirt_domain_get_security_label_list(VALUE d)
 {
     virSecurityLabelPtr seclabels;
     int r, i;
@@ -3024,12 +3040,12 @@ static VALUE params_to_hash(VALUE in)
 
 /*
  * call-seq:
- *   dom.job_stats -> Hash
+ *   dom.get_job_stats -> Hash
  *
  * Call virDomainGetJobStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobStats]
  * to retrieve information about progress of a background job on a domain.
  */
-static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_job_stats(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags, result;
     int type, exception = 0, nparams = 0, r;
@@ -3075,72 +3091,58 @@ static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINGETBLOCKIOTUNE
-static const char *iotune_nparams(VALUE d, unsigned int flags, void *opaque,
-                                  int *nparams)
-{
-    VALUE disk = (VALUE)opaque;
-
-    if (virDomainGetBlockIoTune(ruby_libvirt_domain_get(d),
-                                ruby_libvirt_get_cstring_or_null(disk), NULL,
-                                nparams, flags) < 0) {
-        return "virDomainGetBlockIoTune";
-    }
-
-    return NULL;
-}
-
-static const char *iotune_get(VALUE d, unsigned int flags, void *voidparams,
-                              int *nparams, void *opaque)
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-    VALUE disk = (VALUE)opaque;
-
-    if (virDomainGetBlockIoTune(ruby_libvirt_domain_get(d),
-                                ruby_libvirt_get_cstring_or_null(disk), params,
-                                nparams, flags) < 0) {
-        return "virDomainGetBlockIoTune";
-    }
-    return NULL;
-}
-
-static const char *iotune_set(VALUE d, unsigned int flags,
-                              virTypedParameterPtr params, int nparams,
-                              void *opaque)
-{
-    VALUE disk = (VALUE)opaque;
-
-    if (virDomainSetBlockIoTune(ruby_libvirt_domain_get(d),
-                                StringValueCStr(disk), params, nparams,
-                                flags) < 0) {
-        return "virDomainSetBlockIoTune";
-    }
-
-    return NULL;
-}
-
 /*
  * call-seq:
- *   dom.block_iotune(disk=nil, flags=0) -> Hash
+ *   dom.get_block_io_tune(disk=nil, nparams=0, flags=0) -> Hash
  *
  * Call virDomainGetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockIoTune]
  * to retrieve all of the block IO tune parameters for this domain.  The keys
  * and values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_block_iotune(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_block_io_tune(int argc, VALUE *argv, VALUE d)
 {
-    VALUE disk, flags;
+    VALUE nparams_val, flags, result, disk;
+    virTypedParameter *params = NULL;
+    int nparams, i, ret, nparams_orig;
 
-    rb_scan_args(argc, argv, "02", &disk, &flags);
+    rb_scan_args(argc, argv, "03", &disk, &nparams_val, &flags);
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             (void *)disk, iotune_nparams,
-                                             iotune_get);
+    if (NIL_P(nparams_val)) {
+        nparams = 0;
+    }
+    else {
+        nparams = NUM2INT(nparams_val);
+    }
+
+    nparams_orig = nparams;
+
+    if (nparams > 0) {
+        params = alloca(sizeof(virTypedParameter) * nparams);
+    }
+
+    ret = virDomainGetBlockIoTune(ruby_libvirt_domain_get(d),
+                                  ruby_libvirt_get_cstring_or_null(disk),
+                                  params, &nparams,
+                                  ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetBlockIoTuneParameters",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        if (nparams_orig == 0) {
+            rb_hash_aset(result, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            ruby_libvirt_typed_params_to_hash(params, i, result);
+        }
+    }
+
+    return result;
 }
 #endif
 
 #if HAVE_VIRDOMAINSETBLOCKIOTUNE
-static struct ruby_libvirt_typed_param iotune_allowed[] = {
+static struct ruby_libvirt_typed_param domain_iotune_allowed[] = {
     {VIR_DOMAIN_BLOCK_IOTUNE_TOTAL_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
     {VIR_DOMAIN_BLOCK_IOTUNE_READ_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
     {VIR_DOMAIN_BLOCK_IOTUNE_WRITE_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
@@ -3154,37 +3156,33 @@ static struct ruby_libvirt_typed_param iotune_allowed[] = {
 
 /*
  * call-seq:
- *   dom.block_iotune = disk,Hash,flags=0
+ *   dom.set_block_io_tune(disk, Hash, flags=0)
  *
  * Call virDomainSetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlockIoTune]
  * to set the block IO tune parameters for the supplied disk on this domain.
  * The keys and values in the input hash are hypervisor specific.
  */
-static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_block_io_tune(int argc, VALUE *argv, VALUE d)
 {
+    struct ruby_libvirt_parameter_assign_args args;
     VALUE disk, hash, flags;
 
-    Check_Type(in, T_ARRAY);
+    rb_scan_args(argc, argv, "11", &disk, &hash, &flags);
 
-    if (RARRAY_LEN(in) == 2) {
-        disk = rb_ary_entry(in, 0);
-        hash = rb_ary_entry(in, 1);
-        flags = INT2NUM(0);
-    }
-    else if (RARRAY_LEN(in) == 3) {
-        disk = rb_ary_entry(in, 0);
-        hash = rb_ary_entry(in, 1);
-        flags = rb_ary_entry(in, 2);
-    }
-    else {
-        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2 or 3)",
-                 RARRAY_LEN(in));
-    }
+    Check_Type(hash, T_HASH);
 
-    return ruby_libvirt_set_typed_parameters(d, hash, NUM2UINT(flags),
-                                             (void *)disk, iotune_allowed,
-                                             ARRAY_SIZE(iotune_allowed),
-                                             iotune_set);
+    args.allowed = domain_iotune_allowed;
+    args.num_allowed = ARRAY_SIZE(domain_iotune_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetBlockIoTune,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(disk), args.params, args.i,
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
@@ -3239,58 +3237,35 @@ static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINBLOCKJOBSETSPEED
 /*
  * call-seq:
- *   dom.block_job_speed = disk,bandwidth=0,flags=0
+ *   dom.block_job_set_speed(disk, bandwidth=0, flags=0)
  *
  * Call virDomainBlockJobSetSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockJobSetSpeed]
  * to set the maximum allowable bandwidth a block job may consume.
  */
-static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_block_job_set_speed(int argc, VALUE *argv, VALUE d)
 {
     VALUE disk, bandwidth, flags;
 
-    if (TYPE(in) == T_STRING) {
-        disk = in;
-        bandwidth = INT2NUM(0);
-        flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) == 2) {
-            disk = rb_ary_entry(in, 0);
-            bandwidth = rb_ary_entry(in, 1);
-            flags = INT2NUM(0);
-        }
-        else if (RARRAY_LEN(in) == 3) {
-            disk = rb_ary_entry(in, 0);
-            bandwidth = rb_ary_entry(in, 1);
-            flags = rb_ary_entry(in, 2);
-        }
-        else {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2 or 3)",
-                     RARRAY_LEN(in));
-        }
-    }
-    else {
-        rb_raise(rb_eTypeError,
-                 "wrong argument type (expected Number or Array)");
-    }
+    rb_scan_args(argc, argv, "12", &disk, &bandwidth, &flags);
 
     ruby_libvirt_generate_call_nil(virDomainBlockJobSetSpeed,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
                                    StringValueCStr(disk),
-                                   NUM2UINT(bandwidth), NUM2UINT(flags));
+                                   ruby_libvirt_value_to_uint(bandwidth),
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
 #if HAVE_VIRDOMAINGETBLOCKJOBINFO
 /*
  * call-seq:
- *   dom.block_job_info(disk, flags=0) -> Hash
+ *   dom.get_block_job_info(disk, flags=0) -> Hash
  *
  * Call virDomainGetBlockJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockJobInfo]
  * to get block job information for a given disk.
  */
-static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_block_job_info(int argc, VALUE *argv, VALUE d)
 {
     VALUE disk, flags, result;
     virDomainBlockJobInfo info;
@@ -3339,69 +3314,54 @@ static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
-static const char *interface_nparams(VALUE d, unsigned int flags, void *opaque,
-                                     int *nparams)
-{
-    VALUE device = (VALUE)opaque;
-
-    if (virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
-                                        StringValueCStr(device), NULL, nparams,
-                                        flags) < 0) {
-        return "virDomainGetInterfaceParameters";
-    }
-
-    return NULL;
-}
-
-static const char *interface_get(VALUE d, unsigned int flags, void *voidparams,
-                                 int *nparams, void *opaque)
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-    VALUE interface = (VALUE)opaque;
-
-    if (virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
-                                        StringValueCStr(interface), params,
-                                        nparams, flags) < 0) {
-        return "virDomainGetInterfaceParameters";
-    }
-    return NULL;
-}
-
-static const char *interface_set(VALUE d, unsigned int flags,
-                                 virTypedParameterPtr params, int nparams,
-                                 void *opaque)
-{
-    VALUE device = (VALUE)opaque;
-
-    if (virDomainSetInterfaceParameters(ruby_libvirt_domain_get(d),
-                                        StringValueCStr(device), params,
-                                        nparams, flags) < 0) {
-        return "virDomainSetIntefaceParameters";
-    }
-
-    return NULL;
-}
-
 /*
  * call-seq:
- *   dom.interface_parameters(interface, flags=0) -> Hash
+ *   dom.get_interface_parameters(interface, nparams=0, flags=0) -> Hash
  *
  * Call virDomainGetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInterfaceParameters]
  * to retrieve the interface parameters for the given interface on this domain.
  * The keys and values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_interface_parameters(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_interface_parameters(int argc, VALUE *argv,
+                                                     VALUE d)
 {
-    VALUE device, flags;
+    VALUE nparams_val, flags, result, interface;
+    virTypedParameter *params = NULL;
+    int nparams, i, ret, nparams_orig;
 
-    rb_scan_args(argc, argv, "11", &device, &flags);
+    rb_scan_args(argc, argv, "12", &interface, &nparams_val, &flags);
 
-    Check_Type(device, T_STRING);
+    if (NIL_P(nparams_val)) {
+        nparams = 0;
+    }
+    else {
+        nparams = NUM2INT(nparams_val);
+    }
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             (void *)device,
-                                             interface_nparams, interface_get);
+    nparams_orig = nparams;
+
+    if (nparams > 0) {
+        params = alloca(sizeof(virTypedParameter) * nparams);
+    }
+
+    ret = virDomainGetInterfaceParameters(ruby_libvirt_domain_get(d),
+                                          ruby_libvirt_get_cstring_or_null(interface),
+                                          params, &nparams,
+                                          ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetInterfaceParameters",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        if (nparams_orig == 0) {
+            rb_hash_aset(result, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            ruby_libvirt_typed_params_to_hash(params, i, result);
+        }
+    }
+
+    return result;
 }
 
 static struct ruby_libvirt_typed_param interface_allowed[] = {
@@ -3415,148 +3375,136 @@ static struct ruby_libvirt_typed_param interface_allowed[] = {
 
 /*
  * call-seq:
- *   dom.interface_parameters = device,Hash,flags=0
+ *   dom.set_interface_parameters(interface, Hash, flags=0) -> nil
  *
  * Call virDomainSetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetInterfaceParameters]
  * to set the interface parameters for the supplied device on this domain.
  * The keys and values in the input hash are hypervisor specific.
  */
-static VALUE libvirt_domain_interface_parameters_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_interface_parameters(int argc, VALUE *argv,
+                                                     VALUE d)
 {
-    VALUE device, hash, flags;
+    struct ruby_libvirt_parameter_assign_args args;
+    VALUE interface, hash, flags;
 
-    Check_Type(in, T_ARRAY);
+    rb_scan_args(argc, argv, "21", &interface, &hash, &flags);
 
-    if (RARRAY_LEN(in) == 2) {
-        device = rb_ary_entry(in, 0);
-        hash = rb_ary_entry(in, 1);
-        flags = INT2NUM(0);
-    }
-    else if (RARRAY_LEN(in) == 3) {
-        device = rb_ary_entry(in, 0);
-        hash = rb_ary_entry(in, 1);
-        flags = rb_ary_entry(in, 2);
-    }
-    else {
-        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2 or 3)",
-                 RARRAY_LEN(in));
-    }
+    Check_Type(hash, T_HASH);
 
-    return ruby_libvirt_set_typed_parameters(d, hash,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             (void *)device, interface_allowed,
-                                             ARRAY_SIZE(interface_allowed),
-                                             interface_set);
+    args.allowed = interface_allowed;
+    args.num_allowed = ARRAY_SIZE(interface_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetInterfaceParameters,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(interface), args.params,
+                                   args.i, ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
 #if HAVE_VIRDOMAINBLOCKSTATSFLAGS
-static const char *block_stats_nparams(VALUE d, unsigned int flags,
-                                       void *opaque, int *nparams)
-{
-    VALUE disk = (VALUE)opaque;
-
-    if (virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
-                                 StringValueCStr(disk), NULL, nparams,
-                                 flags) < 0) {
-        return "virDomainBlockStatsFlags";
-    }
-
-    return NULL;
-}
-
-static const char *block_stats_get(VALUE d, unsigned int flags,
-                                   void *voidparams, int *nparams, void *opaque)
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-    VALUE disk = (VALUE)opaque;
-
-    if (virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
-                                 StringValueCStr(disk), params, nparams,
-                                 flags) < 0) {
-        return "virDomainBlockStatsFlags";
-    }
-    return NULL;
-}
-
 /*
  * call-seq:
- *   dom.block_stats_flags(disk, flags=0) -> Hash
+ *   dom.block_stats_flags(disk, nparams=0, flags=0) -> Hash
  *
- * Call virDomainGetBlockStatsFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockStatsFlags]
+ * Call virDomainBlockStatsFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStatsFlags]
  * to retrieve the block statistics for the given disk on this domain.
  * The keys and values in the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv,
+                                              VALUE d)
 {
-    VALUE disk, flags;
+    VALUE nparams_val, flags, result, disk;
+    virTypedParameter *params = NULL;
+    int nparams, i, ret, nparams_orig;
 
-    rb_scan_args(argc, argv, "11", &disk, &flags);
+    rb_scan_args(argc, argv, "12", &disk, &nparams_val, &flags);
 
-    Check_Type(disk, T_STRING);
+    if (NIL_P(nparams_val)) {
+        nparams = 0;
+    }
+    else {
+        nparams = NUM2INT(nparams_val);
+    }
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             (void *)disk,
-                                             block_stats_nparams,
-                                             block_stats_get);
+    nparams_orig = nparams;
+
+    if (nparams > 0) {
+        params = alloca(sizeof(virTypedParameter) * nparams);
+    }
+
+    ret = virDomainBlockStatsFlags(ruby_libvirt_domain_get(d),
+                                   ruby_libvirt_get_cstring_or_null(disk),
+                                   params, &nparams,
+                                   ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainBlockStatsFlags",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        if (nparams_orig == 0) {
+            rb_hash_aset(result, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            ruby_libvirt_typed_params_to_hash(params, i, result);
+        }
+    }
+
+    return result;
 }
 #endif
 
 #if HAVE_VIRDOMAINGETNUMAPARAMETERS
-static const char *numa_nparams(VALUE d, unsigned int flags,
-                                void *RUBY_LIBVIRT_UNUSED(opaque),
-                                int *nparams)
-{
-    if (virDomainGetNumaParameters(ruby_libvirt_domain_get(d), NULL, nparams,
-                                   flags) < 0) {
-        return "virDomainGetNumaParameters";
-    }
-
-    return NULL;
-}
-
-static const char *numa_get(VALUE d, unsigned int flags, void *voidparams,
-                            int *nparams, void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
-
-    if (virDomainGetNumaParameters(ruby_libvirt_domain_get(d), params, nparams,
-                                   flags) < 0) {
-        return "virDomainGetNumaParameters";
-    }
-    return NULL;
-}
-
-static const char *numa_set(VALUE d, unsigned int flags,
-                            virTypedParameterPtr params, int nparams,
-                            void *RUBY_LIBVIRT_UNUSED(opaque))
-{
-    if (virDomainSetNumaParameters(ruby_libvirt_domain_get(d), params,
-                                   nparams, flags) < 0) {
-        return "virDomainSetNumaParameters";
-    }
-
-    return NULL;
-}
-
 /*
  * call-seq:
- *   dom.numa_parameters(flags=0) -> Hash
+ *   dom.get_numa_parameters(nparams=0, flags=0) -> Hash
  *
  * Call virDomainGetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetNumaParameters]
  * to retrieve the numa parameters for this domain.  The keys and values in
  * the hash that is returned are hypervisor specific.
  */
-static VALUE libvirt_domain_numa_parameters(int argc, VALUE *argv, VALUE d)
+static VALUE libvirt_domain_get_numa_parameters(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
+    VALUE nparams_val, flags, result;
+    virTypedParameter *params = NULL;
+    int nparams, i, ret, nparams_orig;
 
-    rb_scan_args(argc, argv, "01", &flags);
+    rb_scan_args(argc, argv, "02", &nparams_val, &flags);
 
-    return ruby_libvirt_get_typed_parameters(d,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             NULL, numa_nparams, numa_get);
+    if (NIL_P(nparams_val)) {
+        nparams = 0;
+    }
+    else {
+        nparams = NUM2INT(nparams_val);
+    }
+
+    nparams_orig = nparams;
+
+    if (nparams > 0) {
+        params = alloca(sizeof(virTypedParameter) * nparams);
+    }
+
+    ret = virDomainGetNumaParameters(ruby_libvirt_domain_get(d),
+                                     params, &nparams,
+                                     ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, "virDomainGetNumaParameters",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    for (i = 0; i < nparams; i++) {
+        if (nparams_orig == 0) {
+            rb_hash_aset(result, rb_str_new2("dummy"), rb_str_new2("dummy"));
+        }
+        else {
+            ruby_libvirt_typed_params_to_hash(params, i, result);
+        }
+    }
+
+    return result;
 }
 
 static struct ruby_libvirt_typed_param numa_allowed[] = {
@@ -3566,23 +3514,33 @@ static struct ruby_libvirt_typed_param numa_allowed[] = {
 
 /*
  * call-seq:
- *   dom.numa_parameters = Hash,flags=0
+ *   dom.set_numa_parameters(Hash, flags=0) -> nil
  *
  * Call virDomainSetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetNumaParameters]
  * to set the numa parameters for this domain.  The keys and values in the input
  * hash are hypervisor specific.
  */
-static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
+static VALUE libvirt_domain_set_numa_parameters(int argc, VALUE *argv, VALUE d)
 {
+    struct ruby_libvirt_parameter_assign_args args;
     VALUE hash, flags;
 
-    ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
+    rb_scan_args(argc, argv, "11", &hash, &flags);
 
-    return ruby_libvirt_set_typed_parameters(d, hash,
-                                             ruby_libvirt_value_to_uint(flags),
-                                             NULL, numa_allowed,
-                                             ARRAY_SIZE(numa_allowed),
-                                             numa_set);
+    Check_Type(hash, T_HASH);
+
+    args.allowed = numa_allowed;
+    args.num_allowed = ARRAY_SIZE(numa_allowed);
+    args.params = alloca(sizeof(virTypedParameter) * RHASH_SIZE(hash));
+    args.i = 0;
+
+    rb_hash_foreach(hash, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
+
+    ruby_libvirt_generate_call_nil(virDomainSetNumaParameters,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   args.params, args.i,
+                                   ruby_libvirt_value_to_uint(flags));
 }
 #endif
 
@@ -4313,15 +4271,15 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_migrate_to_uri, -1);
 #endif
 #if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
-    rb_define_method(c_domain, "migrate_max_downtime=",
-                     libvirt_domain_migrate_max_downtime_equal, 1);
+    rb_define_method(c_domain, "migrate_set_max_downtime",
+                     libvirt_domain_migrate_set_max_downtime, -1);
 #endif
 #if HAVE_VIRDOMAINMIGRATE2
     rb_define_method(c_domain, "migrate2", libvirt_domain_migrate2, -1);
     rb_define_method(c_domain, "migrate_to_uri2",
                      libvirt_domain_migrate_to_uri2, -1);
-    rb_define_method(c_domain, "migrate_max_speed=",
-                     libvirt_domain_migrate_max_speed_equal, 1);
+    rb_define_method(c_domain, "migrate_set_max_speed",
+                     libvirt_domain_migrate_set_max_speed, -1);
 #endif
 
 #if HAVE_CONST_VIR_DOMAIN_SAVE_BYPASS_CACHE
@@ -4411,29 +4369,53 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "destroy", libvirt_domain_destroy, -1);
     rb_define_method(c_domain, "suspend", libvirt_domain_suspend, 0);
     rb_define_method(c_domain, "resume", libvirt_domain_resume, 0);
-    rb_define_method(c_domain, "save", libvirt_domain_save, -1);
+    rb_define_method(c_domain, "save", libvirt_domain_save, 1);
+#if HAVE_VIRDOMAINSAVEFLAGS
+    rb_define_method(c_domain, "save_flags", libvirt_domain_save_flags, -1);
+#endif
     rb_define_singleton_method(c_domain, "restore", libvirt_domain_s_restore,
                                2);
     rb_define_method(c_domain, "core_dump", libvirt_domain_core_dump, -1);
-    rb_define_method(c_domain, "info", libvirt_domain_info, 0);
-    rb_define_method(c_domain, "ifinfo", libvirt_domain_if_stats, 1);
-    rb_define_method(c_domain, "name", libvirt_domain_name, 0);
-    rb_define_method(c_domain, "id", libvirt_domain_id, 0);
-    rb_define_method(c_domain, "uuid", libvirt_domain_uuid, 0);
-    rb_define_method(c_domain, "os_type", libvirt_domain_os_type, 0);
-    rb_define_method(c_domain, "max_memory", libvirt_domain_max_memory, 0);
-    rb_define_method(c_domain, "max_memory=", libvirt_domain_max_memory_equal,
-                     1);
-    rb_define_method(c_domain, "memory=", libvirt_domain_memory_equal, 1);
-    rb_define_method(c_domain, "max_vcpus", libvirt_domain_max_vcpus, 0);
-    rb_define_method(c_domain, "vcpus=", libvirt_domain_vcpus_equal, 1);
-    rb_define_method(c_domain, "pin_vcpu", libvirt_domain_pin_vcpu, -1);
-    rb_define_method(c_domain, "xml_desc", libvirt_domain_xml_desc, -1);
-    rb_define_method(c_domain, "undefine", libvirt_domain_undefine, -1);
-    rb_define_method(c_domain, "create", libvirt_domain_create, -1);
-    rb_define_method(c_domain, "autostart", libvirt_domain_autostart, 0);
-    rb_define_method(c_domain, "autostart?", libvirt_domain_autostart, 0);
-    rb_define_method(c_domain, "autostart=", libvirt_domain_autostart_equal, 1);
+    rb_define_method(c_domain, "get_info", libvirt_domain_get_info, 0);
+    rb_define_method(c_domain, "interface_stats",
+                     libvirt_domain_interface_stats, 1);
+    rb_define_method(c_domain, "get_name", libvirt_domain_get_name, 0);
+    rb_define_method(c_domain, "get_id", libvirt_domain_get_id, 0);
+    rb_define_method(c_domain, "get_uuid_string",
+                     libvirt_domain_get_uuid_string, 0);
+    rb_define_method(c_domain, "get_os_type", libvirt_domain_get_os_type, 0);
+    rb_define_method(c_domain, "get_max_memory",
+                     libvirt_domain_get_max_memory, 0);
+    rb_define_method(c_domain, "set_max_memory",
+                     libvirt_domain_set_max_memory, 1);
+    rb_define_method(c_domain, "set_memory", libvirt_domain_set_memory, 1);
+    rb_define_method(c_domain, "set_memory_flags",
+                     libvirt_domain_set_memory_flags, -1);
+    rb_define_method(c_domain, "get_max_vcpus",
+                     libvirt_domain_get_max_vcpus, 0);
+    rb_define_method(c_domain, "set_vcpus", libvirt_domain_set_vcpus, 1);
+    rb_define_method(c_domain, "set_vcpus_flags",
+                     libvirt_domain_set_vcpus_flags, -1);
+    rb_define_method(c_domain, "pin_vcpu", libvirt_domain_pin_vcpu, 3);
+#if HAVE_VIRDOMAINPINVCPUFLAGS
+    rb_define_method(c_domain, "pin_vcpu_flags",
+                     libvirt_domain_pin_vcpu_flags, -1);
+#endif
+    rb_define_method(c_domain, "get_xml_desc", libvirt_domain_get_xml_desc, -1);
+    rb_define_method(c_domain, "undefine", libvirt_domain_undefine, 0);
+#if HAVE_VIRDOMAINUNDEFINEFLAGS
+    rb_define_method(c_domain, "undefine_flags",
+                     libvirt_domain_undefine_flags, -1);
+#endif
+    rb_define_method(c_domain, "create", libvirt_domain_create, 0);
+#if HAVE_VIRDOMAINCREATEWITHFLAGS
+    rb_define_method(c_domain, "create_with_flags",
+                     libvirt_domain_create_with_flags, 0);
+#endif
+    rb_define_method(c_domain, "get_autostart",
+                     libvirt_domain_get_autostart, 0);
+    rb_define_method(c_domain, "set_autostart",
+                     libvirt_domain_set_autostart, 1);
     rb_define_method(c_domain, "free", libvirt_domain_free, 0);
 
 #if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_CURRENT
@@ -4453,27 +4435,35 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_FORCE));
 #endif
     rb_define_method(c_domain, "attach_device", libvirt_domain_attach_device,
-                     -1);
+                     1);
+#if HAVE_VIRDOMAINATTACHDEVICEFLAGS
+    rb_define_method(c_domain, "attach_device_flags",
+                     libvirt_domain_attach_device_flags, -1);
+#endif
     rb_define_method(c_domain, "detach_device", libvirt_domain_detach_device,
-                     -1);
+                     1);
+#if HAVE_VIRDOMAINDETACHDEVICEFLAGS
+    rb_define_method(c_domain, "detach_device_flags",
+                     libvirt_domain_detach_device_flags, -1);
+#endif
 #if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
-    rb_define_method(c_domain, "update_device", libvirt_domain_update_device,
-                     -1);
+    rb_define_method(c_domain, "update_device_flags",
+                     libvirt_domain_update_device_flags, -1);
 #endif
 
-    rb_define_method(c_domain, "scheduler_type", libvirt_domain_scheduler_type,
-                     0);
+    rb_define_method(c_domain, "get_scheduler_type",
+                     libvirt_domain_get_scheduler_type, 0);
 
 #if HAVE_VIRDOMAINMANAGEDSAVE
     rb_define_method(c_domain, "managed_save", libvirt_domain_managed_save, -1);
-    rb_define_method(c_domain, "has_managed_save?",
-                     libvirt_domain_has_managed_save, -1);
+    rb_define_method(c_domain, "has_managed_save_image",
+                     libvirt_domain_has_managed_save_image, -1);
     rb_define_method(c_domain, "managed_save_remove",
                      libvirt_domain_managed_save_remove, -1);
 #endif
 #if HAVE_VIRDOMAINGETSECURITYLABEL
-    rb_define_method(c_domain, "security_label",
-                     libvirt_domain_security_label, 0);
+    rb_define_method(c_domain, "get_security_label",
+                     libvirt_domain_get_security_label, 0);
 #endif
     rb_define_method(c_domain, "block_stats", libvirt_domain_block_stats, 1);
 #if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
@@ -4483,29 +4473,35 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "block_peek", libvirt_domain_block_peek, -1);
 #endif
 #if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
-    rb_define_method(c_domain, "blockinfo", libvirt_domain_block_info, -1);
+    rb_define_method(c_domain, "get_block_info",
+                     libvirt_domain_get_block_info, -1);
 #endif
 #if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_method(c_domain, "memory_peek", libvirt_domain_memory_peek, -1);
 #endif
-    rb_define_method(c_domain, "vcpus", libvirt_domain_vcpus, 0);
+    rb_define_method(c_domain, "get_vcpus", libvirt_domain_get_vcpus, 2);
+#if HAVE_VIRDOMAINGETVCPUPININFO
+    rb_define_method(c_domain, "get_vcpu_pin_info",
+                     libvirt_domain_get_vcpu_pin_info, -1);
+#endif
 #if HAVE_VIRDOMAINISACTIVE
-    rb_define_method(c_domain, "active?", libvirt_domain_active_p, 0);
+    rb_define_method(c_domain, "is_active", libvirt_domain_is_active, 0);
 #endif
 #if HAVE_VIRDOMAINISPERSISTENT
-    rb_define_method(c_domain, "persistent?", libvirt_domain_persistent_p, 0);
+    rb_define_method(c_domain, "is_persistent",
+                     libvirt_domain_is_persistent, 0);
 #endif
 #if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
     rb_define_method(c_domain, "snapshot_create_xml",
                      libvirt_domain_snapshot_create_xml, -1);
     rb_define_method(c_domain, "num_of_snapshots",
                      libvirt_domain_num_of_snapshots, -1);
-    rb_define_method(c_domain, "list_snapshots",
-                     libvirt_domain_list_snapshots, -1);
-    rb_define_method(c_domain, "lookup_snapshot_by_name",
-                     libvirt_domain_lookup_snapshot_by_name, -1);
-    rb_define_method(c_domain, "has_current_snapshot?",
-                     libvirt_domain_has_current_snapshot_p, -1);
+    rb_define_method(c_domain, "snapshot_list_names",
+                     libvirt_domain_snapshot_list_names, -1);
+    rb_define_method(c_domain, "snapshot_lookup_by_name",
+                     libvirt_domain_snapshot_lookup_by_name, -1);
+    rb_define_method(c_domain, "has_current_snapshot",
+                     libvirt_domain_has_current_snapshot, -1);
     rb_define_method(c_domain, "revert_to_snapshot",
                      libvirt_domain_revert_to_snapshot, -1);
     rb_define_method(c_domain, "current_snapshot",
@@ -4542,8 +4538,8 @@ void ruby_libvirt_domain_init(void)
     c_domain_snapshot = rb_define_class_under(c_domain, "Snapshot", rb_cObject);
     rb_define_const(c_domain_snapshot, "DELETE_CHILDREN",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN));
-    rb_define_method(c_domain_snapshot, "xml_desc",
-                     libvirt_domain_snapshot_xml_desc, -1);
+    rb_define_method(c_domain_snapshot, "get_xml_desc",
+                     libvirt_domain_snapshot_get_xml_desc, -1);
     rb_define_method(c_domain_snapshot, "delete",
                      libvirt_domain_snapshot_delete, -1);
     rb_define_method(c_domain_snapshot, "free", libvirt_domain_snapshot_free,
@@ -4559,8 +4555,8 @@ void ruby_libvirt_domain_init(void)
 
 #endif
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
-    rb_define_method(c_domain_snapshot, "name", libvirt_domain_snapshot_name,
-                     0);
+    rb_define_method(c_domain_snapshot, "get_name",
+                     libvirt_domain_snapshot_get_name, 0);
 #endif
 
     rb_define_const(c_domain, "VCPU_OFFLINE", VIR_VCPU_OFFLINE);
@@ -4581,7 +4577,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "JOB_CANCELLED",
                     INT2NUM(VIR_DOMAIN_JOB_CANCELLED));
 
-    rb_define_method(c_domain, "job_info", libvirt_domain_job_info, 0);
+    rb_define_method(c_domain, "get_job_info", libvirt_domain_get_job_info, 0);
     rb_define_method(c_domain, "abort_job", libvirt_domain_abort_job, 0);
 #endif
 
@@ -4591,11 +4587,12 @@ void ruby_libvirt_domain_init(void)
 #endif
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
-    rb_define_method(c_domain, "num_vcpus", libvirt_domain_num_vcpus, 1);
+    rb_define_method(c_domain, "get_vcpus_flags",
+                     libvirt_domain_get_vcpus_flags, -1);
 #endif
 
 #if HAVE_VIRDOMAINISUPDATED
-    rb_define_method(c_domain, "updated?", libvirt_domain_is_updated, 0);
+    rb_define_method(c_domain, "is_updated", libvirt_domain_is_updated, 0);
 #endif
 
 #ifdef VIR_DOMAIN_MEMORY_PARAM_UNLIMITED
@@ -4612,23 +4609,35 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "MEM_MAXIMUM", INT2NUM(VIR_DOMAIN_MEM_MAXIMUM));
 #endif
 
-    rb_define_method(c_domain, "scheduler_parameters",
-                     libvirt_domain_scheduler_parameters, -1);
-    rb_define_method(c_domain, "scheduler_parameters=",
-                     libvirt_domain_scheduler_parameters_equal, 1);
-
-#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-    rb_define_method(c_domain, "memory_parameters",
-                     libvirt_domain_memory_parameters, -1);
-    rb_define_method(c_domain, "memory_parameters=",
-                     libvirt_domain_memory_parameters_equal, 1);
+    rb_define_method(c_domain, "get_scheduler_parameters",
+                     libvirt_domain_get_scheduler_parameters, 1);
+#if HAVE_VIRDOMAINGETSCHEDULERPARAMETERSFLAGS
+    rb_define_method(c_domain, "get_scheduler_parameters_flags",
+                     libvirt_domain_get_scheduler_parameters_flags, -1);
+#endif
+    rb_define_method(c_domain, "set_scheduler_parameters",
+                     libvirt_domain_set_scheduler_parameters, 1);
+#if HAVE_VIRDOMAINSETSCHEDULERPARAMTERSFLAGS
+    rb_define_method(c_domain, "set_scheduler_parameters_flags",
+                     libvirt_domain_set_scheduler_parameters_flags, -1);
 #endif
 
+#if HAVE_VIRDOMAINGETMEMORYPARAMETERS
+    rb_define_method(c_domain, "get_memory_parameters",
+                     libvirt_domain_get_memory_parameters, -1);
+#endif
+#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
+    rb_define_method(c_domain, "set_memory_parameters",
+                     libvirt_domain_set_memory_parameters, -1);
+#endif
+
+#if HAVE_VIRDOMAINGETBLKIOPARAMETERS
+    rb_define_method(c_domain, "get_blkio_parameters",
+                     libvirt_domain_get_blkio_parameters, -1);
+#endif
 #if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-    rb_define_method(c_domain, "blkio_parameters",
-                     libvirt_domain_blkio_parameters, -1);
-    rb_define_method(c_domain, "blkio_parameters=",
-                     libvirt_domain_blkio_parameters_equal, 1);
+    rb_define_method(c_domain, "set_blkio_parameters",
+                     libvirt_domain_set_blkio_parameters, -1);
 #endif
 
 #if HAVE_VIRDOMAINGETSTATE
@@ -4725,7 +4734,7 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_CRASHED_PANICKED));
 #endif
 
-    rb_define_method(c_domain, "state", libvirt_domain_state, -1);
+    rb_define_method(c_domain, "get_state", libvirt_domain_get_state, -1);
 #endif
 
 #if HAVE_CONST_VIR_DOMAIN_AFFECT_CURRENT
@@ -4765,12 +4774,13 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "CONTROL_ERROR",
                     INT2NUM(VIR_DOMAIN_CONTROL_ERROR));
 
-    rb_define_method(c_domain, "control_info", libvirt_domain_control_info, -1);
+    rb_define_method(c_domain, "get_control_info",
+                     libvirt_domain_get_control_info, -1);
 #endif
 
 #if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
-    rb_define_method(c_domain, "migrate_max_speed",
-                     libvirt_domain_migrate_max_speed, -1);
+    rb_define_method(c_domain, "migrate_get_max_speed",
+                     libvirt_domain_migrate_get_max_speed, -1);
 #endif
 #if HAVE_VIRDOMAINSENDKEY
     rb_define_method(c_domain, "send_key", libvirt_domain_send_key, 3);
@@ -4779,7 +4789,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "reset", libvirt_domain_reset, -1);
 #endif
 #if HAVE_VIRDOMAINGETHOSTNAME
-    rb_define_method(c_domain, "hostname", libvirt_domain_hostname, -1);
+    rb_define_method(c_domain, "get_hostname", libvirt_domain_get_hostname, -1);
 #endif
 #if HAVE_VIRDOMAINGETMETADATA
     rb_define_const(c_domain, "METADATA_DESCRIPTION",
@@ -4788,10 +4798,10 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_METADATA_TITLE));
     rb_define_const(c_domain, "METADATA_ELEMENT",
                     INT2NUM(VIR_DOMAIN_METADATA_ELEMENT));
-    rb_define_method(c_domain, "metadata", libvirt_domain_metadata, -1);
+    rb_define_method(c_domain, "get_metadata", libvirt_domain_get_metadata, -1);
 #endif
 #if HAVE_VIRDOMAINSETMETADATA
-    rb_define_method(c_domain, "metadata=", libvirt_domain_metadata_equal, 1);
+    rb_define_method(c_domain, "set_metadata", libvirt_domain_set_metadata, -1);
 #endif
 #if HAVE_VIRDOMAINSENDPROCESSSIGNAL
     rb_define_const(c_domain, "PROCESS_SIGNAL_NOP",
@@ -4996,23 +5006,23 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_snapshot_list_all_children, -1);
 #endif
 #if HAVE_VIRDOMAINSNAPSHOTGETPARENT
-    rb_define_method(c_domain_snapshot, "parent",
-                     libvirt_domain_snapshot_parent, -1);
+    rb_define_method(c_domain_snapshot, "get_parent",
+                     libvirt_domain_snapshot_get_parent, -1);
 #endif
 #if HAVE_VIRDOMAINSNAPSHOTISCURRENT
-    rb_define_method(c_domain_snapshot, "current?",
-                     libvirt_domain_snapshot_current_p, -1);
+    rb_define_method(c_domain_snapshot, "is_current",
+                     libvirt_domain_snapshot_is_current, -1);
 #endif
 #if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
-    rb_define_method(c_domain_snapshot, "has_metadata?",
-                     libvirt_domain_snapshot_has_metadata_p, -1);
+    rb_define_method(c_domain_snapshot, "has_metadata",
+                     libvirt_domain_snapshot_has_metadata, -1);
 #endif
 #if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
-    rb_define_method(c_domain, "memory_stats_period=",
-                     libvirt_domain_memory_stats_period, 1);
+    rb_define_method(c_domain, "set_memory_stats_period",
+                     libvirt_domain_set_memory_stats_period, -1);
 #endif
 #if HAVE_VIRDOMAINFSTRIM
-    rb_define_method(c_domain, "fstrim", libvirt_domain_fstrim, -1);
+    rb_define_method(c_domain, "fs_trim", libvirt_domain_fs_trim, -1);
 #endif
 #if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_SHALLOW
     rb_define_const(c_domain, "BLOCK_REBASE_SHALLOW",
@@ -5051,7 +5061,7 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_open_graphics, -1);
 #endif
 #if HAVE_VIRDOMAINPMWAKEUP
-    rb_define_method(c_domain, "pmwakeup", libvirt_domain_pmwakeup, -1);
+    rb_define_method(c_domain, "pm_wakeup", libvirt_domain_pm_wakeup, -1);
 #endif
 #if HAVE_VIRDOMAINBLOCKRESIZE
     rb_define_method(c_domain, "block_resize", libvirt_domain_block_resize, -1);
@@ -5073,16 +5083,16 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_FORCE));
 #endif
 #if HAVE_VIRDOMAINPMSUSPENDFORDURATION
-    rb_define_method(c_domain, "pmsuspend_for_duration",
-                     libvirt_domain_pmsuspend_for_duration, -1);
+    rb_define_method(c_domain, "pm_suspend_for_duration",
+                     libvirt_domain_pm_suspend_for_duration, -1);
 #endif
 #if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
-    rb_define_method(c_domain, "migrate_compression_cache",
-                     libvirt_domain_migrate_compression_cache, -1);
+    rb_define_method(c_domain, "migrate_get_compression_cache",
+                     libvirt_domain_migrate_get_compression_cache, -1);
 #endif
 #if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
-    rb_define_method(c_domain, "migrate_compression_cache=",
-                     libvirt_domain_migrate_compression_cache_equal, 1);
+    rb_define_method(c_domain, "migrate_set_compression_cache",
+                     libvirt_domain_migrate_set_compression_cache, -1);
 #endif
 #if HAVE_VIRDOMAINGETDISKERRORS
     rb_define_const(c_domain, "DISK_ERROR_NONE",
@@ -5091,18 +5101,19 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_DISK_ERROR_UNSPEC));
     rb_define_const(c_domain, "DISK_ERROR_NO_SPACE",
                     INT2NUM(VIR_DOMAIN_DISK_ERROR_NO_SPACE));
-    rb_define_method(c_domain, "disk_errors", libvirt_domain_disk_errors, -1);
+    rb_define_method(c_domain, "get_disk_errors",
+                     libvirt_domain_get_disk_errors, -1);
 #endif
 #if HAVE_VIRDOMAINGETEMULATORPININFO
-    rb_define_method(c_domain, "emulator_pin_info",
-                     libvirt_domain_emulator_pin_info, -1);
+    rb_define_method(c_domain, "get_emulator_pin_info",
+                     libvirt_domain_get_emulator_pin_info, -1);
 #endif
 #if HAVE_VIRDOMAINPINEMULATOR
     rb_define_method(c_domain, "pin_emulator", libvirt_domain_pin_emulator, -1);
 #endif
 #if HAVE_VIRDOMAINGETSECURITYLABELLIST
-    rb_define_method(c_domain, "security_label_list",
-                     libvirt_domain_security_label_list, 0);
+    rb_define_method(c_domain, "get_security_label_list",
+                     libvirt_domain_get_security_label_list, 0);
 #endif
 
 #if HAVE_CONST_VIR_KEYCODE_SET_LINUX
@@ -5145,15 +5156,16 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "KEYCODE_SET_RFB", INT2NUM(VIR_KEYCODE_SET_RFB));
 #endif
 #if HAVE_VIRDOMAINGETJOBSTATS
-    rb_define_method(c_domain, "job_stats", libvirt_domain_job_stats, -1);
+    rb_define_method(c_domain, "get_job_stats",
+                     libvirt_domain_get_job_stats, -1);
 #endif
 #if HAVE_VIRDOMAINGETBLOCKIOTUNE
-    rb_define_method(c_domain, "block_iotune",
-                     libvirt_domain_block_iotune, -1);
+    rb_define_method(c_domain, "get_block_io_tune",
+                     libvirt_domain_get_block_io_tune, -1);
 #endif
 #if HAVE_VIRDOMAINSETBLOCKIOTUNE
-    rb_define_method(c_domain, "block_iotune=",
-                     libvirt_domain_block_iotune_equal, 1);
+    rb_define_method(c_domain, "set_block_io_tune",
+                     libvirt_domain_set_block_io_tune, -1);
 #endif
 #if HAVE_VIRDOMAINBLOCKCOMMIT
     rb_define_method(c_domain, "block_commit", libvirt_domain_block_commit, -1);
@@ -5162,16 +5174,16 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "block_pull", libvirt_domain_block_pull, -1);
 #endif
 #if HAVE_VIRDOMAINBLOCKJOBSETSPEED
-    rb_define_method(c_domain, "block_job_speed=",
-                     libvirt_domain_block_job_speed_equal, 1);
+    rb_define_method(c_domain, "block_job_set_speed",
+                     libvirt_domain_block_job_set_speed, -1);
 #endif
 #if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES
     rb_define_const(c_domain, "BLOCK_JOB_SPEED_BANDWIDTH_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES));
 #endif
 #if HAVE_VIRDOMAINGETBLOCKJOBINFO
-    rb_define_method(c_domain, "block_job_info", libvirt_domain_block_job_info,
-                     -1);
+    rb_define_method(c_domain, "get_block_job_info",
+                     libvirt_domain_get_block_job_info, -1);
 #endif
 #if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES
     rb_define_const(c_domain, "BLOCK_JOB_INFO_BANDWIDTH_BYTES",
@@ -5183,20 +5195,20 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_block_job_abort, -1);
 #endif
 #if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
-    rb_define_method(c_domain, "interface_parameters",
-                     libvirt_domain_interface_parameters, -1);
-    rb_define_method(c_domain, "interface_parameters=",
-                     libvirt_domain_interface_parameters_equal, 1);
+    rb_define_method(c_domain, "get_interface_parameters",
+                     libvirt_domain_get_interface_parameters, -1);
+    rb_define_method(c_domain, "set_interface_parameters",
+                     libvirt_domain_set_interface_parameters, -1);
 #endif
 #if HAVE_VIRDOMAINBLOCKSTATSFLAGS
     rb_define_method(c_domain, "block_stats_flags",
                      libvirt_domain_block_stats_flags, -1);
 #endif
 #if HAVE_VIRDOMAINGETNUMAPARAMETERS
-    rb_define_method(c_domain, "numa_parameters",
-                     libvirt_domain_numa_parameters, -1);
-    rb_define_method(c_domain, "numa_parameters=",
-                     libvirt_domain_numa_parameters_equal, 1);
+    rb_define_method(c_domain, "get_numa_parameters",
+                     libvirt_domain_get_numa_parameters, -1);
+    rb_define_method(c_domain, "set_numa_parameters",
+                     libvirt_domain_set_numa_parameters, -1);
 #endif
 #if HAVE_VIRDOMAINLXCOPENNAMESPACE
     rb_define_method(c_domain, "lxc_open_namespace",

@@ -230,9 +230,9 @@ exception:
     return Qnil;
 }
 
-void ruby_libvirt_typed_params_to_hash(void *voidparams, int i, VALUE hash)
+void ruby_libvirt_typed_params_to_hash(virTypedParameter *params, int i,
+                                       VALUE hash)
 {
-    virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
     VALUE val;
 
     switch (params[i].type) {
@@ -262,86 +262,6 @@ void ruby_libvirt_typed_params_to_hash(void *voidparams, int i, VALUE hash)
     }
 
     rb_hash_aset(hash, rb_str_new2(params[i].field), val);
-}
-
-VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
-                                  unsigned int typesize,
-                                  const char *(*nparams_cb)(VALUE d,
-                                                            unsigned int flags,
-                                                            void *opaque,
-                                                            int *nparams),
-                                  const char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        void *voidparams,
-                                                        int *nparams,
-                                                        void *opaque),
-                                  void (*hash_set)(void *voidparams, int i,
-                                                   VALUE result))
-{
-    int nparams = 0;
-    void *params;
-    VALUE result;
-    const char *errname;
-    int i;
-
-    errname = nparams_cb(d, flags, opaque, &nparams);
-    ruby_libvirt_raise_error_if(errname != NULL, errname,
-                                ruby_libvirt_connect_get(d));
-
-    result = rb_hash_new();
-
-    if (nparams == 0) {
-        return result;
-    }
-
-    params = alloca(typesize * nparams);
-
-    errname = get_cb(d, flags, params, &nparams, opaque);
-    ruby_libvirt_raise_error_if(errname != NULL, errname,
-                                ruby_libvirt_connect_get(d));
-
-    for (i = 0; i < nparams; i++) {
-        hash_set(params, i, result);
-    }
-
-    return result;
-}
-
-VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
-                                        void *opaque,
-                                        const char *(*nparams_cb)(VALUE d,
-                                                                  unsigned int flags,
-                                                                  void *opaque,
-                                                                  int *nparams),
-                                        const char *(*get_cb)(VALUE d,
-                                                              unsigned int flags,
-                                                              void *params,
-                                                              int *nparams,
-                                                              void *opaque))
-{
-    return ruby_libvirt_get_parameters(d, flags, opaque,
-                                       sizeof(virTypedParameter), nparams_cb,
-                                       get_cb,
-                                       ruby_libvirt_typed_params_to_hash);
-}
-
-void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags)
-{
-    if (TYPE(in) == T_HASH) {
-        *hash = in;
-        *flags = INT2NUM(0);
-    }
-    else if (TYPE(in) == T_ARRAY) {
-        if (RARRAY_LEN(in) != 2) {
-            rb_raise(rb_eArgError, "wrong number of arguments (%ld for 1 or 2)",
-                     RARRAY_LEN(in));
-        }
-        *hash = rb_ary_entry(in, 0);
-        *flags = rb_ary_entry(in, 1);
-    }
-    else {
-        rb_raise(rb_eTypeError, "wrong argument type (expected Hash or Array)");
-    }
 }
 
 int ruby_libvirt_typed_parameter_assign(VALUE key, VALUE val, VALUE in)
@@ -399,43 +319,6 @@ int ruby_libvirt_typed_parameter_assign(VALUE key, VALUE val, VALUE in)
     return ST_CONTINUE;
 }
 
-VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
-                                        unsigned int flags, void *opaque,
-                                        struct ruby_libvirt_typed_param *allowed,
-                                        unsigned int num_allowed,
-                                        const char *(*set_cb)(VALUE d,
-                                                              unsigned int flags,
-                                                              virTypedParameterPtr params,
-                                                              int nparams,
-                                                              void *opaque))
-{
-    const char *errname;
-    struct ruby_libvirt_parameter_assign_args args;
-    unsigned long hashsize;
-
-    /* make sure input is a hash */
-    Check_Type(input, T_HASH);
-
-    hashsize = RHASH_SIZE(input);
-
-    if (hashsize == 0) {
-        return Qnil;
-    }
-
-    args.allowed = allowed;
-    args.num_allowed = num_allowed;
-    args.params = alloca(sizeof(virTypedParameter) * hashsize);
-    args.i = 0;
-
-    rb_hash_foreach(input, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
-
-    errname = set_cb(d, flags, args.params, args.i, opaque);
-    ruby_libvirt_raise_error_if(errname != NULL, errname,
-                                ruby_libvirt_connect_get(d));
-
-    return Qnil;
-}
-
 unsigned int ruby_libvirt_value_to_uint(VALUE in)
 {
     if (NIL_P(in)) {
@@ -470,23 +353,4 @@ unsigned long long ruby_libvirt_value_to_ulonglong(VALUE in)
     }
 
     return NUM2ULL(in);
-}
-
-int ruby_libvirt_get_maxcpus(virConnectPtr conn)
-{
-    int maxcpu = -1;
-    virNodeInfo nodeinfo;
-
-#if HAVE_VIRNODEGETCPUMAP
-    maxcpu = virNodeGetCPUMap(conn, NULL, NULL, 0);
-#endif
-    if (maxcpu < 0) {
-        /* fall back to nodeinfo */
-        ruby_libvirt_raise_error_if(virNodeGetInfo(conn, &nodeinfo) < 0,
-                                    "virNodeGetInfo", conn);
-
-        maxcpu = VIR_NODEINFO_MAXCPUS(nodeinfo);
-    }
-
-    return maxcpu;
 }

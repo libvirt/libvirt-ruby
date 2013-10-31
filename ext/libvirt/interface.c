@@ -99,12 +99,12 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
 #if HAVE_VIRINTERFACEISACTIVE
 /*
  * call-seq:
- *   interface.active? -> [true|false]
+ *   interface.is_active -> [true|false]
  *
  * Call virInterfaceIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceIsActive]
  * to determine if this interface is currently active.
  */
-static VALUE libvirt_interface_active_p(VALUE p)
+static VALUE libvirt_interface_is_active(VALUE p)
 {
     ruby_libvirt_generate_call_truefalse(virInterfaceIsActive,
                                          ruby_libvirt_connect_get(p),
@@ -114,12 +114,12 @@ static VALUE libvirt_interface_active_p(VALUE p)
 
 /*
  * call-seq:
- *   interface.name -> String
+ *   interface.get_name -> String
  *
  * Call virInterfaceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
  * to retrieve the name of this interface.
  */
-static VALUE libvirt_interface_name(VALUE i)
+static VALUE libvirt_interface_get_name(VALUE i)
 {
     ruby_libvirt_generate_call_string(virInterfaceGetName,
                                       ruby_libvirt_connect_get(i), 0,
@@ -128,12 +128,12 @@ static VALUE libvirt_interface_name(VALUE i)
 
 /*
  * call-seq:
- *   interface.mac -> String
+ *   interface.get_mac_string -> String
  *
  * Call virInterfaceGetMACString[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
  * to retrieve the MAC address of this interface.
  */
-static VALUE libvirt_interface_mac(VALUE i)
+static VALUE libvirt_interface_get_mac_string(VALUE i)
 {
     ruby_libvirt_generate_call_string(virInterfaceGetMACString,
                                       ruby_libvirt_connect_get(i),
@@ -142,12 +142,12 @@ static VALUE libvirt_interface_mac(VALUE i)
 
 /*
  * call-seq:
- *   interface.xml_desc -> String
+ *   interface.get_xml_desc -> String
  *
  * Call virInterfaceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
  * to retrieve the XML of this interface.
  */
-static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
+static VALUE libvirt_interface_get_xml_desc(int argc, VALUE *argv, VALUE i)
 {
     VALUE flags;
 
@@ -186,15 +186,17 @@ void ruby_libvirt_interface_init(void)
     rb_define_attr(c_interface, "connection", 1, 0);
 
     /* Interface object methods */
-    rb_define_method(c_interface, "name", libvirt_interface_name, 0);
-    rb_define_method(c_interface, "mac", libvirt_interface_mac, 0);
-    rb_define_method(c_interface, "xml_desc", libvirt_interface_xml_desc, -1);
+    rb_define_method(c_interface, "get_name", libvirt_interface_get_name, 0);
+    rb_define_method(c_interface, "get_mac_string",
+                     libvirt_interface_get_mac_string, 0);
+    rb_define_method(c_interface, "get_xml_desc",
+                     libvirt_interface_get_xml_desc, -1);
     rb_define_method(c_interface, "undefine", libvirt_interface_undefine, 0);
     rb_define_method(c_interface, "create", libvirt_interface_create, -1);
     rb_define_method(c_interface, "destroy", libvirt_interface_destroy, -1);
     rb_define_method(c_interface, "free", libvirt_interface_free, 0);
 #if HAVE_VIRINTERFACEISACTIVE
-    rb_define_method(c_interface, "active?", libvirt_interface_active_p, 0);
+    rb_define_method(c_interface, "is_active", libvirt_interface_is_active, 0);
 #endif
 #endif
 }

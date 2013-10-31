@@ -60,12 +60,12 @@ static VALUE libvirt_nwfilter_undefine(VALUE n)
 
 /*
  * call-seq:
- *   nwfilter.name -> String
+ *   nwfilter.get_name -> String
  *
  * Call virNWFilterGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetName]
  * to retrieve the network filter name.
  */
-static VALUE libvirt_nwfilter_name(VALUE n)
+static VALUE libvirt_nwfilter_get_name(VALUE n)
 {
     ruby_libvirt_generate_call_string(virNWFilterGetName,
                                       ruby_libvirt_connect_get(n), 0,
@@ -74,12 +74,12 @@ static VALUE libvirt_nwfilter_name(VALUE n)
 
 /*
  * call-seq:
- *   nwfilter.uuid -> String
+ *   nwfilter.get_uuid_string -> String
  *
  * Call virNWFilterGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetUUIDString]
  * to retrieve the network filter UUID.
  */
-static VALUE libvirt_nwfilter_uuid(VALUE n)
+static VALUE libvirt_nwfilter_get_uuid_string(VALUE n)
 {
     ruby_libvirt_generate_uuid(virNWFilterGetUUIDString,
                                ruby_libvirt_connect_get(n), nwfilter_get(n));
@@ -87,12 +87,12 @@ static VALUE libvirt_nwfilter_uuid(VALUE n)
 
 /*
  * call-seq:
- *   nwfilter.xml_desc(flags=0) -> String
+ *   nwfilter.get_xml_desc(flags=0) -> String
  *
  * Call virNWFilterGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetXMLDesc]
  * to retrieve the XML for this network filter.
  */
-static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
+static VALUE libvirt_nwfilter_get_xml_desc(int argc, VALUE *argv, VALUE n)
 {
     VALUE flags;
 
@@ -130,9 +130,11 @@ void ruby_libvirt_nwfilter_init(void)
 
     /* NWFilter object methods */
     rb_define_method(c_nwfilter, "undefine", libvirt_nwfilter_undefine, 0);
-    rb_define_method(c_nwfilter, "name", libvirt_nwfilter_name, 0);
-    rb_define_method(c_nwfilter, "uuid", libvirt_nwfilter_uuid, 0);
-    rb_define_method(c_nwfilter, "xml_desc", libvirt_nwfilter_xml_desc, -1);
+    rb_define_method(c_nwfilter, "get_name", libvirt_nwfilter_get_name, 0);
+    rb_define_method(c_nwfilter, "get_uuid_string",
+                     libvirt_nwfilter_get_uuid_string, 0);
+    rb_define_method(c_nwfilter, "get_xml_desc",
+                     libvirt_nwfilter_get_xml_desc, -1);
     rb_define_method(c_nwfilter, "free", libvirt_nwfilter_free, 0);
 #endif
 }

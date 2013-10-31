@@ -1,6 +1,34 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifndef HAVE_TYPE_VIRTYPEDPARAMETERPTR
+#define VIR_TYPED_PARAM_INT VIR_DOMAIN_SCHED_FIELD_INT
+#define VIR_TYPED_PARAM_UINT VIR_DOMAIN_SCHED_FIELD_UINT
+#define VIR_TYPED_PARAM_LLONG VIR_DOMAIN_SCHED_FIELD_LLONG
+#define VIR_TYPED_PARAM_ULLONG VIR_DOMAIN_SCHED_FIELD_ULLONG
+#define VIR_TYPED_PARAM_DOUBLE VIR_DOMAIN_SCHED_FIELD_DOUBLE
+#define VIR_TYPED_PARAM_BOOLEAN VIR_DOMAIN_SCHED_FIELD_BOOLEAN
+#define VIR_TYPED_PARAM_STRING 7
+
+#define VIR_TYPED_PARAM_FIELD_LENGTH 80
+typedef struct _virTypedParameter virTypedParameter;
+struct _virTypedParameter {
+    char field[VIR_TYPED_PARAM_FIELD_LENGTH];  /* parameter name */
+    int type;   /* parameter type, virTypedParameterType */
+    union {
+        int i;                      /* type is INT */
+        unsigned int ui;            /* type is UINT */
+        long long int l;            /* type is LLONG */
+        unsigned long long int ul;  /* type is ULLONG */
+        double d;                   /* type is DOUBLE */
+        char b;                     /* type is BOOLEAN */
+        char *s;                    /* type is STRING, may not be NULL */
+    } value; /* parameter value */
+};
+typedef virTypedParameter *virTypedParameterPtr;
+
+#endif
+
 /* Macros to ease some of the boilerplate */
 VALUE ruby_libvirt_new_class(VALUE klass, void *ptr, VALUE conn,
                              RUBY_DATA_FUNC free_func);
@@ -172,30 +200,6 @@ char *ruby_libvirt_get_cstring_or_null(VALUE arg);
 
 VALUE ruby_libvirt_generate_list(int num, char **list);
 
-VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
-                                  unsigned int typesize,
-                                  const char *(*nparams_cb)(VALUE d,
-                                                            unsigned int flags,
-                                                            void *opaque,
-                                                            int *nparams),
-                                  const char *(*get_cb)(VALUE d,
-                                                        unsigned int flags,
-                                                        void *voidparams,
-                                                        int *nparams,
-                                                        void *opaque),
-                                  void (*hash_set)(void *voidparams, int i,
-                                                   VALUE result));
-VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
-                                        void *opaque,
-                                        const char *(*nparams_cb)(VALUE d,
-                                                                  unsigned int flags,
-                                                                  void *opaque,
-                                                                  int *nparams),
-                                        const char *(*get_cb)(VALUE d,
-                                                              unsigned int flags,
-                                                              void *params,
-                                                              int *nparams,
-                                                              void *opaque));
 struct ruby_libvirt_typed_param {
     const char *name;
     int type;
@@ -208,20 +212,8 @@ struct ruby_libvirt_parameter_assign_args {
     int i;
 };
 int ruby_libvirt_typed_parameter_assign(VALUE key, VALUE val, VALUE in);
-VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
-                                        unsigned int flags, void *opaque,
-                                        struct ruby_libvirt_typed_param *allowed,
-                                        unsigned int num_allowed,
-                                        const char *(*set_cb)(VALUE d,
-                                                              unsigned int flags,
-                                                              virTypedParameterPtr params,
-                                                              int nparams,
-                                                              void *opaque));
-
-int ruby_libvirt_get_maxcpus(virConnectPtr conn);
-
-void ruby_libvirt_typed_params_to_hash(void *voidparams, int i, VALUE hash);
-void ruby_libvirt_assign_hash_and_flags(VALUE in, VALUE *hash, VALUE *flags);
+void ruby_libvirt_typed_params_to_hash(virTypedParameter *params, int i,
+                                       VALUE hash);
 
 unsigned int ruby_libvirt_value_to_uint(VALUE in);
 int ruby_libvirt_value_to_int(VALUE in);
