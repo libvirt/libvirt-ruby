@@ -395,6 +395,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_BLOCK_JOB_FAILED',
                    'VIR_DOMAIN_BLOCK_JOB_CANCELED',
                    'VIR_DOMAIN_BLOCK_JOB_READY',
+                   'VIR_NODE_MEMORY_SHARED_MERGE_ACROSS_NODES',
                  ]
 
 virterror_consts = [
