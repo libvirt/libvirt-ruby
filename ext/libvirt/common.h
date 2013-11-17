@@ -25,7 +25,7 @@ VALUE ruby_libvirt_new_class(VALUE klass, void *ptr, VALUE conn,
     } while(0);
 
 void ruby_libvirt_raise_error_if(const int condition, VALUE error,
-                                 const char* method, virConnectPtr conn);
+                                 const char *method, virConnectPtr conn);
 
 /*
  * Code generating macros.

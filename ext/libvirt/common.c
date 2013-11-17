@@ -84,7 +84,7 @@ VALUE ruby_libvirt_hash_aset_wrap(VALUE arg)
 }
 
 void ruby_libvirt_raise_error_if(const int condition, VALUE error,
-                                 const char* method, virConnectPtr conn)
+                                 const char *method, virConnectPtr conn)
 {
     VALUE ruby_errinfo;
     virErrorPtr err;
