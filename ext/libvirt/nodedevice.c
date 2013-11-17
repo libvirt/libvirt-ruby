@@ -110,9 +110,9 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
     char **names;
 
     num = virNodeDeviceNumOfCaps(nodedevice_get(c));
-    _E(num < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virNodeDeviceNumOfCaps",
-                                          ruby_libvirt_connect_get(c)));
+    ruby_libvirt_raise_error_if(num < 0, e_RetrieveError,
+                                "virNodeDeviceNumOfCaps",
+                                ruby_libvirt_connect_get(c));
     if (num == 0) {
         /* if num is 0, don't call virNodeDeviceListCaps function */
         return rb_ary_new2(num);
@@ -120,9 +120,9 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
 
     names = alloca(sizeof(char *) * num);
     r = virNodeDeviceListCaps(nodedevice_get(c), names, num);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                        "virNodeDeviceListCaps",
-                                        ruby_libvirt_connect_get(c)));
+    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
+                                "virNodeDeviceListCaps",
+                                ruby_libvirt_connect_get(c));
 
     return ruby_libvirt_generate_list(num, names);
 }

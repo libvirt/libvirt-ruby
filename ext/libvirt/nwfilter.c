@@ -85,9 +85,9 @@ static VALUE libvirt_nwfilter_uuid(VALUE n)
     char uuid[VIR_UUID_STRING_BUFLEN];
 
     r = virNWFilterGetUUIDString(nwfilter_get(n), uuid);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                        "virNWFilterGetUUIDString",
-                                        ruby_libvirt_connect_get(n)));
+    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
+                                "virNWFilterGetUUIDString",
+                                ruby_libvirt_connect_get(n));
 
     return rb_str_new2((char *)uuid);
 }

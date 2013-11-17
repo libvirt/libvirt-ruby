@@ -132,9 +132,9 @@ static VALUE libvirt_network_uuid(VALUE n)
     int r;
 
     r = virNetworkGetUUIDString(network_get(n), uuid);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                        "virNetworkGetUUIDString",
-                                        ruby_libvirt_connect_get(n)));
+    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
+                                "virNetworkGetUUIDString",
+                                ruby_libvirt_connect_get(n));
 
     return rb_str_new2((char *) uuid);
 }
@@ -184,8 +184,8 @@ static VALUE libvirt_network_autostart(VALUE n)
     int r, autostart;
 
     r = virNetworkGetAutostart(network_get(n), &autostart);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError, "virNetworkAutostart",
-                                        ruby_libvirt_connect_get(n)));
+    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError, "virNetworkAutostart",
+                                ruby_libvirt_connect_get(n));
 
     return autostart ? Qtrue : Qfalse;
 }

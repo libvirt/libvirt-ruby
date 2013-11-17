@@ -72,7 +72,7 @@ static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
 
     r = virGetVersion(&libVer, ruby_libvirt_get_cstring_or_null(type),
                       &typeVer);
-    _E(r < 0, ruby_libvirt_create_error(rb_eArgError, "virGetVersion", NULL));
+    ruby_libvirt_raise_error_if(r < 0, rb_eArgError, "virGetVersion", NULL);
 
     result = rb_ary_new2(2);
     rargv[0] = rb_str_new2("libvirt");
@@ -99,8 +99,8 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
     rb_scan_args(argc, argv, "01", &uri);
 
     conn = virConnectOpen(ruby_libvirt_get_cstring_or_null(uri));
-    _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
-                                               "virConnectOpen", NULL));
+    ruby_libvirt_raise_error_if(conn == NULL, e_ConnectionError,
+                                "virConnectOpen", NULL);
 
     return ruby_libvirt_connect_new(conn);
 }
@@ -121,8 +121,8 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m)
 
     conn = virConnectOpenReadOnly(ruby_libvirt_get_cstring_or_null(uri));
 
-    _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
-                                               "virConnectOpenReadOnly", NULL));
+    ruby_libvirt_raise_error_if(conn == NULL, e_ConnectionError,
+                                "virConnectOpenReadOnly", NULL);
 
     return ruby_libvirt_connect_new(conn);
 }
@@ -253,8 +253,8 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     conn = virConnectOpenAuth(ruby_libvirt_get_cstring_or_null(uri), auth,
                               ruby_libvirt_value_to_uint(flags));
 
-    _E(conn == NULL, ruby_libvirt_create_error(e_ConnectionError,
-                                               "virConnectOpenAuth", NULL));
+    ruby_libvirt_raise_error_if(conn == NULL, e_ConnectionError,
+                                "virConnectOpenAuth", NULL);
 
     return ruby_libvirt_connect_new(conn);
 }
@@ -687,9 +687,8 @@ static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
 
     ret = virDomainLxcEnterSecurityLabel(&mod, &lab, &oldlab,
                                          ruby_libvirt_value_to_uint(flags));
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virDomainLxcEnterSecurityLabel",
-                                          NULL));
+    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError,
+                                "virDomainLxcEnterSecurityLabel", NULL);
 
     result = rb_class_new_instance(0, NULL, c_domain_security_label);
     rb_iv_set(result, "@label", rb_str_new2(oldlab.label));

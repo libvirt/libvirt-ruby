@@ -62,8 +62,8 @@ static VALUE libvirt_stream_send(VALUE s, VALUE buffer)
 
     ret = virStreamSend(ruby_libvirt_stream_get(s), RSTRING_PTR(buffer),
                         RSTRING_LEN(buffer));
-    _E(ret == -1, ruby_libvirt_create_error(e_RetrieveError, "virStreamSend",
-                                            ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(ret == -1, e_RetrieveError, "virStreamSend",
+                                ruby_libvirt_connect_get(s));
 
     return INT2NUM(ret);
 }
@@ -88,8 +88,8 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     data = alloca(sizeof(char) * NUM2INT(bytes));
 
     ret = virStreamRecv(ruby_libvirt_stream_get(s), data, NUM2INT(bytes));
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamRecv",
-                                          ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError, "virStreamRecv",
+                                ruby_libvirt_connect_get(s));
 
     result = rb_ary_new2(2);
 
@@ -160,8 +160,8 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
 
     ret = virStreamSendAll(ruby_libvirt_stream_get(s), internal_sendall,
                            (void *)opaque);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamSendAll",
-                                          ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError, "virStreamSendAll",
+                                ruby_libvirt_connect_get(s));
 
     return Qnil;
 }
@@ -203,8 +203,8 @@ static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
 
     ret = virStreamRecvAll(ruby_libvirt_stream_get(s), internal_recvall,
                            (void *)opaque);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, "virStreamRecvAll",
-                                          ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError, "virStreamRecvAll",
+                                ruby_libvirt_connect_get(s));
 
     return Qnil;
 }
@@ -277,9 +277,9 @@ static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
     ret = virStreamEventAddCallback(ruby_libvirt_stream_get(s), NUM2INT(events),
                                     stream_event_callback, (void *)passthrough,
                                     NULL);
-    _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                          "virStreamEventAddCallback",
-                                          ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError,
+                                "virStreamEventAddCallback",
+                                ruby_libvirt_connect_get(s));
 
     return Qnil;
 }

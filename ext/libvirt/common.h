@@ -24,8 +24,8 @@ VALUE ruby_libvirt_new_class(VALUE klass, void *ptr, VALUE conn,
         }                                                               \
     } while(0);
 
-VALUE ruby_libvirt_create_error(VALUE error, const char* method,
-                                virConnectPtr conn);
+void ruby_libvirt_raise_error_if(const int condition, VALUE error,
+                                 const char* method, virConnectPtr conn);
 
 /*
  * Code generating macros.
@@ -45,8 +45,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
         int exception;                                                  \
                                                                         \
         str = func(args);                                               \
-        _E(str == NULL, ruby_libvirt_create_error(e_Error, # func, conn));           \
-                                                                        \
+        ruby_libvirt_raise_error_if(str == NULL, e_Error, # func, conn); \
         if (dealloc) {                                                  \
             result = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&str, &exception); \
             xfree((void *) str);                                        \
@@ -69,7 +68,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
         Data_Get_Struct(s, vir##kind, ptr);                             \
         if (ptr != NULL) {                                              \
             int r = vir##kind##Free(ptr);                               \
-            _E(r < 0, ruby_libvirt_create_error(e_Error, "vir" #kind "Free", ruby_libvirt_connect_get(s))); \
+            ruby_libvirt_raise_error_if(r < 0, e_Error, "vir" #kind "Free", ruby_libvirt_connect_get(s)); \
             DATA_PTR(s) = NULL;                                         \
         }                                                               \
         return Qnil;                                                    \
@@ -83,7 +82,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        _E(_r_##func < 0, ruby_libvirt_create_error(e_Error, #func, conn));          \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_Error, #func, conn);          \
         return Qnil;                                                    \
     } while(0)
 
@@ -94,7 +93,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        _E(_r_##func < 0, ruby_libvirt_create_error(e_Error, #func, conn));          \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_Error, #func, conn);          \
         return _r_##func ? Qtrue : Qfalse;                              \
     } while(0)
 
@@ -106,7 +105,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        _E(_r_##func < 0, ruby_libvirt_create_error(e_RetrieveError, #func, conn));  \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_RetrieveError, #func, conn);  \
         return INT2NUM(_r_##func);                                      \
     } while(0)
 
@@ -122,7 +121,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
                                                                         \
         rb_scan_args(argc, argv, "01", &flags);                         \
         ret = listfunc(object, &list, ruby_libvirt_value_to_uint(flags)); \
-        _E(ret < 0, ruby_libvirt_create_error(e_RetrieveError, #listfunc, ruby_libvirt_connect_get(val))); \
+        ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError, #listfunc, ruby_libvirt_connect_get(val)); \
         result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&ret, &exception); \
         if (exception) {                                                \
             goto exception;                                             \
@@ -150,10 +149,6 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
         /* not needed, but here to shut the compiler up */              \
         return Qnil;                                                    \
     } while(0)
-
-/* Error handling */
-#define _E(cond, excep) \
-    do { if (cond) rb_exc_raise(excep); } while(0)
 
 int ruby_libvirt_is_symbol_or_proc(VALUE handle);
 

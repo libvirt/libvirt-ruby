@@ -83,9 +83,8 @@ VALUE ruby_libvirt_hash_aset_wrap(VALUE arg)
     return rb_hash_aset(e->hash, rb_str_new2(e->name), e->val);
 }
 
-/* Error handling */
-VALUE ruby_libvirt_create_error(VALUE error, const char* method,
-                                virConnectPtr conn)
+void ruby_libvirt_raise_error_if(const int condition, VALUE error,
+                                 const char* method, virConnectPtr conn)
 {
     VALUE ruby_errinfo;
     virErrorPtr err;
@@ -93,6 +92,10 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
     int rc;
     struct rb_exc_new2_arg arg;
     int exception = 0;
+
+    if (!condition) {
+        return;
+    }
 
     if (conn == NULL) {
         err = virGetLastError();
@@ -135,7 +138,7 @@ VALUE ruby_libvirt_create_error(VALUE error, const char* method,
         }
     }
 
-    return ruby_errinfo;
+    rb_exc_raise(ruby_errinfo);
 };
 
 char *ruby_libvirt_get_cstring_or_null(VALUE arg)
@@ -270,8 +273,8 @@ VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
     int i;
 
     errname = nparams_cb(d, flags, opaque, &nparams);
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(d)));
+    ruby_libvirt_raise_error_if(errname != NULL, e_RetrieveError, errname,
+                                ruby_libvirt_connect_get(d));
 
     result = rb_hash_new();
 
@@ -282,8 +285,8 @@ VALUE ruby_libvirt_get_parameters(VALUE d, unsigned int flags, void *opaque,
     params = alloca(typesize * nparams);
 
     errname = get_cb(d, flags, params, &nparams, opaque);
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(d)));
+    ruby_libvirt_raise_error_if(errname != NULL, e_RetrieveError, errname,
+                                ruby_libvirt_connect_get(d));
 
     for (i = 0; i < nparams; i++) {
         hash_set(params, i, result);
@@ -413,8 +416,8 @@ VALUE ruby_libvirt_set_typed_parameters(VALUE d, VALUE input,
     rb_hash_foreach(input, ruby_libvirt_typed_parameter_assign, (VALUE)&args);
 
     errname = set_cb(d, flags, args.params, args.i, opaque);
-    _E(errname != NULL, ruby_libvirt_create_error(e_RetrieveError, errname,
-                                                  ruby_libvirt_connect_get(d)));
+    ruby_libvirt_raise_error_if(errname != NULL, e_RetrieveError, errname,
+                                ruby_libvirt_connect_get(d));
 
     return Qnil;
 }
@@ -465,10 +468,8 @@ int ruby_libvirt_get_maxcpus(virConnectPtr conn)
 #endif
     if (maxcpu < 0) {
         /* fall back to nodeinfo */
-        if (virNodeGetInfo(conn, &nodeinfo) < 0) {
-            rb_exc_raise(ruby_libvirt_create_error(e_RetrieveError,
-                                                   "virNodeGetInfo", conn));
-        }
+        ruby_libvirt_raise_error_if(virNodeGetInfo(conn, &nodeinfo) < 0,
+                                    e_RetrieveError, "virNodeGetInfo", conn);
 
         maxcpu = VIR_NODEINFO_MAXCPUS(nodeinfo);
     }

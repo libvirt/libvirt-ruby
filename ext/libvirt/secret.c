@@ -57,9 +57,9 @@ static VALUE libvirt_secret_uuid(VALUE s)
     char uuid[VIR_UUID_STRING_BUFLEN];
 
     r = virSecretGetUUIDString(secret_get(s), uuid);
-    _E(r < 0, ruby_libvirt_create_error(e_RetrieveError,
-                                        "virSecretGetUUIDString",
-                                        ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
+                                "virSecretGetUUIDString",
+                                ruby_libvirt_connect_get(s));
 
     return rb_str_new2((char *)uuid);
 }
@@ -191,9 +191,9 @@ static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
     val = virSecretGetValue(secret_get(s), &value_size,
                             ruby_libvirt_value_to_uint(flags));
 
-    _E(val == NULL, ruby_libvirt_create_error(e_RetrieveError,
-                                              "virSecretGetValue",
-                                              ruby_libvirt_connect_get(s)));
+    ruby_libvirt_raise_error_if(val == NULL, e_RetrieveError,
+                                "virSecretGetValue",
+                                ruby_libvirt_connect_get(s));
 
     args.val = (char *)val;
     args.size = value_size;
