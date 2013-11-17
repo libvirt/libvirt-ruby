@@ -35,6 +35,8 @@ CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE, "ext/**/depend", "ext/**/*.gcda",
 CLOBBER.include [ "config.save", "ext/**/mkmf.log", "ext/**/extconf.h",
                   MAKEFILE ]
 
+task :default => :build
+
 #
 # Build locally
 #
