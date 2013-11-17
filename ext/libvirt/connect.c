@@ -3253,6 +3253,8 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST));
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_VPORTS",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_VPORTS));
+#endif
+#if HAVE_CONST_VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SCSI_GENERIC",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC));
 #endif
