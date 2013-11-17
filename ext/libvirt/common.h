@@ -38,25 +38,25 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
  * function will return the string on success and throw an exception on
  * error. The string returned by FUNC is freed if dealloc is true.
  */
-#define ruby_libvirt_generate_call_string(func, conn, dealloc, args...) \
-    do {                                                                \
-        const char *str;                                                \
-        VALUE result;                                                   \
-        int exception;                                                  \
-                                                                        \
-        str = func(args);                                               \
+#define ruby_libvirt_generate_call_string(func, conn, dealloc, args...)  \
+    do {                                                                 \
+        const char *str;                                                 \
+        VALUE result;                                                    \
+        int exception;                                                   \
+                                                                         \
+        str = func(args);                                                \
         ruby_libvirt_raise_error_if(str == NULL, e_Error, # func, conn); \
-        if (dealloc) {                                                  \
+        if (dealloc) {                                                   \
             result = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&str, &exception); \
-            xfree((void *) str);                                        \
-            if (exception) {                                            \
-                rb_jump_tag(exception);                                 \
-            }                                                           \
-        }                                                               \
-        else {                                                          \
-            result = rb_str_new2(str);                                  \
-        }                                                               \
-        return result;                                                  \
+            xfree((void *) str);                                         \
+            if (exception) {                                             \
+                rb_jump_tag(exception);                                  \
+            }                                                            \
+        }                                                                \
+        else {                                                           \
+            result = rb_str_new2(str);                                   \
+        }                                                                \
+        return result;                                                   \
     } while(0)
 
 /* Generate a call to vir##KIND##Free and return Qnil. Set the the embedded
@@ -78,23 +78,23 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
  * indicates error and 0 success. The Ruby function will return Qnil on
  * success and throw an exception on error.
  */
-#define ruby_libvirt_generate_call_nil(func, conn, args...)             \
-    do {                                                                \
-        int _r_##func;                                                  \
-        _r_##func = func(args);                                         \
-        ruby_libvirt_raise_error_if(_r_##func < 0, e_Error, #func, conn);          \
-        return Qnil;                                                    \
+#define ruby_libvirt_generate_call_nil(func, conn, args...)               \
+    do {                                                                  \
+        int _r_##func;                                                    \
+        _r_##func = func(args);                                           \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_Error, #func, conn); \
+        return Qnil;                                                      \
     } while(0)
 
 /* Generate a call to a function FUNC which returns an int; -1 indicates
  * error, 0 indicates Qfalse, and 1 indicates Qtrue.
  */
-#define ruby_libvirt_generate_call_truefalse(func, conn, args...)       \
-    do {                                                                \
-        int _r_##func;                                                  \
-        _r_##func = func(args);                                         \
-        ruby_libvirt_raise_error_if(_r_##func < 0, e_Error, #func, conn);          \
-        return _r_##func ? Qtrue : Qfalse;                              \
+#define ruby_libvirt_generate_call_truefalse(func, conn, args...)         \
+    do {                                                                  \
+        int _r_##func;                                                    \
+        _r_##func = func(args);                                           \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_Error, #func, conn); \
+        return _r_##func ? Qtrue : Qfalse;                                \
     } while(0)
 
 /* Generate a call to a function FUNC which returns an int error, where -1
@@ -105,7 +105,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
     do {                                                                \
         int _r_##func;                                                  \
         _r_##func = func(args);                                         \
-        ruby_libvirt_raise_error_if(_r_##func < 0, e_RetrieveError, #func, conn);  \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_RetrieveError, #func, conn); \
         return INT2NUM(_r_##func);                                      \
     } while(0)
 
