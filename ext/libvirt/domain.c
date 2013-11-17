@@ -972,15 +972,9 @@ static VALUE libvirt_domain_id(VALUE d)
  */
 static VALUE libvirt_domain_uuid(VALUE d)
 {
-    char uuid[VIR_UUID_STRING_BUFLEN];
-    int r;
-
-    r = virDomainGetUUIDString(ruby_libvirt_domain_get(d), uuid);
-    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
-                                "virDomainGetUUIDString",
-                                ruby_libvirt_connect_get(d));
-
-    return rb_str_new2((char *) uuid);
+    ruby_libvirt_generate_uuid(virDomainGetUUIDString,
+                               ruby_libvirt_connect_get(d),
+                               ruby_libvirt_domain_get(d));
 }
 
 /*

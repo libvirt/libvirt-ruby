@@ -128,15 +128,8 @@ static VALUE libvirt_network_name(VALUE n)
  */
 static VALUE libvirt_network_uuid(VALUE n)
 {
-    char uuid[VIR_UUID_STRING_BUFLEN];
-    int r;
-
-    r = virNetworkGetUUIDString(network_get(n), uuid);
-    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
-                                "virNetworkGetUUIDString",
-                                ruby_libvirt_connect_get(n));
-
-    return rb_str_new2((char *) uuid);
+    ruby_libvirt_generate_uuid(virNetworkGetUUIDString,
+                               ruby_libvirt_connect_get(n), network_get(n));
 }
 
 /*

@@ -53,15 +53,8 @@ VALUE ruby_libvirt_secret_new(virSecretPtr s, VALUE conn)
  */
 static VALUE libvirt_secret_uuid(VALUE s)
 {
-    int r;
-    char uuid[VIR_UUID_STRING_BUFLEN];
-
-    r = virSecretGetUUIDString(secret_get(s), uuid);
-    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
-                                "virSecretGetUUIDString",
-                                ruby_libvirt_connect_get(s));
-
-    return rb_str_new2((char *)uuid);
+    ruby_libvirt_generate_uuid(virSecretGetUUIDString,
+                               ruby_libvirt_connect_get(s), secret_get(s));
 }
 
 /*

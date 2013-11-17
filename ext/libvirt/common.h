@@ -109,6 +109,16 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
         return INT2NUM(_r_##func);                                      \
     } while(0)
 
+#define ruby_libvirt_generate_uuid(func, conn, obj)                     \
+    do {                                                                \
+        char uuid[VIR_UUID_STRING_BUFLEN];                              \
+        int _r_##func;                                                  \
+        _r_##func = func(obj, uuid);                                    \
+        ruby_libvirt_raise_error_if(_r_##func < 0, e_RetrieveError, #func, conn); \
+        return rb_str_new2((char *) uuid);                              \
+    } while (0)
+
+
 #define ruby_libvirt_generate_call_list_all(type, argc, argv, listfunc, object, val, newfunc, freefunc) \
     do {                                                                \
         VALUE flags;                                                    \

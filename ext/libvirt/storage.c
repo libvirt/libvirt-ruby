@@ -207,15 +207,8 @@ static VALUE libvirt_storage_pool_name(VALUE p)
  */
 static VALUE libvirt_storage_pool_uuid(VALUE p)
 {
-    char uuid[VIR_UUID_STRING_BUFLEN];
-    int r;
-
-    r = virStoragePoolGetUUIDString(pool_get(p), uuid);
-    ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
-                                "virStoragePoolGetUUIDString",
-                                ruby_libvirt_connect_get(p));
-
-    return rb_str_new2((char *) uuid);
+    ruby_libvirt_generate_uuid(virStoragePoolGetUUIDString,
+                               ruby_libvirt_connect_get(p), pool_get(p));
 }
 
 /*
