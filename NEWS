@@ -1,5 +1,12 @@
-2013-08-10 0.5.0
-  * Update Network class, implementing network_update
+2013-12-09 0.5.0
+  * Updated Network class, implementing almost all libvirt APIs
+  * Updated Domain class, implementing almost all libvirt APIs
+  * Updated Connection class, implementing almost all libvirt APIs
+  * Updated DomainSnapshot class, implementing almost all libvirt APIs
+  * Updated NodeDevice class, implementing almost all libvirt APIs
+  * Updated Storage class, implementing almost all libvirt APIs
+  * Add constants for almost all libvirt defines
+  * Improved performance in the library by using alloca
 
 2011-07-27 0.4.0
   * Updated Domain class, implementing dom.memory_parameters=,

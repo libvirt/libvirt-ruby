@@ -2,6 +2,7 @@
 # Rakefile: build ruby libvirt bindings
 #
 # Copyright (C) 2007,2010 Red Hat, Inc.
+# Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
 #
 # Distributed under the GNU Lesser General Public License v2.1 or later.
 # See COPYING for details
