@@ -398,6 +398,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_BLOCK_JOB_READY',
                    'VIR_NODE_MEMORY_SHARED_MERGE_ACROSS_NODES',
                    'VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC',
+                   'VIR_MIGRATE_PARAM_LISTEN_ADDRESS',
                  ]
 
 virterror_consts = [
