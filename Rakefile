@@ -11,7 +11,11 @@
 
 # Rakefile for ruby-rpm -*- ruby -*-
 require 'rake/clean'
-require 'rdoc/task'
+begin
+  require 'rdoc/task'
+rescue LoadError
+  require 'rake/rdoctask'
+end
 require 'rake/testtask'
 require 'rubygems/package_task'
 require 'rbconfig'

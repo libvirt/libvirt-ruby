@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <ruby.h>
-#include <ruby/st.h>
 #include <libvirt/libvirt.h>
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 #include <libvirt/libvirt-qemu.h>

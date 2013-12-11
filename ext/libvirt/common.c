@@ -24,6 +24,7 @@
 #endif
 #include <stdio.h>
 #include <ruby.h>
+#include <st.h>
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
 #include "common.h"
