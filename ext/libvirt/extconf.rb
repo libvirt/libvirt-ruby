@@ -399,6 +399,11 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_NODE_MEMORY_SHARED_MERGE_ACROSS_NODES',
                    'VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC',
                    'VIR_MIGRATE_PARAM_LISTEN_ADDRESS',
+                   'VIR_DOMAIN_SCHEDULER_EMULATOR_PERIOD',
+                   'VIR_DOMAIN_SCHEDULER_EMULATOR_QUOTA',
+                   'VIR_DOMAIN_SNAPSHOT_CREATE_REUSE_EXT',
+                   'VIR_DOMAIN_SNAPSHOT_CREATE_QUIESCE',
+                   'VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC',
                  ]
 
 virterror_consts = [
