@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <ruby.h>
+/* we need to include st.h since ruby 1.8 needs it for RHash */
+#include <st.h>
 #include <libvirt/libvirt.h>
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 #include <libvirt/libvirt-qemu.h>
