@@ -59,7 +59,7 @@ include = with_config("libvirt-include")
 lib = with_config("libvirt-lib")
 if include and lib
   $LIBPATH = [lib] | $LIBPATH
-  $CPPFLAGS += "-I" + include
+  $CPPFLAGS += " -I" + include
   have_library("virt", "virConnectOpen", "libvirt/libvirt.h")
 
   # if we are using custom libvirt libraries, we have to suppress the default
