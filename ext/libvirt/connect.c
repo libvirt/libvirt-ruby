@@ -2024,8 +2024,8 @@ static void cpu_stats_set(void *voidparams, int i, VALUE result)
                  ULL2NUM(params[i].value));
 }
 
-static char *cpu_stats_nparams(VALUE d, unsigned int flags, void *opaque,
-                               int *nparams)
+static const char *cpu_stats_nparams(VALUE d, unsigned int flags, void *opaque,
+                                     int *nparams)
 {
     int intparam = *((int *)opaque);
 
@@ -2037,8 +2037,8 @@ static char *cpu_stats_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *cpu_stats_get(VALUE d, unsigned int flags, void *voidparams,
-                           int *nparams, void *opaque)
+static const char *cpu_stats_get(VALUE d, unsigned int flags, void *voidparams,
+                                 int *nparams, void *opaque)
 {
     int intparam = *((int *)opaque);
     virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)voidparams;
@@ -2083,8 +2083,8 @@ static void memory_stats_set(void *voidparams, int i, VALUE result)
                  ULL2NUM(params[i].value));
 }
 
-static char *memory_stats_nparams(VALUE d, unsigned int flags, void *opaque,
-                                  int *nparams)
+static const char *memory_stats_nparams(VALUE d, unsigned int flags,
+                                        void *opaque, int *nparams)
 {
     int intparam = *((int *)opaque);
 
@@ -2096,8 +2096,9 @@ static char *memory_stats_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *memory_stats_get(VALUE d, unsigned int flags, void *voidparams,
-                              int *nparams, void *opaque)
+static const char *memory_stats_get(VALUE d, unsigned int flags,
+                                    void *voidparams, int *nparams,
+                                    void *opaque)
 {
     int intparam = *((int *)opaque);
     virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)voidparams;
@@ -2201,8 +2202,8 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
 #endif
 
 #if HAVE_VIRNODEGETMEMORYPARAMETERS
-static char *node_memory_nparams(VALUE d, unsigned int flags, void *opaque,
-                                 int *nparams)
+static const char *node_memory_nparams(VALUE d, unsigned int flags,
+                                       void *opaque, int *nparams)
 {
     if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), NULL, nparams,
                                    flags) < 0) {
@@ -2212,8 +2213,8 @@ static char *node_memory_nparams(VALUE d, unsigned int flags, void *opaque,
     return NULL;
 }
 
-static char *node_memory_get(VALUE d, unsigned int flags, void *voidparams,
-                             int *nparams, void *opaque)
+static const char *node_memory_get(VALUE d, unsigned int flags,
+                                   void *voidparams, int *nparams, void *opaque)
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
@@ -2224,9 +2225,9 @@ static char *node_memory_get(VALUE d, unsigned int flags, void *voidparams,
     return NULL;
 }
 
-static char *node_memory_set(VALUE d, unsigned int flags,
-                             virTypedParameterPtr params, int nparams,
-                             void *opauqe)
+static const char *node_memory_set(VALUE d, unsigned int flags,
+                                   virTypedParameterPtr params, int nparams,
+                                   void *opauqe)
 {
     if (virNodeSetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    flags) < 0) {
