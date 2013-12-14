@@ -123,7 +123,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
     do {                                                                \
         VALUE flags;                                                    \
         type *list;                                                     \
-        size_t i;                                                       \
+        int i;                                                          \
         int ret;                                                        \
         VALUE result;                                                   \
         int exception = 0;                                              \

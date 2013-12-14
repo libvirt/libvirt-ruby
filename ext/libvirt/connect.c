@@ -460,7 +460,8 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
     char *r;
     unsigned int ncpus;
     const char **xmllist;
-    int i, exception = 0;
+    int exception = 0;
+    unsigned int i;
 
     rb_scan_args(argc, argv, "11", &xmlcpus, &flags);
 

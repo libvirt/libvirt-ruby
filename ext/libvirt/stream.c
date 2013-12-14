@@ -124,7 +124,7 @@ static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
 
     StringValue(buffer);
 
-    if (RSTRING_LEN(buffer) > nbytes) {
+    if (RSTRING_LEN(buffer) > (int)nbytes) {
         rb_raise(rb_eArgError, "asked for %zd bytes, block returned %ld",
                  nbytes, RSTRING_LEN(buffer));
     }

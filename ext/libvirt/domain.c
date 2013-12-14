@@ -3797,9 +3797,9 @@ static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
 {
     VALUE fds, flags, result;
     int *fdlist;
-    int i, ret, exception = 0;
+    int ret, exception = 0;
     int *oldfdlist;
-    unsigned int noldfdlist;
+    unsigned int noldfdlist, i;
     struct ruby_libvirt_ary_store_arg args;
 
     rb_scan_args(argc, argv, "11", &fds, &flags);

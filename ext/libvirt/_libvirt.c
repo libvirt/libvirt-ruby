@@ -132,7 +132,7 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
                                          unsigned int ncred, void *cbdata)
 {
     VALUE userdata, newcred, result;
-    int i;
+    unsigned int i;
 
     userdata = (VALUE)cbdata;
 
@@ -216,7 +216,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
     virConnectAuthPtr auth;
     VALUE uri, credlist, userdata, flags, tmp;
     virConnectPtr conn;
-    int i;
+    unsigned int i;
 
     rb_scan_args(argc, argv, "04", &uri, &credlist, &userdata, &flags);
 
