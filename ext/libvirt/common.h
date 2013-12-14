@@ -196,7 +196,7 @@ VALUE ruby_libvirt_get_typed_parameters(VALUE d, unsigned int flags,
                                                         int *nparams,
                                                         void *opaque));
 struct ruby_libvirt_typed_param {
-    char *name;
+    const char *name;
     int type;
 };
 struct ruby_libvirt_parameter_assign_args {
