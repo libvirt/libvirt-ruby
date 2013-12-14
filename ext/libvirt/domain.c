@@ -549,7 +549,8 @@ static VALUE libvirt_domain_core_dump(int argc, VALUE *argv, VALUE d)
  * Call virDomainRestore[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
  * to restore the domain from the filename.
  */
-static VALUE libvirt_domain_s_restore(VALUE klass, VALUE c, VALUE from)
+static VALUE libvirt_domain_s_restore(VALUE RUBY_LIBVIRT_UNUSED(klass), VALUE c,
+                                      VALUE from)
 {
     ruby_libvirt_generate_call_nil(virDomainRestore,
                                    ruby_libvirt_connect_get(c),
@@ -1854,7 +1855,9 @@ static VALUE libvirt_domain_is_updated(VALUE d)
 }
 #endif
 
-static const char *scheduler_nparams(VALUE d, unsigned int flags, void *opaque,
+static const char *scheduler_nparams(VALUE d,
+                                     unsigned int RUBY_LIBVIRT_UNUSED(flags),
+                                     void *RUBY_LIBVIRT_UNUSED(opaque),
                                      int *nparams)
 {
     char *type;
@@ -1870,7 +1873,8 @@ static const char *scheduler_nparams(VALUE d, unsigned int flags, void *opaque,
 }
 
 static const char *scheduler_get(VALUE d, unsigned int flags, void *voidparams,
-                                 int *nparams, void *opaque)
+                                 int *nparams,
+                                 void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
@@ -1895,7 +1899,7 @@ static const char *scheduler_get(VALUE d, unsigned int flags, void *voidparams,
 
 static const char *scheduler_set(VALUE d, unsigned int flags,
                                  virTypedParameterPtr params, int nparams,
-                                 void *opaque)
+                                 void *RUBY_LIBVIRT_UNUSED(opaque))
 {
 #if HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
@@ -1975,7 +1979,8 @@ static VALUE libvirt_domain_scheduler_parameters_equal(VALUE d, VALUE input)
 }
 
 #if HAVE_VIRDOMAINSETMEMORYPARAMETERS
-static const char *memory_nparams(VALUE d, unsigned int flags, void *opaque,
+static const char *memory_nparams(VALUE d, unsigned int flags,
+                                  void *RUBY_LIBVIRT_UNUSED(opaque),
                                   int *nparams)
 {
     if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), NULL, nparams,
@@ -1987,7 +1992,7 @@ static const char *memory_nparams(VALUE d, unsigned int flags, void *opaque,
 }
 
 static const char *memory_get(VALUE d, unsigned int flags, void *voidparams,
-                              int *nparams, void *opaque)
+                              int *nparams, void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
@@ -2007,7 +2012,7 @@ static const char *memory_get(VALUE d, unsigned int flags, void *voidparams,
 
 static const char *memory_set(VALUE d, unsigned int flags,
                               virTypedParameterPtr params, int nparams,
-                              void *opaque)
+                              void *RUBY_LIBVIRT_UNUSED(opaque))
 {
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetMemoryParameters(ruby_libvirt_domain_get(d), params,
@@ -2071,7 +2076,8 @@ static VALUE libvirt_domain_memory_parameters_equal(VALUE d, VALUE in)
 #endif
 
 #if HAVE_VIRDOMAINSETBLKIOPARAMETERS
-static const char *blkio_nparams(VALUE d, unsigned int flags, void *opaque,
+static const char *blkio_nparams(VALUE d, unsigned int flags,
+                                 void *RUBY_LIBVIRT_UNUSED(opaque),
                                  int *nparams)
 {
     if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), NULL, nparams,
@@ -2083,7 +2089,7 @@ static const char *blkio_nparams(VALUE d, unsigned int flags, void *opaque,
 }
 
 static const char *blkio_get(VALUE d, unsigned int flags, void *voidparams,
-                             int *nparams, void *opaque)
+                             int *nparams, void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
@@ -2103,7 +2109,7 @@ static const char *blkio_get(VALUE d, unsigned int flags, void *voidparams,
 
 static const char *blkio_set(VALUE d, unsigned int flags,
                              virTypedParameterPtr params, int nparams,
-                             void *opaque)
+                             void *RUBY_LIBVIRT_UNUSED(opaque))
 {
 #ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetBlkioParameters(ruby_libvirt_domain_get(d), params, nparams,
@@ -3612,7 +3618,8 @@ static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
 #endif
 
 #if HAVE_VIRDOMAINGETNUMAPARAMETERS
-static const char *numa_nparams(VALUE d, unsigned int flags, void *opaque,
+static const char *numa_nparams(VALUE d, unsigned int flags,
+                                void *RUBY_LIBVIRT_UNUSED(opaque),
                                 int *nparams)
 {
     if (virDomainGetNumaParameters(ruby_libvirt_domain_get(d), NULL, nparams,
@@ -3624,7 +3631,7 @@ static const char *numa_nparams(VALUE d, unsigned int flags, void *opaque,
 }
 
 static const char *numa_get(VALUE d, unsigned int flags, void *voidparams,
-                            int *nparams, void *opaque)
+                            int *nparams, void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
@@ -3637,7 +3644,7 @@ static const char *numa_get(VALUE d, unsigned int flags, void *voidparams,
 
 static const char *numa_set(VALUE d, unsigned int flags,
                             virTypedParameterPtr params, int nparams,
-                            void *opaque)
+                            void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     if (virDomainSetNumaParameters(ruby_libvirt_domain_get(d), params,
                                    nparams, flags) < 0) {

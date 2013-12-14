@@ -5,6 +5,8 @@
 VALUE ruby_libvirt_new_class(VALUE klass, void *ptr, VALUE conn,
                              RUBY_DATA_FUNC free_func);
 
+#define RUBY_LIBVIRT_UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+
 #define ruby_libvirt_get_struct(kind, v)                                \
     do {                                                                \
         vir##kind##Ptr ptr;                                             \

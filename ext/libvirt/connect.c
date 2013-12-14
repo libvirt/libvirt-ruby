@@ -2203,7 +2203,8 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
 
 #if HAVE_VIRNODEGETMEMORYPARAMETERS
 static const char *node_memory_nparams(VALUE d, unsigned int flags,
-                                       void *opaque, int *nparams)
+                                       void *RUBY_LIBVIRT_UNUSED(opaque),
+                                       int *nparams)
 {
     if (virNodeGetMemoryParameters(ruby_libvirt_connect_get(d), NULL, nparams,
                                    flags) < 0) {
@@ -2214,7 +2215,8 @@ static const char *node_memory_nparams(VALUE d, unsigned int flags,
 }
 
 static const char *node_memory_get(VALUE d, unsigned int flags,
-                                   void *voidparams, int *nparams, void *opaque)
+                                   void *voidparams, int *nparams,
+                                   void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
@@ -2227,7 +2229,7 @@ static const char *node_memory_get(VALUE d, unsigned int flags,
 
 static const char *node_memory_set(VALUE d, unsigned int flags,
                                    virTypedParameterPtr params, int nparams,
-                                   void *opauqe)
+                                   void *RUBY_LIBVIRT_UNUSED(opaque))
 {
     if (virNodeSetMemoryParameters(ruby_libvirt_connect_get(d), params, nparams,
                                    flags) < 0) {

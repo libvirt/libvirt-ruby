@@ -51,7 +51,8 @@ VALUE e_Error;
 VALUE e_NoSupportError;
 
 /* custom error function to suppress libvirt printing to stderr */
-static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err)
+static void rubyLibvirtErrorFunc(void *RUBY_LIBVIRT_UNUSED(userdata),
+                                 virErrorPtr RUBY_LIBVIRT_UNUSED(err))
 {
 }
 
@@ -62,7 +63,8 @@ static void rubyLibvirtErrorFunc(void *userdata, virErrorPtr err)
  * Call virGetVersion[http://www.libvirt.org/html/libvirt-libvirt.html#virGetVersion]
  * to get the version of libvirt and of the hypervisor TYPE.
  */
-static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
+static VALUE libvirt_version(int argc, VALUE *argv,
+                             VALUE RUBY_LIBVIRT_UNUSED(m))
 {
     unsigned long libVer, typeVer;
     VALUE type, result, rargv[2];
@@ -91,7 +93,7 @@ static VALUE libvirt_version(int argc, VALUE *argv, VALUE m)
  * Call virConnectOpen[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpen]
  * to open a connection to a URL.
  */
-static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
+static VALUE libvirt_open(int argc, VALUE *argv, VALUE RUBY_LIBVIRT_UNUSED(m))
 {
     VALUE uri;
     virConnectPtr conn;
@@ -112,7 +114,8 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE m)
  * Call virConnectOpenReadOnly[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectOpenReadOnly]
  * to open a read-only connection to a URL.
  */
-static VALUE libvirt_open_read_only(int argc, VALUE *argv, VALUE m)
+static VALUE libvirt_open_read_only(int argc, VALUE *argv,
+                                    VALUE RUBY_LIBVIRT_UNUSED(m))
 {
     VALUE uri;
     virConnectPtr conn;
@@ -211,7 +214,8 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
  * The authentication block should return the result of collecting the
  * information; these results will then be sent to libvirt for authentication.
  */
-static VALUE libvirt_open_auth(int argc, VALUE *argv, VALUE m)
+static VALUE libvirt_open_auth(int argc, VALUE *argv,
+                               VALUE RUBY_LIBVIRT_UNUSED(m))
 {
     virConnectAuthPtr auth;
     VALUE uri, credlist, userdata, flags, tmp;
@@ -287,9 +291,9 @@ static VALUE add_timeout, update_timeout, remove_timeout;
  *
  * opaque - the opaque data passed from libvirt during the Libvirt::event_register_impl add_handle callback.  To ensure proper operation this data must be passed through to event_invoke_handle_callback without modification.
  */
-static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
-                                                  VALUE fd, VALUE events,
-                                                  VALUE opaque)
+static VALUE libvirt_event_invoke_handle_callback(VALUE RUBY_LIBVIRT_UNUSED(m),
+                                                  VALUE handle, VALUE fd,
+                                                  VALUE events, VALUE opaque)
 {
     virEventHandleCallback cb;
     void *op;
@@ -332,8 +336,8 @@ static VALUE libvirt_event_invoke_handle_callback(VALUE m, VALUE handle,
  *
  * opaque - the opaque data passed from libvirt during the Libvirt::event_register_impl add_handle callback.  To ensure proper operation this data must be passed through to event_invoke_handle_callback without modification.
  */
-static VALUE libvirt_event_invoke_timeout_callback(VALUE m, VALUE timer,
-                                                   VALUE opaque)
+static VALUE libvirt_event_invoke_timeout_callback(VALUE RUBY_LIBVIRT_UNUSED(m),
+                                                   VALUE timer, VALUE opaque)
 {
     virEventTimeoutCallback cb;
     void *op;
@@ -599,7 +603,8 @@ static int is_symbol_proc_or_nil(VALUE handle)
  * passed to the event_invoke_handle_callback and event_invoke_timeout_callback
  * module methods; see the documentation for those methods for more details.
  */
-static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
+static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv,
+                                              VALUE RUBY_LIBVIRT_UNUSED(c))
 {
     virEventAddHandleFunc add_handle_temp;
     virEventUpdateHandleFunc update_handle_temp;
@@ -653,7 +658,7 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv, VALUE c)
  * which may be able to be used to move back to the previous label.
  */
 static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
-                                                     VALUE c)
+                                                     VALUE RUBY_LIBVIRT_UNUSED(c))
 {
     VALUE model, label, flags, result, modiv, doiiv, labiv;
     virSecurityModel mod;

@@ -99,8 +99,8 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     return result;
 }
 
-static int internal_sendall(virStreamPtr st, char *data, size_t nbytes,
-                            void *opaque)
+static int internal_sendall(virStreamPtr RUBY_LIBVIRT_UNUSED(st), char *data,
+                            size_t nbytes, void *opaque)
 {
     VALUE result, retcode, buffer;
 
@@ -166,8 +166,8 @@ static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
     return Qnil;
 }
 
-static int internal_recvall(virStreamPtr st, const char *buf, size_t nbytes,
-                            void *opaque)
+static int internal_recvall(virStreamPtr RUBY_LIBVIRT_UNUSED(st),
+                            const char *buf, size_t nbytes, void *opaque)
 {
     VALUE result;
 
