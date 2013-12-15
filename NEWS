@@ -1,3 +1,7 @@
+2013-12-15
+  * Fixes to compile against older libvirt
+  * Fixes to compile against ruby 1.8
+
 2013-12-09 0.5.0
   * Updated Network class, implementing almost all libvirt APIs
   * Updated Domain class, implementing almost all libvirt APIs
