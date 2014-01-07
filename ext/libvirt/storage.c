@@ -340,7 +340,7 @@ static VALUE libvirt_storage_pool_list_volumes(VALUE p)
                                 "virStoragePoolListVolumes",
                                 ruby_libvirt_connect_get(p));
 
-    return ruby_libvirt_generate_list(num, names);
+    return ruby_libvirt_generate_list(r, names);
 }
 
 /*

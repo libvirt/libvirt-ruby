@@ -67,7 +67,7 @@
         names = alloca(sizeof(char *) * num);                           \
         r = virConnectList##objs(ruby_libvirt_connect_get(c), names, num); \
         ruby_libvirt_raise_error_if(r < 0, e_RetrieveError, "virConnectList" # objs, ruby_libvirt_connect_get(c)); \
-        return ruby_libvirt_generate_list(num, names);                  \
+        return ruby_libvirt_generate_list(r, names);                    \
     } while(0)
 
 static VALUE c_connect;
@@ -1508,7 +1508,7 @@ static VALUE libvirt_connect_list_nodedevices(int argc, VALUE *argv, VALUE c)
     ruby_libvirt_raise_error_if(r < 0, e_RetrieveError, "virNodeListDevices",
                                 ruby_libvirt_connect_get(c));
 
-    return ruby_libvirt_generate_list(num, names);
+    return ruby_libvirt_generate_list(r, names);
 }
 
 /*

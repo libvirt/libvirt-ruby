@@ -124,7 +124,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
                                 "virNodeDeviceListCaps",
                                 ruby_libvirt_connect_get(c));
 
-    return ruby_libvirt_generate_list(num, names);
+    return ruby_libvirt_generate_list(r, names);
 }
 
 /*

@@ -1532,7 +1532,7 @@ static VALUE libvirt_domain_list_snapshots(int argc, VALUE *argv, VALUE d)
                                 "virDomainSnapshotListNames",
                                 ruby_libvirt_connect_get(d));
 
-    return ruby_libvirt_generate_list(num, names);
+    return ruby_libvirt_generate_list(r, names);
 }
 
 /*
