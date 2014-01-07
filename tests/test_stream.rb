@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("stream")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 # TESTGROUP: stream.send
 st = conn.stream

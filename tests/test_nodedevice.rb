@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("nodedevice")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 # TESTGROUP: nodedevice.name
 testnode = conn.lookup_nodedevice_by_name(conn.list_nodedevices[0])
