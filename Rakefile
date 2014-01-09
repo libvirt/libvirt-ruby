@@ -2,7 +2,7 @@
 # Rakefile: build ruby libvirt bindings
 #
 # Copyright (C) 2007,2010 Red Hat, Inc.
-# Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
+# Copyright (C) 2013,2014 Chris Lalancette <clalancette@gmail.com>
 #
 # Distributed under the GNU Lesser General Public License v2.1 or later.
 # See COPYING for details
@@ -21,7 +21,7 @@ require 'rubygems/package_task'
 require 'rbconfig'
 
 PKG_NAME='ruby-libvirt'
-PKG_VERSION='0.5.1'
+PKG_VERSION='0.5.2'
 
 EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"

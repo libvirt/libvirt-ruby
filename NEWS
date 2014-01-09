@@ -1,3 +1,6 @@
+2014-01-08
+  * Fix to make sure we don't free more entires than retrieved
+
 2013-12-15
   * Fixes to compile against older libvirt
   * Fixes to compile against ruby 1.8
