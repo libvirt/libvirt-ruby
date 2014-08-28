@@ -3955,7 +3955,7 @@ static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
-#if HAVE_VIRNODEGETCPUSTATS
+#if HAVE_VIRDOMAINGETCPUSTATS
 /*
  * call-seq:
  *   dom.cpu_stats(start_cpu=-1, numcpus=1, flags=0) -> Hash
