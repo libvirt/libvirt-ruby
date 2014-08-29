@@ -373,8 +373,10 @@ int ruby_libvirt_typed_parameter_assign(VALUE key, VALUE val, VALUE in)
             default:
                 rb_raise(rb_eArgError, "Invalid parameter type");
             }
+            /* ensure that the field is NULL-terminated */
+            args->params[args->i].field[VIR_TYPED_PARAM_FIELD_LENGTH - 1] = '\0';
             strncpy(args->params[args->i].field, keyname,
-                    VIR_TYPED_PARAM_FIELD_LENGTH);
+                    VIR_TYPED_PARAM_FIELD_LENGTH - 1);
             (args->i)++;
             found = 1;
             break;
