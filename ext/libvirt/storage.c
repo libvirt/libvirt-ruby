@@ -498,7 +498,7 @@ static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
 
     vol = virStorageVolCreateXML(pool_get(p), StringValueCStr(xml),
                                  ruby_libvirt_value_to_uint(flags));
-    ruby_libvirt_raise_error_if(vol == NULL, e_Error, "virNetworkCreateXML",
+    ruby_libvirt_raise_error_if(vol == NULL, e_Error, "virStorageVolCreateXML",
                                 ruby_libvirt_connect_get(p));
 
     return vol_new(vol, ruby_libvirt_conn_attr(p));
@@ -525,7 +525,7 @@ static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
                                      vol_get(cloneval),
                                      ruby_libvirt_value_to_uint(flags));
     ruby_libvirt_raise_error_if(vol == NULL, e_Error,
-                                "virNetworkCreateXMLFrom",
+                                "virStorageVolCreateXMLFrom",
                                 ruby_libvirt_connect_get(p));
 
     return vol_new(vol, ruby_libvirt_conn_attr(p));
