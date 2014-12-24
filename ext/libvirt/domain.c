@@ -4269,6 +4269,10 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "SHUTDOWN_SIGNAL",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_SIGNAL));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_PARAVIRT
+    rb_define_const(c_domain, "SHUTDOWN_PARAVIRT",
+                    INT2NUM(VIR_DOMAIN_SHUTDOWN_PARAVIRT));
+#endif
     rb_define_method(c_domain, "shutdown", libvirt_domain_shutdown, -1);
 
 #if HAVE_CONST_VIR_DOMAIN_REBOOT_DEFAULT
@@ -4290,6 +4294,10 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_CONST_VIR_DOMAIN_REBOOT_SIGNAL
     rb_define_const(c_domain, "REBOOT_SIGNAL",
                     INT2NUM(VIR_DOMAIN_REBOOT_SIGNAL));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_REBOOT_PARAVIRT
+    rb_define_const(c_domain, "REBOOT_PARAVIRT",
+                    INT2NUM(VIR_DOMAIN_REBOOT_PARAVIRT));
 #endif
     rb_define_method(c_domain, "reboot", libvirt_domain_reboot, -1);
 #if HAVE_CONST_VIR_DOMAIN_DESTROY_DEFAULT

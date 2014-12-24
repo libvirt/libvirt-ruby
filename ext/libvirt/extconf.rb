@@ -444,6 +444,8 @@ virterror_consts = [
                     'VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY',
                     'VIR_MIGRATE_AUTO_CONVERGE',
                     'VIR_MIGRATE_RDMA_PIN_ALL',
+                    'VIR_DOMAIN_SHUTDOWN_PARAVIRT',
+                    'VIR_DOMAIN_REBOOT_PARAVIRT',
                    ]
 
 libvirt_qemu_consts = [
