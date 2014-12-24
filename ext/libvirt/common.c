@@ -2,7 +2,7 @@
  * common.c: Common utilities for the ruby libvirt bindings
  *
  * Copyright (C) 2007,2010 Red Hat Inc.
- * Copyright (C) 2013 Chris Lalancette <clalancette@gmail.com>
+ * Copyright (C) 2013,2014 Chris Lalancette <clalancette@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
