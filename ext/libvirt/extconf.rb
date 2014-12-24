@@ -408,6 +408,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER',
                    'VIR_CONNECT_LIST_STORAGE_POOLS_ZFS',
                    'VIR_STORAGE_VOL_NETDIR',
+                   'VIR_IP_ADDR_TYPE_IPV4',
+                   'VIR_IP_ADDR_TYPE_IPV6',
                  ]
 
 virterror_consts = [

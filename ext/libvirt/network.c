@@ -505,5 +505,15 @@ void ruby_libvirt_network_init(void)
                      libvirt_network_get_dhcp_leases, -1);
 #endif
 
+#if HAVE_CONST_VIR_IP_ADDR_TYPE_IPV4
+    rb_define_const(c_network, "IP_ADDR_TYPE_IPV4",
+                    INT2NUM(VIR_IP_ADDR_TYPE_IPV4));
+#endif
+
+#if HAVE_CONST_VIR_IP_ADDR_TYPE_IPV6
+    rb_define_const(c_network, "IP_ADDR_TYPE_IPV6",
+                    INT2NUM(VIR_IP_ADDR_TYPE_IPV6));
+#endif
+
 #endif
 }
