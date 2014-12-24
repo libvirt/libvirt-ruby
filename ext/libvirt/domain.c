@@ -4115,6 +4115,14 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "MIGRATE_ABORT_ON_ERROR",
                     INT2NUM(VIR_MIGRATE_ABORT_ON_ERROR));
 #endif
+#if HAVE_CONST_VIR_MIGRATE_AUTO_CONVERGE
+    rb_define_const(c_domain, "MIGRATE_AUTO_CONVERGE",
+                    INT2NUM(VIR_MIGRATE_AUTO_CONVERGE));
+#endif
+#if HAVE_CONST_VIR_MIGRATE_RDMA_PIN_ALL
+    rb_define_const(c_domain, "MIGRATE_RDMA_PIN_ALL",
+                    INT2NUM(VIR_MIGRATE_RDMA_PIN_ALL));
+#endif
 
     /* Ideally we would just have the "XML_SECURE" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_XML_SECURE" for
