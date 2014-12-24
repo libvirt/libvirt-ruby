@@ -3301,6 +3301,10 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "list_all_storage_pools",
                      libvirt_connect_list_all_storage_pools, -1);
 #endif
+#if HAVE_CONST_VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER
+    rb_define_const(c_connect, "LIST_STORAGE_POOLS_GLUSTER",
+                    INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER));
+#endif
 #if HAVE_VIRCONNECTLISTALLNWFILTERS
     rb_define_method(c_connect, "list_all_nwfilters",
                      libvirt_connect_list_all_nwfilters, -1);
