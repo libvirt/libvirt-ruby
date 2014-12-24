@@ -913,6 +913,9 @@ void ruby_libvirt_storage_init(void)
 #if HAVE_CONST_VIR_STORAGE_VOL_NETWORK
     rb_define_const(c_storage_vol, "NETWORK", INT2NUM(VIR_STORAGE_VOL_NETWORK));
 #endif
+#if HAVE_CONST_VIR_STORAGE_VOL_NETDIR
+    rb_define_const(c_storage_vol, "NETDIR", INT2NUM(VIR_STORAGE_VOL_NETDIR));
+#endif
 
     /* virStorageVolDeleteFlags */
     rb_define_const(c_storage_vol, "DELETE_NORMAL",

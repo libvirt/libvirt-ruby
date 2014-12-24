@@ -406,6 +406,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC',
                    'VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER',
                    'VIR_CONNECT_LIST_STORAGE_POOLS_ZFS',
+                   'VIR_STORAGE_VOL_NETDIR',
                  ]
 
 virterror_consts = [
