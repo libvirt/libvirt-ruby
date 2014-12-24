@@ -438,6 +438,10 @@ virterror_consts = [
                     'VIR_FROM_STATS_LINUX',
                     'VIR_FROM_XEN_INOTIFY',
                     'VIR_FROM_SECURITY',
+                    'VIR_DOMAIN_CORE_DUMP_FORMAT_RAW',
+                    'VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_ZLIB',
+                    'VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_LZO',
+                    'VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY',
                    ]
 
 libvirt_qemu_consts = [

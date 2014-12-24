@@ -5514,4 +5514,20 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINGETCPUSTATS
     rb_define_method(c_domain, "cpu_stats", libvirt_domain_cpu_stats, -1);
 #endif
+#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_RAW
+    rb_define_const(c_domain, "CORE_DUMP_FORMAT_RAW",
+                    INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_RAW));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_ZLIB
+    rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_ZLIB",
+                    INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_ZLIB));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_LZO
+    rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_LZO",
+                    INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_LZO));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY
+    rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_SNAPPY",
+                    INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY));
+#endif
 }
