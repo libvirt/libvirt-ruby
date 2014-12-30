@@ -718,7 +718,7 @@ static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINBLOCKPEEK
 /*
  * call-seq:
- *   dom.block_peek(path, offset, size, flags=0) -> string
+ *   dom.block_peek(path, offset, size, flags=0) -> String
  *
  * Call virDomainBlockPeek[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockPeek]
  * to read size number of bytes, starting at offset offset from domain backing
@@ -748,7 +748,7 @@ static VALUE libvirt_domain_block_peek(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINMEMORYPEEK
 /*
  * call-seq:
- *   dom.memory_peek(start, size, flags=Libvirt::Domain::MEMORY_VIRTUAL) -> string
+ *   dom.memory_peek(start, size, flags=Libvirt::Domain::MEMORY_VIRTUAL) -> String
  *
  * Call virDomainMemoryPeek[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryPeek]
  * to read size number of bytes from offset start from the domain memory.
@@ -928,7 +928,7 @@ static VALUE libvirt_domain_if_stats(VALUE d, VALUE sif)
 
 /*
  * call-seq:
- *   dom.name -> string
+ *   dom.name -> String
  *
  * Call virDomainGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
  * to retrieve the name of this domain.
@@ -967,7 +967,7 @@ static VALUE libvirt_domain_id(VALUE d)
 
 /*
  * call-seq:
- *   dom.uuid -> string
+ *   dom.uuid -> String
  *
  * Call virDomainGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetUUIDString]
  * to retrieve the UUID of this domain.
@@ -981,7 +981,7 @@ static VALUE libvirt_domain_uuid(VALUE d)
 
 /*
  * call-seq:
- *   dom.os_type -> string
+ *   dom.os_type -> String
  *
  * Call virDomainGetOSType[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetOSType]
  * to retrieve the os_type of this domain.  In libvirt terms, os_type determines
@@ -1222,7 +1222,7 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.xml_desc(flags=0) -> string
+ *   dom.xml_desc(flags=0) -> String
  *
  * Call virDomainGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
  * to retrieve the XML describing this domain.
@@ -1624,7 +1624,7 @@ static VALUE libvirt_domain_current_snapshot(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   snapshot.xml_desc(flags=0) -> string
+ *   snapshot.xml_desc(flags=0) -> String
  *
  * Call virDomainSnapshotGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetXMLDesc]
  * to retrieve the xml description for this snapshot.
@@ -1678,7 +1678,7 @@ static VALUE libvirt_domain_snapshot_free(VALUE s)
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
 /*
  * call-seq:
- *   snapshot.name -> string
+ *   snapshot.name -> String
  *
  * Call virDomainSnapshotGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetName]
  * to get the name associated with a snapshot.
@@ -1796,7 +1796,7 @@ static VALUE libvirt_domain_scheduler_type(VALUE d)
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 /*
  * call-seq:
- *   dom.qemu_monitor_command(cmd, flags=0) -> string
+ *   dom.qemu_monitor_command(cmd, flags=0) -> String
  *
  * Call virDomainQemuMonitorCommand
  * to send a qemu command directly to the monitor.  Note that this will only
@@ -2397,7 +2397,7 @@ static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINGETMETADATA
 /*
  * call-seq:
- *   dom.metadata(type, uri=nil, flags=0) -> string
+ *   dom.metadata(type, uri=nil, flags=0) -> String
  *
  * Call virDomainGetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMetadata]
  * to get the metadata from a domain.

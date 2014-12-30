@@ -46,7 +46,7 @@ VALUE ruby_libvirt_secret_new(virSecretPtr s, VALUE conn)
 
 /*
  * call-seq:
- *   secret.uuid -> string
+ *   secret.uuid -> String
  *
  * Call virSecretGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUUIDString]
  * to retrieve the UUID for this secret.
@@ -73,7 +73,7 @@ static VALUE libvirt_secret_usagetype(VALUE s)
 
 /*
  * call-seq:
- *   secret.usageid -> string
+ *   secret.usageid -> String
  *
  * Call virSecretGetUsageID[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageID]
  * to retrieve the usageid for this secret.
@@ -87,7 +87,7 @@ static VALUE libvirt_secret_usageid(VALUE s)
 
 /*
  * call-seq:
- *   secret.xml_desc(flags=0) -> string
+ *   secret.xml_desc(flags=0) -> String
  *
  * Call virSecretGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetXMLDesc]
  * to retrieve the XML for this secret.
@@ -166,7 +166,7 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
 
 /*
  * call-seq:
- *   secret.value(flags=0) -> string
+ *   secret.value(flags=0) -> String
  *
  * Call virSecretGetValue[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetValue]
  * to retrieve the value from this secret.

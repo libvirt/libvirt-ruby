@@ -107,7 +107,7 @@ static VALUE libvirt_network_destroy(VALUE n)
 
 /*
  * call-seq:
- *   net.name -> string
+ *   net.name -> String
  *
  * Call virNetworkGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetName]
  * to retrieve the name of this network.
@@ -121,7 +121,7 @@ static VALUE libvirt_network_name(VALUE n)
 
 /*
  * call-seq:
- *   net.uuid -> string
+ *   net.uuid -> String
  *
  * Call virNetworkGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetUUIDString]
  * to retrieve the UUID of this network.
@@ -134,7 +134,7 @@ static VALUE libvirt_network_uuid(VALUE n)
 
 /*
  * call-seq:
- *   net.xml_desc(flags=0) -> string
+ *   net.xml_desc(flags=0) -> String
  *
  * Call virNetworkGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetXMLDesc]
  * to retrieve the XML for this network.
@@ -153,7 +153,7 @@ static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
 
 /*
  * call-seq:
- *   net.bridge_name -> string
+ *   net.bridge_name -> String
  *
  * Call virNetworkGetBridgeName[http://www.libvirt.org/html/libvirt-libvirt.html#virNetworkGetBridgeName]
  * to retrieve the bridge name for this network.

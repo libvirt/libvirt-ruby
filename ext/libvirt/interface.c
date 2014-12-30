@@ -114,7 +114,7 @@ static VALUE libvirt_interface_active_p(VALUE p)
 
 /*
  * call-seq:
- *   interface.name -> string
+ *   interface.name -> String
  *
  * Call virInterfaceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetName]
  * to retrieve the name of this interface.
@@ -128,7 +128,7 @@ static VALUE libvirt_interface_name(VALUE i)
 
 /*
  * call-seq:
- *   interface.mac -> string
+ *   interface.mac -> String
  *
  * Call virInterfaceGetMACString[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetMACString]
  * to retrieve the MAC address of this interface.
@@ -142,7 +142,7 @@ static VALUE libvirt_interface_mac(VALUE i)
 
 /*
  * call-seq:
- *   interface.xml_desc -> string
+ *   interface.xml_desc -> String
  *
  * Call virInterfaceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virInterfaceGetXMLDesc]
  * to retrieve the XML of this interface.

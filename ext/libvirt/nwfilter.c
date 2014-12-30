@@ -60,7 +60,7 @@ static VALUE libvirt_nwfilter_undefine(VALUE n)
 
 /*
  * call-seq:
- *   nwfilter.name -> string
+ *   nwfilter.name -> String
  *
  * Call virNWFilterGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetName]
  * to retrieve the network filter name.
@@ -74,7 +74,7 @@ static VALUE libvirt_nwfilter_name(VALUE n)
 
 /*
  * call-seq:
- *   nwfilter.uuid -> string
+ *   nwfilter.uuid -> String
  *
  * Call virNWFilterGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetUUIDString]
  * to retrieve the network filter UUID.
@@ -87,7 +87,7 @@ static VALUE libvirt_nwfilter_uuid(VALUE n)
 
 /*
  * call-seq:
- *   nwfilter.xml_desc(flags=0) -> string
+ *   nwfilter.xml_desc(flags=0) -> String
  *
  * Call virNWFilterGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNWFilterGetXMLDesc]
  * to retrieve the XML for this network filter.

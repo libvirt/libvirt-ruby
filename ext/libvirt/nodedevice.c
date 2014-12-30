@@ -46,7 +46,7 @@ VALUE ruby_libvirt_nodedevice_new(virNodeDevicePtr n, VALUE conn)
 
 /*
  * call-seq:
- *   nodedevice.name -> string
+ *   nodedevice.name -> String
  *
  * Call virNodeDeviceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetName]
  * to retrieve the name of the node device.
@@ -60,7 +60,7 @@ static VALUE libvirt_nodedevice_name(VALUE c)
 
 /*
  * call-seq:
- *   nodedevice.parent -> string
+ *   nodedevice.parent -> String
  *
  * Call virNodeDeviceGetParent[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetParent]
  * to retrieve the parent of the node device.
@@ -129,7 +129,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
 
 /*
  * call-seq:
- *   nodedevice.xml_desc(flags=0) -> string
+ *   nodedevice.xml_desc(flags=0) -> String
  *
  * Call virNodeDeviceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetXMLDesc]
  * to retrieve the XML for the node device.

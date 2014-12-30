@@ -143,7 +143,7 @@ static VALUE libvirt_connect_closed_p(VALUE c)
 
 /*
  * call-seq:
- *   conn.type -> string
+ *   conn.type -> String
  *
  * Call virConnectGetType[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetType]
  * to retrieve the type of hypervisor for this connection.
@@ -198,7 +198,7 @@ static VALUE libvirt_connect_libversion(VALUE c)
 
 /*
  * call-seq:
- *   conn.hostname -> string
+ *   conn.hostname -> String
  *
  * Call virConnectGetHostname[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetHostname]
  * to retrieve the hostname of the hypervisor for this connection.
@@ -212,7 +212,7 @@ static VALUE libvirt_connect_hostname(VALUE c)
 
 /*
  * call-seq:
- *   conn.uri -> string
+ *   conn.uri -> String
  *
  * Call virConnectGetURI[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetURI]
  * to retrieve the canonical URI for this connection.
@@ -408,7 +408,7 @@ static VALUE libvirt_connect_secure_p(VALUE c)
 
 /*
  * call-seq:
- *   conn.capabilities -> string
+ *   conn.capabilities -> String
  *
  * Call virConnectGetCapabilities[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetCapabilities]
  * to retrieve the capabilities XML for this connection.
@@ -1157,7 +1157,7 @@ static VALUE libvirt_connect_define_domain_xml(VALUE c, VALUE xml)
 #if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
 /*
  * call-seq:
- *   conn.domain_xml_from_native(nativeFormat, xml, flags=0) -> string
+ *   conn.domain_xml_from_native(nativeFormat, xml, flags=0) -> String
  *
  * Call virConnectDomainXMLFromNative[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLFromNative]
  * to convert a native hypervisor domain representation to libvirt XML.
@@ -1181,7 +1181,7 @@ static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
 #if HAVE_VIRCONNECTDOMAINXMLTONATIVE
 /*
  * call-seq:
- *   conn.domain_xml_to_native(nativeFormat, xml, flags=0) -> string
+ *   conn.domain_xml_to_native(nativeFormat, xml, flags=0) -> String
  *
  * Call virConnectDomainXMLToNative[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainXMLToNative]
  * to convert libvirt XML to a native domain hypervisor representation.
@@ -1882,7 +1882,7 @@ static VALUE libvirt_connect_define_pool_xml(int argc, VALUE *argv, VALUE c)
 
 /*
  * call-seq:
- *   conn.discover_storage_pool_sources(type, srcSpec=nil, flags=0) -> string
+ *   conn.discover_storage_pool_sources(type, srcSpec=nil, flags=0) -> String
  *
  * Call virConnectFindStoragePoolSources[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectFindStoragePoolSources]
  * to find the storage pool sources corresponding to type.
@@ -1906,7 +1906,7 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
 #if HAVE_VIRCONNECTGETSYSINFO
 /*
  * call-seq:
- *   conn.sys_info(flags=0) -> string
+ *   conn.sys_info(flags=0) -> String
  *
  * Call virConnectGetSysinfo[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetSysinfo]
  * to get machine-specific information about the hypervisor.  This may include
@@ -2137,7 +2137,7 @@ static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC
 /*
  * call-seq:
- *   conn.save_image_xml_desc(filename, flags=0) -> string
+ *   conn.save_image_xml_desc(filename, flags=0) -> String
  *
  * Call virDomainSaveImageGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSaveImageGetXMLDesc]
  * to get the XML corresponding to a save file.

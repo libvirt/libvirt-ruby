@@ -186,7 +186,7 @@ static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
 
 /*
  * call-seq:
- *   pool.name -> string
+ *   pool.name -> String
  *
  * Call virStoragePoolGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetName]
  * to retrieve the name of this storage pool.
@@ -200,7 +200,7 @@ static VALUE libvirt_storage_pool_name(VALUE p)
 
 /*
  * call-seq:
- *   pool.uuid -> string
+ *   pool.uuid -> String
  *
  * Call virStoragePoolGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetUUIDString]
  * to retrieve the UUID of this storage pool.
@@ -240,7 +240,7 @@ static VALUE libvirt_storage_pool_info(VALUE p)
 
 /*
  * call-seq:
- *   pool.xml_desc(flags=0) -> string
+ *   pool.xml_desc(flags=0) -> String
  *
  * Call virStoragePoolGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolGetXMLDesc]
  * to retrieve the XML for this storage pool.
@@ -455,7 +455,7 @@ static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   vol.name -> string
+ *   vol.name -> String
  *
  * Call virStorageVolGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetName]
  * to retrieve the name of this storage volume.
@@ -469,7 +469,7 @@ static VALUE libvirt_storage_vol_name(VALUE v)
 
 /*
  * call-seq:
- *   vol.key -> string
+ *   vol.key -> String
  *
  * Call virStorageVolGetKey[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetKey]
  * to retrieve the key for this storage volume.
@@ -631,7 +631,7 @@ static VALUE libvirt_storage_vol_info(VALUE v)
 
 /*
  * call-seq:
- *   vol.xml_desc(flags=0) -> string
+ *   vol.xml_desc(flags=0) -> String
  *
  * Call virStorageVolGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetXMLDesc]
  * to retrieve the xml for this storage volume.
@@ -650,7 +650,7 @@ static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
 
 /*
  * call-seq:
- *   vol.path -> string
+ *   vol.path -> String
  *
  * Call virStorageVolGetPath[http://www.libvirt.org/html/libvirt-libvirt.html#virStorageVolGetPath]
  * to retrieve the path for this storage volume.
