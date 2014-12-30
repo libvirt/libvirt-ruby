@@ -419,6 +419,9 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_BLOCK_JOB_TYPE_ACTIVE_COMMIT',
                    'VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES',
                    'VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES',
+                   'VIR_DOMAIN_BLOCK_COMMIT_ACTIVE',
+                   'VIR_DOMAIN_BLOCK_COMMIT_RELATIVE',
+                   'VIR_DOMAIN_BLOCK_COMMIT_BANDWIDTH_BYTES',
                  ]
 
 virterror_consts = [

@@ -5552,6 +5552,18 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "BLOCK_COMMIT_DELETE",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_DELETE));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_ACTIVE
+    rb_define_const(c_domain, "BLOCK_COMMIT_ACTIVE",
+                    INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_ACTIVE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_RELATIVE
+    rb_define_const(c_domain, "BLOCK_COMMIT_RELATIVE",
+                    INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_RELATIVE));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_BANDWIDTH_BYTES
+    rb_define_const(c_domain, "BLOCK_COMMIT_BANDWIDTH_BYTES",
+                    INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_BANDWIDTH_BYTES));
+#endif
 #if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN));
