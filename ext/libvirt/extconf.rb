@@ -214,6 +214,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainGetCPUStats',
                   'virNetworkGetDHCPLeases',
                   'virNodeAllocPages',
+                  'virDomainGetTime',
                 ]
 
 libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',

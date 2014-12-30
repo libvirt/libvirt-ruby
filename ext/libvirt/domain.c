@@ -4048,6 +4048,35 @@ static VALUE libvirt_domain_cpu_stats(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETTIME
+/*
+ * call-seq:
+ *   dom.time(flags=0) -> Hash
+ * Call virDomainGetTime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetTime]
+ * to get information about the guest time.
+ */
+static VALUE libvirt_domain_get_time(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags, result;
+    long long seconds;
+    unsigned int nseconds;
+    int ret;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    ret = virDomainGetTime(ruby_libvirt_domain_get(d), &seconds, &nseconds,
+                           ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, e_Error, "virDomainGetTime",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_hash_new();
+    rb_hash_aset(result, rb_str_new2("seconds"), LL2NUM(seconds));
+    rb_hash_aset(result, rb_str_new2("nseconds"), UINT2NUM(nseconds));
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5545,5 +5574,8 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_SNAPPY",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY));
+#endif
+#if HAVE_VIRDOMAINGETTIME
+    rb_define_method(c_domain, "time", libvirt_domain_get_time, -1);
 #endif
 }
