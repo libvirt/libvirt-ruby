@@ -59,7 +59,7 @@ static VALUE libvirt_secret_uuid(VALUE s)
 
 /*
  * call-seq:
- *   secret.usagetype -> fixnum
+ *   secret.usagetype -> Fixnum
  *
  * Call virSecretGetUsageType[http://www.libvirt.org/html/libvirt-libvirt.html#virSecretGetUsageType]
  * to retrieve the usagetype for this secret.

@@ -297,7 +297,7 @@ static VALUE libvirt_storage_pool_autostart_equal(VALUE p, VALUE autostart)
 
 /*
  * call-seq:
- *   pool.num_of_volumes -> fixnum
+ *   pool.num_of_volumes -> Fixnum
  *
  * Call virStoragePoolNumOfVolumes[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolNumOfVolumes]
  * to retrieve the number of volumes in this storage pool.

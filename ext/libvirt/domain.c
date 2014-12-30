@@ -942,7 +942,7 @@ static VALUE libvirt_domain_name(VALUE d)
 
 /*
  * call-seq:
- *   dom.id -> fixnum
+ *   dom.id -> Fixnum
  *
  * Call virDomainGetID[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetID]
  * to retrieve the ID of this domain.  If the domain isn't running, this will
@@ -996,7 +996,7 @@ static VALUE libvirt_domain_os_type(VALUE d)
 
 /*
  * call-seq:
- *   dom.max_memory -> fixnum
+ *   dom.max_memory -> Fixnum
  *
  * Call virDomainGetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxMemory]
  * to retrieve the maximum amount of memory this domain is allowed to access.
@@ -1070,7 +1070,7 @@ static VALUE libvirt_domain_memory_equal(VALUE d, VALUE in)
 
 /*
  * call-seq:
- *   dom.max_vcpus -> fixnum
+ *   dom.max_vcpus -> Fixnum
  *
  * Call virDomainGetMaxVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxVcpus]
  * to retrieve the maximum number of virtual CPUs this domain can use.
@@ -1084,7 +1084,7 @@ static VALUE libvirt_domain_max_vcpus(VALUE d)
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
 /* call-seq:
- *   dom.num_vcpus(flags) -> fixnum
+ *   dom.num_vcpus(flags) -> Fixnum
  *
  * Call virDomainGetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpusFlags]
  * to retrieve the number of virtual CPUs assigned to this domain.
@@ -1478,7 +1478,7 @@ static VALUE libvirt_domain_snapshot_create_xml(int argc, VALUE *argv, VALUE d)
 
 /*
  * call-seq:
- *   dom.num_of_snapshots(flags=0) -> fixnum
+ *   dom.num_of_snapshots(flags=0) -> Fixnum
  *
  * Call virDomainSnapshotNum[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotNum]
  * to retrieve the number of available snapshots for this domain.
@@ -2330,7 +2330,7 @@ VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
 #if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
 /*
  * call-seq:
- *   dom.migrate_max_speed(flags=0) -> fixnum
+ *   dom.migrate_max_speed(flags=0) -> Fixnum
  *
  * Call virDomainMigrateGetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetMaxSpeed]
  * to retrieve the maximum speed a migration can use.
@@ -2505,7 +2505,7 @@ static VALUE libvirt_domain_list_all_snapshots(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
 /*
  * call-seq:
- *   snapshot.num_children(flags=0) -> fixnum
+ *   snapshot.num_children(flags=0) -> Fixnum
  *
  * Call virDomainSnapshotNumChildren[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotNumChildren]
  * to get the number of children snapshots of this snapshot.

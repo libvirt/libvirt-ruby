@@ -157,7 +157,7 @@ static VALUE libvirt_connect_type(VALUE c)
 
 /*
  * call-seq:
- *   conn.version -> fixnum
+ *   conn.version -> Fixnum
  *
  * Call virConnectGetVersion[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetVersion]
  * to retrieve the version of the hypervisor for this connection.
@@ -177,7 +177,7 @@ static VALUE libvirt_connect_version(VALUE c)
 #if HAVE_VIRCONNECTGETLIBVERSION
 /*
  * call-seq:
- *   conn.libversion -> fixnum
+ *   conn.libversion -> Fixnum
  *
  * Call virConnectGetLibVersion[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetLibVersion]
  * to retrieve the version of the libvirt library for this connection.
@@ -226,7 +226,7 @@ static VALUE libvirt_connect_uri(VALUE c)
 
 /*
  * call-seq:
- *   conn.max_vcpus(type=nil) -> fixnum
+ *   conn.max_vcpus(type=nil) -> Fixnum
  *
  * Call virConnectGetMaxVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetMaxVcpus]
  * to retrieve the maximum number of virtual cpus supported by the hypervisor
@@ -276,7 +276,7 @@ static VALUE libvirt_connect_node_info(VALUE c)
 
 /*
  * call-seq:
- *   conn.node_free_memory -> fixnum
+ *   conn.node_free_memory -> Fixnum
  *
  * Call virNodeGetFreeMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetFreeMemory]
  * to retrieve the amount of free memory available on the host for this
@@ -786,7 +786,7 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
 
 /*
  * call-seq:
- *   conn.domain_event_register_any(eventID, callback, dom=nil, opaque=nil) -> fixnum
+ *   conn.domain_event_register_any(eventID, callback, dom=nil, opaque=nil) -> Fixnum
  *
  * Call virConnectDomainEventRegisterAny[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectDomainEventRegisterAny]
  * to register callback for eventID with libvirt.  The eventID must be one of
@@ -958,7 +958,7 @@ static VALUE libvirt_connect_domain_event_deregister(VALUE c)
 
 /*
  * call-seq:
- *   conn.num_of_domains -> fixnum
+ *   conn.num_of_domains -> Fixnum
  *
  * Call virConnectNumOfDomains[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDomains]
  * to retrieve the number of active domains on this connection.
@@ -1006,7 +1006,7 @@ static VALUE libvirt_connect_list_domains(VALUE c)
 
 /*
  * call-seq:
- *   conn.num_of_defined_domains -> fixnum
+ *   conn.num_of_defined_domains -> Fixnum
  *
  * Call virConnectNumOfDefinedDomains[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedDomains]
  * to retrieve the number of inactive domains on this connection.
@@ -1205,7 +1205,7 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
 #if HAVE_TYPE_VIRINTERFACEPTR
 /*
  * call-seq:
- *   conn.num_of_interfaces -> fixnum
+ *   conn.num_of_interfaces -> Fixnum
  *
  * Call virConnectNumOfInterfaces[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfInterfaces]
  * to retrieve the number of active interfaces on this connection.
@@ -1229,7 +1229,7 @@ static VALUE libvirt_connect_list_interfaces(VALUE c)
 
 /*
  * call-seq:
- *   conn.num_of_defined_interfaces -> fixnum
+ *   conn.num_of_defined_interfaces -> Fixnum
  *
  * Call virConnectNumOfDefinedInterfaces[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedInterfaces]
  * to retrieve the number of inactive interfaces on this connection.
@@ -1319,7 +1319,7 @@ static VALUE libvirt_connect_define_interface_xml(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   conn.num_of_networks -> fixnum
+ *   conn.num_of_networks -> Fixnum
  *
  * Call virConnectNumOfNetworks[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNetworks]
  * to retrieve the number of active networks on this connection.
@@ -1343,7 +1343,7 @@ static VALUE libvirt_connect_list_networks(VALUE c)
 
 /*
  * call-seq:
- *   conn.num_of_defined_networks -> fixnum
+ *   conn.num_of_defined_networks -> Fixnum
  *
  * Call virConnectNumOfDefinedNetworks[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedNetworks]
  * to retrieve the number of inactive networks on this connection.
@@ -1448,7 +1448,7 @@ static VALUE libvirt_connect_define_network_xml(VALUE c, VALUE xml)
 
 /*
  * call-seq:
- *   conn.num_of_nodedevices(cap=nil, flags=0) -> fixnum
+ *   conn.num_of_nodedevices(cap=nil, flags=0) -> Fixnum
  *
  * Call virNodeNumOfDevices[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeNumOfDevices]
  * to retrieve the number of node devices on this connection.
@@ -1564,7 +1564,7 @@ static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
 
 /*
  * call-seq:
- *   conn.num_of_nwfilters -> fixnum
+ *   conn.num_of_nwfilters -> Fixnum
  *
  * Call virConnectNumOfNWFilters[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfNWFilters]
  * to retrieve the number of network filters on this connection.
@@ -1651,7 +1651,7 @@ static VALUE libvirt_connect_define_nwfilter_xml(VALUE c, VALUE xml)
 
 /*
  * call-seq:
- *   conn.num_of_secrets -> fixnum
+ *   conn.num_of_secrets -> Fixnum
  *
  * Call virConnectNumOfSecrets[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfSecrets]
  * to retrieve the number of secrets on this connection.
@@ -1758,7 +1758,7 @@ static VALUE libvirt_connect_list_storage_pools(VALUE c)
 
 /*
  * call-seq:
- *   conn.num_of_storage_pools -> fixnum
+ *   conn.num_of_storage_pools -> Fixnum
  *
  * Call virConnectNumOfStoragePools[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfStoragePools]
  * to retrieve the number of active storage pools on this connection.
@@ -1782,7 +1782,7 @@ static VALUE libvirt_connect_list_defined_storage_pools(VALUE c)
 
 /*
  * call-seq:
- *   conn.num_of_defined_storage_pools -> fixnum
+ *   conn.num_of_defined_storage_pools -> Fixnum
  *
  * Call virConnectNumOfDefinedStoragePools[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectNumOfDefinedStoragePools]
  * to retrieve the number of inactive storage pools on this connection.
@@ -2353,7 +2353,7 @@ static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTSETKEEPALIVE
 /*
  * call-seq:
- *   conn.set_keepalive(interval, count) -> fixnum
+ *   conn.set_keepalive(interval, count) -> Fixnum
  *
  * Call virConnectSetKeepAlive[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectSetKeepAlive]
  * to start sending keepalive messages.  Deprecated; use conn.keepalive=

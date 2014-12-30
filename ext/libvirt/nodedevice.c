@@ -85,7 +85,7 @@ static VALUE libvirt_nodedevice_parent(VALUE c)
 
 /*
  * call-seq:
- *   nodedevice.num_of_caps -> fixnum
+ *   nodedevice.num_of_caps -> Fixnum
  *
  * Call virNodeDeviceNumOfCaps[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceNumOfCaps]
  * to retrieve the number of capabilities of the node device.
