@@ -4077,6 +4077,30 @@ static VALUE libvirt_domain_get_time(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINSETTIME
+/*
+ * call-seq:
+ *   dom.time = Hash,flags=0
+ * Call virDomainSetTime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetTime]
+ * to set guest time.
+ */
+static VALUE libvirt_domain_time_equal(VALUE d, VALUE in)
+{
+    VALUE hash, flags, seconds, nseconds;
+
+    ruby_libvirt_assign_hash_and_flags(in, &hash, &flags);
+
+    seconds = rb_hash_aref(hash, rb_str_new2("seconds"));
+    nseconds = rb_hash_aref(hash, rb_str_new2("nseconds"));
+
+    ruby_libvirt_generate_call_nil(virDomainSetTime,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   NUM2LL(seconds), NUM2UINT(nseconds),
+                                   NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5577,5 +5601,8 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINGETTIME
     rb_define_method(c_domain, "time", libvirt_domain_get_time, -1);
+#endif
+#if HAVE_VIRDOMAINSETTIME
+    rb_define_method(c_domain, "time=", libvirt_domain_time_equal, 1);
 #endif
 }
