@@ -2681,6 +2681,72 @@ error:
 }
 #endif
 
+#if HAVE_VIRNODEALLOCPAGES
+/*
+ * call-seq:
+ *   conn.node_alloc_pages(page_arr, cells=nil, flags=0) -> Fixnum
+ *
+ * Call virNodeAllocPages[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeAllocPages]
+ * to reserve huge pages in the system pool.
+ */
+static VALUE libvirt_connect_node_alloc_pages(int argc, VALUE *argv, VALUE c)
+{
+    VALUE page_arr, cells, flags, entry, size, count, tmp;
+    int i, arraylen, start_cell, ret;
+    unsigned int *page_sizes;
+    unsigned long long *page_counts;
+    unsigned int cell_count;
+
+    rb_scan_args(argc, argv, "12", &page_arr, &cells, &flags);
+
+    Check_Type(page_arr, T_ARRAY);
+
+    arraylen = RARRAY_LEN(page_arr);
+
+    page_sizes = alloca(arraylen);
+    page_counts = alloca(arraylen);
+
+    for (i = 0; i < arraylen; i++) {
+        entry = rb_ary_entry(page_arr, i);
+        Check_Type(entry, T_HASH);
+
+        size = rb_hash_aref(entry, rb_str_new2("size"));
+        Check_Type(size, T_FIXNUM);
+
+        count = rb_hash_aref(entry, rb_str_new2("count"));
+        Check_Type(count, T_FIXNUM);
+
+        page_sizes[i] = NUM2UINT(size);
+        page_counts[i] = NUM2ULL(count);
+    }
+
+    if (NIL_P(cells)) {
+        start_cell = -1;
+        cell_count = 0;
+    }
+    else {
+        Check_Type(cells, T_HASH);
+
+        tmp = rb_hash_aref(cells, rb_str_new2("start"));
+        Check_Type(tmp, T_FIXNUM);
+        start_cell = NUM2INT(tmp);
+
+        tmp = rb_hash_aref(cells, rb_str_new2("count"));
+        Check_Type(tmp, T_FIXNUM);
+        cell_count = NUM2UINT(tmp);
+    }
+
+    ret = virNodeAllocPages(ruby_libvirt_connect_get(c), arraylen, page_sizes,
+                            page_counts, start_cell, cell_count,
+                            ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, e_Error,
+                                "virNodeAllocPages",
+                                ruby_libvirt_connect_get(c));
+
+    return INT2NUM(ret);
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3326,5 +3392,9 @@ void ruby_libvirt_connect_init(void)
 #if HAVE_VIRCONNECTGETCPUMODELNAMES
     rb_define_method(c_connect, "cpu_model_names",
                      libvirt_connect_cpu_model_names, -1);
+#endif
+#if HAVE_VIRNODEALLOCPAGES
+    rb_define_method(c_connect, "node_alloc_pages",
+		     libvirt_connect_node_alloc_pages, -1);
 #endif
 }
