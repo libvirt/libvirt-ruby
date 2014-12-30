@@ -2487,7 +2487,7 @@ static VALUE libvirt_domain_send_process_signal(int argc, VALUE *argv, VALUE d)
 #if HAVE_VIRDOMAINLISTALLSNAPSHOTS
 /*
  * call-seq:
- *   dom.list_all_snapshots(flags=0) -> array
+ *   dom.list_all_snapshots(flags=0) -> Array
  *
  * Call virDomainListAllSnapshots[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainListAllSnapshots]
  * to get an array of snapshot objects for all snapshots.
@@ -2527,7 +2527,7 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
 #if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
 /*
  * call-seq:
- *   snapshot.list_children_names(flags=0) -> array
+ *   snapshot.list_children_names(flags=0) -> Array
  *
  * Call virDomainSnapshotListChildrenNames[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListChildrenNames]
  * to get an array of strings representing the children of this snapshot.
@@ -2596,7 +2596,7 @@ error:
 #if HAVE_VIRDOMAINSNAPSHOTLISTALLCHILDREN
 /*
  * call-seq:
- *   snapshot.list_all_children(flags=0) -> array
+ *   snapshot.list_all_children(flags=0) -> Array
  *
  * Call virDomainSnapshotListAllChildren[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListAllChildren]
  * to get an array of snapshot objects that are children of this snapshot.

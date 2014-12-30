@@ -438,7 +438,7 @@ static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
 #if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
 /*
  * call-seq:
- *   pool.list_all_volumes(flags=0) -> array
+ *   pool.list_all_volumes(flags=0) -> Array
  *
  * Call virStoragePoolListAllVolumes[http://www.libvirt.org/html/libvirt-libvirt.html#virStoragePoolListAllVolumes]
  * to get an array of volume objects for all volumes.

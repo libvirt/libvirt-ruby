@@ -2398,7 +2398,7 @@ static VALUE libvirt_connect_keepalive_equal(VALUE c, VALUE in)
 #if HAVE_VIRCONNECTLISTALLDOMAINS
 /*
  * call-seq:
- *   conn.list_all_domains(flags=0) -> array
+ *   conn.list_all_domains(flags=0) -> Array
  *
  * Call virConnectListAllDomains[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllDomains]
  * to get an array of domain objects for all domains.
@@ -2415,7 +2415,7 @@ static VALUE libvirt_connect_list_all_domains(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTLISTALLNETWORKS
 /*
  * call-seq:
- *   conn.list_all_networks(flags=0) -> array
+ *   conn.list_all_networks(flags=0) -> Array
  *
  * Call virConnectListAllNetworks[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllNetworks]
  * to get an array of network objects for all networks.
@@ -2433,7 +2433,7 @@ static VALUE libvirt_connect_list_all_networks(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTLISTALLINTERFACES
 /*
  * call-seq:
- *   conn.list_all_interfaces(flags=0) -> array
+ *   conn.list_all_interfaces(flags=0) -> Array
  *
  * Call virConnectListAllInterfaces[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllInterfaces]
  * to get an array of interface objects for all interfaces.
@@ -2451,7 +2451,7 @@ static VALUE libvirt_connect_list_all_interfaces(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTLISTALLSECRETS
 /*
  * call-seq:
- *   conn.list_all_secrets(flags=0) -> array
+ *   conn.list_all_secrets(flags=0) -> Array
  *
  * Call virConnectListAllSecrets[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllSecrets]
  * to get an array of secret objects for all secrets.
@@ -2468,7 +2468,7 @@ static VALUE libvirt_connect_list_all_secrets(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRCONNECTLISTALLNODEDEVICES
 /*
  * call-seq:
- *   conn.list_all_nodedevices(flags=0) -> array
+ *   conn.list_all_nodedevices(flags=0) -> Array
  *
  * Call virConnectListAllNodeDevices[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllNodeDevices]
  * to get an array of nodedevice objects for all nodedevices.
@@ -2487,7 +2487,7 @@ static VALUE libvirt_connect_list_all_nodedevices(int argc, VALUE *argv,
 #if HAVE_VIRCONNECTLISTALLSTORAGEPOOLS
 /*
  * call-seq:
- *   conn.list_all_storage_pools(flags=0) -> array
+ *   conn.list_all_storage_pools(flags=0) -> Array
  *
  * Call virConnectListAllStoragePools[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllStoragePools]
  * to get an array of storage pool objects for all storage pools.
@@ -2505,7 +2505,7 @@ static VALUE libvirt_connect_list_all_storage_pools(int argc, VALUE *argv,
 #if HAVE_VIRCONNECTLISTALLNWFILTERS
 /*
  * call-seq:
- *   conn.list_all_nwfilters(flags=0) -> array
+ *   conn.list_all_nwfilters(flags=0) -> Array
  *
  * Call virConnectListAllNWFilters[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectListAllNWFilters]
  * to get an array of nwfilters for all nwfilter objects.
