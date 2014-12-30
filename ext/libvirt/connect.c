@@ -2820,6 +2820,11 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "compare_cpu", libvirt_connect_compare_cpu, -1);
 #endif
 
+#if HAVE_CONST_VIR_CONNECT_COMPARE_CPU_FAIL_INCOMPATIBLE
+    rb_define_const(c_connect, "COMPARE_CPU_FAIL_INCOMPATIBLE",
+                    INT2NUM(VIR_CONNECT_COMPARE_CPU_FAIL_INCOMPATIBLE));
+#endif
+
 #if HAVE_VIRCONNECTBASELINECPU
     rb_define_method(c_connect, "baseline_cpu", libvirt_connect_baseline_cpu,
                      -1);
