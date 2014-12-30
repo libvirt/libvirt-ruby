@@ -2535,10 +2535,10 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
 static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
                                                          VALUE s)
 {
-    VALUE flags, result, str;
+    VALUE flags, result;
     char **children;
     int num_children, ret, i, j, exception = 0;
-    struct ruby_libvirt_ary_store_arg arg;
+    struct ruby_libvirt_str_new2_and_ary_store_arg arg;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -2564,16 +2564,11 @@ static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
                                 ruby_libvirt_connect_get(s));
 
     for (i = 0; i < ret; i++) {
-        str = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&(children[i]),
-                         &exception);
-        if (exception) {
-            goto error;
-        }
-
         arg.arr = result;
         arg.index = i;
-        arg.elem = str;
-        rb_protect(ruby_libvirt_ary_store_wrap, (VALUE)&arg, &exception);
+        arg.value = children[i];
+        rb_protect(ruby_libvirt_str_new2_and_ary_store_wrap, (VALUE)&arg,
+                   &exception);
         if (exception) {
             goto error;
         }

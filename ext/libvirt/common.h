@@ -261,6 +261,13 @@ struct ruby_libvirt_hash_aset_arg {
 };
 VALUE ruby_libvirt_hash_aset_wrap(VALUE arg);
 
+struct ruby_libvirt_str_new2_and_ary_store_arg {
+    VALUE arr;
+    long index;
+    char *value;
+};
+VALUE ruby_libvirt_str_new2_and_ary_store_wrap(VALUE arg);
+
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(ar) (RARRAY(ar)->len)
 #endif

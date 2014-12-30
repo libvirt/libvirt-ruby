@@ -84,6 +84,15 @@ VALUE ruby_libvirt_hash_aset_wrap(VALUE arg)
     return rb_hash_aset(e->hash, rb_str_new2(e->name), e->val);
 }
 
+VALUE ruby_libvirt_str_new2_and_ary_store_wrap(VALUE arg)
+{
+    struct ruby_libvirt_str_new2_and_ary_store_arg *e = (struct ruby_libvirt_str_new2_and_ary_store_arg *)arg;
+
+    rb_ary_store(e->arr, e->index, rb_str_new2(e->value));
+
+    return Qnil;
+}
+
 void ruby_libvirt_raise_error_if(const int condition, VALUE error,
                                  const char *method, virConnectPtr conn)
 {
@@ -186,7 +195,7 @@ VALUE ruby_libvirt_generate_list(int num, char **list)
     VALUE result;
     int exception = 0;
     int i, j;
-    struct ruby_libvirt_ary_store_arg arg;
+    struct ruby_libvirt_str_new2_and_ary_store_arg arg;
 
     i = 0;
 
@@ -197,15 +206,13 @@ VALUE ruby_libvirt_generate_list(int num, char **list)
     for (i = 0; i < num; i++) {
         arg.arr = result;
         arg.index = i;
-        arg.elem = rb_protect(ruby_libvirt_str_new2_wrap, (VALUE)&(list[i]),
-                              &exception);
+        arg.value = list[i];
+        rb_protect(ruby_libvirt_str_new2_and_ary_store_wrap, (VALUE)&arg,
+                   &exception);
         if (exception) {
             goto exception;
         }
-        rb_protect(ruby_libvirt_ary_store_wrap, (VALUE)&arg, &exception);
-        if (exception) {
-            goto exception;
-        }
+
         xfree(list[i]);
     }
 

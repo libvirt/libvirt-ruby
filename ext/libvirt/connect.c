@@ -2608,21 +2608,6 @@ static VALUE libvirt_connect_qemu_attach(int argc, VALUE *argv, VALUE c)
 #endif
 
 #if HAVE_VIRCONNECTGETCPUMODELNAMES
-struct model_name_args {
-    VALUE result;
-    int i;
-    char *value;
-};
-
-static VALUE model_name_wrap(VALUE arg)
-{
-    struct model_name_args *e = (struct model_name_args *)arg;
-
-    rb_ary_store(e->result, e->i, rb_str_new2(e->value));
-
-    return Qnil;
-}
-
 /*
  * call-seq:
  *   conn.cpu_model_names(arch, flags=0) -> Array
@@ -2635,7 +2620,7 @@ static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
     VALUE arch, flags, result;
     char **models;
     int i = 0, j, elems = 0;
-    struct model_name_args args;
+    struct ruby_libvirt_str_new2_and_ary_store_arg args;
     int exception;
 
     rb_scan_args(argc, argv, "11", &arch, &flags);
@@ -2653,11 +2638,12 @@ static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
     }
 
     for (i = 0; i < elems; i++) {
-        args.result = result;
-        args.i = i;
+        args.arr = result;
+        args.index = i;
         args.value = models[i];
 
-        rb_protect(model_name_wrap, (VALUE)&args, &exception);
+        rb_protect(ruby_libvirt_str_new2_and_ary_store_wrap, (VALUE)&args,
+                   &exception);
         if (exception) {
             goto error;
         }
