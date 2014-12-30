@@ -2747,6 +2747,32 @@ static VALUE libvirt_connect_node_alloc_pages(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRCONNECTGETDOMAINCAPABILITIES
+/*
+ * call-seq:
+ *   conn.domain_capabilities(emulatorbin, arch, machine, virttype, flags=0) -> String
+ *
+ * Call virNodeAllocPages[http://www.libvirt.org/html/libvirt-libvirt.html#virConnectGetDomainCapabilities]
+ * to get the capabilities of the underlying emulator.
+ */
+static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
+{
+    VALUE emulatorbin, arch, machine, virttype, flags;
+
+    rb_scan_args(argc, argv, "41", &emulatorbin, &arch, &machine, &virttype,
+                 &flags);
+
+    ruby_libvirt_generate_call_string(virConnectGetDomainCapabilities,
+                                      ruby_libvirt_connect_get(c), 1,
+                                      ruby_libvirt_connect_get(c),
+                                      ruby_libvirt_get_cstring_or_null(emulatorbin),
+                                      ruby_libvirt_get_cstring_or_null(arch),
+                                      ruby_libvirt_get_cstring_or_null(machine),
+                                      ruby_libvirt_get_cstring_or_null(virttype),
+                                      NUM2UINT(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3405,5 +3431,9 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_NODE_ALLOC_PAGES_SET));
     rb_define_method(c_connect, "node_alloc_pages",
 		     libvirt_connect_node_alloc_pages, -1);
+#endif
+#if HAVE_VIRCONNECTGETDOMAINCAPABILITIES
+    rb_define_method(c_connect, "domain_capabilities",
+                     libvirt_connect_domain_capabilities, -1);
 #endif
 }
