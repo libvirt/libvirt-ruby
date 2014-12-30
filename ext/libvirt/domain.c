@@ -5478,6 +5478,11 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "block_job_info", libvirt_domain_block_job_info,
                      -1);
 #endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES
+    rb_define_const(c_domain, "BLOCK_JOB_INFO_BANDWIDTH_BYTES",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES));
+#endif
+
 #if HAVE_VIRDOMAINBLOCKJOBABORT
     rb_define_method(c_domain, "block_job_abort",
                      libvirt_domain_block_job_abort, -1);
