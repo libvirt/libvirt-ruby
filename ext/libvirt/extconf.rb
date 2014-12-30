@@ -219,6 +219,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virConnectGetDomainCapabilities',
                   'virDomainCoreDumpWithFormat',
                   'virDomainFSFreeze',
+                  'virDomainFSThaw',
                 ]
 
 libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',
