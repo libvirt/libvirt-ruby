@@ -4104,6 +4104,29 @@ static VALUE libvirt_domain_time_equal(VALUE d, VALUE in)
 }
 #endif
 
+#if HAVE_VIRDOMAINCOREDUMPWITHFORMAT
+/*
+ * call-seq:
+ *   dom.core_dump_with_format(filename, dumpformat, flags=0) -> nil
+ *
+ * Call virDomainCoreDumpWithFormat[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
+ * to do a full memory dump of the domain to filename.
+ */
+static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d)
+{
+    VALUE to, dumpformat, flags;
+
+    rb_scan_args(argc, argv, "21", &to, &dumpformat, &flags);
+
+    ruby_libvirt_generate_call_nil(virDomainCoreDumpWithFormat,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(to),
+                                   NUM2UINT(dumpformat),
+                                   ruby_libvirt_value_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5635,5 +5658,9 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINSETTIME
     rb_define_method(c_domain, "time=", libvirt_domain_time_equal, 1);
+#endif
+#if HAVE_VIRDOMAINCOREDUMPWITHFORMAT
+    rb_define_method(c_domain, "core_dump_with_format",
+                     libvirt_domain_core_dump_with_format, -1);
 #endif
 }
