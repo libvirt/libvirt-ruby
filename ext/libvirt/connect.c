@@ -3394,6 +3394,10 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_cpu_model_names, -1);
 #endif
 #if HAVE_VIRNODEALLOCPAGES
+    rb_define_const(c_connect, "NODE_ALLOC_PAGES_ADD",
+                    INT2NUM(VIR_NODE_ALLOC_PAGES_ADD));
+    rb_define_const(c_connect, "NODE_ALLOC_PAGES_SET",
+                    INT2NUM(VIR_NODE_ALLOC_PAGES_SET));
     rb_define_method(c_connect, "node_alloc_pages",
 		     libvirt_connect_node_alloc_pages, -1);
 #endif
