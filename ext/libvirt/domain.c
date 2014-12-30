@@ -4127,6 +4127,47 @@ static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d
 }
 #endif
 
+#if HAVE_VIRDOMAINFSFREEZE
+/*
+ * call-seq:
+ *   dom.fs_freeze(mountpoints=nil, flags=0) -> Fixnum
+ *
+ * Call virDomainFSFreeze[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSFreeze]
+ * to freeze the specified filesystems within the guest.
+ */
+static VALUE libvirt_domain_fs_freeze(int argc, VALUE *argv, VALUE d)
+{
+    VALUE mountpoints, flags, entry;
+    const char **mnt;
+    unsigned int nmountpoints;
+    int i;
+
+    rb_scan_args(argc, argv, "02", &mountpoints, &flags);
+
+    if (NIL_P(mountpoints)) {
+        mnt = NULL;
+        nmountpoints = 0;
+    }
+    else {
+        Check_Type(mountpoints, T_ARRAY);
+
+        nmountpoints = RARRAY_LEN(mountpoints);
+        mnt = alloca(nmountpoints * sizeof(char *));
+
+        for (i = 0; i < nmountpoints; i++) {
+            entry = rb_ary_entry(mountpoints, i);
+            mnt[i] = StringValueCStr(entry);
+        }
+    }
+
+    ruby_libvirt_generate_call_int(virDomainFSFreeze,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   mnt, nmountpoints,
+                                   ruby_libvirt_value_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5662,5 +5703,8 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINCOREDUMPWITHFORMAT
     rb_define_method(c_domain, "core_dump_with_format",
                      libvirt_domain_core_dump_with_format, -1);
+#endif
+#if HAVE_VIRDOMAINFSFREEZE
+    rb_define_method(c_domain, "fs_freeze", libvirt_domain_fs_freeze, -1);
 #endif
 }
