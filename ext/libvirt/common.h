@@ -232,11 +232,13 @@ unsigned long ruby_libvirt_value_to_ulong(VALUE in);
 unsigned long long ruby_libvirt_value_to_ulonglong(VALUE in);
 
 VALUE ruby_libvirt_ary_new2_wrap(VALUE arg);
+
 struct ruby_libvirt_ary_push_arg {
     VALUE arr;
     VALUE value;
 };
 VALUE ruby_libvirt_ary_push_wrap(VALUE arg);
+
 struct ruby_libvirt_ary_store_arg {
     VALUE arr;
     long index;
@@ -245,6 +247,7 @@ struct ruby_libvirt_ary_store_arg {
 VALUE ruby_libvirt_ary_store_wrap(VALUE arg);
 
 VALUE ruby_libvirt_str_new2_wrap(VALUE arg);
+
 struct ruby_libvirt_str_new_arg {
     char *val;
     size_t size;
