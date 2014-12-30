@@ -2703,8 +2703,8 @@ static VALUE libvirt_connect_node_alloc_pages(int argc, VALUE *argv, VALUE c)
 
     arraylen = RARRAY_LEN(page_arr);
 
-    page_sizes = alloca(arraylen);
-    page_counts = alloca(arraylen);
+    page_sizes = alloca(arraylen * sizeof(unsigned int));
+    page_counts = alloca(arraylen * sizeof(unsigned long long));
 
     for (i = 0; i < arraylen; i++) {
         entry = rb_ary_entry(page_arr, i);
