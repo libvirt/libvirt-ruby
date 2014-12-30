@@ -416,6 +416,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_IP_ADDR_TYPE_IPV6',
                    'VIR_CONNECT_COMPARE_CPU_FAIL_INCOMPATIBLE',
                    'VIR_DOMAIN_UNDEFINE_NVRAM',
+                   'VIR_DOMAIN_BLOCK_JOB_TYPE_ACTIVE_COMMIT',
                  ]
 
 virterror_consts = [

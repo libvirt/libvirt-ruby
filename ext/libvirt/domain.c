@@ -5559,6 +5559,10 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_COMMIT",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_COMMIT));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_ACTIVE_COMMIT
+    rb_define_const(c_domain, "BLOCK_JOB_TYPE_ACTIVE_COMMIT",
+                    INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_ACTIVE_COMMIT));
+#endif
 #if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC
     rb_define_const(c_domain, "BLOCK_JOB_ABORT_ASYNC",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC));
