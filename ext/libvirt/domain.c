@@ -803,7 +803,7 @@ static VALUE libvirt_domain_vcpus(VALUE d)
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    cpumap = alloca(cpumaplen);
+    cpumap = alloca(sizeof(unsigned char) * cpumaplen);
 
     r = virDomainGetVcpus(ruby_libvirt_domain_get(d), cpuinfo,
                           dominfo.nrVirtCpu, cpumap, cpumaplen);
@@ -1194,7 +1194,7 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    cpumap = alloca(cpumaplen);
+    cpumap = alloca(sizeof(unsigned char) * cpumaplen);
     MEMZERO(cpumap, unsigned char, cpumaplen);
 
     for (i = 0; i < RARRAY_LEN(cpulist); i++) {
@@ -3026,7 +3026,7 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    cpumap = alloca(cpumaplen);
+    cpumap = alloca(sizeof(unsigned char) * cpumaplen);
 
     ret = virDomainGetEmulatorPinInfo(ruby_libvirt_domain_get(d), cpumap,
                                       cpumaplen,
@@ -3070,7 +3070,7 @@ static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    cpumap = alloca(cpumaplen);
+    cpumap = alloca(sizeof(unsigned char) * cpumaplen);
     MEMZERO(cpumap, unsigned char, cpumaplen);
 
     for (i = 0; i < RARRAY_LEN(cpulist); i++) {
