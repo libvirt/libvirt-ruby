@@ -4204,6 +4204,84 @@ static VALUE libvirt_domain_fs_thaw(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINGETFSINFO
+struct fs_info_arg {
+    VALUE result;
+    int index;
+};
+
+static VALUE fs_info_wrap(VALUE arg)
+{
+    struct fs_info_arg *e = (struct fs_info_arg *)arg;
+    VALUE aliases, entry;
+    int j;
+
+    aliases = rb_ary_new2(info[e->index]->ndevAlias);
+    for (j = 0; j < info[e->index]->ndevAlias; j++) {
+        rb_ary_store(aliases, j, rb_str_new2(info[e->index]->devAlias[j]));
+    }
+
+    entry = rb_class_new_instance(0, NULL, c_domain_fs_info);
+    rb_iv_set(entry, "@mountpoint", rb_str_new2(info[e->index]->mountpoint));
+    rb_iv_set(entry, "@name", rb_str_new2(info[e->index]->name));
+    rb_iv_set(entry, "@fstype", rb_str_new2(info[e->index]->fstype));
+    rb_iv_set(entry, "@aliases", aliases);
+
+    rb_ary_store(e->result, e->index, entry);
+}
+
+/*
+ * call-seq:
+ *   dom.fs_info(flags=0) -> [Libvirt::Domain::FSInfo]
+ *
+ * Call virDomainGetFSInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetFSInfo]
+ * to get information about the guest filesystems.
+ */
+static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags, result, entry, aliases;
+    virDomainFSInfoPtr *info;
+    int ret, i = 0, j, exception;
+    struct fs_info_arg args;
+
+    rb_scan_args(argc, argv, "01", &flags);
+
+    ret = virDomainGetFSInfo(ruby_libvirt_domain_get(d), &info,
+                             ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, e_Error, "virDomainGetFSInfo",
+                                ruby_libvirt_connect_get(d));
+
+    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&ret, &exception);
+    if (exception) {
+        goto error;
+    }
+
+    for (i = 0; i < ret; i++) {
+        args.result = result;
+        args.index = i;
+        rb_protect(fs_info_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            goto error;
+        }
+
+        virDomainFSInfoFree(info[i]);
+    }
+
+    free(info);
+
+    return result;
+
+error:
+    for (j = i; j < ret; j++) {
+        virDomainFSInfoFree(info[j]);
+    }
+    free(info);
+
+    rb_jump_tag(exception);
+    return Qnil;
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -4607,6 +4685,17 @@ void ruby_libvirt_domain_init(void)
                                                     rb_cObject);
     rb_define_attr(c_domain_security_label, "label", 1, 0);
     rb_define_attr(c_domain_security_label, "enforcing", 1, 0);
+
+#if HAVE_VIRDOMAINGETFSINFO
+    /*
+     * Class Libvirt::Domain::FSInfo
+     */
+    c_domain_fs_info = rb_define_class_under(c_domain, "FSInfo", rb_cObject);
+    rb_define_attr(c_domain_fs_info, "@mountpoint", 1, 0);
+    rb_define_attr(c_domain_fs_info, "@name", 1, 0);
+    rb_define_attr(c_domain_fs_info, "@fstype", 1, 0);
+    rb_define_attr(c_domain_fs_info, "@aliases", 1, 0);
+#endif
 
     /*
      * Class Libvirt::Domain::BlockStats
@@ -5745,5 +5834,8 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINFSTHAW
     rb_define_method(c_domain, "fs_thaw", libvirt_domain_fs_thaw, -1);
+#endif
+#if HAVE_VIRDOMAINGETFSINFO
+    rb_define_method(c_domain, "fs_info", libvirt_domain_fs_info, -1);
 #endif
 }
