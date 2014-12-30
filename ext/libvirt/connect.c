@@ -2617,11 +2617,8 @@ struct model_name_args {
 static VALUE model_name_wrap(VALUE arg)
 {
     struct model_name_args *e = (struct model_name_args *)arg;
-    VALUE elem;
 
-    elem = rb_str_new2(e->value);
-
-    rb_ary_store(e->result, e->i, elem);
+    rb_ary_store(e->result, e->i, rb_str_new2(e->value));
 
     return Qnil;
 }
