@@ -89,6 +89,9 @@ static VALUE c_domain_control_info;
 #if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
 static VALUE c_domain_block_job_info;
 #endif
+#if HAVE_TYPE_VIRDOMAINFSINFOPTR
+static VALUE c_domain_fs_info;
+#endif
 
 static void domain_free(void *d)
 {
@@ -4208,6 +4211,7 @@ static VALUE libvirt_domain_fs_thaw(int argc, VALUE *argv, VALUE d)
 struct fs_info_arg {
     VALUE result;
     int index;
+    virDomainFSInfoPtr *info;
 };
 
 static VALUE fs_info_wrap(VALUE arg)
@@ -4216,18 +4220,20 @@ static VALUE fs_info_wrap(VALUE arg)
     VALUE aliases, entry;
     int j;
 
-    aliases = rb_ary_new2(info[e->index]->ndevAlias);
-    for (j = 0; j < info[e->index]->ndevAlias; j++) {
-        rb_ary_store(aliases, j, rb_str_new2(info[e->index]->devAlias[j]));
+    aliases = rb_ary_new2(e->info[e->index]->ndevAlias);
+    for (j = 0; j < e->info[e->index]->ndevAlias; j++) {
+        rb_ary_store(aliases, j, rb_str_new2(e->info[e->index]->devAlias[j]));
     }
 
     entry = rb_class_new_instance(0, NULL, c_domain_fs_info);
-    rb_iv_set(entry, "@mountpoint", rb_str_new2(info[e->index]->mountpoint));
-    rb_iv_set(entry, "@name", rb_str_new2(info[e->index]->name));
-    rb_iv_set(entry, "@fstype", rb_str_new2(info[e->index]->fstype));
+    rb_iv_set(entry, "@mountpoint", rb_str_new2(e->info[e->index]->mountpoint));
+    rb_iv_set(entry, "@name", rb_str_new2(e->info[e->index]->name));
+    rb_iv_set(entry, "@fstype", rb_str_new2(e->info[e->index]->fstype));
     rb_iv_set(entry, "@aliases", aliases);
 
     rb_ary_store(e->result, e->index, entry);
+
+    return Qnil;
 }
 
 /*
@@ -4239,7 +4245,7 @@ static VALUE fs_info_wrap(VALUE arg)
  */
 static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags, result, entry, aliases;
+    VALUE flags, result;
     virDomainFSInfoPtr *info;
     int ret, i = 0, j, exception;
     struct fs_info_arg args;
@@ -4259,6 +4265,7 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
     for (i = 0; i < ret; i++) {
         args.result = result;
         args.index = i;
+        args.info = info;
         rb_protect(fs_info_wrap, (VALUE)&args, &exception);
         if (exception) {
             goto error;
@@ -4686,7 +4693,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_attr(c_domain_security_label, "label", 1, 0);
     rb_define_attr(c_domain_security_label, "enforcing", 1, 0);
 
-#if HAVE_VIRDOMAINGETFSINFO
+#if HAVE_TYPE_VIRDOMAINFSINFOPTR
     /*
      * Class Libvirt::Domain::FSInfo
      */
