@@ -37,8 +37,7 @@ LIBVIRT_SRC << MAKEFILE
 CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE, "ext/**/depend", "ext/**/*.gcda",
                 "ext/**/*.gcno", "ext/**/*.gcov" ]
 
-CLOBBER.include [ "config.save", "ext/**/mkmf.log", "ext/**/extconf.h",
-                  MAKEFILE ]
+CLOBBER.include [ "ext/**/mkmf.log", "ext/**/extconf.h", MAKEFILE ]
 
 task :default => :build
 
