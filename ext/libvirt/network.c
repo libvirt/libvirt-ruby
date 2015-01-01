@@ -322,7 +322,7 @@ static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
     return result;
 
  error:
-    for (j = i; i < nleases; i++) {
+    for (j = i; j < nleases; j++) {
         virNetworkDHCPLeaseFree(leases[j]);
     }
     free(leases);
