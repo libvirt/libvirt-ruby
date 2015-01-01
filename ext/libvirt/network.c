@@ -247,6 +247,37 @@ static VALUE libvirt_network_persistent_p(VALUE n)
 #endif
 
 #if HAVE_VIRNETWORKGETDHCPLEASES
+struct leases_arg {
+    VALUE result;
+    int index;
+    virNetworkDHCPLeasePtr *leases;
+};
+
+static VALUE leases_wrap(VALUE arg)
+{
+    struct leases_arg *e = (struct leases_arg *)arg;
+    VALUE hash;
+    virNetworkDHCPLeasePtr lease;
+
+    lease = e->leases[e->index];
+
+    hash = rb_hash_new();
+
+    rb_hash_aset(hash, rb_str_new2("iface"), rb_str_new2(lease->iface));
+    rb_hash_aset(hash, rb_str_new2("expirytime"), LL2NUM(lease->expirytime));
+    rb_hash_aset(hash, rb_str_new2("type"), INT2NUM(lease->type));
+    rb_hash_aset(hash, rb_str_new2("mac"), rb_str_new2(lease->mac));
+    rb_hash_aset(hash, rb_str_new2("iaid"), rb_str_new2(lease->iaid));
+    rb_hash_aset(hash, rb_str_new2("ipaddr"), rb_str_new2(lease->ipaddr));
+    rb_hash_aset(hash, rb_str_new2("prefix"), UINT2NUM(lease->prefix));
+    rb_hash_aset(hash, rb_str_new2("hostname"), rb_str_new2(lease->hostname));
+    rb_hash_aset(hash, rb_str_new2("clientid"), rb_str_new2(lease->clientid));
+
+    rb_ary_store(e->result, e->index, hash);
+
+    return Qnil;
+}
+
 /*
  * call-seq:
  *   net.dhcp_leases(mac=nil, flags=0) -> Hash
@@ -256,11 +287,10 @@ static VALUE libvirt_network_persistent_p(VALUE n)
  */
 static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
 {
-    VALUE mac, flags, hash;
-    int nleases;
+    VALUE mac, flags, result;
+    int nleases, i = 0, exception, j;
     virNetworkDHCPLeasePtr *leases = NULL;
-    virNetworkDHCPLeasePtr lease;
-    int i;
+    struct leases_arg args;
 
     rb_scan_args(argc, argv, "02", &mac, &flags);
 
@@ -268,31 +298,36 @@ static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
                                       ruby_libvirt_get_cstring_or_null(mac),
                                       &leases,
                                       ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(nleases < 0, e_Error, "virNetworkGetDHCPLeases",
+                                ruby_libvirt_connect_get(n));
 
-    hash = rb_hash_new();
-
-    /* FIXME: check for error */
-    for (i = 0; i < nleases; i++) {
-        lease = leases[i];
-
-        rb_hash_aset(hash, rb_str_new2("iface"), rb_str_new2(lease->iface));
-        rb_hash_aset(hash, rb_str_new2("expirytime"),
-                     LL2NUM(lease->expirytime));
-        rb_hash_aset(hash, rb_str_new2("type"), INT2NUM(lease->type));
-        rb_hash_aset(hash, rb_str_new2("mac"), rb_str_new2(lease->mac));
-        rb_hash_aset(hash, rb_str_new2("iaid"), rb_str_new2(lease->iaid));
-        rb_hash_aset(hash, rb_str_new2("ipaddr"), rb_str_new2(lease->ipaddr));
-        rb_hash_aset(hash, rb_str_new2("prefix"), UINT2NUM(lease->prefix));
-        rb_hash_aset(hash, rb_str_new2("hostname"),
-                     rb_str_new2(lease->hostname));
-        rb_hash_aset(hash, rb_str_new2("clientid"),
-                     rb_str_new2(lease->clientid));
-        virNetworkDHCPLeaseFree(leases[i]);
+    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&nleases, &exception);
+    if (exception) {
+        goto error;
     }
 
+    for (i = 0; i < nleases; i++) {
+        args.result = result;
+        args.index = i;
+        args.leases = leases;
+        rb_protect(leases_wrap, (VALUE)&args, &exception);
+        if (exception) {
+            goto error;
+        }
+
+        virNetworkDHCPLeaseFree(leases[i]);
+    }
     free(leases);
 
-    return hash;
+    return result;
+
+ error:
+    for (j = i; i < nleases; i++) {
+        virNetworkDHCPLeaseFree(leases[j]);
+    }
+    free(leases);
+
+    return Qnil;
 }
 #endif
 
