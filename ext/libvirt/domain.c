@@ -89,9 +89,6 @@ static VALUE c_domain_control_info;
 #if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
 static VALUE c_domain_block_job_info;
 #endif
-#if HAVE_TYPE_VIRDOMAINFSINFOPTR
-static VALUE c_domain_fs_info;
-#endif
 
 static void domain_free(void *d)
 {
@@ -4225,11 +4222,14 @@ static VALUE fs_info_wrap(VALUE arg)
         rb_ary_store(aliases, j, rb_str_new2(e->info[e->index]->devAlias[j]));
     }
 
-    entry = rb_class_new_instance(0, NULL, c_domain_fs_info);
-    rb_iv_set(entry, "@mountpoint", rb_str_new2(e->info[e->index]->mountpoint));
-    rb_iv_set(entry, "@name", rb_str_new2(e->info[e->index]->name));
-    rb_iv_set(entry, "@fstype", rb_str_new2(e->info[e->index]->fstype));
-    rb_iv_set(entry, "@aliases", aliases);
+    entry = rb_hash_new();
+    rb_hash_aset(entry, rb_str_new2("mountpoint"),
+                 rb_str_new2(e->info[e->index]->mountpoint));
+    rb_hash_aset(entry, rb_str_new2("name"),
+                 rb_str_new2(e->info[e->index]->name));
+    rb_hash_aset(entry, rb_str_new2("fstype"),
+                 rb_str_new2(e->info[e->index]->fstype));
+    rb_hash_aset(entry, rb_str_new2("aliases"), aliases);
 
     rb_ary_store(e->result, e->index, entry);
 
@@ -4238,7 +4238,7 @@ static VALUE fs_info_wrap(VALUE arg)
 
 /*
  * call-seq:
- *   dom.fs_info(flags=0) -> [Libvirt::Domain::FSInfo]
+ *   dom.fs_info(flags=0) -> [Hash]
  *
  * Call virDomainGetFSInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetFSInfo]
  * to get information about the guest filesystems.
@@ -4692,17 +4692,6 @@ void ruby_libvirt_domain_init(void)
                                                     rb_cObject);
     rb_define_attr(c_domain_security_label, "label", 1, 0);
     rb_define_attr(c_domain_security_label, "enforcing", 1, 0);
-
-#if HAVE_TYPE_VIRDOMAINFSINFOPTR
-    /*
-     * Class Libvirt::Domain::FSInfo
-     */
-    c_domain_fs_info = rb_define_class_under(c_domain, "FSInfo", rb_cObject);
-    rb_define_attr(c_domain_fs_info, "@mountpoint", 1, 0);
-    rb_define_attr(c_domain_fs_info, "@name", 1, 0);
-    rb_define_attr(c_domain_fs_info, "@fstype", 1, 0);
-    rb_define_attr(c_domain_fs_info, "@aliases", 1, 0);
-#endif
 
     /*
      * Class Libvirt::Domain::BlockStats
