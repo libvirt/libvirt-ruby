@@ -248,34 +248,40 @@ static VALUE libvirt_network_persistent_p(VALUE n)
 
 #if HAVE_VIRNETWORKGETDHCPLEASES
 struct leases_arg {
-    VALUE result;
-    int index;
     virNetworkDHCPLeasePtr *leases;
+    int nleases;
 };
 
 static VALUE leases_wrap(VALUE arg)
 {
     struct leases_arg *e = (struct leases_arg *)arg;
-    VALUE hash;
+    VALUE result, hash;
     virNetworkDHCPLeasePtr lease;
+    int i;
 
-    lease = e->leases[e->index];
+    result = rb_ary_new2(e->nleases);
 
-    hash = rb_hash_new();
+    for (i = 0; i < e->nleases; i++) {
+        lease = e->leases[i];
 
-    rb_hash_aset(hash, rb_str_new2("iface"), rb_str_new2(lease->iface));
-    rb_hash_aset(hash, rb_str_new2("expirytime"), LL2NUM(lease->expirytime));
-    rb_hash_aset(hash, rb_str_new2("type"), INT2NUM(lease->type));
-    rb_hash_aset(hash, rb_str_new2("mac"), rb_str_new2(lease->mac));
-    rb_hash_aset(hash, rb_str_new2("iaid"), rb_str_new2(lease->iaid));
-    rb_hash_aset(hash, rb_str_new2("ipaddr"), rb_str_new2(lease->ipaddr));
-    rb_hash_aset(hash, rb_str_new2("prefix"), UINT2NUM(lease->prefix));
-    rb_hash_aset(hash, rb_str_new2("hostname"), rb_str_new2(lease->hostname));
-    rb_hash_aset(hash, rb_str_new2("clientid"), rb_str_new2(lease->clientid));
+        hash = rb_hash_new();
+        rb_hash_aset(hash, rb_str_new2("iface"), rb_str_new2(lease->iface));
+        rb_hash_aset(hash, rb_str_new2("expirytime"),
+                     LL2NUM(lease->expirytime));
+        rb_hash_aset(hash, rb_str_new2("type"), INT2NUM(lease->type));
+        rb_hash_aset(hash, rb_str_new2("mac"), rb_str_new2(lease->mac));
+        rb_hash_aset(hash, rb_str_new2("iaid"), rb_str_new2(lease->iaid));
+        rb_hash_aset(hash, rb_str_new2("ipaddr"), rb_str_new2(lease->ipaddr));
+        rb_hash_aset(hash, rb_str_new2("prefix"), UINT2NUM(lease->prefix));
+        rb_hash_aset(hash, rb_str_new2("hostname"),
+                     rb_str_new2(lease->hostname));
+        rb_hash_aset(hash, rb_str_new2("clientid"),
+                     rb_str_new2(lease->clientid));
 
-    rb_ary_store(e->result, e->index, hash);
+        rb_ary_store(result, i, hash);
+    }
 
-    return Qnil;
+    return result;
 }
 
 /*
@@ -288,7 +294,7 @@ static VALUE leases_wrap(VALUE arg)
 static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
 {
     VALUE mac, flags, result;
-    int nleases, i = 0, exception, j;
+    int nleases, i = 0, exception = 0;
     virNetworkDHCPLeasePtr *leases = NULL;
     struct leases_arg args;
 
@@ -301,33 +307,20 @@ static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
     ruby_libvirt_raise_error_if(nleases < 0, e_Error, "virNetworkGetDHCPLeases",
                                 ruby_libvirt_connect_get(n));
 
-    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&nleases, &exception);
-    if (exception) {
-        goto error;
-    }
+    args.leases = leases;
+    args.nleases = nleases;
+    result = rb_protect(leases_wrap, (VALUE)&args, &exception);
 
     for (i = 0; i < nleases; i++) {
-        args.result = result;
-        args.index = i;
-        args.leases = leases;
-        rb_protect(leases_wrap, (VALUE)&args, &exception);
-        if (exception) {
-            goto error;
-        }
-
         virNetworkDHCPLeaseFree(leases[i]);
     }
     free(leases);
 
-    return result;
-
- error:
-    for (j = i; j < nleases; j++) {
-        virNetworkDHCPLeaseFree(leases[j]);
+    if (exception) {
+        rb_jump_tag(exception);
     }
-    free(leases);
 
-    return Qnil;
+    return result;
 }
 #endif
 
