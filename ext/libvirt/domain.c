@@ -4206,34 +4206,37 @@ static VALUE libvirt_domain_fs_thaw(int argc, VALUE *argv, VALUE d)
 
 #if HAVE_VIRDOMAINGETFSINFO
 struct fs_info_arg {
-    VALUE result;
-    int index;
     virDomainFSInfoPtr *info;
+    int ninfo;
 };
 
 static VALUE fs_info_wrap(VALUE arg)
 {
     struct fs_info_arg *e = (struct fs_info_arg *)arg;
-    VALUE aliases, entry;
-    int j;
+    VALUE aliases, entry, result;
+    int i, j;
 
-    aliases = rb_ary_new2(e->info[e->index]->ndevAlias);
-    for (j = 0; j < e->info[e->index]->ndevAlias; j++) {
-        rb_ary_store(aliases, j, rb_str_new2(e->info[e->index]->devAlias[j]));
+    result = rb_ary_new2(e->ninfo);
+
+    for (i = 0; i < e->ninfo; i++) {
+        aliases = rb_ary_new2(e->info[i]->ndevAlias);
+        for (j = 0; j < e->info[i]->ndevAlias; j++) {
+            rb_ary_store(aliases, j, rb_str_new2(e->info[i]->devAlias[j]));
+        }
+
+        entry = rb_hash_new();
+        rb_hash_aset(entry, rb_str_new2("mountpoint"),
+                     rb_str_new2(e->info[i]->mountpoint));
+        rb_hash_aset(entry, rb_str_new2("name"),
+                     rb_str_new2(e->info[i]->name));
+        rb_hash_aset(entry, rb_str_new2("fstype"),
+                     rb_str_new2(e->info[i]->fstype));
+        rb_hash_aset(entry, rb_str_new2("aliases"), aliases);
+
+        rb_ary_store(result, i, entry);
     }
 
-    entry = rb_hash_new();
-    rb_hash_aset(entry, rb_str_new2("mountpoint"),
-                 rb_str_new2(e->info[e->index]->mountpoint));
-    rb_hash_aset(entry, rb_str_new2("name"),
-                 rb_str_new2(e->info[e->index]->name));
-    rb_hash_aset(entry, rb_str_new2("fstype"),
-                 rb_str_new2(e->info[e->index]->fstype));
-    rb_hash_aset(entry, rb_str_new2("aliases"), aliases);
-
-    rb_ary_store(e->result, e->index, entry);
-
-    return Qnil;
+    return result;
 }
 
 /*
@@ -4247,7 +4250,7 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
 {
     VALUE flags, result;
     virDomainFSInfoPtr *info;
-    int ret, i = 0, j, exception;
+    int ret, i = 0, exception;
     struct fs_info_arg args;
 
     rb_scan_args(argc, argv, "01", &flags);
@@ -4257,35 +4260,20 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_raise_error_if(ret < 0, e_Error, "virDomainGetFSInfo",
                                 ruby_libvirt_connect_get(d));
 
-    result = rb_protect(ruby_libvirt_ary_new2_wrap, (VALUE)&ret, &exception);
-    if (exception) {
-        goto error;
-    }
+    args.info = info;
+    args.ninfo = ret;
+    result = rb_protect(fs_info_wrap, (VALUE)&args, &exception);
 
     for (i = 0; i < ret; i++) {
-        args.result = result;
-        args.index = i;
-        args.info = info;
-        rb_protect(fs_info_wrap, (VALUE)&args, &exception);
-        if (exception) {
-            goto error;
-        }
-
         virDomainFSInfoFree(info[i]);
     }
-
     free(info);
+
+    if (exception) {
+        rb_jump_tag(exception);
+    }
 
     return result;
-
-error:
-    for (j = i; j < ret; j++) {
-        virDomainFSInfoFree(info[j]);
-    }
-    free(info);
-
-    rb_jump_tag(exception);
-    return Qnil;
 }
 #endif
 
