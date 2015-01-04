@@ -2756,6 +2756,53 @@ static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
+#if HAVE_VIRNODEGETFREEPAGES
+/*
+ * call-seq:
+ *   conn.node_free_pages(pages, cells, flags=0) ->
+ *
+ * Call virNodeGetFreePages[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetFreePages]
+ * to query the host system on free pages of specified size.
+ */
+static VALUE libvirt_connect_node_free_pages(int argc, VALUE *argv, VALUE c)
+{
+    VALUE pageArr, cells, flags, result;
+    unsigned int *pages;
+    unsigned int npages, i, cellCount;
+    int startCell, ret;
+    unsigned long long *counts;
+
+    rb_scan_args(argc, argv, "21", &pageArr, &cells, &flags);
+
+    Check_Type(pageArr, T_ARRAY);
+    Check_Type(cells, T_HASH);
+
+    npages = RARRAY_LEN(pageArr);
+    pages = alloca(npages);
+    for (i = 0; i < npages; i++) {
+        pages[i] = NUM2UINT(rb_ary_entry(pageArr, i));
+    }
+
+    startCell = NUM2INT(rb_hash_aref(cells, rb_str_new2("startCell")));
+    cellCount = NUM2UINT(rb_hash_aref(cells, rb_str_new2("cellCount")));
+
+    counts = alloca(npages * cellCount * sizeof(long long));
+
+    ret = virNodeGetFreePages(ruby_libvirt_connect_get(c), npages, pages,
+                              startCell, cellCount, counts,
+                              ruby_libvirt_value_to_uint(flags));
+    ruby_libvirt_raise_error_if(ret < 0, e_Error, "virNodeGetFreePages",
+                                ruby_libvirt_connect_get(c));
+
+    result = rb_hash_new();
+    for (i = 0; i < npages; i++) {
+        rb_hash_aset(result, UINT2NUM(pages[i]), ULL2NUM(counts[i]));
+    }
+
+    return result;
+}
+#endif
+
 /*
  * Class Libvirt::Connect
  */
@@ -3418,5 +3465,9 @@ void ruby_libvirt_connect_init(void)
 #if HAVE_VIRCONNECTGETDOMAINCAPABILITIES
     rb_define_method(c_connect, "domain_capabilities",
                      libvirt_connect_domain_capabilities, -1);
+#endif
+#if HAVE_VIRNODEGETFREEPAGES
+    rb_define_method(c_connect, "node_free_pages",
+                     libvirt_connect_node_free_pages, -1);
 #endif
 }
