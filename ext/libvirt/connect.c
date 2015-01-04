@@ -2759,7 +2759,7 @@ static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
 #if HAVE_VIRNODEGETFREEPAGES
 /*
  * call-seq:
- *   conn.node_free_pages(pages, cells, flags=0) ->
+ *   conn.node_free_pages(pages, cells, flags=0) -> Hash
  *
  * Call virNodeGetFreePages[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeGetFreePages]
  * to query the host system on free pages of specified size.
