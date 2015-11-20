@@ -1,7 +1,20 @@
-2014-01-08
+2015-11-20 0.6.0
+  * Fix possible buffer overflow
+  * Fix storage volume creation error messages
+  * Add additional storage pool defines
+  * Implement Network dhcp_leases method
+  * Implement Connect node_alloc_pages method
+  * Implement Domain time method
+  * Implement Connect domain_capabilities method
+  * Implement Domain core_dump_with_format method
+  * Implement Domain fs_freeze method
+  * Implement Domain fs_info method
+  * Implement Connect node_free_pages method
+
+2014-01-08 0.5.2
   * Fix to make sure we don't free more entires than retrieved
 
-2013-12-15
+2013-12-15 0.5.1
   * Fixes to compile against older libvirt
   * Fixes to compile against ruby 1.8
 
