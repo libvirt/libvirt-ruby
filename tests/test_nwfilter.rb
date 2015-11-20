@@ -23,7 +23,7 @@ newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
 expect_too_many_args(newnw, "name", 1)
 
-expect_success(newnw, "no args", "name") {|x| x == "ruby-libvirt-tester"}
+expect_success(newnw, "no args", "name") {|x| x == "rb-libvirt-test"}
 
 newnw.undefine
 

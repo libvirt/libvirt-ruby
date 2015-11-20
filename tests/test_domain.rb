@@ -220,7 +220,7 @@ newdom.undefine
 
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
-expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_set_max_downtime", 10)
+#expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_set_max_downtime", 10)
 
 #newdom.migrate_to_uri("qemu://remote/system")
 #expect_success(newdom, "10 second downtime", "migrate_set_max_downtime", 10)
@@ -603,7 +603,7 @@ sleep 1
 
 expect_too_many_args(newdom, "name", 1)
 
-expect_success(newdom, "no args", "name") {|x| x == "ruby-libvirt-tester"}
+expect_success(newdom, "no args", "name") {|x| x == "rb-libvirt-test"}
 
 newdom.destroy
 
@@ -1187,7 +1187,7 @@ newdom.undefine
 
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
-expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_max_downtime=", 10)
+#expect_fail(newdom, Libvirt::Error, "while no migration in progress", "migrate_max_downtime=", 10)
 
 # FIXME: get this working
 #newdom.migrate_to_uri("qemu://remote/system")

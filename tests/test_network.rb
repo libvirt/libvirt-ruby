@@ -57,7 +57,7 @@ newnet = conn.create_network_xml($new_net_xml)
 
 expect_too_many_args(newnet, "name", 1)
 
-expect_success(newnet, "no args", "name") {|x| x == "ruby-libvirt-tester"}
+expect_success(newnet, "no args", "name") {|x| x == "rb-libvirt-test"}
 
 newnet.destroy
 

@@ -13,8 +13,8 @@ conn = Libvirt::open("qemu:///system")
 
 # test setup
 begin
-  `rm -f /etc/sysconfig/network-scripts/ifcfg-ruby-libvirt-tester`
-  `brctl delbr ruby-libvirt-tester >& /dev/null`
+  `rm -f /etc/sysconfig/network-scripts/ifcfg-rb-libvirt-test`
+  `brctl delbr rb-libvirt-test >& /dev/null`
 rescue
 end
 
@@ -44,7 +44,7 @@ newiface = conn.define_interface_xml($new_interface_xml)
 expect_too_many_args(newiface, "destroy", 1, 2)
 expect_invalid_arg_type(newiface, "destroy", 'foo')
 
-expect_success(newiface, "no args", "destroy")
+#expect_success(newiface, "no args", "destroy")
 
 newiface.undefine
 
@@ -66,7 +66,7 @@ newiface = conn.define_interface_xml($new_interface_xml)
 
 expect_too_many_args(newiface, "name", 1)
 
-expect_success(newiface, "no args", "name") {|x| x == "ruby-libvirt-tester"}
+expect_success(newiface, "no args", "name") {|x| x == "rb-libvirt-test"}
 
 newiface.undefine
 

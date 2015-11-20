@@ -16,8 +16,8 @@ cleanup_test_network(conn)
 
 # test setup
 begin
-  `rm -f /etc/sysconfig/network-scripts/ifcfg-ruby-libvirt-tester`
-  `brctl delbr ruby-libvirt-tester >& /dev/null`
+  `rm -f /etc/sysconfig/network-scripts/ifcfg-rb-libvirt-test`
+  `brctl delbr rb-libvirt-test >& /dev/null`
 rescue
 end
 `qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
@@ -256,11 +256,11 @@ expect_too_few_args(conn, "lookup_domain_by_name")
 expect_invalid_arg_type(conn, "lookup_domain_by_name", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_domain_by_name", "foobarbazsucker")
 
-expect_success(conn, "name arg for running domain", "lookup_domain_by_name", "ruby-libvirt-tester") {|x| x.name == "ruby-libvirt-tester"}
+expect_success(conn, "name arg for running domain", "lookup_domain_by_name", "rb-libvirt-test") {|x| x.name == "rb-libvirt-test"}
 newdom.destroy
 
 newdom = conn.define_domain_xml($new_dom_xml)
-expect_success(conn, "name arg for defined domain", "lookup_domain_by_name", "ruby-libvirt-tester") {|x| x.name == "ruby-libvirt-tester"}
+expect_success(conn, "name arg for defined domain", "lookup_domain_by_name", "rb-libvirt-test") {|x| x.name == "rb-libvirt-test"}
 newdom.undefine
 
 # TESTGROUP: conn.lookup_domain_by_id
@@ -351,11 +351,9 @@ expect_too_few_args(conn, "lookup_interface_by_name")
 expect_invalid_arg_type(conn, "lookup_interface_by_name", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_interface_by_name", "foobarbazsucker")
 
-expect_success(conn, "name arg", "lookup_interface_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_interface_by_name", "rb-libvirt-test")
 
-newiface.destroy
-
-expect_success(conn, "name arg", "lookup_interface_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_interface_by_name", "rb-libvirt-test")
 
 newiface.undefine
 
@@ -408,11 +406,11 @@ expect_too_few_args(conn, "lookup_network_by_name")
 expect_invalid_arg_type(conn, "lookup_network_by_name", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_network_by_name", "foobarbazsucker")
 
-expect_success(conn, "name arg", "lookup_network_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_network_by_name", "rb-libvirt-test")
 newnet.destroy
 
 newnet = conn.define_network_xml($new_net_xml)
-expect_success(conn, "name arg", "lookup_network_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_network_by_name", "rb-libvirt-test")
 newnet.undefine
 
 # TESTGROUP: conn.lookup_network_by_uuid
@@ -499,7 +497,7 @@ expect_too_many_args(conn, "lookup_nwfilter_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_nwfilter_by_name")
 expect_invalid_arg_type(conn, "lookup_nwfilter_by_name", 1)
 
-expect_success(conn, "name arg", "lookup_nwfilter_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_nwfilter_by_name", "rb-libvirt-test")
 
 newnw.undefine
 
@@ -593,12 +591,12 @@ expect_too_few_args(conn, "lookup_storage_pool_by_name")
 expect_invalid_arg_type(conn, "lookup_storage_pool_by_name", 1)
 expect_fail(conn, Libvirt::RetrieveError, "non-existent name arg", "lookup_storage_pool_by_name", "foobarbazsucker")
 
-expect_success(conn, "name arg", "lookup_storage_pool_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_storage_pool_by_name", "rb-libvirt-test")
 
 newpool.destroy
 
 newpool = conn.define_storage_pool_xml($new_storage_pool_xml)
-expect_success(conn, "name arg", "lookup_storage_pool_by_name", "ruby-libvirt-tester")
+expect_success(conn, "name arg", "lookup_storage_pool_by_name", "rb-libvirt-test")
 newpool.undefine
 
 # TESTGROUP: conn.lookup_storage_pool_by_uuid

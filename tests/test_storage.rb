@@ -12,7 +12,7 @@ set_test_object("storage_pool")
 conn = Libvirt::open("qemu:///system")
 
 begin
-  oldpool = conn.lookup_storage_pool_by_name("ruby-libvirt-tester")
+  oldpool = conn.lookup_storage_pool_by_name("rb-libvirt-test")
   oldpool.destroy
   oldpool.undefine
 rescue
@@ -28,7 +28,7 @@ new_storage_vol_xml = <<EOF
   <allocation>0</allocation>
   <capacity unit="G">1</capacity>
   <target>
-    <path>/tmp/ruby-libvirt-tester/test.img</path>
+    <path>/tmp/rb-libvirt-test/test.img</path>
   </target>
 </volume>
 EOF
@@ -39,7 +39,7 @@ new_storage_vol_xml_2 = <<EOF
   <allocation>0</allocation>
   <capacity unit="G">5</capacity>
   <target>
-    <path>/tmp/ruby-libvirt-tester/test2.img</path>
+    <path>/tmp/rb-libvirt-test/test2.img</path>
   </target>
 </volume>
 EOF
@@ -100,7 +100,7 @@ expect_invalid_arg_type(newpool, "delete", 'foo')
 
 expect_success(newpool, "no args", "delete")
 
-`mkdir -p /tmp/ruby-libvirt-tester`
+`mkdir -p /tmp/rb-libvirt-test`
 
 newpool.undefine
 `mkdir -p #{$POOL_PATH}`
@@ -120,7 +120,7 @@ newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
 
 expect_too_many_args(newpool, "name", 1)
 
-expect_success(newpool, "no args", "name") {|x| x == "ruby-libvirt-tester"}
+expect_success(newpool, "no args", "name") {|x| x == "rb-libvirt-test"}
 
 newpool.destroy
 

@@ -4,7 +4,7 @@ $SKIPPED = 0
 
 URI = ENV['RUBY_LIBVIRT_TEST_URI'] || "qemu:///system"
 
-$GUEST_BASE = '/var/lib/libvirt/images/ruby-libvirt-tester'
+$GUEST_BASE = '/var/lib/libvirt/images/rb-libvirt-test'
 $GUEST_DISK = $GUEST_BASE + '.qcow2'
 $GUEST_SAVE = $GUEST_BASE + '.save'
 $GUEST_UUID = "93a5c045-6457-2c09-e56f-927cdf34e17a"
@@ -13,7 +13,7 @@ $GUEST_UUID = "93a5c045-6457-2c09-e56f-927cdf34e17a"
 $new_dom_xml = <<EOF
 <domain type='kvm'>
   <description>Ruby Libvirt Tester</description>
-  <name>ruby-libvirt-tester</name>
+  <name>rb-libvirt-test</name>
   <uuid>#{$GUEST_UUID}</uuid>
   <memory>1048576</memory>
   <currentMemory>1048576</currentMemory>
@@ -59,11 +59,11 @@ $new_dom_xml = <<EOF
 EOF
 
 # qemu command-line that roughly corresponds to the above XML
-$qemu_cmd_line = "/usr/bin/qemu-kvm -S -M pc-0.13 -enable-kvm -m 1024 -smp 1,sockets=1,cores=1,threads=1 -name ruby-libvirt-tester -uuid #{$GUEST_UUID} -nodefconfig -nodefaults -chardev socket,id=monitor,path=/var/lib/libvirt/qemu/ruby-libvirt-tester.monitor,server,nowait -mon chardev=monitor,mode=readline -rtc base=utc -boot c -chardev pty,id=serial0 -device isa-serial,chardev=serial0 -usb -vnc 127.0.0.1:0 -k en-us -vga cirrus -device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x5"
+$qemu_cmd_line = "/usr/bin/qemu-kvm -S -M pc-0.13 -enable-kvm -m 1024 -smp 1,sockets=1,cores=1,threads=1 -name rb-libvirt-test -uuid #{$GUEST_UUID} -nodefconfig -nodefaults -chardev socket,id=monitor,path=/var/lib/libvirt/qemu/rb-libvirt-test.monitor,server,nowait -mon chardev=monitor,mode=readline -rtc base=utc -boot c -chardev pty,id=serial0 -device isa-serial,chardev=serial0 -usb -vnc 127.0.0.1:0 -k en-us -vga cirrus -device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x5"
 
 $NEW_INTERFACE_MAC = 'aa:bb:cc:dd:ee:ff'
 $new_interface_xml = <<EOF
-<interface type="ethernet" name="ruby-libvirt-tester">
+<interface type="ethernet" name="rb-libvirt-test">
   <start mode="onboot"/>
   <mac address="#{$NEW_INTERFACE_MAC}"/>
   <protocol family='ipv4'>
@@ -75,7 +75,7 @@ EOF
 $NETWORK_UUID = "04068860-d9a2-47c5-bc9d-9e047ae901da"
 $new_net_xml = <<EOF
 <network>
-  <name>ruby-libvirt-tester</name>
+  <name>rb-libvirt-test</name>
   <uuid>#{$NETWORK_UUID}</uuid>
   <forward mode='nat'/>
   <bridge name='rubybr0' stp='on' delay='0' />
@@ -93,7 +93,7 @@ EOF
 
 $NWFILTER_UUID = "bd339530-134c-6d07-441a-17fb90dad807"
 $new_nwfilter_xml = <<EOF
-<filter name='ruby-libvirt-tester' chain='ipv4'>
+<filter name='rb-libvirt-test' chain='ipv4'>
   <uuid>#{$NWFILTER_UUID}</uuid>
   <rule action='accept' direction='out' priority='100'>
     <ip srcipaddr='0.0.0.0' dstipaddr='255.255.255.255' protocol='tcp' srcportstart='63000' dstportstart='62000'/>
@@ -116,10 +116,10 @@ $new_secret_xml = <<EOF
 EOF
 
 $POOL_UUID = "33a5c045-645a-2c00-e56b-927cdf34e17a"
-$POOL_PATH = "/var/lib/libvirt/images/ruby-libvirt-tester"
+$POOL_PATH = "/var/lib/libvirt/images/rb-libvirt-test"
 $new_storage_pool_xml = <<EOF
 <pool type="dir">
-  <name>ruby-libvirt-tester</name>
+  <name>rb-libvirt-test</name>
   <uuid>#{$POOL_UUID}</uuid>
   <target>
     <path>#{$POOL_PATH}</path>
@@ -210,7 +210,7 @@ end
 def cleanup_test_domain(conn)
   # cleanup from previous runs
   begin
-    olddom = conn.lookup_domain_by_name("ruby-libvirt-tester")
+    olddom = conn.lookup_domain_by_name("rb-libvirt-test")
   rescue
     # in case we didn't find it, don't do anything
   end
@@ -234,7 +234,7 @@ end
 def cleanup_test_network(conn)
   # initial cleanup for previous run
   begin
-    oldnet = conn.lookup_network_by_name("ruby-libvirt-tester")
+    oldnet = conn.lookup_network_by_name("rb-libvirt-test")
   rescue
     # in case we didn't find it, don't do anything
   end
