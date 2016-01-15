@@ -269,14 +269,22 @@ static VALUE leases_wrap(VALUE arg)
         rb_hash_aset(hash, rb_str_new2("expirytime"),
                      LL2NUM(lease->expirytime));
         rb_hash_aset(hash, rb_str_new2("type"), INT2NUM(lease->type));
-        rb_hash_aset(hash, rb_str_new2("mac"), rb_str_new2(lease->mac));
-        rb_hash_aset(hash, rb_str_new2("iaid"), rb_str_new2(lease->iaid));
+        if (lease->mac) {
+            rb_hash_aset(hash, rb_str_new2("mac"), rb_str_new2(lease->mac));
+        }
+        if (lease->iaid) {
+            rb_hash_aset(hash, rb_str_new2("iaid"), rb_str_new2(lease->iaid));
+        }
         rb_hash_aset(hash, rb_str_new2("ipaddr"), rb_str_new2(lease->ipaddr));
         rb_hash_aset(hash, rb_str_new2("prefix"), UINT2NUM(lease->prefix));
-        rb_hash_aset(hash, rb_str_new2("hostname"),
-                     rb_str_new2(lease->hostname));
-        rb_hash_aset(hash, rb_str_new2("clientid"),
-                     rb_str_new2(lease->clientid));
+        if (lease->hostname) {
+            rb_hash_aset(hash, rb_str_new2("hostname"),
+                         rb_str_new2(lease->hostname));
+        }
+        if (lease->clientid) {
+            rb_hash_aset(hash, rb_str_new2("clientid"),
+                         rb_str_new2(lease->clientid));
+        }
 
         rb_ary_store(result, i, hash);
     }
