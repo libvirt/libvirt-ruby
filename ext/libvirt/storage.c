@@ -815,6 +815,10 @@ void ruby_libvirt_storage_init(void)
     rb_define_const(c_storage_pool, "CREATE_PREALLOC_METADATA",
                     INT2NUM(VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA));
 #endif
+#if HAVE_CONST_VIR_STORAGE_VOL_CREATE_REFLINK
+    rb_define_const(c_storage_pool, "CREATE_REFLINK",
+                    INT2NUM(VIR_STORAGE_VOL_CREATE_REFLINK));
+#endif
 
 #if HAVE_CONST_VIR_STORAGE_POOL_CREATE_NORMAL
     rb_define_const(c_storage_pool, "CREATE_NORMAL",
@@ -939,6 +943,10 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_VOL_DELETE_NORMAL));
     rb_define_const(c_storage_vol, "DELETE_ZEROED",
                     INT2NUM(VIR_STORAGE_VOL_DELETE_ZEROED));
+#if HAVE_CONST_VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS
+    rb_define_const(c_storage_vol, "DELETE_WITH_SNAPSHOTS",
+                    INT2NUM(VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS));
+#endif
 
     rb_define_method(c_storage_vol, "pool", libvirt_storage_vol_pool, 0);
     rb_define_method(c_storage_vol, "name", libvirt_storage_vol_name, 0);

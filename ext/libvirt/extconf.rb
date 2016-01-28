@@ -432,6 +432,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_STORAGE_POOL_CREATE_WITH_BUILD',
                    'VIR_STORAGE_POOL_CREATE_WITH_BUILD_OVERWRITE',
                    'VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE',
+                   'VIR_STORAGE_VOL_CREATE_REFLINK',
+                   'VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS',
                  ]
 
 virterror_consts = [
