@@ -428,6 +428,10 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_BLOCK_COMMIT_RELATIVE',
                    'VIR_DOMAIN_BLOCK_COMMIT_BANDWIDTH_BYTES',
                    'VIR_DOMAIN_BLOCK_IOTUNE_SIZE_IOPS_SEC',
+                   'VIR_STORAGE_POOL_CREATE_NORMAL',
+                   'VIR_STORAGE_POOL_CREATE_WITH_BUILD',
+                   'VIR_STORAGE_POOL_CREATE_WITH_BUILD_OVERWRITE',
+                   'VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE',
                  ]
 
 virterror_consts = [

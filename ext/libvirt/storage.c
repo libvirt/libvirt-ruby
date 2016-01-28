@@ -816,6 +816,23 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA));
 #endif
 
+#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_NORMAL
+    rb_define_const(c_storage_pool, "CREATE_NORMAL",
+                    INT2NUM(VIR_STORAGE_POOL_CREATE_NORMAL));
+#endif
+#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_WITH_BUILD
+    rb_define_const(c_storage_pool, "CREATE_WITH_BUILD",
+                    INT2NUM(VIR_STORAGE_POOL_CREATE_WITH_BUILD));
+#endif
+#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_WITH_BUILD_OVERWRITE
+    rb_define_const(c_storage_pool, "CREATE_WITH_BUILD_OVERWRITE",
+                    INT2NUM(VIR_STORAGE_POOL_CREATE_WITH_BUILD_OVERWRITE));
+#endif
+#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE
+    rb_define_const(c_storage_pool, "CREATE_WITH_BUILD_NO_OVERWRITE",
+                    INT2NUM(VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE));
+#endif
+
     /* Creating/destroying pools */
     rb_define_method(c_storage_pool, "build", libvirt_storage_pool_build, -1);
     rb_define_method(c_storage_pool, "undefine", libvirt_storage_pool_undefine,
