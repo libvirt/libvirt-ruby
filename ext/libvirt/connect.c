@@ -1137,16 +1137,30 @@ static VALUE libvirt_connect_lookup_domain_by_uuid(VALUE c, VALUE uuid)
 
 /*
  * call-seq:
- *   conn.define_domain_xml(xml) -> Libvirt::Domain
+ *   conn.define_domain_xml(xml, flags=0) -> Libvirt::Domain
  *
  * Call virDomainDefineXML[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDefineXML]
  * to define a permanent domain on this connection.
  */
-static VALUE libvirt_connect_define_domain_xml(VALUE c, VALUE xml)
+static VALUE libvirt_connect_define_domain_xml(int argc, VALUE *argv, VALUE c)
 {
     virDomainPtr dom;
+    VALUE xml;
+    VALUE flags;
 
+    rb_scan_args(argc, argv, "11", &xml, &flags);
+
+#if HAVE_VIRDOMAINDEFINEXMLFLAGS
+    dom = virDomainDefineXMLFlags(ruby_libvirt_connect_get(c),
+                                  StringValueCStr(xml),
+                                  ruby_libvirt_value_to_uint(flags));
+#else
+    if (ruby_libvirt_value_to_uint(flags) != 0) {
+        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    }
     dom = virDomainDefineXML(ruby_libvirt_connect_get(c), StringValueCStr(xml));
+#endif
+
     ruby_libvirt_raise_error_if(dom == NULL, e_DefinitionError,
                                 "virDomainDefineXML",
                                 ruby_libvirt_connect_get(c));
@@ -3108,8 +3122,12 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_lookup_domain_by_id, 1);
     rb_define_method(c_connect, "lookup_domain_by_uuid",
                      libvirt_connect_lookup_domain_by_uuid, 1);
+#if HAVE_CONST_VIR_DOMAIN_DEFINE_VALIDATE
+    rb_define_const(c_connect, "DOMAIN_DEFINE_VALIDATE",
+                    INT2NUM(VIR_DOMAIN_DEFINE_VALIDATE));
+#endif
     rb_define_method(c_connect, "define_domain_xml",
-                     libvirt_connect_define_domain_xml, 1);
+                     libvirt_connect_define_domain_xml, -1);
 
 #if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
     rb_define_method(c_connect, "domain_xml_from_native",

@@ -222,6 +222,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainFSThaw',
                   'virDomainGetFSInfo',
                   'virNodeGetFreePages',
+                  'virDomainDefineXMLFlags',
                 ]
 
 libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',
@@ -435,6 +436,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_STORAGE_VOL_CREATE_REFLINK',
                    'VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS',
                    'VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN',
+                   'VIR_DOMAIN_DEFINE_VALIDATE',
                  ]
 
 virterror_consts = [
