@@ -4299,6 +4299,44 @@ static VALUE libvirt_domain_rename(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINSETUSERPASSWORD
+/*
+ * call-seq:
+ *   dom.user_password = user,password,flags=0 -> nil
+ *
+ * Call virDomainSetUserPassword[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRename]
+ * to set the user password on a domain.
+ */
+static VALUE libvirt_domain_user_password_equal(VALUE d, VALUE in)
+{
+    VALUE user, password, flags;
+
+    Check_Type(in, T_ARRAY);
+
+    if (RARRAY_LEN(in) == 2) {
+        user = rb_ary_entry(in, 0);
+        password = rb_ary_entry(in, 1);
+        flags = INT2NUM(0);
+    }
+    else if (RARRAY_LEN(in) == 3) {
+        user = rb_ary_entry(in, 0);
+        password = rb_ary_entry(in, 1);
+        flags = rb_ary_entry(in, 2);
+    }
+    else {
+        rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2 or 3)",
+                 RARRAY_LEN(in));
+    }
+
+    ruby_libvirt_generate_call_nil(virDomainSetUserPassword,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(user),
+                                   StringValueCStr(password),
+                                   ruby_libvirt_value_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5850,5 +5888,12 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINRENAME
     rb_define_method(c_domain, "rename", libvirt_domain_rename, -1);
+#endif
+#if HAVE_VIRDOMAINSETUSERPASSWORD
+    rb_define_method(c_domain, "user_password=", libvirt_domain_user_password_equal, 1);
+#endif
+#if HAVE_CONST_VIR_DOMAIN_PASSWORD_ENCRYPTED
+    rb_define_const(c_domain, "PASSWORD_ENCRYPTED",
+                    INT2NUM(VIR_DOMAIN_PASSWORD_ENCRYPTED));
 #endif
 }
