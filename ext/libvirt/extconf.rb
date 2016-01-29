@@ -434,6 +434,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE',
                    'VIR_STORAGE_VOL_CREATE_REFLINK',
                    'VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS',
+                   'VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN',
                  ]
 
 virterror_consts = [
