@@ -440,6 +440,7 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN',
                    'VIR_DOMAIN_DEFINE_VALIDATE',
                    'VIR_DOMAIN_PASSWORD_ENCRYPTED',
+                   'VIR_DOMAIN_TIME_SYNC',
                  ]
 
 virterror_consts = [
