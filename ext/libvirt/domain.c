@@ -4277,6 +4277,28 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
 }
 #endif
 
+#if HAVE_VIRDOMAINRENAME
+/*
+ * call-seq:
+ *   dom.rename(name, flags=0) -> nil
+ *
+ * Call virDomainRename[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRename]
+ * to rename a domain.
+ */
+static VALUE libvirt_domain_rename(int argc, VALUE *argv, VALUE d)
+{
+    VALUE flags, name;
+
+    rb_scan_args(argc, argv, "11", &name, &flags);
+
+    ruby_libvirt_generate_call_nil(virDomainRename,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(name),
+                                   ruby_libvirt_value_to_uint(flags));
+}
+#endif
+
 /*
  * Class Libvirt::Domain
  */
@@ -5825,5 +5847,8 @@ void ruby_libvirt_domain_init(void)
 #endif
 #if HAVE_VIRDOMAINGETFSINFO
     rb_define_method(c_domain, "fs_info", libvirt_domain_fs_info, -1);
+#endif
+#if HAVE_VIRDOMAINRENAME
+    rb_define_method(c_domain, "rename", libvirt_domain_rename, -1);
 #endif
 }

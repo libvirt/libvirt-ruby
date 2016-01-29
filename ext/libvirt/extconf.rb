@@ -223,6 +223,7 @@ libvirt_funcs = [ 'virStorageVolWipe',
                   'virDomainGetFSInfo',
                   'virNodeGetFreePages',
                   'virDomainDefineXMLFlags',
+                  'virDomainRename',
                 ]
 
 libvirt_qemu_funcs = [ 'virDomainQemuMonitorCommand',
