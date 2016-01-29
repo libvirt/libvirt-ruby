@@ -48,7 +48,7 @@ VALUE ruby_libvirt_nodedevice_new(virNodeDevicePtr n, VALUE conn)
  * call-seq:
  *   nodedevice.name -> String
  *
- * Call virNodeDeviceGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetName]
+ * Call virNodeDeviceGetName[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceGetName]
  * to retrieve the name of the node device.
  */
 static VALUE libvirt_nodedevice_name(VALUE c)
@@ -62,7 +62,7 @@ static VALUE libvirt_nodedevice_name(VALUE c)
  * call-seq:
  *   nodedevice.parent -> String
  *
- * Call virNodeDeviceGetParent[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetParent]
+ * Call virNodeDeviceGetParent[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceGetParent]
  * to retrieve the parent of the node device.
  */
 static VALUE libvirt_nodedevice_parent(VALUE c)
@@ -87,7 +87,7 @@ static VALUE libvirt_nodedevice_parent(VALUE c)
  * call-seq:
  *   nodedevice.num_of_caps -> Fixnum
  *
- * Call virNodeDeviceNumOfCaps[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceNumOfCaps]
+ * Call virNodeDeviceNumOfCaps[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceNumOfCaps]
  * to retrieve the number of capabilities of the node device.
  */
 static VALUE libvirt_nodedevice_num_of_caps(VALUE c)
@@ -101,7 +101,7 @@ static VALUE libvirt_nodedevice_num_of_caps(VALUE c)
  * call-seq:
  *   nodedevice.list_caps -> list
  *
- * Call virNodeDeviceListCaps[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceListCaps]
+ * Call virNodeDeviceListCaps[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceListCaps]
  * to retrieve a list of capabilities of the node device.
  */
 static VALUE libvirt_nodedevice_list_caps(VALUE c)
@@ -131,7 +131,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
  * call-seq:
  *   nodedevice.xml_desc(flags=0) -> String
  *
- * Call virNodeDeviceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceGetXMLDesc]
+ * Call virNodeDeviceGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceGetXMLDesc]
  * to retrieve the XML for the node device.
  */
 static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
@@ -150,7 +150,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
  * call-seq:
  *   nodedevice.detach(driver=nil, flags=0) -> nil
  *
- * Call virNodeDeviceDettach[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDettach]
+ * Call virNodeDeviceDettach[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceDettach]
  * to detach the node device from the node.
  */
 static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
@@ -184,7 +184,7 @@ static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
  * call-seq:
  *   nodedevice.reattach -> nil
  *
- * Call virNodeDeviceReAttach[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceReAttach]
+ * Call virNodeDeviceReAttach[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceReAttach]
  * to reattach the node device to the node.
  */
 static VALUE libvirt_nodedevice_reattach(VALUE n)
@@ -198,7 +198,7 @@ static VALUE libvirt_nodedevice_reattach(VALUE n)
  * call-seq:
  *   nodedevice.reset -> nil
  *
- * Call virNodeDeviceReset[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceReset]
+ * Call virNodeDeviceReset[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceReset]
  * to reset the node device.
  */
 static VALUE libvirt_nodedevice_reset(VALUE n)
@@ -213,7 +213,7 @@ static VALUE libvirt_nodedevice_reset(VALUE n)
  * call-seq:
  *   nodedevice.destroy -> nil
  *
- * Call virNodeDeviceDestroy[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceDestroy]
+ * Call virNodeDeviceDestroy[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceDestroy]
  * to shutdown the node device.
  */
 static VALUE libvirt_nodedevice_destroy(VALUE n)
@@ -228,7 +228,7 @@ static VALUE libvirt_nodedevice_destroy(VALUE n)
  * call-seq:
  *   nodedevice.free -> nil
  *
- * Call virNodeDeviceFree[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceFree]
+ * Call virNodeDeviceFree[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceFree]
  * to free the node device object.  After this call the node device object is
  * no longer valid.
  */
@@ -242,7 +242,7 @@ static VALUE libvirt_nodedevice_free(VALUE n)
  * call-seq:
  *   nodedevice.lookup_scsi_host_by_wwn(wwnn, wwpn, flags=0) -> Libvirt::NodeDevice
  *
- * Call virNodeDeviceLookupSCSIHostByWWN[http://www.libvirt.org/html/libvirt-libvirt.html#virNodeDeviceLookupSCSIHostByWWN]
+ * Call virNodeDeviceLookupSCSIHostByWWN[http://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceLookupSCSIHostByWWN]
  * to look up a SCSI host by its WWNN and WWPN.
  */
 static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,

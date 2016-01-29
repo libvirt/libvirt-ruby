@@ -129,7 +129,7 @@ static void domain_input_to_fixnum_and_flags(VALUE in, VALUE *hash, VALUE *flags
  * call-seq:
  *   dom.migrate(dconn, flags=0, dname=nil, uri=nil, bandwidth=0) -> Libvirt::Domain
  *
- * Call virDomainMigrate[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate]
+ * Call virDomainMigrate[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrate]
  * to migrate a domain from the host on this connection to the connection
  * referenced in dconn.
  */
@@ -159,7 +159,7 @@ static VALUE libvirt_domain_migrate(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.migrate_to_uri(duri, flags=0, dname=nil, bandwidth=0) -> nil
  *
- * Call virDomainMigrateToURI[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI]
+ * Call virDomainMigrateToURI[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateToURI]
  * to migrate a domain from the host on this connection to the host whose
  * libvirt URI is duri.
  */
@@ -183,7 +183,7 @@ static VALUE libvirt_domain_migrate_to_uri(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.migrate_set_max_downtime(downtime, flags=0) -> nil
  *
- * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
+ * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateSetMaxDowntime]
  * to set the maximum downtime desired for live migration.  Deprecated; use
  * dom.migrate_max_downtime= instead.
  */
@@ -205,7 +205,7 @@ static VALUE libvirt_domain_migrate_set_max_downtime(int argc, VALUE *argv,
  * call-seq:
  *   dom.migrate_max_downtime = downtime,flags=0
  *
- * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxDowntime]
+ * Call virDomainMigrateSetMaxDowntime[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateSetMaxDowntime]
  * to set the maximum downtime desired for live migration.
  */
 static VALUE libvirt_domain_migrate_max_downtime_equal(VALUE d, VALUE in)
@@ -227,7 +227,7 @@ static VALUE libvirt_domain_migrate_max_downtime_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.migrate2(dconn, dxml=nil, flags=0, dname=nil, uri=nil, bandwidth=0) -> Libvirt::Domain
  *
- * Call virDomainMigrate2[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate2]
+ * Call virDomainMigrate2[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrate2]
  * to migrate a domain from the host on this connection to the connection
  * referenced in dconn.
  */
@@ -257,7 +257,7 @@ static VALUE libvirt_domain_migrate2(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.migrate_to_uri2(duri=nil, migrate_uri=nil, dxml=nil, flags=0, dname=nil, bandwidth=0) -> nil
  *
- * Call virDomainMigrateToURI2[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI2]
+ * Call virDomainMigrateToURI2[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateToURI2]
  * to migrate a domain from the host on this connection to the host whose
  * libvirt URI is duri.
  */
@@ -283,7 +283,7 @@ static VALUE libvirt_domain_migrate_to_uri2(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.migrate_set_max_speed(bandwidth, flags=0) -> nil
  *
- * Call virDomainMigrateSetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxSpeed]
+ * Call virDomainMigrateSetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateSetMaxSpeed]
  * to set the maximum bandwidth allowed for live migration.  Deprecated; use
  * dom.migrate_max_speed= instead.
  */
@@ -305,7 +305,7 @@ static VALUE libvirt_domain_migrate_set_max_speed(int argc, VALUE *argv,
  * call-seq:
  *   dom.migrate_max_speed = bandwidth,flags=0
  *
- * Call virDomainMigrateSetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetMaxSpeed]
+ * Call virDomainMigrateSetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateSetMaxSpeed]
  * to set the maximum bandwidth allowed for live migration.
  */
 static VALUE libvirt_domain_migrate_max_speed_equal(VALUE d, VALUE in)
@@ -326,7 +326,7 @@ static VALUE libvirt_domain_migrate_max_speed_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.shutdown(flags=0) -> nil
  *
- * Call virDomainShutdown[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainShutdown]
+ * Call virDomainShutdown[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainShutdown]
  * to do a soft shutdown of the domain.  The mechanism for doing the shutdown
  * is hypervisor specific, and may require software running inside the domain
  * to succeed.
@@ -357,7 +357,7 @@ static VALUE libvirt_domain_shutdown(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.reboot(flags=0) -> nil
  *
- * Call virDomainReboot[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReboot]
+ * Call virDomainReboot[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainReboot]
  * to do a reboot of the domain.
  */
 static VALUE libvirt_domain_reboot(int argc, VALUE *argv, VALUE d)
@@ -375,7 +375,7 @@ static VALUE libvirt_domain_reboot(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.destroy(flags=0) -> nil
  *
- * Call virDomainDestroy[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDestroy]
+ * Call virDomainDestroy[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainDestroy]
  * to do a hard power-off of the domain.
  */
 static VALUE libvirt_domain_destroy(int argc, VALUE *argv, VALUE d)
@@ -403,7 +403,7 @@ static VALUE libvirt_domain_destroy(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.suspend -> nil
  *
- * Call virDomainSuspend[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSuspend]
+ * Call virDomainSuspend[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSuspend]
  * to stop the domain from executing.  The domain will still continue to
  * consume memory, but will not take any CPU time.
  */
@@ -418,7 +418,7 @@ static VALUE libvirt_domain_suspend(VALUE d)
  * call-seq:
  *   dom.resume -> nil
  *
- * Call virDomainResume[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainResume]
+ * Call virDomainResume[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainResume]
  * to resume a suspended domain.  After this call the domain will start
  * consuming CPU resources again.
  */
@@ -432,7 +432,7 @@ static VALUE libvirt_domain_resume(VALUE d)
  * call-seq:
  *   dom.save(filename, dxml=nil, flags=0) -> nil
  *
- * Call virDomainSave[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSave]
+ * Call virDomainSave[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSave]
  * to save the domain state to filename.  After this call, the domain will no
  * longer be consuming any resources.
  */
@@ -467,7 +467,7 @@ static VALUE libvirt_domain_save(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.managed_save(flags=0) -> nil
  *
- * Call virDomainManagedSave[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainManagedSave]
+ * Call virDomainManagedSave[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainManagedSave]
  * to do a managed save of the domain.  The domain will be saved to a place
  * of libvirt's choosing.
  */
@@ -487,7 +487,7 @@ static VALUE libvirt_domain_managed_save(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.has_managed_save?(flags=0) -> [True|False]
  *
- * Call virDomainHasManagedSaveImage[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasManagedSaveImage]
+ * Call virDomainHasManagedSaveImage[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainHasManagedSaveImage]
  * to determine if a particular domain has a managed save image.
  */
 static VALUE libvirt_domain_has_managed_save(int argc, VALUE *argv, VALUE d)
@@ -506,7 +506,7 @@ static VALUE libvirt_domain_has_managed_save(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.managed_save_remove(flags=0) -> nil
  *
- * Call virDomainManagedSaveRemove[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainManagedSaveRemove]
+ * Call virDomainManagedSaveRemove[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainManagedSaveRemove]
  * to remove the managed save image for a domain.
  */
 static VALUE libvirt_domain_managed_save_remove(int argc, VALUE *argv, VALUE d)
@@ -526,7 +526,7 @@ static VALUE libvirt_domain_managed_save_remove(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.core_dump(filename, flags=0) -> nil
  *
- * Call virDomainCoreDump[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
+ * Call virDomainCoreDump[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCoreDump]
  * to do a full memory dump of the domain to filename.
  */
 static VALUE libvirt_domain_core_dump(int argc, VALUE *argv, VALUE d)
@@ -546,7 +546,7 @@ static VALUE libvirt_domain_core_dump(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   Libvirt::Domain::restore(conn, filename) -> nil
  *
- * Call virDomainRestore[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRestore]
+ * Call virDomainRestore[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainRestore]
  * to restore the domain from the filename.
  */
 static VALUE libvirt_domain_s_restore(VALUE RUBY_LIBVIRT_UNUSED(klass), VALUE c,
@@ -562,7 +562,7 @@ static VALUE libvirt_domain_s_restore(VALUE RUBY_LIBVIRT_UNUSED(klass), VALUE c,
  * call-seq:
  *   dom.info -> Libvirt::Domain::Info
  *
- * Call virDomainGetInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInfo]
+ * Call virDomainGetInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetInfo]
  * to retrieve domain information.
  */
 static VALUE libvirt_domain_info(VALUE d)
@@ -590,7 +590,7 @@ static VALUE libvirt_domain_info(VALUE d)
  * call-seq:
  *   dom.security_label -> Libvirt::Domain::SecurityLabel
  *
- * Call virDomainGetSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabel]
+ * Call virDomainGetSecurityLabel[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetSecurityLabel]
  * to retrieve the security label applied to this domain.
  */
 static VALUE libvirt_domain_security_label(VALUE d)
@@ -616,7 +616,7 @@ static VALUE libvirt_domain_security_label(VALUE d)
  * call-seq:
  *   dom.block_stats(path) -> Libvirt::Domain::BlockStats
  *
- * Call virDomainBlockStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockStats]
+ * Call virDomainBlockStats[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockStats]
  * to retrieve statistics about domain block device path.
  */
 static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
@@ -645,7 +645,7 @@ static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
  * call-seq:
  *   dom.memory_stats(flags=0) -> [ Libvirt::Domain::MemoryStats ]
  *
- * Call virDomainMemoryStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryStats]
+ * Call virDomainMemoryStats[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMemoryStats]
  * to retrieve statistics about the amount of memory consumed by a domain.
  */
 static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
@@ -689,7 +689,7 @@ static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.blockinfo(path, flags=0) -> Libvirt::Domain::BlockInfo
  *
- * Call virDomainGetBlockInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockInfo]
+ * Call virDomainGetBlockInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetBlockInfo]
  * to retrieve information about the backing file path for the domain.
  */
 static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
@@ -720,7 +720,7 @@ static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.block_peek(path, offset, size, flags=0) -> String
  *
- * Call virDomainBlockPeek[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockPeek]
+ * Call virDomainBlockPeek[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockPeek]
  * to read size number of bytes, starting at offset offset from domain backing
  * file path.  Due to limitations of the libvirt remote protocol, the user
  * should never request more than 64k bytes.
@@ -750,7 +750,7 @@ static VALUE libvirt_domain_block_peek(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.memory_peek(start, size, flags=Libvirt::Domain::MEMORY_VIRTUAL) -> String
  *
- * Call virDomainMemoryPeek[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMemoryPeek]
+ * Call virDomainMemoryPeek[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMemoryPeek]
  * to read size number of bytes from offset start from the domain memory.
  * Due to limitations of the libvirt remote protocol, the user
  * should never request more than 64k bytes.
@@ -781,7 +781,7 @@ static VALUE libvirt_domain_memory_peek(int argc, VALUE *argv, VALUE d)
 /* call-seq:
  *   dom.vcpus -> [ Libvirt::Domain::VCPUInfo ]
  *
- * Call virDomainGetVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpus]
+ * Call virDomainGetVcpus[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetVcpus]
  * to retrieve detailed information about the state of a domain's virtual CPUs.
  */
 static VALUE libvirt_domain_vcpus(VALUE d)
@@ -865,7 +865,7 @@ static VALUE libvirt_domain_vcpus(VALUE d)
  * call-seq:
  *   dom.active? -> [true|false]
  *
- * Call virDomainIsActive[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsActive]
+ * Call virDomainIsActive[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainIsActive]
  * to determine if this domain is currently active.
  */
 static VALUE libvirt_domain_active_p(VALUE d)
@@ -881,7 +881,7 @@ static VALUE libvirt_domain_active_p(VALUE d)
  * call-seq:
  *   dom.persistent? -> [true|false]
  *
- * Call virDomainIsPersistent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsPersistent]
+ * Call virDomainIsPersistent[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainIsPersistent]
  * to determine if this is a persistent domain.
  */
 static VALUE libvirt_domain_persistent_p(VALUE d)
@@ -896,7 +896,7 @@ static VALUE libvirt_domain_persistent_p(VALUE d)
  * call-seq:
  *   dom.ifinfo(if) -> Libvirt::Domain::IfInfo
  *
- * Call virDomainInterfaceStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInterfaceStats]
+ * Call virDomainInterfaceStats[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainInterfaceStats]
  * to retrieve statistics about domain interface if.
  */
 static VALUE libvirt_domain_if_stats(VALUE d, VALUE sif)
@@ -930,7 +930,7 @@ static VALUE libvirt_domain_if_stats(VALUE d, VALUE sif)
  * call-seq:
  *   dom.name -> String
  *
- * Call virDomainGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetName]
+ * Call virDomainGetName[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetName]
  * to retrieve the name of this domain.
  */
 static VALUE libvirt_domain_name(VALUE d)
@@ -944,7 +944,7 @@ static VALUE libvirt_domain_name(VALUE d)
  * call-seq:
  *   dom.id -> Fixnum
  *
- * Call virDomainGetID[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetID]
+ * Call virDomainGetID[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetID]
  * to retrieve the ID of this domain.  If the domain isn't running, this will
  * be -1.
  */
@@ -969,7 +969,7 @@ static VALUE libvirt_domain_id(VALUE d)
  * call-seq:
  *   dom.uuid -> String
  *
- * Call virDomainGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetUUIDString]
+ * Call virDomainGetUUIDString[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetUUIDString]
  * to retrieve the UUID of this domain.
  */
 static VALUE libvirt_domain_uuid(VALUE d)
@@ -983,7 +983,7 @@ static VALUE libvirt_domain_uuid(VALUE d)
  * call-seq:
  *   dom.os_type -> String
  *
- * Call virDomainGetOSType[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetOSType]
+ * Call virDomainGetOSType[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetOSType]
  * to retrieve the os_type of this domain.  In libvirt terms, os_type determines
  * whether this domain is fully virtualized, paravirtualized, or a container.
  */
@@ -998,7 +998,7 @@ static VALUE libvirt_domain_os_type(VALUE d)
  * call-seq:
  *   dom.max_memory -> Fixnum
  *
- * Call virDomainGetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxMemory]
+ * Call virDomainGetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetMaxMemory]
  * to retrieve the maximum amount of memory this domain is allowed to access.
  * Note that the current amount of memory this domain is allowed to access may
  * be different (see dom.memory_set).
@@ -1019,7 +1019,7 @@ static VALUE libvirt_domain_max_memory(VALUE d)
  * call-seq:
  *   dom.max_memory = Fixnum
  *
- * Call virDomainSetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMaxMemory]
+ * Call virDomainSetMaxMemory[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetMaxMemory]
  * to set the maximum amount of memory (in kilobytes) this domain should be
  * allowed to access.
  */
@@ -1040,7 +1040,7 @@ static VALUE libvirt_domain_max_memory_equal(VALUE d, VALUE max_memory)
  * call-seq:
  *   dom.memory = Fixnum,flags=0
  *
- * Call virDomainSetMemory[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemory]
+ * Call virDomainSetMemory[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetMemory]
  * to set the amount of memory (in kilobytes) this domain should currently
  * have.  Note this will only succeed if both the hypervisor and the domain on
  * this connection support ballooning.
@@ -1072,7 +1072,7 @@ static VALUE libvirt_domain_memory_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.max_vcpus -> Fixnum
  *
- * Call virDomainGetMaxVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMaxVcpus]
+ * Call virDomainGetMaxVcpus[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetMaxVcpus]
  * to retrieve the maximum number of virtual CPUs this domain can use.
  */
 static VALUE libvirt_domain_max_vcpus(VALUE d)
@@ -1086,7 +1086,7 @@ static VALUE libvirt_domain_max_vcpus(VALUE d)
 /* call-seq:
  *   dom.num_vcpus(flags) -> Fixnum
  *
- * Call virDomainGetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetVcpusFlags]
+ * Call virDomainGetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetVcpusFlags]
  * to retrieve the number of virtual CPUs assigned to this domain.
  */
 static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
@@ -1102,7 +1102,7 @@ static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
  * call-seq:
  *   dom.vcpus = Fixnum,flags=0
  *
- * Call virDomainSetVcpus[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpus]
+ * Call virDomainSetVcpus[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetVcpus]
  * to set the current number of virtual CPUs this domain should have.  Note
  * that this will only work if both the hypervisor and domain on this
  * connection support virtual CPU hotplug/hot-unplug.
@@ -1152,7 +1152,7 @@ static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
  *   dom.vcpus_flags = Fixnum,flags=0
  *
 
- * Call virDomainSetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetVcpusFlags]
+ * Call virDomainSetVcpusFlags[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetVcpusFlags]
  * to set the current number of virtual CPUs this domain should have.  The
  * flags parameter controls whether the change is made to the running domain
  * the domain configuration, or both, and must not be 0.  Deprecated;
@@ -1175,7 +1175,7 @@ static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.pin_vcpu(vcpu, cpulist, flags=0) -> nil
  *
- * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
+ * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainPinVcpu]
  * to pin a particular virtual CPU to a range of physical processors.  The
  * cpulist should be an array of Fixnums representing the physical processors
  * this virtual CPU should be allowed to be scheduled on.
@@ -1224,7 +1224,7 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.xml_desc(flags=0) -> String
  *
- * Call virDomainGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetXMLDesc]
+ * Call virDomainGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetXMLDesc]
  * to retrieve the XML describing this domain.
  */
 static VALUE libvirt_domain_xml_desc(int argc, VALUE *argv, VALUE d)
@@ -1243,7 +1243,7 @@ static VALUE libvirt_domain_xml_desc(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.undefine(flags=0) -> nil
  *
- * Call virDomainUndefine[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUndefine]
+ * Call virDomainUndefine[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainUndefine]
  * to undefine the domain.  After this call, the domain object is no longer
  * valid.
  */
@@ -1273,7 +1273,7 @@ static VALUE libvirt_domain_undefine(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.create(flags=0) -> nil
  *
- * Call virDomainCreate[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreate]
+ * Call virDomainCreate[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreate]
  * to start an already defined domain.
  */
 static VALUE libvirt_domain_create(int argc, VALUE *argv, VALUE d)
@@ -1300,7 +1300,7 @@ static VALUE libvirt_domain_create(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.autostart -> [true|false]
  *
- * Call virDomainGetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetAutostart]
+ * Call virDomainGetAutostart[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetAutostart]
  * to find out the state of the autostart flag for a domain.
  */
 static VALUE libvirt_domain_autostart(VALUE d)
@@ -1318,7 +1318,7 @@ static VALUE libvirt_domain_autostart(VALUE d)
  * call-seq:
  *   dom.autostart = [true|false]
  *
- * Call virDomainSetAutostart[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetAutostart]
+ * Call virDomainSetAutostart[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetAutostart]
  * to make this domain autostart when libvirtd starts up.
  */
 static VALUE libvirt_domain_autostart_equal(VALUE d, VALUE autostart)
@@ -1338,7 +1338,7 @@ static VALUE libvirt_domain_autostart_equal(VALUE d, VALUE autostart)
  * call-seq:
  *   dom.attach_device(device_xml, flags=0) -> nil
  *
- * Call virDomainAttachDevice[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAttachDevice]
+ * Call virDomainAttachDevice[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainAttachDevice]
  * to attach the device described by the device_xml to the domain.
  */
 static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
@@ -1368,7 +1368,7 @@ static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.detach_device(device_xml, flags=0) -> nil
  *
- * Call virDomainDetachDevice[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainDetachDevice]
+ * Call virDomainDetachDevice[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainDetachDevice]
  * to detach the device described by the device_xml from the domain.
  */
 static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
@@ -1399,7 +1399,7 @@ static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.update_device(device_xml, flags=0) -> nil
  *
- * Call virDomainUpdateDeviceFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainUpdateDeviceFlags]
+ * Call virDomainUpdateDeviceFlags[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainUpdateDeviceFlags]
  * to update the device described by the device_xml.
  */
 static VALUE libvirt_domain_update_device(int argc, VALUE *argv, VALUE d)
@@ -1420,7 +1420,7 @@ static VALUE libvirt_domain_update_device(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.free -> nil
  *
- * Call virDomainFree[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFree]
+ * Call virDomainFree[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainFree]
  * to free a domain object.
  */
 static VALUE libvirt_domain_free(VALUE d)
@@ -1455,7 +1455,7 @@ static virDomainSnapshotPtr domain_snapshot_get(VALUE d)
  * call-seq:
  *   dom.snapshot_create_xml(snapshot_xml, flags=0) -> Libvirt::Domain::Snapshot
  *
- * Call virDomainSnapshotCreateXML[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotCreateXML]
+ * Call virDomainSnapshotCreateXML[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotCreateXML]
  * to create a new snapshot based on snapshot_xml.
  */
 static VALUE libvirt_domain_snapshot_create_xml(int argc, VALUE *argv, VALUE d)
@@ -1480,7 +1480,7 @@ static VALUE libvirt_domain_snapshot_create_xml(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.num_of_snapshots(flags=0) -> Fixnum
  *
- * Call virDomainSnapshotNum[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotNum]
+ * Call virDomainSnapshotNum[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotNum]
  * to retrieve the number of available snapshots for this domain.
  */
 static VALUE libvirt_domain_num_of_snapshots(int argc, VALUE *argv, VALUE d)
@@ -1499,7 +1499,7 @@ static VALUE libvirt_domain_num_of_snapshots(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.list_snapshots(flags=0) -> list
  *
- * Call virDomainSnapshotListNames[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames]
+ * Call virDomainSnapshotListNames[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotListNames]
  * to retrieve a list of snapshot names available for this domain.
  */
 static VALUE libvirt_domain_list_snapshots(int argc, VALUE *argv, VALUE d)
@@ -1539,7 +1539,7 @@ static VALUE libvirt_domain_list_snapshots(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.lookup_snapshot_by_name(name, flags=0) -> Libvirt::Domain::Snapshot
  *
- * Call virDomainSnapshotLookupByName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotLookupByName]
+ * Call virDomainSnapshotLookupByName[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotLookupByName]
  * to retrieve a snapshot object corresponding to snapshot name.
  */
 static VALUE libvirt_domain_lookup_snapshot_by_name(int argc, VALUE *argv,
@@ -1564,7 +1564,7 @@ static VALUE libvirt_domain_lookup_snapshot_by_name(int argc, VALUE *argv,
  * call-seq:
  *   dom.has_current_snapshot?(flags=0) -> [true|false]
  *
- * Call virDomainHasCurrentSnapshot[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainHasCurrentSnapshot]
+ * Call virDomainHasCurrentSnapshot[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainHasCurrentSnapshot]
  * to find out if this domain has a snapshot active.
  */
 static VALUE libvirt_domain_has_current_snapshot_p(int argc, VALUE *argv,
@@ -1584,7 +1584,7 @@ static VALUE libvirt_domain_has_current_snapshot_p(int argc, VALUE *argv,
  * call-seq:
  *   dom.revert_to_snapshot(snapshot_object, flags=0) -> nil
  *
- * Call virDomainRevertToSnapshot[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRevertToSnapshot]
+ * Call virDomainRevertToSnapshot[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainRevertToSnapshot]
  * to restore this domain to a previously saved snapshot.
  */
 static VALUE libvirt_domain_revert_to_snapshot(int argc, VALUE *argv, VALUE d)
@@ -1603,7 +1603,7 @@ static VALUE libvirt_domain_revert_to_snapshot(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.current_snapshot(flags=0) -> Libvirt::Domain::Snapshot
  *
- * Call virDomainCurrentSnapshot[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCurrentSnapshot]
+ * Call virDomainCurrentSnapshot[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCurrentSnapshot]
  * to retrieve the current snapshot for this domain (if any).
  */
 static VALUE libvirt_domain_current_snapshot(int argc, VALUE *argv, VALUE d)
@@ -1626,7 +1626,7 @@ static VALUE libvirt_domain_current_snapshot(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   snapshot.xml_desc(flags=0) -> String
  *
- * Call virDomainSnapshotGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetXMLDesc]
+ * Call virDomainSnapshotGetXMLDesc[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotGetXMLDesc]
  * to retrieve the xml description for this snapshot.
  */
 static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE s)
@@ -1645,7 +1645,7 @@ static VALUE libvirt_domain_snapshot_xml_desc(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   snapshot.delete(flags=0) -> nil
  *
- * Call virDomainSnapshotDelete[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotDelete]
+ * Call virDomainSnapshotDelete[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotDelete]
  * to delete this snapshot.
  */
 static VALUE libvirt_domain_snapshot_delete(int argc, VALUE *argv, VALUE s)
@@ -1664,7 +1664,7 @@ static VALUE libvirt_domain_snapshot_delete(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   snapshot.free -> nil
  *
- * Call virDomainSnapshotFree[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotFree]
+ * Call virDomainSnapshotFree[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotFree]
  * to free up the snapshot object.  After this call the snapshot object is
  * no longer valid.
  */
@@ -1680,7 +1680,7 @@ static VALUE libvirt_domain_snapshot_free(VALUE s)
  * call-seq:
  *   snapshot.name -> String
  *
- * Call virDomainSnapshotGetName[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetName]
+ * Call virDomainSnapshotGetName[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotGetName]
  * to get the name associated with a snapshot.
  */
 static VALUE libvirt_domain_snapshot_name(VALUE s)
@@ -1697,7 +1697,7 @@ static VALUE libvirt_domain_snapshot_name(VALUE s)
  * call-seq:
  *   dom.job_info -> Libvirt::Domain::JobInfo
  *
- * Call virDomainGetJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobInfo]
+ * Call virDomainGetJobInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetJobInfo]
  * to retrieve the current state of the running domain job.
  */
 static VALUE libvirt_domain_job_info(VALUE d)
@@ -1731,7 +1731,7 @@ static VALUE libvirt_domain_job_info(VALUE d)
  * call-seq:
  *   dom.abort_job -> nil
  *
- * Call virDomainAbortJob[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainAbortJob]
+ * Call virDomainAbortJob[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainAbortJob]
  * to abort the currently running job on this domain.
  */
 static VALUE libvirt_domain_abort_job(VALUE d)
@@ -1766,7 +1766,7 @@ static VALUE create_sched_type_array(VALUE input)
  * call-seq:
  *   dom.scheduler_type -> [type, #params]
  *
- * Call virDomainGetSchedulerType[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerType]
+ * Call virDomainGetSchedulerType[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetSchedulerType]
  * to retrieve the scheduler type used on this domain.
  */
 static VALUE libvirt_domain_scheduler_type(VALUE d)
@@ -1844,7 +1844,7 @@ static VALUE libvirt_domain_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.updated? ->  [True|False]
  *
- * Call virDomainIsUpdated[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainIsUpdated]
+ * Call virDomainIsUpdated[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainIsUpdated]
  * to determine whether the definition for this domain has been updated.
  */
 static VALUE libvirt_domain_is_updated(VALUE d)
@@ -1924,7 +1924,7 @@ static const char *scheduler_set(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.scheduler_parameters(flags=0) -> Hash
  *
- * Call virDomainGetSchedulerParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSchedulerParameters]
+ * Call virDomainGetSchedulerParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetSchedulerParameters]
  * to retrieve all of the scheduler parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
@@ -1961,7 +1961,7 @@ static struct ruby_libvirt_typed_param domain_scheduler_allowed[] = {
  * call-seq:
  *   dom.scheduler_parameters = Hash
  *
- * Call virDomainSetSchedulerParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetSchedulerParameters]
+ * Call virDomainSetSchedulerParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetSchedulerParameters]
  * to set the scheduler parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.  If an empty hash is given, no
  * changes are made (and no error is raised).
@@ -2032,7 +2032,7 @@ static const char *memory_set(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.memory_parameters(flags=0) -> Hash
  *
- * Call virDomainGetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMemoryParameters]
+ * Call virDomainGetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetMemoryParameters]
  * to retrieve all of the memory parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
@@ -2058,7 +2058,7 @@ static struct ruby_libvirt_typed_param domain_memory_allowed[] = {
  * call-seq:
  *   dom.memory_parameters = Hash,flags=0
  *
- * Call virDomainSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryParameters]
+ * Call virDomainSetMemoryParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetMemoryParameters]
  * to set the memory parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
@@ -2129,7 +2129,7 @@ static const char *blkio_set(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.blkio_parameters(flags=0) -> Hash
  *
- * Call virDomainGetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlkioParameters]
+ * Call virDomainGetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetBlkioParameters]
  * to retrieve all of the blkio parameters for this domain.  The keys and
  * values in the hash that is returned are hypervisor specific.
  */
@@ -2153,7 +2153,7 @@ static struct ruby_libvirt_typed_param blkio_allowed[] = {
  * call-seq:
  *   dom.blkio_parameters = Hash,flags=0
  *
- * Call virDomainSetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlkioParameters]
+ * Call virDomainSetBlkioParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetBlkioParameters]
  * to set the blkio parameters for this domain.  The keys and values in
  * the input hash are hypervisor specific.
  */
@@ -2175,7 +2175,7 @@ static VALUE libvirt_domain_blkio_parameters_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.state(flags=0) -> state, reason
  *
- * Call virDomainGetState[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetState]
+ * Call virDomainGetState[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetState]
  * to get the current state of the domain.
  */
 static VALUE libvirt_domain_state(int argc, VALUE *argv, VALUE d)
@@ -2204,7 +2204,7 @@ static VALUE libvirt_domain_state(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.open_console(device, stream, flags=0) -> nil
  *
- * Call virDomainOpenConsole[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenConsole]
+ * Call virDomainOpenConsole[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainOpenConsole]
  * to open up a console to device over stream.
  */
 static VALUE libvirt_domain_open_console(int argc, VALUE *argv, VALUE d)
@@ -2227,7 +2227,7 @@ static VALUE libvirt_domain_open_console(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.screenshot(stream, screen, flags=0) -> nil
  *
- * Call virDomainScreenshot[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainScreenshot]
+ * Call virDomainScreenshot[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainScreenshot]
  * to take a screenshot of the domain console as a stream.
  */
 static VALUE libvirt_domain_screenshot(int argc, VALUE *argv, VALUE d)
@@ -2250,7 +2250,7 @@ static VALUE libvirt_domain_screenshot(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.inject_nmi(flags=0) -> nil
  *
- * Call virDomainInjectNMI[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainInjectNMI]
+ * Call virDomainInjectNMI[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainInjectNMI]
  * to send an NMI to the guest.
  */
 static VALUE libvirt_domain_inject_nmi(int argc, VALUE *argv, VALUE d)
@@ -2271,7 +2271,7 @@ static VALUE libvirt_domain_inject_nmi(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.control_info(flags=0) -> Libvirt::Domain::ControlInfo
  *
- * Call virDomainGetControlInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetControlInfo]
+ * Call virDomainGetControlInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetControlInfo]
  * to retrieve domain control interface information.
  */
 static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
@@ -2302,7 +2302,7 @@ static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.send_key(codeset, holdtime, keycodes)
  *
- * Call virDomainSendKey[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSendKey]
+ * Call virDomainSendKey[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSendKey]
  * to send key(s) to the domain. Keycodes has to be an array of keys to send.
  */
 VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
@@ -2332,7 +2332,7 @@ VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
  * call-seq:
  *   dom.migrate_max_speed(flags=0) -> Fixnum
  *
- * Call virDomainMigrateGetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetMaxSpeed]
+ * Call virDomainMigrateGetMaxSpeed[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateGetMaxSpeed]
  * to retrieve the maximum speed a migration can use.
  */
 static VALUE libvirt_domain_migrate_max_speed(int argc, VALUE *argv, VALUE d)
@@ -2358,7 +2358,7 @@ static VALUE libvirt_domain_migrate_max_speed(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.reset(flags=0) -> nil
  *
- * Call virDomainReset[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainReset]
+ * Call virDomainReset[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainReset]
  * to reset a domain immediately.
  */
 static VALUE libvirt_domain_reset(int argc, VALUE *argv, VALUE d)
@@ -2378,7 +2378,7 @@ static VALUE libvirt_domain_reset(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.hostname(flags=0) -> nil
  *
- * Call virDomainGetHostname[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetHostname]
+ * Call virDomainGetHostname[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetHostname]
  * to get the hostname from a domain.
  */
 static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
@@ -2399,7 +2399,7 @@ static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.metadata(type, uri=nil, flags=0) -> String
  *
- * Call virDomainGetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetMetadata]
+ * Call virDomainGetMetadata[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetMetadata]
  * to get the metadata from a domain.
  */
 static VALUE libvirt_domain_metadata(int argc, VALUE *argv, VALUE d)
@@ -2421,7 +2421,7 @@ static VALUE libvirt_domain_metadata(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.metadata = Fixnum,string/nil,key=nil,uri=nil,flags=0 -> nil
  *
- * Call virDomainSetMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMetadata]
+ * Call virDomainSetMetadata[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetMetadata]
  * to set the metadata for a domain.
  */
 static VALUE libvirt_domain_metadata_equal(VALUE d, VALUE in)
@@ -2467,7 +2467,7 @@ static VALUE libvirt_domain_metadata_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.send_process_signal(pid, signum, flags=0) -> nil
  *
- * Call virDomainSendProcessSignal[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSendProcessSignal]
+ * Call virDomainSendProcessSignal[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSendProcessSignal]
  * to send a signal to a process inside the domain.
  */
 static VALUE libvirt_domain_send_process_signal(int argc, VALUE *argv, VALUE d)
@@ -2489,7 +2489,7 @@ static VALUE libvirt_domain_send_process_signal(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.list_all_snapshots(flags=0) -> Array
  *
- * Call virDomainListAllSnapshots[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainListAllSnapshots]
+ * Call virDomainListAllSnapshots[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainListAllSnapshots]
  * to get an array of snapshot objects for all snapshots.
  */
 static VALUE libvirt_domain_list_all_snapshots(int argc, VALUE *argv, VALUE d)
@@ -2507,7 +2507,7 @@ static VALUE libvirt_domain_list_all_snapshots(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   snapshot.num_children(flags=0) -> Fixnum
  *
- * Call virDomainSnapshotNumChildren[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotNumChildren]
+ * Call virDomainSnapshotNumChildren[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotNumChildren]
  * to get the number of children snapshots of this snapshot.
  */
 static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
@@ -2529,7 +2529,7 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
  * call-seq:
  *   snapshot.list_children_names(flags=0) -> Array
  *
- * Call virDomainSnapshotListChildrenNames[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListChildrenNames]
+ * Call virDomainSnapshotListChildrenNames[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotListChildrenNames]
  * to get an array of strings representing the children of this snapshot.
  */
 static VALUE libvirt_domain_snapshot_list_children_names(int argc, VALUE *argv,
@@ -2593,7 +2593,7 @@ error:
  * call-seq:
  *   snapshot.list_all_children(flags=0) -> Array
  *
- * Call virDomainSnapshotListAllChildren[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListAllChildren]
+ * Call virDomainSnapshotListAllChildren[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotListAllChildren]
  * to get an array of snapshot objects that are children of this snapshot.
  */
 static VALUE libvirt_domain_snapshot_list_all_children(int argc, VALUE *argv,
@@ -2612,7 +2612,7 @@ static VALUE libvirt_domain_snapshot_list_all_children(int argc, VALUE *argv,
  * call-seq:
  *   snapshot.parent(flags=0) -> [Libvirt::Domain::Snapshot|nil]
  *
- * Call virDomainSnapshotGetParent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotGetParent]
+ * Call virDomainSnapshotGetParent[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotGetParent]
  * to get the parent of this snapshot (nil will be returned if this is a root
  * snapshot).
  */
@@ -2649,7 +2649,7 @@ static VALUE libvirt_domain_snapshot_parent(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   snapshot.current?(flags=0) -> [true|false]
  *
- * Call virDomainSnapshotIsCurrent[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotIsCurrent]
+ * Call virDomainSnapshotIsCurrent[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotIsCurrent]
  * to determine if the snapshot is the domain's current snapshot.
  */
 static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
@@ -2670,7 +2670,7 @@ static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   snapshot.has_metadata?(flags=0) -> [true|false]
  *
- * Call virDomainSnapshotHasMetadata[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotHasMetadata]
+ * Call virDomainSnapshotHasMetadata[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSnapshotHasMetadata]
  * to determine if the snapshot is associated with libvirt metadata.
  */
 static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
@@ -2692,7 +2692,7 @@ static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
  * call-seq:
  *   dom.memory_stats_period = Fixnum,flags=0
  *
- * Call virDomainSetMemoryStatsPeriod[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetMemoryStatsPeriod]
+ * Call virDomainSetMemoryStatsPeriod[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetMemoryStatsPeriod]
  * to set the memory statistics collection period.
  */
 static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
@@ -2714,7 +2714,7 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
  * call-seq:
  *   dom.fstrim(mountpoint=nil, minimum=0, flags=0) -> nil
  *
- * Call virDomainFSTrim[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSTrim]
+ * Call virDomainFSTrim[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainFSTrim]
  * to call FITRIM within the guest.
  */
 static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
@@ -2736,7 +2736,7 @@ static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.block_rebase(disk, base=nil, bandwidth=0, flags=0) -> nil
  *
- * Call virDomainBlockRebase[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockRebase]
+ * Call virDomainBlockRebase[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockRebase]
  * to populate a disk image with data from its backing image chain.
  */
 static VALUE libvirt_domain_block_rebase(int argc, VALUE *argv, VALUE d)
@@ -2760,7 +2760,7 @@ static VALUE libvirt_domain_block_rebase(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.open_channel(name, stream, flags=0) -> nil
  *
- * Call virDomainOpenChannel[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenChannel]
+ * Call virDomainOpenChannel[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainOpenChannel]
  * to open a channel on a guest.  Note that name may be nil, in which case the
  * first channel on the guest is opened.
  */
@@ -2784,7 +2784,7 @@ static VALUE libvirt_domain_open_channel(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.create_with_files(fds=nil, flags=0) -> nil
  *
- * Call virDomainCreateWithFiles[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCreateWithFiles]
+ * Call virDomainCreateWithFiles[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateWithFiles]
  * to launch a defined domain with a set of open file descriptors.
  */
 static VALUE libvirt_domain_create_with_files(int argc, VALUE *argv, VALUE d)
@@ -2823,7 +2823,7 @@ static VALUE libvirt_domain_create_with_files(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.open_graphics(fd, idx=0, flags=0) -> nil
  *
- * Call virDomainOpenGraphics[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainOpenGraphics]
+ * Call virDomainOpenGraphics[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainOpenGraphics]
  * to connect a file descriptor to the graphics backend of the domain.
  */
 static VALUE libvirt_domain_open_graphics(int argc, VALUE *argv, VALUE d)
@@ -2845,7 +2845,7 @@ static VALUE libvirt_domain_open_graphics(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.pmwakeup(flags=0) -> nil
  *
- * Call virDomainPMWakeup[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPMWakeup]
+ * Call virDomainPMWakeup[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainPMWakeup]
  * to inject a wakeup into the guest.
  */
 static VALUE libvirt_domain_pmwakeup(int argc, VALUE *argv, VALUE d)
@@ -2866,7 +2866,7 @@ static VALUE libvirt_domain_pmwakeup(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.block_resize(disk, size, flags=0) -> nil
  *
- * Call virDomainBlockResize[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockResize]
+ * Call virDomainBlockResize[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockResize]
  * to resize a block device of domain.
  */
 static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
@@ -2888,7 +2888,7 @@ static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.pmsuspend_for_duration(target, duration, flags=0) -> nil
  *
- * Call virDomainPMSuspendForDuration[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPMSuspendForDuration]
+ * Call virDomainPMSuspendForDuration[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainPMSuspendForDuration]
  * to have the domain enter the target power management suspend level.
  */
 static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
@@ -2911,7 +2911,7 @@ static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
  * call-seq:
  *   dom.migrate_compression_cache(flags=0) -> Fixnum
  *
- * Call virDomainMigrateGetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateGetCompressionCache]
+ * Call virDomainMigrateGetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateGetCompressionCache]
  * to get the current size of the migration cache.
  */
 static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
@@ -2939,7 +2939,7 @@ static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
  * call-seq:
  *   dom.migrate_compression_cache = Fixnum,flags=0
  *
- * Call virDomainMigrateSetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateSetCompressionCache]
+ * Call virDomainMigrateSetCompressionCache[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateSetCompressionCache]
  * to set the current size of the migration cache.
  */
 static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
@@ -2961,7 +2961,7 @@ static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.disk_errors(flags=0) -> Hash
  *
- * Call virDomainGetDiskErrors[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetDiskErrors]
+ * Call virDomainGetDiskErrors[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetDiskErrors]
  * to get errors on disks in the domain.
  */
 static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
@@ -3002,7 +3002,7 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.emulator_pin_info(flags=0) -> Array
  *
- * Call virDomainGetEmulatorPinInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetEmulatorPinInfo]
+ * Call virDomainGetEmulatorPinInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetEmulatorPinInfo]
  * to an array representing the mapping of emulator threads to physical CPUs.
  * For each physical CPU in the machine, the array offset corresponding to that
  * CPU is 'true' if an emulator thread is running on that CPU, and 'false'
@@ -3046,7 +3046,7 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.pin_emulator(cpulist, flags=0) -> nil
  *
- * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainPinVcpu]
+ * Call virDomainPinVcpu[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainPinVcpu]
  * to pin the emulator to a range of physical processors.  The cpulist should
  * be an array of Fixnums representing the physical processors this domain's
  * emulator should be allowed to be scheduled on.
@@ -3086,7 +3086,7 @@ static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.security_label_list -> [ Libvirt::Domain::SecurityLabel ]
  *
- * Call virDomainGetSecurityLabelList[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetSecurityLabelList]
+ * Call virDomainGetSecurityLabelList[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetSecurityLabelList]
  * to retrieve the security labels applied to this domain.
  */
 static VALUE libvirt_domain_security_label_list(VALUE d)
@@ -3137,7 +3137,7 @@ static VALUE params_to_hash(VALUE in)
  * call-seq:
  *   dom.job_stats -> Hash
  *
- * Call virDomainGetJobStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetJobStats]
+ * Call virDomainGetJobStats[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetJobStats]
  * to retrieve information about progress of a background job on a domain.
  */
 static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
@@ -3233,7 +3233,7 @@ static const char *iotune_set(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.block_iotune(disk=nil, flags=0) -> Hash
  *
- * Call virDomainGetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockIoTune]
+ * Call virDomainGetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetBlockIoTune]
  * to retrieve all of the block IO tune parameters for this domain.  The keys
  * and values in the hash that is returned are hypervisor specific.
  */
@@ -3267,7 +3267,7 @@ static struct ruby_libvirt_typed_param iotune_allowed[] = {
  * call-seq:
  *   dom.block_iotune = disk,Hash,flags=0
  *
- * Call virDomainSetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetBlockIoTune]
+ * Call virDomainSetBlockIoTune[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetBlockIoTune]
  * to set the block IO tune parameters for the supplied disk on this domain.
  * The keys and values in the input hash are hypervisor specific.
  */
@@ -3304,7 +3304,7 @@ static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.block_commit(disk, base=nil, top=nil, bandwidth=0, flags=0) -> nil
  *
- * Call virDomainBlockCommit[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockCommit]
+ * Call virDomainBlockCommit[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockCommit]
  * to commit changes from a top-level backing file into a lower level base file.
  */
 static VALUE libvirt_domain_block_commit(int argc, VALUE *argv, VALUE d)
@@ -3329,7 +3329,7 @@ static VALUE libvirt_domain_block_commit(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.block_pull(disk, bandwidth=0, flags=0) -> nil
  *
- * Call virDomainBlockPull[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockPull]
+ * Call virDomainBlockPull[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockPull]
  * to pull changes from a backing file into a disk image.
  */
 static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
@@ -3352,7 +3352,7 @@ static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.block_job_speed = disk,bandwidth=0,flags=0
  *
- * Call virDomainBlockJobSetSpeed[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockJobSetSpeed]
+ * Call virDomainBlockJobSetSpeed[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockJobSetSpeed]
  * to set the maximum allowable bandwidth a block job may consume.
  */
 static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
@@ -3398,7 +3398,7 @@ static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.block_job_info(disk, flags=0) -> Libvirt::Domain::BlockJobInfo
  *
- * Call virDomainGetBlockJobInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockJobInfo]
+ * Call virDomainGetBlockJobInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetBlockJobInfo]
  * to get block job information for a given disk.
  */
 static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
@@ -3433,7 +3433,7 @@ static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.block_job_abort(disk, flags=0) -> nil
  *
- * Call virDomainBlockJobAbort[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainBlockJobAbort]
+ * Call virDomainBlockJobAbort[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainBlockJobAbort]
  * to cancel an active block job on the given disk.
  */
 static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
@@ -3498,7 +3498,7 @@ static const char *interface_set(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.interface_parameters(interface, flags=0) -> Hash
  *
- * Call virDomainGetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetInterfaceParameters]
+ * Call virDomainGetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetInterfaceParameters]
  * to retrieve the interface parameters for the given interface on this domain.
  * The keys and values in the hash that is returned are hypervisor specific.
  */
@@ -3529,7 +3529,7 @@ static struct ruby_libvirt_typed_param interface_allowed[] = {
  * call-seq:
  *   dom.interface_parameters = device,Hash,flags=0
  *
- * Call virDomainSetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetInterfaceParameters]
+ * Call virDomainSetInterfaceParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetInterfaceParameters]
  * to set the interface parameters for the supplied device on this domain.
  * The keys and values in the input hash are hypervisor specific.
  */
@@ -3595,7 +3595,7 @@ static const char *block_stats_get(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.block_stats_flags(disk, flags=0) -> Hash
  *
- * Call virDomainGetBlockStatsFlags[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetBlockStatsFlags]
+ * Call virDomainGetBlockStatsFlags[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetBlockStatsFlags]
  * to retrieve the block statistics for the given disk on this domain.
  * The keys and values in the hash that is returned are hypervisor specific.
  */
@@ -3656,7 +3656,7 @@ static const char *numa_set(VALUE d, unsigned int flags,
  * call-seq:
  *   dom.numa_parameters(flags=0) -> Hash
  *
- * Call virDomainGetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetNumaParameters]
+ * Call virDomainGetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetNumaParameters]
  * to retrieve the numa parameters for this domain.  The keys and values in
  * the hash that is returned are hypervisor specific.
  */
@@ -3680,7 +3680,7 @@ static struct ruby_libvirt_typed_param numa_allowed[] = {
  * call-seq:
  *   dom.numa_parameters = Hash,flags=0
  *
- * Call virDomainSetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetNumaParameters]
+ * Call virDomainSetNumaParameters[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetNumaParameters]
  * to set the numa parameters for this domain.  The keys and values in the input
  * hash are hypervisor specific.
  */
@@ -3703,7 +3703,7 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.lxc_open_namespace(flags=0) -> Array
  *
- * Call virDomainLxcOpenNamespace[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcOpenNamespace]
+ * Call virDomainLxcOpenNamespace[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainLxcOpenNamespace]
  * to open an LXC namespace.  Note that this will only work on connections to
  * the LXC driver.  The call will return an array of open file descriptors;
  * these should be closed when use of them is finished.
@@ -3760,7 +3760,7 @@ error:
  * call-seq:
  *   dom.qemu_agent_command(command, timeout=0, flags=0) -> String
  *
- * Call virDomainQemuAgentCommand[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainQemuAgentCommand]
+ * Call virDomainQemuAgentCommand[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainQemuAgentCommand]
  * to run an arbitrary command on the Qemu Agent.
  */
 static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
@@ -3794,7 +3794,7 @@ static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.lxc_enter_namespace(fds, flags=0) -> Array
  *
- * Call virDomainLxcEnterNamespace[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainLxcEnterNamespace]
+ * Call virDomainLxcEnterNamespace[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainLxcEnterNamespace]
  * to attach the process to the namespaces associated with the file descriptors
  * in the fds array.  Note that this call does not actually enter the namespace;
  * the next call to fork will do that.  Also note that this function will return
@@ -3871,7 +3871,7 @@ static struct ruby_libvirt_typed_param migrate3_allowed[] = {
  * call-seq:
  *   dom.migrate3(dconn, Hash=nil, flags=0) -> Libvirt::Domain
  *
- * Call virDomainMigrate3[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrate2]
+ * Call virDomainMigrate3[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrate2]
  * to migrate a domain from the host on this connection to the connection
  * referenced in dconn.
  */
@@ -3915,7 +3915,7 @@ static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.migrate_to_uri3(duri=nil, Hash=nil, flags=0) -> nil
  *
- * Call virDomainMigrateToURI3[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainMigrateToURI3]
+ * Call virDomainMigrateToURI3[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrateToURI3]
  * to migrate a domain from the host on this connection to the host whose
  * libvirt URI is duri.
  */
@@ -3958,7 +3958,7 @@ static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.cpu_stats(start_cpu=-1, numcpus=1, flags=0) -> Hash
  *
- * Call virDomainGetCPUStats[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetCPUStats]
+ * Call virDomainGetCPUStats[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetCPUStats]
  * to get statistics about CPU usage attributable to a single domain.  If
  * start_cpu is -1, then numcpus must be 1 and statistics attributable to the
  * entire domain is returned.  If start_cpu is any positive number, then it
@@ -4050,7 +4050,7 @@ static VALUE libvirt_domain_cpu_stats(int argc, VALUE *argv, VALUE d)
 /*
  * call-seq:
  *   dom.time(flags=0) -> Hash
- * Call virDomainGetTime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetTime]
+ * Call virDomainGetTime[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetTime]
  * to get information about the guest time.
  */
 static VALUE libvirt_domain_get_time(int argc, VALUE *argv, VALUE d)
@@ -4079,7 +4079,7 @@ static VALUE libvirt_domain_get_time(int argc, VALUE *argv, VALUE d)
 /*
  * call-seq:
  *   dom.time = Hash,flags=0
- * Call virDomainSetTime[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSetTime]
+ * Call virDomainSetTime[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetTime]
  * to set guest time.
  */
 static VALUE libvirt_domain_time_equal(VALUE d, VALUE in)
@@ -4104,7 +4104,7 @@ static VALUE libvirt_domain_time_equal(VALUE d, VALUE in)
  * call-seq:
  *   dom.core_dump_with_format(filename, dumpformat, flags=0) -> nil
  *
- * Call virDomainCoreDumpWithFormat[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainCoreDump]
+ * Call virDomainCoreDumpWithFormat[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCoreDump]
  * to do a full memory dump of the domain to filename.
  */
 static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d)
@@ -4127,7 +4127,7 @@ static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d
  * call-seq:
  *   dom.fs_freeze(mountpoints=nil, flags=0) -> Fixnum
  *
- * Call virDomainFSFreeze[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSFreeze]
+ * Call virDomainFSFreeze[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainFSFreeze]
  * to freeze the specified filesystems within the guest.
  */
 static VALUE libvirt_domain_fs_freeze(int argc, VALUE *argv, VALUE d)
@@ -4168,7 +4168,7 @@ static VALUE libvirt_domain_fs_freeze(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.fs_thaw(mountpoints=nil, flags=0) -> Fixnum
  *
- * Call virDomainFSThaw[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainFSThaw]
+ * Call virDomainFSThaw[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainFSThaw]
  * to thaw the specified filesystems within the guest.
  */
 static VALUE libvirt_domain_fs_thaw(int argc, VALUE *argv, VALUE d)
@@ -4243,7 +4243,7 @@ static VALUE fs_info_wrap(VALUE arg)
  * call-seq:
  *   dom.fs_info(flags=0) -> [Hash]
  *
- * Call virDomainGetFSInfo[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainGetFSInfo]
+ * Call virDomainGetFSInfo[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainGetFSInfo]
  * to get information about the guest filesystems.
  */
 static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
@@ -4282,7 +4282,7 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.rename(name, flags=0) -> nil
  *
- * Call virDomainRename[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRename]
+ * Call virDomainRename[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainRename]
  * to rename a domain.
  */
 static VALUE libvirt_domain_rename(int argc, VALUE *argv, VALUE d)
@@ -4304,7 +4304,7 @@ static VALUE libvirt_domain_rename(int argc, VALUE *argv, VALUE d)
  * call-seq:
  *   dom.user_password = user,password,flags=0 -> nil
  *
- * Call virDomainSetUserPassword[http://www.libvirt.org/html/libvirt-libvirt.html#virDomainRename]
+ * Call virDomainSetUserPassword[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSetUserPassword]
  * to set the user password on a domain.
  */
 static VALUE libvirt_domain_user_password_equal(VALUE d, VALUE in)
