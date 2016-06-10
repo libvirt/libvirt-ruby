@@ -131,7 +131,7 @@ static int internal_sendall(virStreamPtr RUBY_LIBVIRT_UNUSED(st), char *data,
 
     memcpy(data, RSTRING_PTR(buffer), RSTRING_LEN(buffer));
 
-    return NUM2INT(retcode);
+    return RSTRING_LEN(buffer);
 }
 
 /*
