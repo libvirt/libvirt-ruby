@@ -1,0 +1,6 @@
+ext/libvirt/extconf.h
+ext/libvirt/_libvirt.so
+ext/libvirt/Makefile
+ext/libvirt/mkmf.log
+*.o
+*~
