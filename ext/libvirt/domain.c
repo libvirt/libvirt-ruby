@@ -1816,7 +1816,11 @@ static VALUE libvirt_domain_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
     type = virConnectGetType(ruby_libvirt_connect_get(d));
     ruby_libvirt_raise_error_if(type == NULL, e_Error, "virConnectGetType",
                                 ruby_libvirt_connect_get(d));
-    if (strcmp(type, "QEMU") != 0) {
+    /* The type != NULL check is actually redundant, since if type was NULL
+     * we would have raised an exception above.  It's here to shut clang,
+     * since clang can't tell that we would never reach this.
+     */
+    if (type != NULL && strcmp(type, "QEMU") != 0) {
         rb_raise(rb_eTypeError,
                  "Tried to use virDomainQemuMonitor command on %s connection",
                  type);
