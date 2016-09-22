@@ -1,3 +1,14 @@
+2016-09-22 0.7.0
+  * Fix network lease API to allow arguments that libvirt allows
+  * Implement VIRT_STORAGE_POOL_CREATE flags
+  * Implement more VIR_STORAGE_VOL flags
+  * Implement VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN
+  * Implement virDomainDefineXMLFlags
+  * Implement virDomainRename
+  * Implement virDomainSetUserPassword
+  * Implement VIR_DOMAIN_TIME_SYNC
+  * Fix the return value from virStreamSourceFunc so volume upload works
+
 2015-11-20 0.6.0
   * Fix possible buffer overflow
   * Fix storage volume creation error messages
