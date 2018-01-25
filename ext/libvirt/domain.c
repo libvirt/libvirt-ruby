@@ -2882,7 +2882,7 @@ static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
     ruby_libvirt_generate_call_nil(virDomainBlockResize,
                                    ruby_libvirt_connect_get(d),
                                    ruby_libvirt_domain_get(d),
-                                   StringValueCStr(size), NUM2ULL(size),
+                                   StringValueCStr(disk), NUM2ULL(size),
                                    ruby_libvirt_value_to_uint(flags));
 }
 #endif
