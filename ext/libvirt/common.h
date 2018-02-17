@@ -123,7 +123,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
 
 #define ruby_libvirt_generate_call_list_all(type, argc, argv, listfunc, object, val, newfunc, freefunc) \
     do {                                                                \
-        VALUE flags;                                                    \
+        VALUE flags = RUBY_Qnil;                                        \
         type *list;                                                     \
         int i;                                                          \
         int ret;                                                        \

@@ -660,7 +660,7 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv,
 static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
                                                      VALUE RUBY_LIBVIRT_UNUSED(c))
 {
-    VALUE model, label, flags, result, modiv, doiiv, labiv;
+    VALUE model = RUBY_Qnil, label = RUBY_Qnil, flags = RUBY_Qnil, result, modiv, doiiv, labiv;
     virSecurityModel mod;
     char *modstr, *doistr, *labstr;
     virSecurityLabel lab, oldlab;

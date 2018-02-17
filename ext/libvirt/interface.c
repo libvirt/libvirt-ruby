@@ -67,7 +67,7 @@ static VALUE libvirt_interface_undefine(VALUE i)
  */
 static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE i)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -86,7 +86,7 @@ static VALUE libvirt_interface_create(int argc, VALUE *argv, VALUE i)
  */
 static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -149,7 +149,7 @@ static VALUE libvirt_interface_mac(VALUE i)
  */
 static VALUE libvirt_interface_xml_desc(int argc, VALUE *argv, VALUE i)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 

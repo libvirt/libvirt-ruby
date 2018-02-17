@@ -149,7 +149,7 @@ static int internal_sendall(virStreamPtr RUBY_LIBVIRT_UNUSED(st), char *data,
  */
 static VALUE libvirt_stream_sendall(int argc, VALUE *argv, VALUE s)
 {
-    VALUE opaque;
+    VALUE opaque = RUBY_Qnil;
     int ret;
 
     if (!rb_block_given_p()) {
@@ -192,7 +192,7 @@ static int internal_recvall(virStreamPtr RUBY_LIBVIRT_UNUSED(st),
  */
 static VALUE libvirt_stream_recvall(int argc, VALUE *argv, VALUE s)
 {
-    VALUE opaque;
+    VALUE opaque = RUBY_Qnil;
     int ret;
 
     if (!rb_block_given_p()) {
@@ -259,7 +259,7 @@ static void stream_event_callback(virStreamPtr st, int events, void *opaque)
  */
 static VALUE libvirt_stream_event_add_callback(int argc, VALUE *argv, VALUE s)
 {
-    VALUE events, callback, opaque, passthrough;
+    VALUE events = RUBY_Qnil, callback = RUBY_Qnil, opaque = RUBY_Qnil, passthrough;
     int ret;
 
     rb_scan_args(argc, argv, "21", &events, &callback, &opaque);

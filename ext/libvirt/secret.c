@@ -94,7 +94,7 @@ static VALUE libvirt_secret_usageid(VALUE s)
  */
 static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -113,7 +113,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
  */
 static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
 {
-    VALUE flags, value;
+    VALUE flags = RUBY_Qnil, value;
 
     rb_scan_args(argc, argv, "11", &value, &flags);
 
@@ -173,7 +173,7 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
  */
 static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
 {
-    VALUE flags, ret;
+    VALUE flags = RUBY_Qnil, ret;
     unsigned char *val;
     size_t value_size;
     int exception = 0;

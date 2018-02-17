@@ -88,7 +88,7 @@ static VALUE libvirt_storage_vol_pool(VALUE v)
  */
 static VALUE libvirt_storage_pool_build(int argc, VALUE *argv, VALUE p)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -121,7 +121,7 @@ static VALUE libvirt_storage_pool_undefine(VALUE p)
  */
 static VALUE libvirt_storage_pool_create(int argc, VALUE *argv, VALUE p)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -155,7 +155,7 @@ static VALUE libvirt_storage_pool_destroy(VALUE p)
  */
 static VALUE libvirt_storage_pool_delete(int argc, VALUE *argv, VALUE p)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -174,7 +174,7 @@ static VALUE libvirt_storage_pool_delete(int argc, VALUE *argv, VALUE p)
  */
 static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -247,7 +247,7 @@ static VALUE libvirt_storage_pool_info(VALUE p)
  */
 static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -492,7 +492,7 @@ static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
                                                     VALUE p)
 {
     virStorageVolPtr vol;
-    VALUE xml, flags;
+    VALUE xml, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
@@ -517,7 +517,7 @@ static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
                                                          VALUE p)
 {
     virStorageVolPtr vol;
-    VALUE xml, flags, cloneval;
+    VALUE xml, flags = RUBY_Qnil, cloneval = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "21", &xml, &cloneval, &flags);
 
@@ -573,7 +573,7 @@ static VALUE libvirt_storage_pool_persistent_p(VALUE p)
  */
 static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -593,7 +593,7 @@ static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
  */
 static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -638,7 +638,7 @@ static VALUE libvirt_storage_vol_info(VALUE v)
  */
 static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -686,7 +686,7 @@ static VALUE libvirt_storage_vol_free(VALUE v)
  */
 static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
 {
-    VALUE st, offset, length, flags;
+    VALUE st = RUBY_Qnil, offset = RUBY_Qnil, length = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "31", &st, &offset, &length, &flags);
 
@@ -706,7 +706,7 @@ static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
  */
 static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
 {
-    VALUE st, offset, length, flags;
+    VALUE st = RUBY_Qnil, offset = RUBY_Qnil, length = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "31", &st, &offset, &length, &flags);
 
@@ -728,7 +728,7 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
  */
 static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
 {
-    VALUE alg, flags;
+    VALUE alg = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "11", &alg, &flags);
 
@@ -749,7 +749,7 @@ static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
  */
 static VALUE libvirt_storage_vol_resize(int argc, VALUE *argv, VALUE v)
 {
-    VALUE capacity, flags;
+    VALUE capacity = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "11", &capacity, &flags);
 

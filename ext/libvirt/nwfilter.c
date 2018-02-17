@@ -94,7 +94,7 @@ static VALUE libvirt_nwfilter_uuid(VALUE n)
  */
 static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 

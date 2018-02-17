@@ -3338,7 +3338,7 @@ static VALUE libvirt_domain_block_commit(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
 {
-    VALUE disk, bandwidth, flags;
+    VALUE disk, bandwidth = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "12", &disk, &bandwidth, &flags);
 
@@ -3407,7 +3407,7 @@ static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
 {
-    VALUE disk, flags, result;
+    VALUE disk, flags = RUBY_Qnil, result;
     virDomainBlockJobInfo info;
     int r;
 
@@ -3442,7 +3442,7 @@ static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
 {
-    VALUE disk, flags;
+    VALUE disk, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "11", &disk, &flags);
 
@@ -3508,7 +3508,7 @@ static const char *interface_set(VALUE d, unsigned int flags,
  */
 static VALUE libvirt_domain_interface_parameters(int argc, VALUE *argv, VALUE d)
 {
-    VALUE device, flags;
+    VALUE device = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "11", &device, &flags);
 
@@ -3605,7 +3605,7 @@ static const char *block_stats_get(VALUE d, unsigned int flags,
  */
 static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
 {
-    VALUE disk, flags;
+    VALUE disk = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "11", &disk, &flags);
 
@@ -3666,7 +3666,7 @@ static const char *numa_set(VALUE d, unsigned int flags,
  */
 static VALUE libvirt_domain_numa_parameters(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -3714,7 +3714,7 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_lxc_open_namespace(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags, result;
+    VALUE flags = RUBY_Qnil, result;
     int *fdlist = NULL;
     int ret, i, exception = 0;
     struct ruby_libvirt_ary_store_arg args;
@@ -3769,7 +3769,7 @@ error:
  */
 static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
 {
-    VALUE command, timeout, flags, result;
+    VALUE command, timeout = RUBY_Qnil, flags = RUBY_Qnil, result;
     char *ret;
     int exception = 0;
 
@@ -3807,7 +3807,7 @@ static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
 {
-    VALUE fds, flags, result;
+    VALUE fds = RUBY_Qnil, flags = RUBY_Qnil, result;
     int *fdlist;
     int ret, exception = 0;
     int *oldfdlist;
@@ -3881,7 +3881,7 @@ static struct ruby_libvirt_typed_param migrate3_allowed[] = {
  */
 static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
 {
-    VALUE dconn, hash, flags;
+    VALUE dconn = RUBY_Qnil, hash = RUBY_Qnil, flags = RUBY_Qnil;
     virDomainPtr ddom = NULL;
     struct ruby_libvirt_parameter_assign_args args;
     unsigned long hashsize;
@@ -3925,7 +3925,7 @@ static VALUE libvirt_domain_migrate3(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
 {
-    VALUE duri, hash, flags;
+    VALUE duri = RUBY_Qnil, hash = RUBY_Qnil, flags = RUBY_Qnil;
     struct ruby_libvirt_parameter_assign_args args;
     unsigned long hashsize;
 
@@ -3971,7 +3971,7 @@ static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_cpu_stats(int argc, VALUE *argv, VALUE d)
 {
-    VALUE start_cpu, numcpus, flags, result, tmp;
+    VALUE start_cpu = RUBY_Qnil, numcpus = RUBY_Qnil, flags = RUBY_Qnil, result, tmp;
     int ret, nparams, j;
     unsigned int i;
     virTypedParameterPtr params;
@@ -4059,7 +4059,7 @@ static VALUE libvirt_domain_cpu_stats(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_get_time(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags, result;
+    VALUE flags = RUBY_Qnil, result;
     long long seconds;
     unsigned int nseconds;
     int ret;
@@ -4113,7 +4113,7 @@ static VALUE libvirt_domain_time_equal(VALUE d, VALUE in)
  */
 static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d)
 {
-    VALUE to, dumpformat, flags;
+    VALUE to, dumpformat = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "21", &to, &dumpformat, &flags);
 
@@ -4136,7 +4136,7 @@ static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d
  */
 static VALUE libvirt_domain_fs_freeze(int argc, VALUE *argv, VALUE d)
 {
-    VALUE mountpoints, flags, entry;
+    VALUE mountpoints = RUBY_Qnil, flags = RUBY_Qnil, entry;
     const char **mnt;
     unsigned int nmountpoints;
     int i;
@@ -4177,7 +4177,7 @@ static VALUE libvirt_domain_fs_freeze(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_fs_thaw(int argc, VALUE *argv, VALUE d)
 {
-    VALUE mountpoints, flags, entry;
+    VALUE mountpoints = RUBY_Qnil, flags = RUBY_Qnil, entry;
     const char **mnt;
     unsigned int nmountpoints;
     int i;
@@ -4252,7 +4252,7 @@ static VALUE fs_info_wrap(VALUE arg)
  */
 static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags, result;
+    VALUE flags = RUBY_Qnil, result;
     virDomainFSInfoPtr *info;
     int ret, i = 0, exception;
     struct fs_info_arg args;
@@ -4291,7 +4291,7 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
  */
 static VALUE libvirt_domain_rename(int argc, VALUE *argv, VALUE d)
 {
-    VALUE flags, name;
+    VALUE flags = RUBY_Qnil, name;
 
     rb_scan_args(argc, argv, "11", &name, &flags);
 

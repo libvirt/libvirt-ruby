@@ -2780,7 +2780,7 @@ static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
  */
 static VALUE libvirt_connect_node_free_pages(int argc, VALUE *argv, VALUE c)
 {
-    VALUE pageArr, cells, flags, result;
+    VALUE pageArr = RUBY_Qnil, cells = RUBY_Qnil, flags = RUBY_Qnil, result;
     unsigned int *pages;
     unsigned int npages, i, cellCount;
     int startCell, ret;

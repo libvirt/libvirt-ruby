@@ -141,7 +141,7 @@ static VALUE libvirt_network_uuid(VALUE n)
  */
 static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -301,7 +301,7 @@ static VALUE leases_wrap(VALUE arg)
  */
 static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
 {
-    VALUE mac, flags, result;
+    VALUE mac = RUBY_Qnil, flags = RUBY_Qnil, result;
     int nleases, i = 0, exception = 0;
     virNetworkDHCPLeasePtr *leases = NULL;
     struct leases_arg args;

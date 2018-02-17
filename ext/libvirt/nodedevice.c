@@ -136,7 +136,7 @@ static VALUE libvirt_nodedevice_list_caps(VALUE c)
  */
 static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
 {
-    VALUE flags;
+    VALUE flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "01", &flags);
 
@@ -155,7 +155,7 @@ static VALUE libvirt_nodedevice_xml_desc(int argc, VALUE *argv, VALUE n)
  */
 static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
 {
-    VALUE driver, flags;
+    VALUE driver = RUBY_Qnil, flags = RUBY_Qnil;
 
     rb_scan_args(argc, argv, "02", &driver, &flags);
 
@@ -248,7 +248,7 @@ static VALUE libvirt_nodedevice_free(VALUE n)
 static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
                                                         VALUE n)
 {
-    VALUE wwnn, wwpn, flags;
+    VALUE wwnn, wwpn, flags = RUBY_Qnil;
     virNodeDevicePtr nd;
 
     rb_scan_args(argc, argv, "21", &wwnn, &wwpn, &flags);
