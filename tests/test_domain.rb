@@ -19,6 +19,8 @@ cleanup_test_domain(conn)
 
 # setup for later tests
 `qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
+`qemu-img create -f raw #{$GUEST_RAW_DISK} 5G`
+
 
 new_hostdev_xml = <<EOF
 <hostdev mode='subsystem' type='pci' managed='yes'>
@@ -147,7 +149,7 @@ newdom.destroy
 
 # TESTGROUP: dom.send_key
 newdom = conn.create_domain_xml($new_dom_xml)
-sleep 30
+sleep 1
 
 expect_too_many_args(newdom, "send_key", 1, 2, 3, 4)
 expect_too_few_args(newdom, "send_key")
@@ -318,7 +320,7 @@ newdom.destroy
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-expect_success(newdom, "no args running domain", "resume")
+expect_fail(newdom, Libvirt::Error, "already running", "resume")
 
 newdom.suspend
 expect_too_many_args(newdom, "resume", 1)
@@ -511,15 +513,15 @@ expect_invalid_arg_type(newdom, "block_peek", "foo", 0, "bar")
 expect_invalid_arg_type(newdom, "block_peek", "foo", 0, 512, "baz")
 expect_fail(newdom, Libvirt::RetrieveError, "invalid path", "block_peek", "foo", 0, 512)
 
-blockpeek = newdom.block_peek($GUEST_DISK, 0, 512)
+# blockpeek = newdom.block_peek($GUEST_RAW_DISK, 0, 512)
 
-# 0x51 0x46 0x49 0xfb are the first 4 bytes of a qcow2 image
-if blockpeek[0].unpack('C')[0] != 0x51 or blockpeek[1].unpack('C')[0] != 0x46 or
-  blockpeek[2].unpack('C')[0] != 0x49 or blockpeek[3].unpack('C')[0] != 0xfb
-  puts_fail "domain.block_peek read did not return valid data"
-else
-  puts_ok "domain.block_peek read valid data"
-end
+# # 0x51 0x46 0x49 0xfb are the first 4 bytes of a qcow2 image
+# if blockpeek[0].unpack('C')[0] != 0x51 or blockpeek[1].unpack('C')[0] != 0x46 or
+#   blockpeek[2].unpack('C')[0] != 0x49 or blockpeek[3].unpack('C')[0] != 0xfb
+#   puts_fail "domain.block_peek read did not return valid data"
+# else
+#   puts_ok "domain.block_peek read valid data"
+# end
 
 newdom.destroy
 
@@ -1406,6 +1408,7 @@ sleep 1
 # TESTGROUP: snapshot.parent
 newdom = conn.define_domain_xml($new_dom_xml)
 snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+sleep 1
 snap2 = newdom.snapshot_create_xml("<domainsnapshot/>")
 
 expect_too_many_args(snap2, "parent", 1, 2)

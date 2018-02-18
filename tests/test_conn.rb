@@ -129,7 +129,7 @@ expect_fail(conn, ArgumentError, "empty array", "baseline_cpu", [])
 expect_success(conn, "CPU XML", "baseline_cpu", [cpu_xml])
 
 # TESTGROUP: conn.domain_event_register_any
-dom_event_callback_proc = lambda {|conn, dom, event, detail, opaque|
+dom_event_callback_proc = lambda {|connect, dom, event, detail, opaque|
 }
 
 # def dom_event_callback_symbol(conn, dom, event, detail, opaque)
@@ -292,7 +292,7 @@ expect_success(conn, "UUID arg for defined domain", "lookup_domain_by_uuid", new
 newdom.undefine
 
 # TESTGROUP: conn.define_domain_xml
-expect_too_many_args(conn, "define_domain_xml", 1, 2)
+expect_too_many_args(conn, "define_domain_xml", 1, 2, 3)
 expect_too_few_args(conn, "define_domain_xml")
 expect_invalid_arg_type(conn, "define_domain_xml", 1)
 expect_invalid_arg_type(conn, "define_domain_xml", nil)

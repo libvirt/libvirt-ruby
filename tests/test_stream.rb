@@ -88,7 +88,7 @@ expect_fail(st, RuntimeError, "no block given", "recvall")
 st.free
 
 # TESTGROUP: stream.event_add_callback
-st_event_callback_proc = lambda {|st,events,opaque|
+st_event_callback_proc = lambda {|stream,events,opaque|
 }
 
 st = conn.stream

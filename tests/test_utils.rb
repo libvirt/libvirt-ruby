@@ -8,6 +8,7 @@ $GUEST_BASE = '/var/lib/libvirt/images/rb-libvirt-test'
 $GUEST_DISK = $GUEST_BASE + '.qcow2'
 $GUEST_SAVE = $GUEST_BASE + '.save'
 $GUEST_UUID = "93a5c045-6457-2c09-e56f-927cdf34e17a"
+$GUEST_RAW_DISK = $GUEST_BASE + '.raw'
 
 # XML data for later tests
 $new_dom_xml = <<EOF
