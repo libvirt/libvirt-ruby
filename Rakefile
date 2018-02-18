@@ -21,7 +21,7 @@ require 'rubygems/package_task'
 require 'rbconfig'
 
 PKG_NAME='ruby-libvirt'
-PKG_VERSION='0.7.0'
+PKG_VERSION='0.7.1'
 
 EXT_CONF='ext/libvirt/extconf.rb'
 MAKEFILE="ext/libvirt/Makefile"
