@@ -2079,7 +2079,12 @@ static VALUE libvirt_connect_node_cpu_stats(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &intparam, &flags);
 
-    tmp = ruby_libvirt_value_to_int(intparam);
+    if (NIL_P(intparam)) {
+        tmp = -1;
+    }
+    else {
+        tmp = ruby_libvirt_value_to_int(intparam);
+    }
 
     return ruby_libvirt_get_parameters(c, ruby_libvirt_value_to_uint(flags),
                                        (void *)&tmp, sizeof(virNodeCPUStats),
@@ -2139,7 +2144,12 @@ static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "02", &intparam, &flags);
 
-    tmp = ruby_libvirt_value_to_int(intparam);
+    if (NIL_P(intparam)) {
+        tmp = -1;
+    }
+    else {
+        tmp = ruby_libvirt_value_to_int(intparam);
+    }
 
     return ruby_libvirt_get_parameters(c, ruby_libvirt_value_to_uint(flags),
                                        (void *)&tmp, sizeof(virNodeMemoryStats),
