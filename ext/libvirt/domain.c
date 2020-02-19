@@ -803,7 +803,7 @@ static VALUE libvirt_domain_vcpus(VALUE d)
 
     cpumaplen = VIR_CPU_MAPLEN(maxcpus);
 
-    cpumap = alloca(sizeof(unsigned char) * cpumaplen);
+    cpumap = alloca(sizeof(unsigned char) * cpumaplen * dominfo.nrVirtCpu);
 
     r = virDomainGetVcpus(ruby_libvirt_domain_get(d), cpuinfo,
                           dominfo.nrVirtCpu, cpumap, cpumaplen);
@@ -832,15 +832,16 @@ static VALUE libvirt_domain_vcpus(VALUE d)
 
     result = rb_ary_new();
 
-    for (i = 0; i < dominfo.nrVirtCpu; i++) {
+    for (i = 0; i < r; i++) {
         vcpuinfo = rb_class_new_instance(0, NULL, c_domain_vcpuinfo);
-        rb_iv_set(vcpuinfo, "@number", UINT2NUM(i));
         if (cpuinfo != NULL) {
+            rb_iv_set(vcpuinfo, "@number", INT2NUM(cpuinfo[i].number));
             rb_iv_set(vcpuinfo, "@state", INT2NUM(cpuinfo[i].state));
             rb_iv_set(vcpuinfo, "@cpu_time", ULL2NUM(cpuinfo[i].cpuTime));
             rb_iv_set(vcpuinfo, "@cpu", INT2NUM(cpuinfo[i].cpu));
         }
         else {
+            rb_iv_set(vcpuinfo, "@number", Qnil);
             rb_iv_set(vcpuinfo, "@state", Qnil);
             rb_iv_set(vcpuinfo, "@cpu_time", Qnil);
             rb_iv_set(vcpuinfo, "@cpu", Qnil);
