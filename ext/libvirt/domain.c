@@ -3876,7 +3876,7 @@ static struct ruby_libvirt_typed_param migrate3_allowed[] = {
  * call-seq:
  *   dom.migrate3(dconn, Hash=nil, flags=0) -> Libvirt::Domain
  *
- * Call virDomainMigrate3[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrate2]
+ * Call virDomainMigrate3[http://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainMigrate3]
  * to migrate a domain from the host on this connection to the connection
  * referenced in dconn.
  */
