@@ -26,8 +26,10 @@ RUN dnf update -y && \
         ninja-build \
         patch \
         perl \
+        perl-App-cpanminus \
         pkgconfig \
         python3 \
+        python3-pip \
         python3-setuptools \
         python3-wheel \
         rpm-build \
@@ -37,6 +39,7 @@ RUN dnf update -y && \
         strace \
         sudo \
         vim \
+        xz \
         zip && \
     dnf autoremove -y && \
     dnf clean all -y && \

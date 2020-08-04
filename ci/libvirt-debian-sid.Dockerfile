@@ -12,6 +12,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             ca-certificates \
             ccache \
             chrony \
+            cpanminus \
             gcc \
             gdb \
             gettext \
@@ -30,6 +31,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             perl \
             pkgconf \
             python3 \
+            python3-pip \
             python3-setuptools \
             python3-wheel \
             rake \
@@ -38,6 +40,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
             strace \
             sudo \
             vim \
+            xz-utils \
             zip && \
     apt-get autoremove -y && \
     apt-get autoclean -y && \
