@@ -606,6 +606,7 @@ sleep 1
 expect_too_many_args(newdom, "name", 1)
 
 expect_success(newdom, "no args", "name") {|x| x == "rb-libvirt-test"}
+expect_success(newdom, "is UTF-8", "name") {|x| x.encoding.name == "UTF-8"}
 
 newdom.destroy
 
@@ -909,6 +910,7 @@ expect_too_many_args(newdom, "lookup_snapshot_by_name", 1, 2, 3)
 expect_too_few_args(newdom, "lookup_snapshot_by_name")
 expect_invalid_arg_type(newdom, "lookup_snapshot_by_name", 1)
 expect_invalid_arg_type(newdom, "lookup_snapshot_by_name", 'foo', 'bar')
+expect_utf8_exception_msg(newdom, Libvirt::RetrieveError, "lookup_snapshot_by_name", "__non_existing_snapshot")
 
 expect_success(newdom, "name arg", "lookup_snapshot_by_name", "foo")
 

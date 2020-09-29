@@ -24,6 +24,7 @@
 #endif
 #include <stdio.h>
 #include <ruby.h>
+#include <ruby/encoding.h>
 #include <st.h>
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
@@ -38,8 +39,9 @@ struct rb_exc_new2_arg {
 static VALUE ruby_libvirt_exc_new2_wrap(VALUE arg)
 {
     struct rb_exc_new2_arg *e = (struct rb_exc_new2_arg *)arg;
+    VALUE ruby_msg = ruby_libvirt_str_new2_wrap((VALUE)&e->msg);
 
-    return rb_exc_new2(e->error, e->msg);
+    return rb_exc_new3(e->error, ruby_msg);
 }
 
 VALUE ruby_libvirt_ary_new2_wrap(VALUE arg)
@@ -66,8 +68,11 @@ VALUE ruby_libvirt_ary_store_wrap(VALUE arg)
 VALUE ruby_libvirt_str_new2_wrap(VALUE arg)
 {
     char **str = (char **)arg;
+    VALUE ruby_msg = rb_str_new2(*str);
+    int enc = rb_enc_find_index("UTF-8");
 
-    return rb_str_new2(*str);
+    rb_enc_associate_index(ruby_msg, enc);
+    return ruby_msg;
 }
 
 VALUE ruby_libvirt_str_new_wrap(VALUE arg)
@@ -144,7 +149,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
         rb_iv_set(ruby_errinfo, "@libvirt_level", INT2NUM(err->level));
         if (err->message != NULL) {
             rb_iv_set(ruby_errinfo, "@libvirt_message",
-                      rb_str_new2(err->message));
+                      ruby_libvirt_str_new2_wrap((VALUE)&err->message));
         }
     }
 

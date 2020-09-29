@@ -166,6 +166,24 @@ def expect_fail(object, errtype, errmsg, func, *args)
   end
 end
 
+def expect_utf8_exception_msg(object, errtype, func, *args)
+  begin
+    object.__send__(func, *args)
+  rescue NoMethodError
+    puts_skipped "#{$test_object}.#{func} does not exist"
+  rescue errtype => e
+    if e.message.encoding.name == 'UTF-8'
+      puts_ok "#{$test_object}.#{func} threw #{errtype.to_s} with UTF-8 encoding"
+    else
+      puts_fail "#{$test_object}.#{func} threw #{errtype.to_s} with #{e.message.encoding.name} encoding"
+    end
+  rescue => e
+    puts_fail "#{$test_object}.#{func} expected to throw #{errtype.to_s}, but instead threw #{e.class.to_s}: #{e.to_s}"
+  else
+    puts_fail "#{$test_object}.#{func} expected to throw #{errtype.to_s}, but threw nothing"
+  end
+end
+
 def expect_too_many_args(object, func, *args)
   expect_fail(object, ArgumentError, "too many args", func, *args)
 end

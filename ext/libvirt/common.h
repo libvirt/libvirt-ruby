@@ -56,7 +56,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
             }                                                            \
         }                                                                \
         else {                                                           \
-            result = rb_str_new2(str);                                   \
+            result = ruby_libvirt_str_new2_wrap((VALUE)&str);            \
         }                                                                \
         return result;                                                   \
     } while(0)
