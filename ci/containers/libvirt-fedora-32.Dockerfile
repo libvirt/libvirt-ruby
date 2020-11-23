@@ -1,29 +1,18 @@
-FROM fedora:32
+FROM registry.fedoraproject.org/fedora:32
 
 RUN dnf update -y && \
     dnf install -y \
-        autoconf \
-        automake \
         bash \
         bash-completion \
         ca-certificates \
         ccache \
-        chrony \
-        cppi \
         gcc \
-        gdb \
         gettext \
-        gettext-devel \
         git \
         glibc-devel \
         glibc-langpack-en \
-        libtool \
         libvirt-devel \
-        lsof \
         make \
-        meson \
-        net-tools \
-        ninja-build \
         patch \
         perl \
         perl-App-cpanminus \
@@ -35,11 +24,6 @@ RUN dnf update -y && \
         rpm-build \
         ruby-devel \
         rubygem-rake \
-        screen \
-        strace \
-        sudo \
-        vim \
-        xz \
         zip && \
     dnf autoremove -y && \
     dnf clean all -y && \
