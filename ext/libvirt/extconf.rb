@@ -405,7 +405,6 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE',
                    'VIR_STORAGE_VOL_CREATE_REFLINK',
                    'VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS',
-                   'VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN',
                    'VIR_DOMAIN_DEFINE_VALIDATE',
                    'VIR_DOMAIN_PASSWORD_ENCRYPTED',
                    'VIR_DOMAIN_TIME_SYNC',
@@ -448,6 +447,7 @@ virterror_consts = [
                    ]
 
 libvirt_qemu_consts = [
+                       'VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN',
                        'VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK',
                        'VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT',
                        'VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT',
