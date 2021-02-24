@@ -4,38 +4,6 @@ RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
 RbConfig::MAKEFILE_CONFIG['CCDLFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
 RbConfig::MAKEFILE_CONFIG['EXTDLDFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
 
-# older mkmf does not have checking_message, so implement our own here
-def libvirt_checking_message(target, place = nil, opt = nil)
-  [["in", place], ["with", opt]].inject("#{target}") do |msg, (pre, noun)|
-    if noun
-      [[:to_str], [:join, ","], [:to_s]].each do |meth, *args|
-        if noun.respond_to?(meth)
-          break noun = noun.send(meth, *args)
-        end
-      end
-      msg << " #{pre} #{noun}" unless noun.empty?
-    end
-    msg
-  end
-end
-
-def have_const(const, headers = nil, opt = "", &b)
-  checking_for libvirt_checking_message(const, headers, opt) do
-    headers = cpp_include(headers)
-    if try_compile(<<"SRC", opt, &b)
-#{COMMON_HEADERS}
-#{headers}
-/*top*/
-static int t = #{const};
-SRC
-      $defs.push(format("-DHAVE_CONST_%s", const.strip.upcase.tr_s("^A-Z0-9_", "_")))
-      true
-    else
-      false
-    end
-  end
-end
-
 extension_name = '_libvirt'
 
 # this is a poor-man's dir_config, but is a bit more flexible.  In particular,
