@@ -29,11 +29,6 @@ if include and lib
   $LIBPATH = [lib] | $LIBPATH
   $CPPFLAGS += " -I" + include
   have_library("virt", "virConnectOpen", "libvirt/libvirt.h")
-
-  # if we are using custom libvirt libraries, we have to suppress the default
-  # library path so have_func() only picks up the custom ones, not the installed
-  # ones
-  $DEFLIBPATH = []
 elsif (include and not lib) or (not include and lib)
   raise "Must specify both --with-libvirt-include and --with-libvirt-lib, or neither"
 else
