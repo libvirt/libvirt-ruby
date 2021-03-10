@@ -145,7 +145,7 @@ SPEC = Gem::Specification.new do |s|
     s.author = "David Lutterkort, Chris Lalancette"
     s.rubyforge_project = "None"
     s.description = "Ruby bindings for libvirt."
-    s.license = "LGPLv2"
+    s.license = "LGPL-2.1-or-later"
 end
 
 Gem::PackageTask.new(SPEC) do |pkg|
