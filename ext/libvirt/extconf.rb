@@ -26,11 +26,13 @@ extension_name = '_libvirt'
 include = with_config("libvirt-include")
 lib = with_config("libvirt-lib")
 if include and lib
+  print "Looking for libvirt in " + include + " and " + lib + "\n"
   $LIBPATH = [lib] | $LIBPATH
   $CPPFLAGS += " -I" + include
 elsif (include and not lib) or (not include and lib)
   raise "Must specify both --with-libvirt-include and --with-libvirt-lib, or neither"
 else
+  print "Looking for libvirt using pkg-config\n"
   unless pkg_config("libvirt")
     raise "libvirt library not found in default locations"
   end
