@@ -456,13 +456,13 @@ libvirt_funcs.each { |f| have_func(f, "libvirt/libvirt.h") }
 libvirt_consts.each { |c| have_const(c, ["libvirt/libvirt.h"]) }
 virterror_consts.each { |c| have_const(c, ["libvirt/virterror.h"]) }
 if find_header("libvirt/libvirt-qemu.h")
-  have_library("virt-qemu", "virDomainQemuMonitorCommand")
+  have_library("virt-qemu", "virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
   libvirt_qemu_funcs.each { |f| have_func(f, "libvirt/libvirt-qemu.h") }
   libvirt_qemu_consts.each { |c| have_const(c, ["libvirt/libvirt-qemu.h"]) }
 end
 
 if find_header("libvirt/libvirt-lxc.h")
-  have_library("virt-lxc", "virDomainLxcOpenNamespace")
+  have_library("virt-lxc", "virDomainLxcOpenNamespace", "libvirt/libvirt-lxc.h")
   libvirt_lxc_funcs.each{ |f| have_func(f, "libvirt/libvirt-lxc.h") }
 end
 
