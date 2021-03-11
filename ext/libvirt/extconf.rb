@@ -28,7 +28,6 @@ lib = with_config("libvirt-lib")
 if include and lib
   $LIBPATH = [lib] | $LIBPATH
   $CPPFLAGS += " -I" + include
-  have_library("virt", "virConnectOpen", "libvirt/libvirt.h")
 elsif (include and not lib) or (not include and lib)
   raise "Must specify both --with-libvirt-include and --with-libvirt-lib, or neither"
 else
@@ -37,6 +36,11 @@ else
   end
 end
 
+# Quick sanity check: if we can't find the virConnectOpen() function,
+# there's no way anything will work and we might as well give up now
+unless have_library("virt", "virConnectOpen", "libvirt/libvirt.h")
+  raise "No working libvirt installation found"
+end
 
 libvirt_types = [ 'virNetworkPtr',
                   'virStoragePoolPtr',
