@@ -3770,6 +3770,10 @@ static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "12", &command, &timeout, &flags);
 
+    if (NIL_P(timeout)) {
+        timeout = INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT);
+    }
+
     ret = virDomainQemuAgentCommand(ruby_libvirt_domain_get(d),
                                     StringValueCStr(command),
                                     ruby_libvirt_value_to_int(timeout),
