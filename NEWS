@@ -1,3 +1,10 @@
+2021-11-15 0.8.0
+  * Fix default values for node_cpu_stats and node_memory_stats
+  * Fix cpumap allocation for virDomainGetVcpus
+  * Enforce UTF8 for strings and exceptions
+  * Drop local have_const
+  * Use sensible default for libvirt_domain_qemu_agent_command
+
 2018-02-18 0.7.1
   * Fix a bad bug in block_resize (Marius Rieder)
   * Fix up some problems pointed out by clang
