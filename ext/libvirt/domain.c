@@ -4540,6 +4540,14 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "UNDEFINE_NVRAM",
                     INT2NUM(VIR_DOMAIN_UNDEFINE_NVRAM));
 #endif
+#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_KEEP_NVRAM
+    rb_define_const(c_domain, "UNDEFINE_KEEP_NVRAM",
+                    INT2NUM(VIR_DOMAIN_UNDEFINE_KEEP_NVRAM));
+#endif
+#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA
+    rb_define_const(c_domain, "UNDEFINE_CHECKPOINTS_METADATA",
+                    INT2NUM(VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA));
+#endif
     rb_define_attr(c_domain, "connection", 1, 0);
 
 #if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_DEFAULT

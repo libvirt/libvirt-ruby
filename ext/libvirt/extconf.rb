@@ -404,6 +404,8 @@ libvirt_consts = [ 'VIR_MIGRATE_LIVE',
                    'VIR_DOMAIN_DEFINE_VALIDATE',
                    'VIR_DOMAIN_PASSWORD_ENCRYPTED',
                    'VIR_DOMAIN_TIME_SYNC',
+                   'VIR_DOMAIN_UNDEFINE_KEEP_NVRAM',
+                   'VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA',
                  ]
 
 virterror_consts = [
