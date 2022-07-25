@@ -37,6 +37,16 @@ x86_64-centos-stream-8:
     NAME: centos-stream-8
 
 
+x86_64-centos-stream-9:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-centos-stream-9-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: centos-stream-9
+
+
 x86_64-debian-10:
   extends: .native_build_job
   needs:
@@ -45,6 +55,16 @@ x86_64-debian-10:
   allow_failure: false
   variables:
     NAME: debian-10
+
+
+x86_64-debian-11:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-debian-11-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: debian-11
 
 
 x86_64-debian-sid:
