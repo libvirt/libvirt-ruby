@@ -11,18 +11,18 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y eatmydata && \
     eatmydata apt-get dist-upgrade -y && \
     eatmydata apt-get install --no-install-recommends -y \
-            ca-certificates \
-            ccache \
-            gcc \
-            git \
-            libc6-dev \
-            libvirt-dev \
-            locales \
-            make \
-            pkgconf \
-            rake \
-            ruby-dev \
-            zip && \
+                      ca-certificates \
+                      ccache \
+                      gcc \
+                      git \
+                      libc6-dev \
+                      libvirt-dev \
+                      locales \
+                      make \
+                      pkgconf \
+                      rake \
+                      ruby-dev \
+                      zip && \
     eatmydata apt-get autoremove -y && \
     eatmydata apt-get autoclean -y && \
     sed -Ei 's,^# (en_US\.UTF-8 .*)$,\1,' /etc/locale.gen && \
@@ -32,6 +32,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc && \
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/gcc
 
+ENV CCACHE_WRAPPERSDIR "/usr/libexec/ccache-wrappers"
 ENV LANG "en_US.UTF-8"
 ENV MAKE "/usr/bin/make"
-ENV CCACHE_WRAPPERSDIR "/usr/libexec/ccache-wrappers"
