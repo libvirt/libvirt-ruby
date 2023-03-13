@@ -60,7 +60,7 @@ static void rubyLibvirtErrorFunc(void *RUBY_LIBVIRT_UNUSED(userdata),
  * call-seq:
  *   Libvirt::version(type=nil) -> [ libvirt_version, type_version ]
  *
- * Call virGetVersion[http://www.libvirt.org/html/libvirt-libvirt-host.html#virGetVersion]
+ * Call virGetVersion[https://www.libvirt.org/html/libvirt-libvirt-host.html#virGetVersion]
  * to get the version of libvirt and of the hypervisor TYPE.
  */
 static VALUE libvirt_version(int argc, VALUE *argv,
@@ -90,7 +90,7 @@ static VALUE libvirt_version(int argc, VALUE *argv,
  * call-seq:
  *   Libvirt::open(uri=nil) -> Libvirt::Connect
  *
- * Call virConnectOpen[http://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectOpen]
+ * Call virConnectOpen[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectOpen]
  * to open a connection to a URL.
  */
 static VALUE libvirt_open(int argc, VALUE *argv, VALUE RUBY_LIBVIRT_UNUSED(m))
@@ -111,7 +111,7 @@ static VALUE libvirt_open(int argc, VALUE *argv, VALUE RUBY_LIBVIRT_UNUSED(m))
  * call-seq:
  *   Libvirt::open_read_only(uri=nil) -> Libvirt::Connect
  *
- * Call virConnectOpenReadOnly[http://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectOpenReadOnly]
+ * Call virConnectOpenReadOnly[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectOpenReadOnly]
  * to open a read-only connection to a URL.
  */
 static VALUE libvirt_open_read_only(int argc, VALUE *argv,
@@ -184,7 +184,7 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
  * call-seq:
  *   Libvirt::open_auth(uri=nil, credlist=nil, userdata=nil, flags=0) {|...| authentication block} -> Libvirt::Connect
  *
- * Call virConnectOpenAuth[http://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectOpenAuth]
+ * Call virConnectOpenAuth[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectOpenAuth]
  * to open a connection to a libvirt URI, with a possible authentication block.
  * If an authentication block is desired, then credlist should be an array that
  * specifies which credentials the authentication block is willing to support;
@@ -575,7 +575,7 @@ static int is_symbol_proc_or_nil(VALUE handle)
  * call-seq:
  *   Libvirt::event_register_impl(add_handle=nil, update_handle=nil, remove_handle=nil, add_timeout=nil, update_timeout=nil, remove_timeout=nil) -> Qnil
  *
- * Call virEventRegisterImpl[http://www.libvirt.org/html/libvirt-libvirt-event.html#virEventRegisterImpl]
+ * Call virEventRegisterImpl[https://www.libvirt.org/html/libvirt-libvirt-event.html#virEventRegisterImpl]
  * to register callback handlers for handles and timeouts.  These handles and
  * timeouts are used as part of the libvirt infrastructure for generating
  * domain events.  Each callback must be a Symbol (that is the name of a
