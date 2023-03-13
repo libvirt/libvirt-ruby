@@ -188,7 +188,7 @@ static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
  * to open a connection to a libvirt URI, with a possible authentication block.
  * If an authentication block is desired, then credlist should be an array that
  * specifies which credentials the authentication block is willing to support;
- * the full list is available at http://libvirt.org/html/libvirt-libvirt.html#virConnectCredentialType.
+ * the full list is available at https://www.libvirt.org/html/libvirt-libvirt.html#virConnectCredentialType.
  * If userdata is not nil and an authentication block is given, userdata will
  * be passed unaltered into the authentication block.  The flags parameter
  * controls how to open connection.  The only options currently available for

@@ -8,8 +8,8 @@ Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
 License:        LGPLv2+
-URL:            http://libvirt.org/ruby/
-Source0:        http://libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
+URL:            https://www.libvirt.org/ruby/
+Source0:        https://www.libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)

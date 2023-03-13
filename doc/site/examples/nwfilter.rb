@@ -6,7 +6,7 @@ require 'libvirt'
 # ipv4 tcp traffic to host 255.255.255.255 from port 63000 to port 62000 to
 # go out.  It also allows any ipv4 tcp traffic from port 63000 to port 62000 to
 # come in.  There is a lot more documentation on the nwfilter XML format at
-# http://libvirt.org/formatnwfilter.html
+# https://www.libvirt.org/formatnwfilter.html
 nwfilter_xml = <<EOF
 <filter name='ruby-libvirt-tester' chain='ipv4'>
   <uuid>bd339530-134c-6d07-441a-17fb90dad807</uuid>

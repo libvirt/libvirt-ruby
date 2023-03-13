@@ -4,7 +4,7 @@ require 'libvirt'
 
 # the XML describing the network.  This network will be a NAT'ed network with
 # host IP of 192.168.134.1, and can hand out DHCP addresses to guests between
-# 192.168.134.2 and 192.168.134.254.  http://libvirt.org/formatnetwork.html has
+# 192.168.134.2 and 192.168.134.254.  https://www.libvirt.org/formatnetwork.html has
 # much more information about the format of the XML.
 network_xml = <<EOF
 <network>

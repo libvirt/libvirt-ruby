@@ -3,7 +3,7 @@
 
 require 'libvirt'
 
-# generate some example secret XML.  http://libvirt.org/formatsecret.html has
+# generate some example secret XML.  https://www.libvirt.org/formatsecret.html has
 # more details about the XML format, but essentially:
 # ephemeral='no' means to keep this secret on-disk
 # private='no' means make this secret available to callers
