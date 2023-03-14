@@ -9,7 +9,7 @@ Group:          Development/Languages
 
 License:        LGPLv2+
 URL:            https://libvirt.org/ruby/
-Source0:        https://libvirt.org/ruby/download/ruby-libvirt-@VERSION@.tgz
+Source0:        https://download.libvirt.org/ruby/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby ruby-devel rubygem(rake)
