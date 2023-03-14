@@ -8,7 +8,7 @@ Summary:        Ruby bindings for libvirt
 Group:          Development/Languages
 
 License:        LGPLv2+
-URL:            https://libvirt.org/ruby/
+URL:            https://ruby.libvirt.org/
 Source0:        https://download.libvirt.org/ruby/ruby-libvirt-@VERSION@.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
