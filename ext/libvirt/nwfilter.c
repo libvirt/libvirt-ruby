@@ -48,7 +48,7 @@ VALUE ruby_libvirt_nwfilter_new(virNWFilterPtr n, VALUE conn)
  * call-seq:
  *   nwfilter.undefine -> nil
  *
- * Call virNWFilterUndefine[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterUndefine]
+ * Call virNWFilterUndefine[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterUndefine]
  * to undefine the network filter.
  */
 static VALUE libvirt_nwfilter_undefine(VALUE n)
@@ -62,7 +62,7 @@ static VALUE libvirt_nwfilter_undefine(VALUE n)
  * call-seq:
  *   nwfilter.name -> String
  *
- * Call virNWFilterGetName[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterGetName]
+ * Call virNWFilterGetName[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterGetName]
  * to retrieve the network filter name.
  */
 static VALUE libvirt_nwfilter_name(VALUE n)
@@ -76,7 +76,7 @@ static VALUE libvirt_nwfilter_name(VALUE n)
  * call-seq:
  *   nwfilter.uuid -> String
  *
- * Call virNWFilterGetUUIDString[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterGetUUIDString]
+ * Call virNWFilterGetUUIDString[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterGetUUIDString]
  * to retrieve the network filter UUID.
  */
 static VALUE libvirt_nwfilter_uuid(VALUE n)
@@ -89,7 +89,7 @@ static VALUE libvirt_nwfilter_uuid(VALUE n)
  * call-seq:
  *   nwfilter.xml_desc(flags=0) -> String
  *
- * Call virNWFilterGetXMLDesc[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterGetXMLDesc]
+ * Call virNWFilterGetXMLDesc[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterGetXMLDesc]
  * to retrieve the XML for this network filter.
  */
 static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
@@ -108,7 +108,7 @@ static VALUE libvirt_nwfilter_xml_desc(int argc, VALUE *argv, VALUE n)
  * call-seq:
  *   nwfilter.free -> nil
  *
- * Call virNWFilterFree[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterFree]
+ * Call virNWFilterFree[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterFree]
  * to free this network filter.  After this call the network filter object is
  * no longer valid.
  */

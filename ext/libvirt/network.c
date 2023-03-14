@@ -48,7 +48,7 @@ VALUE ruby_libvirt_network_new(virNetworkPtr n, VALUE conn)
  * call-seq:
  *   net.undefine -> nil
  *
- * Call virNetworkUndefine[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkUndefine]
+ * Call virNetworkUndefine[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkUndefine]
  * to undefine this network.
  */
 static VALUE libvirt_network_undefine(VALUE n)
@@ -62,7 +62,7 @@ static VALUE libvirt_network_undefine(VALUE n)
  * call-seq:
  *   net.create -> nil
  *
- * Call virNetworkCreate[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkCreate]
+ * Call virNetworkCreate[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkCreate]
  * to start this network.
  */
 static VALUE libvirt_network_create(VALUE n)
@@ -77,7 +77,7 @@ static VALUE libvirt_network_create(VALUE n)
  * call-seq:
  *   net.update -> nil
  *
- * Call virNetworkUpdate[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkUpdate]
+ * Call virNetworkUpdate[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkUpdate]
  * to update this network.
  */
 static VALUE libvirt_network_update(VALUE n, VALUE command, VALUE section,
@@ -95,7 +95,7 @@ static VALUE libvirt_network_update(VALUE n, VALUE command, VALUE section,
  * call-seq:
  *   net.destroy -> nil
  *
- * Call virNetworkDestroy[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkDestroy]
+ * Call virNetworkDestroy[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkDestroy]
  * to shutdown this network.
  */
 static VALUE libvirt_network_destroy(VALUE n)
@@ -109,7 +109,7 @@ static VALUE libvirt_network_destroy(VALUE n)
  * call-seq:
  *   net.name -> String
  *
- * Call virNetworkGetName[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetName]
+ * Call virNetworkGetName[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetName]
  * to retrieve the name of this network.
  */
 static VALUE libvirt_network_name(VALUE n)
@@ -123,7 +123,7 @@ static VALUE libvirt_network_name(VALUE n)
  * call-seq:
  *   net.uuid -> String
  *
- * Call virNetworkGetUUIDString[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetUUIDString]
+ * Call virNetworkGetUUIDString[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetUUIDString]
  * to retrieve the UUID of this network.
  */
 static VALUE libvirt_network_uuid(VALUE n)
@@ -136,7 +136,7 @@ static VALUE libvirt_network_uuid(VALUE n)
  * call-seq:
  *   net.xml_desc(flags=0) -> String
  *
- * Call virNetworkGetXMLDesc[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetXMLDesc]
+ * Call virNetworkGetXMLDesc[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetXMLDesc]
  * to retrieve the XML for this network.
  */
 static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
@@ -155,7 +155,7 @@ static VALUE libvirt_network_xml_desc(int argc, VALUE *argv, VALUE n)
  * call-seq:
  *   net.bridge_name -> String
  *
- * Call virNetworkGetBridgeName[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetBridgeName]
+ * Call virNetworkGetBridgeName[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetBridgeName]
  * to retrieve the bridge name for this network.
  */
 static VALUE libvirt_network_bridge_name(VALUE n)
@@ -169,7 +169,7 @@ static VALUE libvirt_network_bridge_name(VALUE n)
  * call-seq:
  *   net.autostart? -> [true|false]
  *
- * Call virNetworkGetAutostart[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetAutostart]
+ * Call virNetworkGetAutostart[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetAutostart]
  * to determine if this network will be autostarted when libvirtd starts.
  */
 static VALUE libvirt_network_autostart(VALUE n)
@@ -187,7 +187,7 @@ static VALUE libvirt_network_autostart(VALUE n)
  * call-seq:
  *   net.autostart = [true|false]
  *
- * Call virNetworkSetAutostart[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkSetAutostart]
+ * Call virNetworkSetAutostart[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkSetAutostart]
  * to set this network to be autostarted when libvirtd starts.
  */
 static VALUE libvirt_network_autostart_equal(VALUE n, VALUE autostart)
@@ -206,7 +206,7 @@ static VALUE libvirt_network_autostart_equal(VALUE n, VALUE autostart)
  * call-seq:
  *   net.free -> nil
  *
- * Call virNetworkFree[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkFree]
+ * Call virNetworkFree[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkFree]
  * to free this network.  The object will no longer be valid after this call.
  */
 static VALUE libvirt_network_free(VALUE n)
@@ -219,7 +219,7 @@ static VALUE libvirt_network_free(VALUE n)
  * call-seq:
  *   net.active? -> [true|false]
  *
- * Call virNetworkIsActive[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkIsActive]
+ * Call virNetworkIsActive[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkIsActive]
  * to determine if this network is currently active.
  */
 static VALUE libvirt_network_active_p(VALUE n)
@@ -235,7 +235,7 @@ static VALUE libvirt_network_active_p(VALUE n)
  * call-seq:
  *   net.persistent? -> [true|false]
  *
- * Call virNetworkIsPersistent[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkIsPersistent]
+ * Call virNetworkIsPersistent[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkIsPersistent]
  * to determine if this network is persistent.
  */
 static VALUE libvirt_network_persistent_p(VALUE n)
@@ -296,7 +296,7 @@ static VALUE leases_wrap(VALUE arg)
  * call-seq:
  *   net.dhcp_leases(mac=nil, flags=0) -> Hash
  *
- * Call virNetworkGetDHCPLeases[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetDHCPLeases]
+ * Call virNetworkGetDHCPLeases[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkGetDHCPLeases]
  * to retrieve the leases for this network.
  */
 static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)

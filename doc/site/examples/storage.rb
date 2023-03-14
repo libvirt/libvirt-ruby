@@ -1,7 +1,7 @@
 # this program demonstrates the use of the libvirt storage APIs.  In particular
 # it demonstrates directory pool creation, volume creation, and teardown.
 # libvirt supports many other kinds of storage pools, including iSCSI, NFS,
-# etc.  See https://www.libvirt.org/formatstorage.html for more details
+# etc.  See https://libvirt.org/formatstorage.html for more details
 
 require 'libvirt'
 

@@ -64,7 +64,7 @@ VALUE pool_new(virStoragePoolPtr p, VALUE conn)
  * call-seq:
  *   vol.pool -> Libvirt::StoragePool
  *
- * Call virStoragePoolLookupByVolume[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolLookupByVolume]
+ * Call virStoragePoolLookupByVolume[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolLookupByVolume]
  * to retrieve the storage pool for this volume.
  */
 static VALUE libvirt_storage_vol_pool(VALUE v)
@@ -83,7 +83,7 @@ static VALUE libvirt_storage_vol_pool(VALUE v)
  * call-seq:
  *   pool.build(flags=0) -> nil
  *
- * Call virStoragePoolBuild[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolBuild]
+ * Call virStoragePoolBuild[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolBuild]
  * to build this storage pool.
  */
 static VALUE libvirt_storage_pool_build(int argc, VALUE *argv, VALUE p)
@@ -102,7 +102,7 @@ static VALUE libvirt_storage_pool_build(int argc, VALUE *argv, VALUE p)
  * call-seq:
  *   pool.undefine -> nil
  *
- * Call virStoragePoolUndefine[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolUndefine]
+ * Call virStoragePoolUndefine[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolUndefine]
  * to undefine this storage pool.
  */
 static VALUE libvirt_storage_pool_undefine(VALUE p)
@@ -116,7 +116,7 @@ static VALUE libvirt_storage_pool_undefine(VALUE p)
  * call-seq:
  *   pool.create(flags=0) -> nil
  *
- * Call virStoragePoolCreate[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolCreate]
+ * Call virStoragePoolCreate[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolCreate]
  * to start this storage pool.
  */
 static VALUE libvirt_storage_pool_create(int argc, VALUE *argv, VALUE p)
@@ -135,7 +135,7 @@ static VALUE libvirt_storage_pool_create(int argc, VALUE *argv, VALUE p)
  * call-seq:
  *   pool.destroy -> nil
  *
- * Call virStoragePoolDestroy[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolDestroy]
+ * Call virStoragePoolDestroy[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolDestroy]
  * to shutdown this storage pool.
  */
 static VALUE libvirt_storage_pool_destroy(VALUE p)
@@ -149,7 +149,7 @@ static VALUE libvirt_storage_pool_destroy(VALUE p)
  * call-seq:
  *   pool.delete(flags=0) -> nil
  *
- * Call virStoragePoolDelete[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolDelete]
+ * Call virStoragePoolDelete[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolDelete]
  * to delete the data corresponding to this data pool.  This is a destructive
  * operation.
  */
@@ -169,7 +169,7 @@ static VALUE libvirt_storage_pool_delete(int argc, VALUE *argv, VALUE p)
  * call-seq:
  *   pool.refresh(flags=0) -> nil
  *
- * Call virStoragePoolRefresh[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolRefresh]
+ * Call virStoragePoolRefresh[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolRefresh]
  * to refresh the list of volumes in this storage pool.
  */
 static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
@@ -188,7 +188,7 @@ static VALUE libvirt_storage_pool_refresh(int argc, VALUE *argv, VALUE p)
  * call-seq:
  *   pool.name -> String
  *
- * Call virStoragePoolGetName[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetName]
+ * Call virStoragePoolGetName[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetName]
  * to retrieve the name of this storage pool.
  */
 static VALUE libvirt_storage_pool_name(VALUE p)
@@ -202,7 +202,7 @@ static VALUE libvirt_storage_pool_name(VALUE p)
  * call-seq:
  *   pool.uuid -> String
  *
- * Call virStoragePoolGetUUIDString[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetUUIDString]
+ * Call virStoragePoolGetUUIDString[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetUUIDString]
  * to retrieve the UUID of this storage pool.
  */
 static VALUE libvirt_storage_pool_uuid(VALUE p)
@@ -215,7 +215,7 @@ static VALUE libvirt_storage_pool_uuid(VALUE p)
  * call-seq:
  *   pool.info -> Libvirt::StoragePoolInfo
  *
- * Call virStoragePoolGetInfo[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetInfo]
+ * Call virStoragePoolGetInfo[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetInfo]
  * to retrieve information about this storage pool.
  */
 static VALUE libvirt_storage_pool_info(VALUE p)
@@ -242,7 +242,7 @@ static VALUE libvirt_storage_pool_info(VALUE p)
  * call-seq:
  *   pool.xml_desc(flags=0) -> String
  *
- * Call virStoragePoolGetXMLDesc[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetXMLDesc]
+ * Call virStoragePoolGetXMLDesc[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetXMLDesc]
  * to retrieve the XML for this storage pool.
  */
 static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
@@ -261,7 +261,7 @@ static VALUE libvirt_storage_pool_xml_desc(int argc, VALUE *argv, VALUE p)
  * call-seq:
  *   pool.autostart? -> [true|false]
  *
- * Call virStoragePoolGetAutostart[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetAutostart]
+ * Call virStoragePoolGetAutostart[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolGetAutostart]
  * to determine whether this storage pool will autostart when libvirtd starts.
  */
 static VALUE libvirt_storage_pool_autostart(VALUE p)
@@ -280,7 +280,7 @@ static VALUE libvirt_storage_pool_autostart(VALUE p)
  * call-seq:
  *   pool.autostart = [true|false]
  *
- * Call virStoragePoolSetAutostart[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolSetAutostart]
+ * Call virStoragePoolSetAutostart[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolSetAutostart]
  * to make this storage pool start when libvirtd starts.
  */
 static VALUE libvirt_storage_pool_autostart_equal(VALUE p, VALUE autostart)
@@ -299,7 +299,7 @@ static VALUE libvirt_storage_pool_autostart_equal(VALUE p, VALUE autostart)
  * call-seq:
  *   pool.num_of_volumes -> Fixnum
  *
- * Call virStoragePoolNumOfVolumes[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolNumOfVolumes]
+ * Call virStoragePoolNumOfVolumes[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolNumOfVolumes]
  * to retrieve the number of volumes in this storage pool.
  */
 static VALUE libvirt_storage_pool_num_of_volumes(VALUE p)
@@ -318,7 +318,7 @@ static VALUE libvirt_storage_pool_num_of_volumes(VALUE p)
  * call-seq:
  *   pool.list_volumes -> list
  *
- * Call virStoragePoolListVolumes[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolListVolumes]
+ * Call virStoragePoolListVolumes[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolListVolumes]
  * to retrieve a list of volume names in this storage pools.
  */
 static VALUE libvirt_storage_pool_list_volumes(VALUE p)
@@ -347,7 +347,7 @@ static VALUE libvirt_storage_pool_list_volumes(VALUE p)
  * call-seq:
  *   pool.free -> nil
  *
- * Call virStoragePoolFree[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolFree]
+ * Call virStoragePoolFree[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolFree]
  * to free this storage pool object.  After this call the storage pool object
  * is no longer valid.
  */
@@ -378,7 +378,7 @@ static VALUE vol_new(virStorageVolPtr v, VALUE conn)
  * call-seq:
  *   pool.lookup_volume_by_name(name) -> Libvirt::StorageVol
  *
- * Call virStorageVolLookupByName[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolLookupByName]
+ * Call virStorageVolLookupByName[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolLookupByName]
  * to retrieve a storage volume object by name.
  */
 static VALUE libvirt_storage_pool_lookup_vol_by_name(VALUE p, VALUE name)
@@ -397,7 +397,7 @@ static VALUE libvirt_storage_pool_lookup_vol_by_name(VALUE p, VALUE name)
  * call-seq:
  *   pool.lookup_volume_by_key(key) -> Libvirt::StorageVol
  *
- * Call virStorageVolLookupByKey[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolLookupByKey]
+ * Call virStorageVolLookupByKey[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolLookupByKey]
  * to retrieve a storage volume object by key.
  */
 static VALUE libvirt_storage_pool_lookup_vol_by_key(VALUE p, VALUE key)
@@ -418,7 +418,7 @@ static VALUE libvirt_storage_pool_lookup_vol_by_key(VALUE p, VALUE key)
  * call-seq:
  *   pool.lookup_volume_by_path(path) -> Libvirt::StorageVol
  *
- * Call virStorageVolLookupByPath[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolLookupByPath]
+ * Call virStorageVolLookupByPath[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolLookupByPath]
  * to retrieve a storage volume object by path.
  */
 static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
@@ -440,7 +440,7 @@ static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
  * call-seq:
  *   pool.list_all_volumes(flags=0) -> Array
  *
- * Call virStoragePoolListAllVolumes[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolListAllVolumes]
+ * Call virStoragePoolListAllVolumes[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolListAllVolumes]
  * to get an array of volume objects for all volumes.
  */
 static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
@@ -457,7 +457,7 @@ static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
  * call-seq:
  *   vol.name -> String
  *
- * Call virStorageVolGetName[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetName]
+ * Call virStorageVolGetName[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetName]
  * to retrieve the name of this storage volume.
  */
 static VALUE libvirt_storage_vol_name(VALUE v)
@@ -471,7 +471,7 @@ static VALUE libvirt_storage_vol_name(VALUE v)
  * call-seq:
  *   vol.key -> String
  *
- * Call virStorageVolGetKey[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetKey]
+ * Call virStorageVolGetKey[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetKey]
  * to retrieve the key for this storage volume.
  */
 static VALUE libvirt_storage_vol_key(VALUE v)
@@ -485,7 +485,7 @@ static VALUE libvirt_storage_vol_key(VALUE v)
  * call-seq:
  *   pool.create_volume_xml(xml, flags=0) -> Libvirt::StorageVol
  *
- * Call virStorageVolCreateXML[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolCreateXML]
+ * Call virStorageVolCreateXML[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolCreateXML]
  * to create a new storage volume from xml.
  */
 static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
@@ -509,7 +509,7 @@ static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
  * call-seq:
  *   pool.create_volume_xml_from(xml, clonevol, flags=0) -> Libvirt::StorageVol
  *
- * Call virStorageVolCreateXMLFrom[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolCreateXMLFrom]
+ * Call virStorageVolCreateXMLFrom[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolCreateXMLFrom]
  * to clone a volume from an existing volume with the properties specified in
  * xml.
  */
@@ -537,7 +537,7 @@ static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
  * call-seq:
  *   pool.active? -> [true|false]
  *
- * Call virStoragePoolIsActive[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolIsActive]
+ * Call virStoragePoolIsActive[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolIsActive]
  * to determine if this storage pool is active.
  */
 static VALUE libvirt_storage_pool_active_p(VALUE p)
@@ -553,7 +553,7 @@ static VALUE libvirt_storage_pool_active_p(VALUE p)
  * call-seq:
  *   pool.persistent? -> [true|false]
  *
- * Call virStoragePoolIsPersistent[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolIsPersistent]
+ * Call virStoragePoolIsPersistent[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolIsPersistent]
  * to determine if this storage pool is persistent.
  */
 static VALUE libvirt_storage_pool_persistent_p(VALUE p)
@@ -568,7 +568,7 @@ static VALUE libvirt_storage_pool_persistent_p(VALUE p)
  * call-seq:
  *   vol.delete(flags=0) -> nil
  *
- * Call virStorageVolDelete[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolDelete]
+ * Call virStorageVolDelete[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolDelete]
  * to delete this volume.  This is a destructive operation.
  */
 static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
@@ -588,7 +588,7 @@ static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
  * call-seq:
  *   vol.wipe(flags=0) -> nil
  *
- * Call virStorageVolWipe[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolWipe]
+ * Call virStorageVolWipe[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolWipe]
  * to wipe the data from this storage volume.  This is a destructive operation.
  */
 static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
@@ -608,7 +608,7 @@ static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
  * call-seq:
  *   vol.info -> Libvirt::StorageVolInfo
  *
- * Call virStorageVolGetInfo[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetInfo]
+ * Call virStorageVolGetInfo[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetInfo]
  * to retrieve information about this storage volume.
  */
 static VALUE libvirt_storage_vol_info(VALUE v)
@@ -633,7 +633,7 @@ static VALUE libvirt_storage_vol_info(VALUE v)
  * call-seq:
  *   vol.xml_desc(flags=0) -> String
  *
- * Call virStorageVolGetXMLDesc[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetXMLDesc]
+ * Call virStorageVolGetXMLDesc[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetXMLDesc]
  * to retrieve the xml for this storage volume.
  */
 static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
@@ -652,7 +652,7 @@ static VALUE libvirt_storage_vol_xml_desc(int argc, VALUE *argv, VALUE v)
  * call-seq:
  *   vol.path -> String
  *
- * Call virStorageVolGetPath[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetPath]
+ * Call virStorageVolGetPath[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolGetPath]
  * to retrieve the path for this storage volume.
  */
 static VALUE libvirt_storage_vol_path(VALUE v)
@@ -666,7 +666,7 @@ static VALUE libvirt_storage_vol_path(VALUE v)
  * call-seq:
  *   vol.free -> nil
  *
- * Call virStorageVolFree[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolFree]
+ * Call virStorageVolFree[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolFree]
  * to free the storage volume object.  After this call the storage volume object
  * is no longer valid.
  */
@@ -681,7 +681,7 @@ static VALUE libvirt_storage_vol_free(VALUE v)
  * call-seq:
  *   vol.download(stream, offset, length, flags=0) -> nil
  *
- * Call virStorageVolDownload[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolDownload]
+ * Call virStorageVolDownload[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolDownload]
  * to download the content of a volume as a stream.
  */
 static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
@@ -701,7 +701,7 @@ static VALUE libvirt_storage_vol_download(int argc, VALUE *argv, VALUE v)
  * call-seq:
  *   vol.upload(stream, offset, length, flags=0) -> nil
  *
- * Call virStorageVolUpload[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolUpload]
+ * Call virStorageVolUpload[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolUpload]
  * to upload new content to a volume from a stream.
  */
 static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
@@ -723,7 +723,7 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
  * call-seq:
  *   vol.wipe_pattern(alg, flags=0) -> nil
  *
- * Call virStorageVolWipePattern[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolWipePattern]
+ * Call virStorageVolWipePattern[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolWipePattern]
  * to wipe the data from this storage volume.  This is a destructive operation.
  */
 static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
@@ -744,7 +744,7 @@ static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
  * call-seq:
  *   vol.resize(capacity, flags=0) -> nil
  *
- * Call virStorageVolResize[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolResize]
+ * Call virStorageVolResize[https://libvirt.org/html/libvirt-libvirt-storage.html#virStorageVolResize]
  * to resize the associated storage volume.
  */
 static VALUE libvirt_storage_vol_resize(int argc, VALUE *argv, VALUE v)

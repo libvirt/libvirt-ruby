@@ -1,7 +1,7 @@
 ruby-libvirt
 ============
 
-Ruby bindings for libvirt (https://www.libvirt.org)
+Ruby bindings for libvirt (https://libvirt.org)
 
 Usage
 -----

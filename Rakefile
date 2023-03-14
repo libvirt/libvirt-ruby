@@ -137,7 +137,7 @@ SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
     s.version = PKG_VERSION
     s.email = "libvir-list@redhat.com"
-    s.homepage = "https://www.libvirt.org/ruby/"
+    s.homepage = "https://libvirt.org/ruby/"
     s.summary = "Ruby bindings for LIBVIRT"
     s.files = PKG_FILES
     s.required_ruby_version = '>= 1.8.1'

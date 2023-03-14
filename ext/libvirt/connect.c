@@ -112,7 +112,7 @@ virConnectPtr ruby_libvirt_connect_get(VALUE c)
  * call-seq:
  *   conn.close -> nil
  *
- * Call virConnectClose[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectClose]
+ * Call virConnectClose[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectClose]
  * to close the connection.
  */
 static VALUE libvirt_connect_close(VALUE c)
@@ -145,7 +145,7 @@ static VALUE libvirt_connect_closed_p(VALUE c)
  * call-seq:
  *   conn.type -> String
  *
- * Call virConnectGetType[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetType]
+ * Call virConnectGetType[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetType]
  * to retrieve the type of hypervisor for this connection.
  */
 static VALUE libvirt_connect_type(VALUE c)
@@ -159,7 +159,7 @@ static VALUE libvirt_connect_type(VALUE c)
  * call-seq:
  *   conn.version -> Fixnum
  *
- * Call virConnectGetVersion[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetVersion]
+ * Call virConnectGetVersion[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetVersion]
  * to retrieve the version of the hypervisor for this connection.
  */
 static VALUE libvirt_connect_version(VALUE c)
@@ -179,7 +179,7 @@ static VALUE libvirt_connect_version(VALUE c)
  * call-seq:
  *   conn.libversion -> Fixnum
  *
- * Call virConnectGetLibVersion[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetLibVersion]
+ * Call virConnectGetLibVersion[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetLibVersion]
  * to retrieve the version of the libvirt library for this connection.
  */
 static VALUE libvirt_connect_libversion(VALUE c)
@@ -200,7 +200,7 @@ static VALUE libvirt_connect_libversion(VALUE c)
  * call-seq:
  *   conn.hostname -> String
  *
- * Call virConnectGetHostname[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetHostname]
+ * Call virConnectGetHostname[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetHostname]
  * to retrieve the hostname of the hypervisor for this connection.
  */
 static VALUE libvirt_connect_hostname(VALUE c)
@@ -214,7 +214,7 @@ static VALUE libvirt_connect_hostname(VALUE c)
  * call-seq:
  *   conn.uri -> String
  *
- * Call virConnectGetURI[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetURI]
+ * Call virConnectGetURI[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetURI]
  * to retrieve the canonical URI for this connection.
  */
 static VALUE libvirt_connect_uri(VALUE c)
@@ -228,7 +228,7 @@ static VALUE libvirt_connect_uri(VALUE c)
  * call-seq:
  *   conn.max_vcpus(type=nil) -> Fixnum
  *
- * Call virConnectGetMaxVcpus[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetMaxVcpus]
+ * Call virConnectGetMaxVcpus[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetMaxVcpus]
  * to retrieve the maximum number of virtual cpus supported by the hypervisor
  * for this connection.
  */
@@ -248,7 +248,7 @@ static VALUE libvirt_connect_max_vcpus(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.node_info -> Libvirt::Connect::Nodeinfo
  *
- * Call virNodeGetInfo[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetInfo]
+ * Call virNodeGetInfo[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetInfo]
  * to retrieve information about the node for this connection.
  */
 static VALUE libvirt_connect_node_info(VALUE c)
@@ -278,7 +278,7 @@ static VALUE libvirt_connect_node_info(VALUE c)
  * call-seq:
  *   conn.node_free_memory -> Fixnum
  *
- * Call virNodeGetFreeMemory[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetFreeMemory]
+ * Call virNodeGetFreeMemory[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetFreeMemory]
  * to retrieve the amount of free memory available on the host for this
  * connection.
  */
@@ -299,7 +299,7 @@ static VALUE libvirt_connect_node_free_memory(VALUE c)
  * call-seq:
  *   conn.node_cells_free_memory(startCell=0, maxCells=#nodeCells) -> list
  *
- * Call virNodeGetCellsFreeMemory[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetCellsFreeMemory]
+ * Call virNodeGetCellsFreeMemory[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetCellsFreeMemory]
  * to retrieve the amount of free memory in each NUMA cell on the host for
  * this connection.
  */
@@ -352,7 +352,7 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
  * call-seq:
  *   conn.node_security_model -> Libvirt::Connect::NodeSecurityModel
  *
- * Call virNodeGetSecurityModel[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetSecurityModel]
+ * Call virNodeGetSecurityModel[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetSecurityModel]
  * to retrieve the security model in use on the host for this connection.
  */
 static VALUE libvirt_connect_node_security_model(VALUE c)
@@ -379,7 +379,7 @@ static VALUE libvirt_connect_node_security_model(VALUE c)
  * call-seq:
  *   conn.encrypted? -> [True|False]
  *
- * Call virConnectIsEncrypted[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectIsEncrypted]
+ * Call virConnectIsEncrypted[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectIsEncrypted]
  * to determine if the connection is encrypted.
  */
 static VALUE libvirt_connect_encrypted_p(VALUE c)
@@ -395,7 +395,7 @@ static VALUE libvirt_connect_encrypted_p(VALUE c)
  * call-seq:
  *   conn.secure? -> [True|False]
  *
- * Call virConnectIsSecure[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectIsSecure]
+ * Call virConnectIsSecure[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectIsSecure]
  * to determine if the connection is secure.
  */
 static VALUE libvirt_connect_secure_p(VALUE c)
@@ -410,7 +410,7 @@ static VALUE libvirt_connect_secure_p(VALUE c)
  * call-seq:
  *   conn.capabilities -> String
  *
- * Call virConnectGetCapabilities[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetCapabilities]
+ * Call virConnectGetCapabilities[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetCapabilities]
  * to retrieve the capabilities XML for this connection.
  */
 static VALUE libvirt_connect_capabilities(VALUE c)
@@ -425,7 +425,7 @@ static VALUE libvirt_connect_capabilities(VALUE c)
  * call-seq:
  *   conn.compare_cpu(xml, flags=0) -> compareflag
  *
- * Call virConnectCompareCPU[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectCompareCPU]
+ * Call virConnectCompareCPU[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectCompareCPU]
  * to compare the host CPU with the XML contained in xml.  Returns one of
  * Libvirt::CPU_COMPARE_ERROR, Libvirt::CPU_COMPARE_INCOMPATIBLE,
  * Libvirt::CPU_COMPARE_IDENTICAL, or Libvirt::CPU_COMPARE_SUPERSET.
@@ -450,7 +450,7 @@ static VALUE libvirt_connect_compare_cpu(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.baseline_cpu([xml, xml2, ...], flags=0) -> XML
  *
- * Call virConnectBaselineCPU[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectBaselineCPU]
+ * Call virConnectBaselineCPU[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectBaselineCPU]
  * to compare the most feature-rich CPU which is compatible with all
  * given host CPUs.
  */
@@ -788,7 +788,7 @@ static int domain_event_graphics_callback(virConnectPtr conn, virDomainPtr dom,
  * call-seq:
  *   conn.domain_event_register_any(eventID, callback, dom=nil, opaque=nil) -> Fixnum
  *
- * Call virConnectDomainEventRegisterAny[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventRegisterAny]
+ * Call virConnectDomainEventRegisterAny[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventRegisterAny]
  * to register callback for eventID with libvirt.  The eventID must be one of
  * the Libvirt::Connect::DOMAIN_EVENT_ID_* constants.  The callback can either
  * be a Symbol (that is the name of a method to callback) or a Proc.  Note that
@@ -873,7 +873,7 @@ static VALUE libvirt_connect_domain_event_register_any(int argc, VALUE *argv,
  * call-seq:
  *   conn.domain_event_deregister_any(callbackID) -> nil
  *
- * Call virConnectDomainEventDeregisterAny[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventDeregisterAny]
+ * Call virConnectDomainEventDeregisterAny[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventDeregisterAny]
  * to deregister a callback from libvirt.  The callbackID must be a
  * libvirt-specific handle returned by domain_event_register_any.
  */
@@ -905,7 +905,7 @@ static int domain_event_callback(virConnectPtr conn,
  * call-seq:
  *   conn.domain_event_register(callback, opaque=nil) -> nil
  *
- * Call virConnectDomainEventRegister[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventRegister]
+ * Call virConnectDomainEventRegister[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventRegister]
  * to register callback for domain lifecycle events with libvirt.  The
  * callback can either be a Symbol (that is the name of a method to callback)
  * or a Proc.  The callback must accept 5 parameters: Libvirt::Connect,
@@ -941,7 +941,7 @@ static VALUE libvirt_connect_domain_event_register(int argc, VALUE *argv,
  * call-seq:
  *   conn.domain_event_deregister(callback) -> nil
  *
- * Call virConnectDomainEventDeregister[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventDeregister]
+ * Call virConnectDomainEventDeregister[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainEventDeregister]
  * to deregister the event callback from libvirt.  This method is deprecated
  * in favor of domain_event_deregister_any (though they cannot be mixed; if
  * the callback was registered with domain_event_register, it must be
@@ -960,7 +960,7 @@ static VALUE libvirt_connect_domain_event_deregister(VALUE c)
  * call-seq:
  *   conn.num_of_domains -> Fixnum
  *
- * Call virConnectNumOfDomains[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectNumOfDomains]
+ * Call virConnectNumOfDomains[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectNumOfDomains]
  * to retrieve the number of active domains on this connection.
  */
 static VALUE libvirt_connect_num_of_domains(VALUE c)
@@ -972,7 +972,7 @@ static VALUE libvirt_connect_num_of_domains(VALUE c)
  * call-seq:
  *   conn.list_domains -> list
  *
- * Call virConnectListDomains[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectListDomains]
+ * Call virConnectListDomains[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectListDomains]
  * to retrieve a list of active domain IDs on this connection.
  */
 static VALUE libvirt_connect_list_domains(VALUE c)
@@ -1008,7 +1008,7 @@ static VALUE libvirt_connect_list_domains(VALUE c)
  * call-seq:
  *   conn.num_of_defined_domains -> Fixnum
  *
- * Call virConnectNumOfDefinedDomains[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectNumOfDefinedDomains]
+ * Call virConnectNumOfDefinedDomains[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectNumOfDefinedDomains]
  * to retrieve the number of inactive domains on this connection.
  */
 static VALUE libvirt_connect_num_of_defined_domains(VALUE c)
@@ -1020,7 +1020,7 @@ static VALUE libvirt_connect_num_of_defined_domains(VALUE c)
  * call-seq:
  *   conn.list_defined_domains -> list
  *
- * Call virConnectListDefinedDomains[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectListDefinedDomains]
+ * Call virConnectListDefinedDomains[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectListDefinedDomains]
  * to retrieve a list of inactive domain names on this connection.
  */
 static VALUE libvirt_connect_list_defined_domains(VALUE c)
@@ -1032,7 +1032,7 @@ static VALUE libvirt_connect_list_defined_domains(VALUE c)
  * call-seq:
  *   conn.create_domain_linux(xml, flags=0) -> Libvirt::Domain
  *
- * Call virDomainCreateLinux[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateLinux]
+ * Call virDomainCreateLinux[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateLinux]
  * to start a transient domain from the given XML.  Deprecated; use
  * conn.create_domain_xml instead.
  */
@@ -1057,7 +1057,7 @@ static VALUE libvirt_connect_create_linux(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.create_domain_xml(xml, flags=0) -> Libvirt::Domain
  *
- * Call virDomainCreateXML[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateXML]
+ * Call virDomainCreateXML[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateXML]
  * to start a transient domain from the given XML.
  */
 static VALUE libvirt_connect_create_domain_xml(int argc, VALUE *argv, VALUE c)
@@ -1080,7 +1080,7 @@ static VALUE libvirt_connect_create_domain_xml(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.lookup_domain_by_name(name) -> Libvirt::Domain
  *
- * Call virDomainLookupByName[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainLookupByName]
+ * Call virDomainLookupByName[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainLookupByName]
  * to retrieve a domain object for name.
  */
 static VALUE libvirt_connect_lookup_domain_by_name(VALUE c, VALUE name)
@@ -1100,7 +1100,7 @@ static VALUE libvirt_connect_lookup_domain_by_name(VALUE c, VALUE name)
  * call-seq:
  *   conn.lookup_domain_by_id(id) -> Libvirt::Domain
  *
- * Call virDomainLookupByID[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainLookupByID]
+ * Call virDomainLookupByID[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainLookupByID]
  * to retrieve a domain object for id.
  */
 static VALUE libvirt_connect_lookup_domain_by_id(VALUE c, VALUE id)
@@ -1119,7 +1119,7 @@ static VALUE libvirt_connect_lookup_domain_by_id(VALUE c, VALUE id)
  * call-seq:
  *   conn.lookup_domain_by_uuid(uuid) -> Libvirt::Domain
  *
- * Call virDomainLookupByUUIDString[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainLookupByUUIDString]
+ * Call virDomainLookupByUUIDString[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainLookupByUUIDString]
  * to retrieve a domain object for uuid.
  */
 static VALUE libvirt_connect_lookup_domain_by_uuid(VALUE c, VALUE uuid)
@@ -1139,7 +1139,7 @@ static VALUE libvirt_connect_lookup_domain_by_uuid(VALUE c, VALUE uuid)
  * call-seq:
  *   conn.define_domain_xml(xml, flags=0) -> Libvirt::Domain
  *
- * Call virDomainDefineXML[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainDefineXML]
+ * Call virDomainDefineXML[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainDefineXML]
  * to define a permanent domain on this connection.
  */
 static VALUE libvirt_connect_define_domain_xml(int argc, VALUE *argv, VALUE c)
@@ -1173,7 +1173,7 @@ static VALUE libvirt_connect_define_domain_xml(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.domain_xml_from_native(nativeFormat, xml, flags=0) -> String
  *
- * Call virConnectDomainXMLFromNative[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainXMLFromNative]
+ * Call virConnectDomainXMLFromNative[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainXMLFromNative]
  * to convert a native hypervisor domain representation to libvirt XML.
  */
 static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
@@ -1197,7 +1197,7 @@ static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
  * call-seq:
  *   conn.domain_xml_to_native(nativeFormat, xml, flags=0) -> String
  *
- * Call virConnectDomainXMLToNative[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainXMLToNative]
+ * Call virConnectDomainXMLToNative[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectDomainXMLToNative]
  * to convert libvirt XML to a native domain hypervisor representation.
  */
 static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
@@ -1221,7 +1221,7 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
  * call-seq:
  *   conn.num_of_interfaces -> Fixnum
  *
- * Call virConnectNumOfInterfaces[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virConnectNumOfInterfaces]
+ * Call virConnectNumOfInterfaces[https://libvirt.org/html/libvirt-libvirt-interface.html#virConnectNumOfInterfaces]
  * to retrieve the number of active interfaces on this connection.
  */
 static VALUE libvirt_connect_num_of_interfaces(VALUE c)
@@ -1233,7 +1233,7 @@ static VALUE libvirt_connect_num_of_interfaces(VALUE c)
  * call-seq:
  *   conn.list_interfaces -> list
  *
- * Call virConnectListInterfaces[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virConnectListInterfaces]
+ * Call virConnectListInterfaces[https://libvirt.org/html/libvirt-libvirt-interface.html#virConnectListInterfaces]
  * to retrieve a list of active interface names on this connection.
  */
 static VALUE libvirt_connect_list_interfaces(VALUE c)
@@ -1245,7 +1245,7 @@ static VALUE libvirt_connect_list_interfaces(VALUE c)
  * call-seq:
  *   conn.num_of_defined_interfaces -> Fixnum
  *
- * Call virConnectNumOfDefinedInterfaces[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virConnectNumOfDefinedInterfaces]
+ * Call virConnectNumOfDefinedInterfaces[https://libvirt.org/html/libvirt-libvirt-interface.html#virConnectNumOfDefinedInterfaces]
  * to retrieve the number of inactive interfaces on this connection.
  */
 static VALUE libvirt_connect_num_of_defined_interfaces(VALUE c)
@@ -1257,7 +1257,7 @@ static VALUE libvirt_connect_num_of_defined_interfaces(VALUE c)
  * call-seq:
  *   conn.list_defined_interfaces -> list
  *
- * Call virConnectListDefinedInterfaces[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virConnectListDefinedInterfaces]
+ * Call virConnectListDefinedInterfaces[https://libvirt.org/html/libvirt-libvirt-interface.html#virConnectListDefinedInterfaces]
  * to retrieve a list of inactive interface names on this connection.
  */
 static VALUE libvirt_connect_list_defined_interfaces(VALUE c)
@@ -1269,7 +1269,7 @@ static VALUE libvirt_connect_list_defined_interfaces(VALUE c)
  * call-seq:
  *   conn.lookup_interface_by_name(name) -> Libvirt::Interface
  *
- * Call virInterfaceLookupByName[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceLookupByName]
+ * Call virInterfaceLookupByName[https://libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceLookupByName]
  * to retrieve an interface object by name.
  */
 static VALUE libvirt_connect_lookup_interface_by_name(VALUE c, VALUE name)
@@ -1289,7 +1289,7 @@ static VALUE libvirt_connect_lookup_interface_by_name(VALUE c, VALUE name)
  * call-seq:
  *   conn.lookup_interface_by_mac(mac) -> Libvirt::Interface
  *
- * Call virInterfaceLookupByMACString[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceLookupByMACString]
+ * Call virInterfaceLookupByMACString[https://libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceLookupByMACString]
  * to retrieve an interface object by MAC address.
  */
 static VALUE libvirt_connect_lookup_interface_by_mac(VALUE c, VALUE mac)
@@ -1309,7 +1309,7 @@ static VALUE libvirt_connect_lookup_interface_by_mac(VALUE c, VALUE mac)
  * call-seq:
  *   conn.define_interface_xml(xml, flags=0) -> Libvirt::Interface
  *
- * Call virInterfaceDefineXML[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceDefineXML]
+ * Call virInterfaceDefineXML[https://libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceDefineXML]
  * to define a new interface from xml.
  */
 static VALUE libvirt_connect_define_interface_xml(int argc, VALUE *argv,
@@ -1335,7 +1335,7 @@ static VALUE libvirt_connect_define_interface_xml(int argc, VALUE *argv,
  * call-seq:
  *   conn.num_of_networks -> Fixnum
  *
- * Call virConnectNumOfNetworks[https://www.libvirt.org/html/libvirt-libvirt-network.html#virConnectNumOfNetworks]
+ * Call virConnectNumOfNetworks[https://libvirt.org/html/libvirt-libvirt-network.html#virConnectNumOfNetworks]
  * to retrieve the number of active networks on this connection.
  */
 static VALUE libvirt_connect_num_of_networks(VALUE c)
@@ -1347,7 +1347,7 @@ static VALUE libvirt_connect_num_of_networks(VALUE c)
  * call-seq:
  *   conn.list_networks -> list
  *
- * Call virConnectListNetworks[https://www.libvirt.org/html/libvirt-libvirt-network.html#virConnectListNetworks]
+ * Call virConnectListNetworks[https://libvirt.org/html/libvirt-libvirt-network.html#virConnectListNetworks]
  * to retrieve a list of active network names on this connection.
  */
 static VALUE libvirt_connect_list_networks(VALUE c)
@@ -1359,7 +1359,7 @@ static VALUE libvirt_connect_list_networks(VALUE c)
  * call-seq:
  *   conn.num_of_defined_networks -> Fixnum
  *
- * Call virConnectNumOfDefinedNetworks[https://www.libvirt.org/html/libvirt-libvirt-network.html#virConnectNumOfDefinedNetworks]
+ * Call virConnectNumOfDefinedNetworks[https://libvirt.org/html/libvirt-libvirt-network.html#virConnectNumOfDefinedNetworks]
  * to retrieve the number of inactive networks on this connection.
  */
 static VALUE libvirt_connect_num_of_defined_networks(VALUE c)
@@ -1371,7 +1371,7 @@ static VALUE libvirt_connect_num_of_defined_networks(VALUE c)
  * call-seq:
  *   conn.list_of_defined_networks -> list
  *
- * Call virConnectListDefinedNetworks[https://www.libvirt.org/html/libvirt-libvirt-network.html#virConnectListDefinedNetworks]
+ * Call virConnectListDefinedNetworks[https://libvirt.org/html/libvirt-libvirt-network.html#virConnectListDefinedNetworks]
  * to retrieve a list of inactive network names on this connection.
  */
 static VALUE libvirt_connect_list_defined_networks(VALUE c)
@@ -1383,7 +1383,7 @@ static VALUE libvirt_connect_list_defined_networks(VALUE c)
  * call-seq:
  *   conn.lookup_network_by_name(name) -> Libvirt::Network
  *
- * Call virNetworkLookupByName[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkLookupByName]
+ * Call virNetworkLookupByName[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkLookupByName]
  * to retrieve a network object by name.
  */
 static VALUE libvirt_connect_lookup_network_by_name(VALUE c, VALUE name)
@@ -1403,7 +1403,7 @@ static VALUE libvirt_connect_lookup_network_by_name(VALUE c, VALUE name)
  * call-seq:
  *   conn.lookup_network_by_uuid(uuid) -> Libvirt::Network
  *
- * Call virNetworkLookupByUUIDString[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkLookupByUUIDString]
+ * Call virNetworkLookupByUUIDString[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkLookupByUUIDString]
  * to retrieve a network object by UUID.
  */
 static VALUE libvirt_connect_lookup_network_by_uuid(VALUE c, VALUE uuid)
@@ -1423,7 +1423,7 @@ static VALUE libvirt_connect_lookup_network_by_uuid(VALUE c, VALUE uuid)
  * call-seq:
  *   conn.create_network_xml(xml) -> Libvirt::Network
  *
- * Call virNetworkCreateXML[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkCreateXML]
+ * Call virNetworkCreateXML[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkCreateXML]
  * to start a new transient network from xml.
  */
 static VALUE libvirt_connect_create_network_xml(VALUE c, VALUE xml)
@@ -1442,7 +1442,7 @@ static VALUE libvirt_connect_create_network_xml(VALUE c, VALUE xml)
  * call-seq:
  *   conn.define_network_xml(xml) -> Libvirt::Network
  *
- * Call virNetworkDefineXML[https://www.libvirt.org/html/libvirt-libvirt-network.html#virNetworkDefineXML]
+ * Call virNetworkDefineXML[https://libvirt.org/html/libvirt-libvirt-network.html#virNetworkDefineXML]
  * to define a new permanent network from xml.
  */
 static VALUE libvirt_connect_define_network_xml(VALUE c, VALUE xml)
@@ -1464,7 +1464,7 @@ static VALUE libvirt_connect_define_network_xml(VALUE c, VALUE xml)
  * call-seq:
  *   conn.num_of_nodedevices(cap=nil, flags=0) -> Fixnum
  *
- * Call virNodeNumOfDevices[https://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeNumOfDevices]
+ * Call virNodeNumOfDevices[https://libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeNumOfDevices]
  * to retrieve the number of node devices on this connection.
  */
 static VALUE libvirt_connect_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
@@ -1488,7 +1488,7 @@ static VALUE libvirt_connect_num_of_nodedevices(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.list_nodedevices(cap=nil, flags=0) -> list
  *
- * Call virNodeListDevices[https://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeListDevices]
+ * Call virNodeListDevices[https://libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeListDevices]
  * to retrieve a list of node device names on this connection.
  */
 static VALUE libvirt_connect_list_nodedevices(int argc, VALUE *argv, VALUE c)
@@ -1529,7 +1529,7 @@ static VALUE libvirt_connect_list_nodedevices(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.lookup_nodedevice_by_name(name) -> Libvirt::NodeDevice
  *
- * Call virNodeDeviceLookupByName[https://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceLookupByName]
+ * Call virNodeDeviceLookupByName[https://libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceLookupByName]
  * to retrieve a nodedevice object by name.
  */
 static VALUE libvirt_connect_lookup_nodedevice_by_name(VALUE c, VALUE name)
@@ -1551,7 +1551,7 @@ static VALUE libvirt_connect_lookup_nodedevice_by_name(VALUE c, VALUE name)
  * call-seq:
  *   conn.create_nodedevice_xml(xml, flags=0) -> Libvirt::NodeDevice
  *
- * Call virNodeDeviceCreateXML[https://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceCreateXML]
+ * Call virNodeDeviceCreateXML[https://libvirt.org/html/libvirt-libvirt-nodedev.html#virNodeDeviceCreateXML]
  * to create a new node device from xml.
  */
 static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
@@ -1580,7 +1580,7 @@ static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
  * call-seq:
  *   conn.num_of_nwfilters -> Fixnum
  *
- * Call virConnectNumOfNWFilters[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virConnectNumOfNWFilters]
+ * Call virConnectNumOfNWFilters[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virConnectNumOfNWFilters]
  * to retrieve the number of network filters on this connection.
  */
 static VALUE libvirt_connect_num_of_nwfilters(VALUE c)
@@ -1592,7 +1592,7 @@ static VALUE libvirt_connect_num_of_nwfilters(VALUE c)
  * call-seq:
  *   conn.list_nwfilters -> list
  *
- * Call virConnectListNWFilters[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virConnectListNWFilters]
+ * Call virConnectListNWFilters[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virConnectListNWFilters]
  * to retrieve a list of network filter names on this connection.
  */
 static VALUE libvirt_connect_list_nwfilters(VALUE c)
@@ -1604,7 +1604,7 @@ static VALUE libvirt_connect_list_nwfilters(VALUE c)
  * call-seq:
  *   conn.lookup_nwfilter_by_name(name) -> Libvirt::NWFilter
  *
- * Call virNWFilterLookupByName[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterLookupByName]
+ * Call virNWFilterLookupByName[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterLookupByName]
  * to retrieve a network filter object by name.
  */
 static VALUE libvirt_connect_lookup_nwfilter_by_name(VALUE c, VALUE name)
@@ -1624,7 +1624,7 @@ static VALUE libvirt_connect_lookup_nwfilter_by_name(VALUE c, VALUE name)
  * call-seq:
  *   conn.lookup_nwfilter_by_uuid(uuid) -> Libvirt::NWFilter
  *
- * Call virNWFilterLookupByUUIDString[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterLookupByUUIDString]
+ * Call virNWFilterLookupByUUIDString[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterLookupByUUIDString]
  * to retrieve a network filter object by UUID.
  */
 static VALUE libvirt_connect_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid)
@@ -1644,7 +1644,7 @@ static VALUE libvirt_connect_lookup_nwfilter_by_uuid(VALUE c, VALUE uuid)
  * call-seq:
  *   conn.define_nwfilter_xml(xml) -> Libvirt::NWFilter
  *
- * Call virNWFilterDefineXML[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterDefineXML]
+ * Call virNWFilterDefineXML[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virNWFilterDefineXML]
  * to define a new network filter from xml.
  */
 static VALUE libvirt_connect_define_nwfilter_xml(VALUE c, VALUE xml)
@@ -1667,7 +1667,7 @@ static VALUE libvirt_connect_define_nwfilter_xml(VALUE c, VALUE xml)
  * call-seq:
  *   conn.num_of_secrets -> Fixnum
  *
- * Call virConnectNumOfSecrets[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virConnectNumOfSecrets]
+ * Call virConnectNumOfSecrets[https://libvirt.org/html/libvirt-libvirt-secret.html#virConnectNumOfSecrets]
  * to retrieve the number of secrets on this connection.
  */
 static VALUE libvirt_connect_num_of_secrets(VALUE c)
@@ -1679,7 +1679,7 @@ static VALUE libvirt_connect_num_of_secrets(VALUE c)
  * call-seq:
  *   conn.list_secrets -> list
  *
- * Call virConnectListSecrets[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virConnectListSecrets]
+ * Call virConnectListSecrets[https://libvirt.org/html/libvirt-libvirt-secret.html#virConnectListSecrets]
  * to retrieve a list of secret UUIDs on this connection.
  */
 static VALUE libvirt_connect_list_secrets(VALUE c)
@@ -1691,7 +1691,7 @@ static VALUE libvirt_connect_list_secrets(VALUE c)
  * call-seq:
  *   conn.lookup_secret_by_uuid(uuid) -> Libvirt::Secret
  *
- * Call virSecretLookupByUUID[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretLookupByUUID]
+ * Call virSecretLookupByUUID[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretLookupByUUID]
  * to retrieve a network object from uuid.
  */
 static VALUE libvirt_connect_lookup_secret_by_uuid(VALUE c, VALUE uuid)
@@ -1711,7 +1711,7 @@ static VALUE libvirt_connect_lookup_secret_by_uuid(VALUE c, VALUE uuid)
  * call-seq:
  *   conn.lookup_secret_by_usage(usagetype, usageID) -> Libvirt::Secret
  *
- * Call virSecretLookupByUsage[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretLookupByUsage]
+ * Call virSecretLookupByUsage[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretLookupByUsage]
  * to retrieve a secret by usagetype.
  */
 static VALUE libvirt_connect_lookup_secret_by_usage(VALUE c, VALUE usagetype,
@@ -1733,7 +1733,7 @@ static VALUE libvirt_connect_lookup_secret_by_usage(VALUE c, VALUE usagetype,
  * call-seq:
  *   conn.define_secret_xml(xml, flags=0) -> Libvirt::Secret
  *
- * Call virSecretDefineXML[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretDefineXML]
+ * Call virSecretDefineXML[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretDefineXML]
  * to define a new secret from xml.
  */
 static VALUE libvirt_connect_define_secret_xml(int argc, VALUE *argv, VALUE c)
@@ -1762,7 +1762,7 @@ VALUE pool_new(virStoragePoolPtr n, VALUE conn);
  * call-seq:
  *   conn.list_storage_pools -> list
  *
- * Call virConnectListStoragePools[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virConnectListStoragePools]
+ * Call virConnectListStoragePools[https://libvirt.org/html/libvirt-libvirt-storage.html#virConnectListStoragePools]
  * to retrieve a list of active storage pool names on this connection.
  */
 static VALUE libvirt_connect_list_storage_pools(VALUE c)
@@ -1774,7 +1774,7 @@ static VALUE libvirt_connect_list_storage_pools(VALUE c)
  * call-seq:
  *   conn.num_of_storage_pools -> Fixnum
  *
- * Call virConnectNumOfStoragePools[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virConnectNumOfStoragePools]
+ * Call virConnectNumOfStoragePools[https://libvirt.org/html/libvirt-libvirt-storage.html#virConnectNumOfStoragePools]
  * to retrieve the number of active storage pools on this connection.
  */
 static VALUE libvirt_connect_num_of_storage_pools(VALUE c)
@@ -1786,7 +1786,7 @@ static VALUE libvirt_connect_num_of_storage_pools(VALUE c)
  * call-seq:
  *   conn.list_defined_storage_pools -> list
  *
- * Call virConnectListDefinedStoragePools[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virConnectListDefinedStoragePools]
+ * Call virConnectListDefinedStoragePools[https://libvirt.org/html/libvirt-libvirt-storage.html#virConnectListDefinedStoragePools]
  * to retrieve a list of inactive storage pool names on this connection.
  */
 static VALUE libvirt_connect_list_defined_storage_pools(VALUE c)
@@ -1798,7 +1798,7 @@ static VALUE libvirt_connect_list_defined_storage_pools(VALUE c)
  * call-seq:
  *   conn.num_of_defined_storage_pools -> Fixnum
  *
- * Call virConnectNumOfDefinedStoragePools[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virConnectNumOfDefinedStoragePools]
+ * Call virConnectNumOfDefinedStoragePools[https://libvirt.org/html/libvirt-libvirt-storage.html#virConnectNumOfDefinedStoragePools]
  * to retrieve the number of inactive storage pools on this connection.
  */
 static VALUE libvirt_connect_num_of_defined_storage_pools(VALUE c)
@@ -1810,7 +1810,7 @@ static VALUE libvirt_connect_num_of_defined_storage_pools(VALUE c)
  * call-seq:
  *   conn.lookup_storage_pool_by_name(name) -> Libvirt::StoragePool
  *
- * Call virStoragePoolLookupByName[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolLookupByName]
+ * Call virStoragePoolLookupByName[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolLookupByName]
  * to retrieve a storage pool object by name.
  */
 static VALUE libvirt_connect_lookup_pool_by_name(VALUE c, VALUE name)
@@ -1830,7 +1830,7 @@ static VALUE libvirt_connect_lookup_pool_by_name(VALUE c, VALUE name)
  * call-seq:
  *   conn.lookup_storage_pool_by_uuid(uuid) -> Libvirt::StoragePool
  *
- * Call virStoragePoolLookupByUUIDString[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolLookupByUUIDString]
+ * Call virStoragePoolLookupByUUIDString[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolLookupByUUIDString]
  * to retrieve a storage pool object by uuid.
  */
 static VALUE libvirt_connect_lookup_pool_by_uuid(VALUE c, VALUE uuid)
@@ -1850,7 +1850,7 @@ static VALUE libvirt_connect_lookup_pool_by_uuid(VALUE c, VALUE uuid)
  * call-seq:
  *   conn.create_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
  *
- * Call virStoragePoolCreateXML[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolCreateXML]
+ * Call virStoragePoolCreateXML[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolCreateXML]
  * to start a new transient storage pool from xml.
  */
 static VALUE libvirt_connect_create_pool_xml(int argc, VALUE *argv, VALUE c)
@@ -1874,7 +1874,7 @@ static VALUE libvirt_connect_create_pool_xml(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.define_storage_pool_xml(xml, flags=0) -> Libvirt::StoragePool
  *
- * Call virStoragePoolDefineXML[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolDefineXML]
+ * Call virStoragePoolDefineXML[https://libvirt.org/html/libvirt-libvirt-storage.html#virStoragePoolDefineXML]
  * to define a permanent storage pool from xml.
  */
 static VALUE libvirt_connect_define_pool_xml(int argc, VALUE *argv, VALUE c)
@@ -1898,7 +1898,7 @@ static VALUE libvirt_connect_define_pool_xml(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.discover_storage_pool_sources(type, srcSpec=nil, flags=0) -> String
  *
- * Call virConnectFindStoragePoolSources[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virConnectFindStoragePoolSources]
+ * Call virConnectFindStoragePoolSources[https://libvirt.org/html/libvirt-libvirt-storage.html#virConnectFindStoragePoolSources]
  * to find the storage pool sources corresponding to type.
  */
 static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
@@ -1922,7 +1922,7 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
  * call-seq:
  *   conn.sys_info(flags=0) -> String
  *
- * Call virConnectGetSysinfo[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetSysinfo]
+ * Call virConnectGetSysinfo[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetSysinfo]
  * to get machine-specific information about the hypervisor.  This may include
  * data such as the host UUID, the BIOS version, etc.
  */
@@ -1945,7 +1945,7 @@ static VALUE libvirt_connect_sys_info(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.stream(flags=0) -> Libvirt::Stream
  *
- * Call virStreamNew[https://www.libvirt.org/html/libvirt-libvirt-stream.html#virStreamNew]
+ * Call virStreamNew[https://libvirt.org/html/libvirt-libvirt-stream.html#virStreamNew]
  * to create a new stream.
  */
 static VALUE libvirt_connect_stream(int argc, VALUE *argv, VALUE c)
@@ -1970,7 +1970,7 @@ static VALUE libvirt_connect_stream(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.interface_change_begin(flags=0) -> nil
  *
- * Call virInterfaceChangeBegin[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceChangeBegin]
+ * Call virInterfaceChangeBegin[https://libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceChangeBegin]
  * to create a restore point for interface changes.  Once changes have been
  * made, conn.interface_change_commit can be used to commit the result or
  * conn.interface_change_rollback can be used to rollback to this restore point.
@@ -1992,7 +1992,7 @@ static VALUE libvirt_connect_interface_change_begin(int argc, VALUE *argv,
  * call-seq:
  *   conn.interface_change_commit(flags=0) -> nil
  *
- * Call virInterfaceChangeCommit[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceChangeCommit]
+ * Call virInterfaceChangeCommit[https://libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceChangeCommit]
  * to commit the interface changes since the last conn.interface_change_begin.
  */
 static VALUE libvirt_connect_interface_change_commit(int argc, VALUE *argv,
@@ -2012,7 +2012,7 @@ static VALUE libvirt_connect_interface_change_commit(int argc, VALUE *argv,
  * call-seq:
  *   conn.interface_change_rollback(flags=0) -> nil
  *
- * Call virInterfaceChangeRollback[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceChangeRollback]
+ * Call virInterfaceChangeRollback[https://libvirt.org/html/libvirt-libvirt-interface.html#virInterfaceChangeRollback]
  * to rollback to the restore point saved by conn.interface_change_begin.
  */
 static VALUE libvirt_connect_interface_change_rollback(int argc, VALUE *argv,
@@ -2069,7 +2069,7 @@ static const char *cpu_stats_get(VALUE d, unsigned int flags, void *voidparams,
  * call-seq:
  *   conn.node_cpu_stats(cpuNum=-1, flags=0) -> Hash
  *
- * Call virNodeGetCPUStats[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetCPUStats]
+ * Call virNodeGetCPUStats[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetCPUStats]
  * to retrieve cpu statistics from the virtualization host.
  */
 static VALUE libvirt_connect_node_cpu_stats(int argc, VALUE *argv, VALUE c)
@@ -2134,7 +2134,7 @@ static const char *memory_stats_get(VALUE d, unsigned int flags,
  * call-seq:
  *   conn.node_memory_stats(cellNum=-1, flags=0) -> Hash
  *
- * Call virNodeGetMemoryStats[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetMemoryStats]
+ * Call virNodeGetMemoryStats[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetMemoryStats]
  * to retrieve memory statistics from the virtualization host.
  */
 static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
@@ -2163,7 +2163,7 @@ static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.save_image_xml_desc(filename, flags=0) -> String
  *
- * Call virDomainSaveImageGetXMLDesc[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSaveImageGetXMLDesc]
+ * Call virDomainSaveImageGetXMLDesc[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainSaveImageGetXMLDesc]
  * to get the XML corresponding to a save file.
  */
 static VALUE libvirt_connect_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
@@ -2183,7 +2183,7 @@ static VALUE libvirt_connect_save_image_xml_desc(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.define_save_image_xml(filename, newxml, flags=0) -> nil
  *
- * Call virDomainSaveImageDefineXML[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainSaveImageDefineXML]
+ * Call virDomainSaveImageDefineXML[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainSaveImageDefineXML]
  * to define new XML for a saved image.
  */
 static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
@@ -2207,7 +2207,7 @@ static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
  * call-seq:
  *   conn.node_suspend_for_duration(target, duration, flags=0) -> nil
  *
- * Call virNodeSuspendForDuration[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeSuspendForDuration]
+ * Call virNodeSuspendForDuration[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeSuspendForDuration]
  * to suspend the hypervisor for the specified duration.
  */
 static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
@@ -2266,7 +2266,7 @@ static const char *node_memory_set(VALUE d, unsigned int flags,
  * call-seq:
  *   conn.node_memory_parameters(flags=0) -> Hash
  *
- * Call virNodeGetMemoryParameters[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetMemoryParameters]
+ * Call virNodeGetMemoryParameters[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetMemoryParameters]
  * to get information about memory on the host node.
  */
 static VALUE libvirt_connect_node_memory_parameters(int argc, VALUE *argv,
@@ -2297,7 +2297,7 @@ static struct ruby_libvirt_typed_param memory_allowed[] = {
  * call-seq:
  *   conn.node_memory_parameters = Hash,flags=0
  *
- * Call virNodeSetMemoryParameters[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeSetMemoryParameters]
+ * Call virNodeSetMemoryParameters[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeSetMemoryParameters]
  * to set the memory parameters for this host node.
  */
 static VALUE libvirt_connect_node_memory_parameters_equal(VALUE c, VALUE input)
@@ -2335,7 +2335,7 @@ static VALUE cpu_map_field_to_value(VALUE input)
  * call-seq:
  *   conn.node_cpu_map -> Hash
  *
- * Call virNodeGetCPUMap[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetCPUMap]
+ * Call virNodeGetCPUMap[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetCPUMap]
  * to get a map of online host CPUs.
  */
 static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
@@ -2377,7 +2377,7 @@ static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.set_keepalive(interval, count) -> Fixnum
  *
- * Call virConnectSetKeepAlive[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectSetKeepAlive]
+ * Call virConnectSetKeepAlive[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectSetKeepAlive]
  * to start sending keepalive messages.  Deprecated; use conn.keepalive=
  * instead.
  */
@@ -2393,7 +2393,7 @@ static VALUE libvirt_connect_set_keepalive(VALUE c, VALUE interval, VALUE count)
  * call-seq:
  *   conn.keepalive = interval,count
  *
- * Call virConnectSetKeepAlive[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectSetKeepAlive]
+ * Call virConnectSetKeepAlive[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectSetKeepAlive]
  * to start sending keepalive messages.
  */
 static VALUE libvirt_connect_keepalive_equal(VALUE c, VALUE in)
@@ -2422,7 +2422,7 @@ static VALUE libvirt_connect_keepalive_equal(VALUE c, VALUE in)
  * call-seq:
  *   conn.list_all_domains(flags=0) -> Array
  *
- * Call virConnectListAllDomains[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectListAllDomains]
+ * Call virConnectListAllDomains[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectListAllDomains]
  * to get an array of domain objects for all domains.
  */
 static VALUE libvirt_connect_list_all_domains(int argc, VALUE *argv, VALUE c)
@@ -2439,7 +2439,7 @@ static VALUE libvirt_connect_list_all_domains(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.list_all_networks(flags=0) -> Array
  *
- * Call virConnectListAllNetworks[https://www.libvirt.org/html/libvirt-libvirt-network.html#virConnectListAllNetworks]
+ * Call virConnectListAllNetworks[https://libvirt.org/html/libvirt-libvirt-network.html#virConnectListAllNetworks]
  * to get an array of network objects for all networks.
  */
 static VALUE libvirt_connect_list_all_networks(int argc, VALUE *argv, VALUE c)
@@ -2457,7 +2457,7 @@ static VALUE libvirt_connect_list_all_networks(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.list_all_interfaces(flags=0) -> Array
  *
- * Call virConnectListAllInterfaces[https://www.libvirt.org/html/libvirt-libvirt-interface.html#virConnectListAllInterfaces]
+ * Call virConnectListAllInterfaces[https://libvirt.org/html/libvirt-libvirt-interface.html#virConnectListAllInterfaces]
  * to get an array of interface objects for all interfaces.
  */
 static VALUE libvirt_connect_list_all_interfaces(int argc, VALUE *argv, VALUE c)
@@ -2475,7 +2475,7 @@ static VALUE libvirt_connect_list_all_interfaces(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.list_all_secrets(flags=0) -> Array
  *
- * Call virConnectListAllSecrets[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virConnectListAllSecrets]
+ * Call virConnectListAllSecrets[https://libvirt.org/html/libvirt-libvirt-secret.html#virConnectListAllSecrets]
  * to get an array of secret objects for all secrets.
  */
 static VALUE libvirt_connect_list_all_secrets(int argc, VALUE *argv, VALUE c)
@@ -2492,7 +2492,7 @@ static VALUE libvirt_connect_list_all_secrets(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.list_all_nodedevices(flags=0) -> Array
  *
- * Call virConnectListAllNodeDevices[https://www.libvirt.org/html/libvirt-libvirt-nodedev.html#virConnectListAllNodeDevices]
+ * Call virConnectListAllNodeDevices[https://libvirt.org/html/libvirt-libvirt-nodedev.html#virConnectListAllNodeDevices]
  * to get an array of nodedevice objects for all nodedevices.
  */
 static VALUE libvirt_connect_list_all_nodedevices(int argc, VALUE *argv,
@@ -2511,7 +2511,7 @@ static VALUE libvirt_connect_list_all_nodedevices(int argc, VALUE *argv,
  * call-seq:
  *   conn.list_all_storage_pools(flags=0) -> Array
  *
- * Call virConnectListAllStoragePools[https://www.libvirt.org/html/libvirt-libvirt-storage.html#virConnectListAllStoragePools]
+ * Call virConnectListAllStoragePools[https://libvirt.org/html/libvirt-libvirt-storage.html#virConnectListAllStoragePools]
  * to get an array of storage pool objects for all storage pools.
  */
 static VALUE libvirt_connect_list_all_storage_pools(int argc, VALUE *argv,
@@ -2529,7 +2529,7 @@ static VALUE libvirt_connect_list_all_storage_pools(int argc, VALUE *argv,
  * call-seq:
  *   conn.list_all_nwfilters(flags=0) -> Array
  *
- * Call virConnectListAllNWFilters[https://www.libvirt.org/html/libvirt-libvirt-nwfilter.html#virConnectListAllNWFilters]
+ * Call virConnectListAllNWFilters[https://libvirt.org/html/libvirt-libvirt-nwfilter.html#virConnectListAllNWFilters]
  * to get an array of nwfilters for all nwfilter objects.
  */
 static VALUE libvirt_connect_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
@@ -2547,7 +2547,7 @@ static VALUE libvirt_connect_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.alive? -> [True|False]
  *
- * Call virConnectIsAlive[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectIsAlive]
+ * Call virConnectIsAlive[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectIsAlive]
  * to determine if the connection is alive.
  */
 static VALUE libvirt_connect_alive_p(VALUE c)
@@ -2563,7 +2563,7 @@ static VALUE libvirt_connect_alive_p(VALUE c)
  * call-seq:
  *   conn.create_domain_xml_with_files(xml, fds=nil, flags=0) -> Libvirt::Domain
  *
- * Call virDomainCreateXMLWithFiles[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateXMLWithFiles]
+ * Call virDomainCreateXMLWithFiles[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainCreateXMLWithFiles]
  * to launch a new guest domain with a set of open file descriptors.
  */
 static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
@@ -2634,7 +2634,7 @@ static VALUE libvirt_connect_qemu_attach(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.cpu_model_names(arch, flags=0) -> Array
  *
- * Call virConnectGetCPUModelNames[https://www.libvirt.org/html/libvirt-libvirt-host.html#virConnectGetCPUModelNames]
+ * Call virConnectGetCPUModelNames[https://libvirt.org/html/libvirt-libvirt-host.html#virConnectGetCPUModelNames]
  * to get an array of CPU model names.
  */
 static VALUE libvirt_connect_cpu_model_names(int argc, VALUE *argv, VALUE c)
@@ -2691,7 +2691,7 @@ error:
  * call-seq:
  *   conn.node_alloc_pages(page_arr, cells=nil, flags=0) -> Fixnum
  *
- * Call virNodeAllocPages[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeAllocPages]
+ * Call virNodeAllocPages[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeAllocPages]
  * to reserve huge pages in the system pool.
  */
 static VALUE libvirt_connect_node_alloc_pages(int argc, VALUE *argv, VALUE c)
@@ -2757,7 +2757,7 @@ static VALUE libvirt_connect_node_alloc_pages(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.domain_capabilities(emulatorbin, arch, machine, virttype, flags=0) -> String
  *
- * Call virConnectGetDomainCapabilities[https://www.libvirt.org/html/libvirt-libvirt-domain.html#virConnectGetDomainCapabilities]
+ * Call virConnectGetDomainCapabilities[https://libvirt.org/html/libvirt-libvirt-domain.html#virConnectGetDomainCapabilities]
  * to get the capabilities of the underlying emulator.
  */
 static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
@@ -2783,7 +2783,7 @@ static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
  * call-seq:
  *   conn.node_free_pages(pages, cells, flags=0) -> Hash
  *
- * Call virNodeGetFreePages[https://www.libvirt.org/html/libvirt-libvirt-host.html#virNodeGetFreePages]
+ * Call virNodeGetFreePages[https://libvirt.org/html/libvirt-libvirt-host.html#virNodeGetFreePages]
  * to query the host system on free pages of specified size.
  */
 static VALUE libvirt_connect_node_free_pages(int argc, VALUE *argv, VALUE c)

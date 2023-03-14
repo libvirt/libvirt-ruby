@@ -48,7 +48,7 @@ VALUE ruby_libvirt_secret_new(virSecretPtr s, VALUE conn)
  * call-seq:
  *   secret.uuid -> String
  *
- * Call virSecretGetUUIDString[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetUUIDString]
+ * Call virSecretGetUUIDString[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetUUIDString]
  * to retrieve the UUID for this secret.
  */
 static VALUE libvirt_secret_uuid(VALUE s)
@@ -61,7 +61,7 @@ static VALUE libvirt_secret_uuid(VALUE s)
  * call-seq:
  *   secret.usagetype -> Fixnum
  *
- * Call virSecretGetUsageType[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetUsageType]
+ * Call virSecretGetUsageType[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetUsageType]
  * to retrieve the usagetype for this secret.
  */
 static VALUE libvirt_secret_usagetype(VALUE s)
@@ -75,7 +75,7 @@ static VALUE libvirt_secret_usagetype(VALUE s)
  * call-seq:
  *   secret.usageid -> String
  *
- * Call virSecretGetUsageID[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetUsageID]
+ * Call virSecretGetUsageID[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetUsageID]
  * to retrieve the usageid for this secret.
  */
 static VALUE libvirt_secret_usageid(VALUE s)
@@ -89,7 +89,7 @@ static VALUE libvirt_secret_usageid(VALUE s)
  * call-seq:
  *   secret.xml_desc(flags=0) -> String
  *
- * Call virSecretGetXMLDesc[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetXMLDesc]
+ * Call virSecretGetXMLDesc[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetXMLDesc]
  * to retrieve the XML for this secret.
  */
 static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
@@ -108,7 +108,7 @@ static VALUE libvirt_secret_xml_desc(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   secret.set_value(value, flags=0) -> nil
  *
- * Call virSecretSetValue[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretSetValue]
+ * Call virSecretSetValue[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretSetValue]
  * to set a new value in this secret.  Deprecated; use secret.value= instead.
  */
 static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
@@ -131,7 +131,7 @@ static VALUE libvirt_secret_set_value(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   secret.value = value,flags=0
  *
- * Call virSecretSetValue[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretSetValue]
+ * Call virSecretSetValue[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretSetValue]
  * to set a new value in this secret.
  */
 static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
@@ -168,7 +168,7 @@ static VALUE libvirt_secret_value_equal(VALUE s, VALUE in)
  * call-seq:
  *   secret.value(flags=0) -> String
  *
- * Call virSecretGetValue[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetValue]
+ * Call virSecretGetValue[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretGetValue]
  * to retrieve the value from this secret.
  */
 static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
@@ -203,7 +203,7 @@ static VALUE libvirt_secret_value(int argc, VALUE *argv, VALUE s)
  * call-seq:
  *   secret.undefine -> nil
  *
- * Call virSecretUndefine[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretUndefine]
+ * Call virSecretUndefine[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretUndefine]
  * to undefine this secret.
  */
 static VALUE libvirt_secret_undefine(VALUE s)
@@ -217,7 +217,7 @@ static VALUE libvirt_secret_undefine(VALUE s)
  * call-seq:
  *   secret.free -> nil
  *
- * Call virSecretFree[https://www.libvirt.org/html/libvirt-libvirt-secret.html#virSecretFree]
+ * Call virSecretFree[https://libvirt.org/html/libvirt-libvirt-secret.html#virSecretFree]
  * to free this secret.  After this call the secret object is no longer valid.
  */
 static VALUE libvirt_secret_free(VALUE s)
