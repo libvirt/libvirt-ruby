@@ -35,7 +35,6 @@ RUN dnf update -y && \
         pkgconfig \
         python3 \
         python3-docutils \
-        rpcgen \
         rpm-build \
         ruby-devel \
         rubygem-rake \
