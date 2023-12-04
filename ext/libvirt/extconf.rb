@@ -18,22 +18,6 @@ unless pkg_config("libvirt-lxc")
   raise "libvirt library not found in default locations"
 end
 
-libvirt_types = [ 'virNetworkPtr',
-                  'virStoragePoolPtr',
-                  'virStorageVolPtr',
-                  'virSecretPtr',
-                  'virNWFilterPtr',
-                  'virInterfacePtr',
-                  'virDomainBlockInfoPtr',
-                  'virDomainMemoryStatPtr',
-                  'virDomainSnapshotPtr',
-                  'virDomainJobInfoPtr',
-                  'virNodeDevicePtr',
-                  'virStreamPtr',
-                  'virTypedParameterPtr',
-                  'virDomainBlockJobInfoPtr',
-                ]
-
 libvirt_funcs = [ 'virStorageVolWipe',
                   'virStoragePoolIsActive',
                   'virStoragePoolIsPersistent',
@@ -427,7 +411,6 @@ libvirt_qemu_consts = [
                        'VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP',
                       ]
 
-libvirt_types.each { |t| have_type(t, "libvirt/libvirt.h") }
 libvirt_funcs.each { |f| have_func(f, "libvirt/libvirt.h") }
 libvirt_consts.each { |c| have_const(c, ["libvirt/libvirt.h"]) }
 virterror_consts.each { |c| have_const(c, ["libvirt/virterror.h"]) }

@@ -26,7 +26,6 @@
 #include "connect.h"
 #include "extconf.h"
 
-#if HAVE_TYPE_VIRSTREAMPTR
 static VALUE c_stream;
 
 static void stream_free(void *s)
@@ -354,14 +353,12 @@ static VALUE libvirt_stream_free(VALUE s)
 {
     ruby_libvirt_generate_call_free(Stream, s);
 }
-#endif
 
 /*
  * Class Libvirt::Stream
  */
 void ruby_libvirt_stream_init(void)
 {
-#if HAVE_TYPE_VIRSTREAMPTR
     c_stream = rb_define_class_under(m_libvirt, "Stream", rb_cObject);
 
     rb_define_attr(c_stream, "connection", 1, 0);
@@ -388,5 +385,4 @@ void ruby_libvirt_stream_init(void)
     rb_define_method(c_stream, "finish", libvirt_stream_finish, 0);
     rb_define_method(c_stream, "abort", libvirt_stream_abort, 0);
     rb_define_method(c_stream, "free", libvirt_stream_free, 0);
-#endif
 }

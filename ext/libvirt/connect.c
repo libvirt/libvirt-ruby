@@ -1216,7 +1216,6 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
 }
 #endif
 
-#if HAVE_TYPE_VIRINTERFACEPTR
 /*
  * call-seq:
  *   conn.num_of_interfaces -> Fixnum
@@ -1329,7 +1328,6 @@ static VALUE libvirt_connect_define_interface_xml(int argc, VALUE *argv,
 
     return ruby_libvirt_interface_new(iface, c);
 }
-#endif
 
 /*
  * call-seq:
@@ -1458,7 +1456,6 @@ static VALUE libvirt_connect_define_network_xml(VALUE c, VALUE xml)
     return ruby_libvirt_network_new(netw, c);
 }
 
-#if HAVE_TYPE_VIRNODEDEVICEPTR
 
 /*
  * call-seq:
@@ -1572,9 +1569,7 @@ static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
     return ruby_libvirt_nodedevice_new(nodedev, c);
 }
 #endif
-#endif
 
-#if HAVE_TYPE_VIRNWFILTERPTR
 
 /*
  * call-seq:
@@ -1659,9 +1654,7 @@ static VALUE libvirt_connect_define_nwfilter_xml(VALUE c, VALUE xml)
 
     return ruby_libvirt_nwfilter_new(nwfilter, c);
 }
-#endif
 
-#if HAVE_TYPE_VIRSECRETPTR
 
 /*
  * call-seq:
@@ -1752,9 +1745,7 @@ static VALUE libvirt_connect_define_secret_xml(int argc, VALUE *argv, VALUE c)
 
     return ruby_libvirt_secret_new(secret, c);
 }
-#endif
 
-#if HAVE_TYPE_VIRSTORAGEPOOLPTR
 
 VALUE pool_new(virStoragePoolPtr n, VALUE conn);
 
@@ -1915,7 +1906,6 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
                                       ruby_libvirt_get_cstring_or_null(srcSpec),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 #if HAVE_VIRCONNECTGETSYSINFO
 /*
@@ -1939,7 +1929,6 @@ static VALUE libvirt_connect_sys_info(int argc, VALUE *argv, VALUE c)
 }
 #endif
 
-#if HAVE_TYPE_VIRSTREAMPTR
 
 /*
  * call-seq:
@@ -1963,7 +1952,6 @@ static VALUE libvirt_connect_stream(int argc, VALUE *argv, VALUE c)
 
     return ruby_libvirt_stream_new(stream, c);
 }
-#endif
 
 #if HAVE_VIRINTERFACECHANGEBEGIN
 /*
@@ -2969,12 +2957,10 @@ void ruby_libvirt_connect_init(void)
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED));
 #endif
-#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT));
-#endif
 #if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_IOERROR
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR));
@@ -3146,7 +3132,6 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_domain_xml_to_native, -1);
 #endif
 
-#if HAVE_TYPE_VIRINTERFACEPTR
     /* Interface lookup/creation methods */
     rb_define_method(c_connect, "num_of_interfaces",
                      libvirt_connect_num_of_interfaces, 0);
@@ -3162,7 +3147,6 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_lookup_interface_by_mac, 1);
     rb_define_method(c_connect, "define_interface_xml",
                      libvirt_connect_define_interface_xml, -1);
-#endif
 
     /* Network lookup/creation methods */
     rb_define_method(c_connect, "num_of_networks",
@@ -3183,7 +3167,6 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_define_network_xml, 1);
 
     /* Node device lookup/creation methods */
-#if HAVE_TYPE_VIRNODEDEVICEPTR
     rb_define_method(c_connect, "num_of_nodedevices",
                      libvirt_connect_num_of_nodedevices, -1);
     rb_define_method(c_connect, "list_nodedevices",
@@ -3194,9 +3177,7 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "create_nodedevice_xml",
                      libvirt_connect_create_nodedevice_xml, -1);
 #endif
-#endif
 
-#if HAVE_TYPE_VIRNWFILTERPTR
     /* NWFilter lookup/creation methods */
     rb_define_method(c_connect, "num_of_nwfilters",
                      libvirt_connect_num_of_nwfilters, 0);
@@ -3208,9 +3189,7 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_lookup_nwfilter_by_uuid, 1);
     rb_define_method(c_connect, "define_nwfilter_xml",
                      libvirt_connect_define_nwfilter_xml, 1);
-#endif
 
-#if HAVE_TYPE_VIRSECRETPTR
     /* Secret lookup/creation methods */
     rb_define_method(c_connect, "num_of_secrets",
                      libvirt_connect_num_of_secrets, 0);
@@ -3222,9 +3201,7 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_lookup_secret_by_usage, 2);
     rb_define_method(c_connect, "define_secret_xml",
                      libvirt_connect_define_secret_xml, -1);
-#endif
 
-#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     /* StoragePool lookup/creation methods */
     rb_define_method(c_connect, "num_of_storage_pools",
                      libvirt_connect_num_of_storage_pools, 0);
@@ -3244,14 +3221,11 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_define_pool_xml, -1);
     rb_define_method(c_connect, "discover_storage_pool_sources",
                      libvirt_connect_find_storage_pool_sources, -1);
-#endif
 
 #if HAVE_VIRCONNECTGETSYSINFO
     rb_define_method(c_connect, "sys_info", libvirt_connect_sys_info, -1);
 #endif
-#if HAVE_TYPE_VIRSTREAMPTR
     rb_define_method(c_connect, "stream", libvirt_connect_stream, -1);
-#endif
 
 #if HAVE_VIRINTERFACECHANGEBEGIN
     rb_define_method(c_connect, "interface_change_begin",

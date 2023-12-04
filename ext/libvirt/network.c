@@ -26,7 +26,6 @@
 #include "connect.h"
 #include "extconf.h"
 
-#if HAVE_TYPE_VIRNETWORKPTR
 static VALUE c_network;
 
 static void network_free(void *d)
@@ -332,14 +331,11 @@ static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
 }
 #endif
 
-#endif
-
 /*
  * Class Libvirt::Network
  */
 void ruby_libvirt_network_init(void)
 {
-#if HAVE_TYPE_VIRNETWORKPTR
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
     rb_define_attr(c_network, "connection", 1, 0);
 
@@ -549,7 +545,5 @@ void ruby_libvirt_network_init(void)
 #if HAVE_CONST_VIR_IP_ADDR_TYPE_IPV6
     rb_define_const(c_network, "IP_ADDR_TYPE_IPV6",
                     INT2NUM(VIR_IP_ADDR_TYPE_IPV6));
-#endif
-
 #endif
 }

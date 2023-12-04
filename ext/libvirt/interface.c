@@ -26,7 +26,6 @@
 #include "connect.h"
 #include "extconf.h"
 
-#if HAVE_TYPE_VIRINTERFACEPTR
 static VALUE c_interface;
 
 static void interface_free(void *i)
@@ -110,7 +109,6 @@ static VALUE libvirt_interface_active_p(VALUE p)
                                          ruby_libvirt_connect_get(p),
                                          interface_get(p));
 }
-#endif
 
 /*
  * call-seq:
@@ -177,7 +175,6 @@ static VALUE libvirt_interface_free(VALUE i)
  */
 void ruby_libvirt_interface_init(void)
 {
-#if HAVE_TYPE_VIRINTERFACEPTR
     c_interface = rb_define_class_under(m_libvirt, "Interface", rb_cObject);
 #if HAVE_CONST_VIR_INTERFACE_XML_INACTIVE
     rb_define_const(c_interface, "XML_INACTIVE",
@@ -195,6 +192,5 @@ void ruby_libvirt_interface_init(void)
     rb_define_method(c_interface, "free", libvirt_interface_free, 0);
 #if HAVE_VIRINTERFACEISACTIVE
     rb_define_method(c_interface, "active?", libvirt_interface_active_p, 0);
-#endif
 #endif
 }

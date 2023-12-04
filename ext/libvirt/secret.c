@@ -26,7 +26,6 @@
 #include "connect.h"
 #include "extconf.h"
 
-#if HAVE_TYPE_VIRSECRETPTR
 static VALUE c_secret;
 
 static void secret_free(void *s)
@@ -225,14 +224,11 @@ static VALUE libvirt_secret_free(VALUE s)
     ruby_libvirt_generate_call_free(Secret, s);
 }
 
-#endif
-
 /*
  * Class Libvirt::Secret
  */
 void ruby_libvirt_secret_init(void)
 {
-#if HAVE_TYPE_VIRSECRETPTR
     c_secret = rb_define_class_under(m_libvirt, "Secret", rb_cObject);
 
     rb_define_attr(c_secret, "connection", 1, 0);
@@ -264,5 +260,4 @@ void ruby_libvirt_secret_init(void)
     rb_define_alias(c_secret, "get_value", "value");
     rb_define_method(c_secret, "undefine", libvirt_secret_undefine, 0);
     rb_define_method(c_secret, "free", libvirt_secret_free, 0);
-#endif
 }

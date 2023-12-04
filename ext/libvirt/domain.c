@@ -42,25 +42,13 @@ static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
 VALUE c_domain_security_label;
 static VALUE c_domain_block_stats;
-#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
 static VALUE c_domain_block_info;
-#endif
-#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
 static VALUE c_domain_memory_stats;
-#endif
-#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
 static VALUE c_domain_snapshot;
-#endif
-#if HAVE_TYPE_VIRDOMAINJOBINFOPTR
 static VALUE c_domain_job_info;
-#endif
 static VALUE c_domain_vcpuinfo;
-#if HAVE_VIRDOMAINGETCONTROLINFO
 static VALUE c_domain_control_info;
-#endif
-#if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
 static VALUE c_domain_block_job_info;
-#endif
 
 static void domain_free(void *d)
 {
@@ -612,7 +600,6 @@ static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
     return result;
 }
 
-#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
 /*
  * call-seq:
  *   dom.memory_stats(flags=0) -> [ Libvirt::Domain::MemoryStats ]
@@ -654,9 +641,7 @@ static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
 /*
  * call-seq:
  *   dom.blockinfo(path, flags=0) -> Libvirt::Domain::BlockInfo
@@ -685,7 +670,6 @@ static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
 #if HAVE_VIRDOMAINBLOCKPEEK
 /*
@@ -1401,7 +1385,6 @@ static VALUE libvirt_domain_free(VALUE d)
     ruby_libvirt_generate_call_free(Domain, d);
 }
 
-#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
 static void domain_snapshot_free(void *d)
 {
     ruby_libvirt_free_struct(DomainSnapshot, d);
@@ -1646,7 +1629,6 @@ static VALUE libvirt_domain_snapshot_free(VALUE s)
     ruby_libvirt_generate_call_free(DomainSnapshot, s);
 }
 
-#endif
 
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
 /*
@@ -1665,7 +1647,6 @@ static VALUE libvirt_domain_snapshot_name(VALUE s)
 #endif
 
 
-#if HAVE_TYPE_VIRDOMAINJOBINFOPTR
 /*
  * call-seq:
  *   dom.job_info -> Libvirt::Domain::JobInfo
@@ -1714,7 +1695,6 @@ static VALUE libvirt_domain_abort_job(VALUE d)
                                    ruby_libvirt_domain_get(d));
 }
 
-#endif
 
 struct create_sched_type_args {
     char *type;
@@ -1855,21 +1835,17 @@ static const char *scheduler_get(VALUE d, unsigned int flags, void *voidparams,
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainGetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
-                                             nparams, flags) < 0) {
-        return "virDomainGetSchedulerParameters";
-    }
-#else
     if (flags != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        if (virDomainGetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
+                                                 nparams, flags) < 0) {
+            return "virDomainGetSchedulerParameters";
+        }
+    } else {
+        if (virDomainGetSchedulerParameters(ruby_libvirt_domain_get(d),
+                                            params, nparams) < 0) {
+            return "virDomainGetSchedulerParameters";
+        }
     }
-    if (virDomainGetSchedulerParameters(ruby_libvirt_domain_get(d),
-                                        (virSchedParameterPtr)params,
-                                        nparams) < 0) {
-        return "virDomainGetSchedulerParameters";
-    }
-#endif
 
     return NULL;
 }
@@ -1878,21 +1854,17 @@ static const char *scheduler_set(VALUE d, unsigned int flags,
                                  virTypedParameterPtr params, int nparams,
                                  void *RUBY_LIBVIRT_UNUSED(opaque))
 {
-#if HAVE_TYPE_VIRTYPEDPARAMETERPTR
-    if (virDomainSetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
-                                             nparams, flags) < 0) {
-        return "virDomainSetSchedulerParameters";
-    }
-#else
     if (flags != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        if (virDomainSetSchedulerParametersFlags(ruby_libvirt_domain_get(d), params,
+                                                 nparams, flags) < 0) {
+            return "virDomainSetSchedulerParameters";
+        }
+    } else {
+        if (virDomainSetSchedulerParameters(ruby_libvirt_domain_get(d),
+                                            params, nparams) < 0) {
+            return "virDomainSetSchedulerParameters";
+        }
     }
-    if (virDomainSetSchedulerParameters(ruby_libvirt_domain_get(d),
-                                        (virSchedParameterPtr)params,
-                                        nparams) < 0) {
-        return "virDomainSetSchedulerParameters";
-    }
-#endif
 
     return NULL;
 }
@@ -1969,14 +1941,8 @@ static const char *memory_get(VALUE d, unsigned int flags, void *voidparams,
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d), params,
                                      nparams, flags) < 0) {
-#else
-    if (virDomainGetMemoryParameters(ruby_libvirt_domain_get(d),
-                                     (virMemoryParameterPtr)params, nparams,
-                                     flags) < 0) {
-#endif
         return "virDomainGetMemoryParameters";
     }
 
@@ -1987,14 +1953,8 @@ static const char *memory_set(VALUE d, unsigned int flags,
                               virTypedParameterPtr params, int nparams,
                               void *RUBY_LIBVIRT_UNUSED(opaque))
 {
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetMemoryParameters(ruby_libvirt_domain_get(d), params,
                                      nparams, flags) < 0) {
-#else
-    if (virDomainSetMemoryParameters(ruby_libvirt_domain_get(d),
-                                     (virMemoryParameterPtr)params, nparams,
-                                     flags) < 0) {
-#endif
         return "virDomainSetMemoryParameters";
     }
 
@@ -2066,14 +2026,8 @@ static const char *blkio_get(VALUE d, unsigned int flags, void *voidparams,
 {
     virTypedParameterPtr params = (virTypedParameterPtr)voidparams;
 
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d), params, nparams,
                                     flags) < 0) {
-#else
-    if (virDomainGetBlkioParameters(ruby_libvirt_domain_get(d),
-                                    (virBlkioParameterPtr)params, nparams,
-                                    flags) < 0) {
-#endif
         return "virDomainGetBlkioParameters";
     }
 
@@ -2084,14 +2038,8 @@ static const char *blkio_set(VALUE d, unsigned int flags,
                              virTypedParameterPtr params, int nparams,
                              void *RUBY_LIBVIRT_UNUSED(opaque))
 {
-#ifdef HAVE_TYPE_VIRTYPEDPARAMETERPTR
     if (virDomainSetBlkioParameters(ruby_libvirt_domain_get(d), params, nparams,
                                     flags) < 0) {
-#else
-    if (virDomainSetBlkioParameters(ruby_libvirt_domain_get(d),
-                                    (virBlkioParameterPtr)params, nparams,
-                                    flags) < 0) {
-#endif
         return "virDomainSetBlkioParameters";
     }
 
@@ -4653,15 +4601,11 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_security_label, 0);
 #endif
     rb_define_method(c_domain, "block_stats", libvirt_domain_block_stats, 1);
-#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
     rb_define_method(c_domain, "memory_stats", libvirt_domain_memory_stats, -1);
-#endif
 #if HAVE_VIRDOMAINBLOCKPEEK
     rb_define_method(c_domain, "block_peek", libvirt_domain_block_peek, -1);
 #endif
-#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
     rb_define_method(c_domain, "blockinfo", libvirt_domain_block_info, -1);
-#endif
 #if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_method(c_domain, "memory_peek", libvirt_domain_memory_peek, -1);
 #endif
@@ -4673,7 +4617,6 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINISPERSISTENT
     rb_define_method(c_domain, "persistent?", libvirt_domain_persistent_p, 0);
 #endif
-#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
     rb_define_method(c_domain, "snapshot_create_xml",
                      libvirt_domain_snapshot_create_xml, -1);
     rb_define_method(c_domain, "num_of_snapshots",
@@ -4688,7 +4631,6 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_revert_to_snapshot, -1);
     rb_define_method(c_domain, "current_snapshot",
                      libvirt_domain_current_snapshot, -1);
-#endif
 
     /*
      * Class Libvirt::Domain::Info
@@ -4733,7 +4675,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_attr(c_domain_block_stats, "wr_bytes", 1, 0);
     rb_define_attr(c_domain_block_stats, "errs", 1, 0);
 
-#if HAVE_TYPE_VIRDOMAINBLOCKJOBINFOPTR
     /*
      * Class Libvirt::Domain::BlockJobInfo
      */
@@ -4743,9 +4684,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_attr(c_domain_block_job_info, "bandwidth", 1, 0);
     rb_define_attr(c_domain_block_job_info, "cur", 1, 0);
     rb_define_attr(c_domain_block_job_info, "end", 1, 0);
-#endif
 
-#if HAVE_TYPE_VIRDOMAINMEMORYSTATPTR
     /*
      * Class Libvirt::Domain::MemoryStats
      */
@@ -4774,9 +4713,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain_memory_stats, "RSS",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_RSS));
 #endif
-#endif
 
-#if HAVE_TYPE_VIRDOMAINBLOCKINFOPTR
     /*
      * Class Libvirt::Domain::BlockInfo
      */
@@ -4785,9 +4722,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_attr(c_domain_block_info, "capacity", 1, 0);
     rb_define_attr(c_domain_block_info, "allocation", 1, 0);
     rb_define_attr(c_domain_block_info, "physical", 1, 0);
-#endif
 
-#if HAVE_TYPE_VIRDOMAINSNAPSHOTPTR
     /*
      * Class Libvirt::Domain::Snapshot
      */
@@ -4809,7 +4744,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY));
 #endif
 
-#endif
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
     rb_define_method(c_domain_snapshot, "name", libvirt_domain_snapshot_name,
                      0);
@@ -4828,7 +4762,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_attr(c_domain_vcpuinfo, "cpu", 1, 0);
     rb_define_attr(c_domain_vcpuinfo, "cpumap", 1, 0);
 
-#if HAVE_TYPE_VIRDOMAINJOBINFOPTR
     /*
      * Class Libvirt::Domain::JobInfo
      */
@@ -4859,7 +4792,6 @@ void ruby_libvirt_domain_init(void)
 
     rb_define_method(c_domain, "job_info", libvirt_domain_job_info, 0);
     rb_define_method(c_domain, "abort_job", libvirt_domain_abort_job, 0);
-#endif
 
 #if HAVE_VIRDOMAINQEMUMONITORCOMMAND
     rb_define_method(c_domain, "qemu_monitor_command",

@@ -27,7 +27,6 @@
 #include "extconf.h"
 #include "stream.h"
 
-#if HAVE_TYPE_VIRSTORAGEVOLPTR
 /* this has to be here (as opposed to below with the rest of the volume
  * stuff) because libvirt_storage_vol_get_pool() relies on it
  */
@@ -35,9 +34,7 @@ static virStorageVolPtr vol_get(VALUE v)
 {
     ruby_libvirt_get_struct(StorageVol, v);
 }
-#endif
 
-#if HAVE_TYPE_VIRSTORAGEPOOLPTR
 static VALUE c_storage_pool;
 static VALUE c_storage_pool_info;
 
@@ -355,9 +352,7 @@ static VALUE libvirt_storage_pool_free(VALUE p)
 {
     ruby_libvirt_generate_call_free(StoragePool, p);
 }
-#endif
 
-#if HAVE_TYPE_VIRSTORAGEVOLPTR
 /*
  * Libvirt::StorageVol
  */
@@ -451,7 +446,6 @@ static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
                                         pool_get(p), p, vol_new,
                                         virStorageVolFree);
 }
-#endif
 
 /*
  * call-seq:
@@ -765,7 +759,6 @@ void ruby_libvirt_storage_init(void)
     /*
      * Class Libvirt::StoragePool and Libvirt::StoragePoolInfo
      */
-#if HAVE_TYPE_VIRSTORAGEPOOLPTR
     c_storage_pool_info = rb_define_class_under(m_libvirt, "StoragePoolInfo",
                                                 rb_cObject);
     rb_define_attr(c_storage_pool_info, "state", 1, 0);
@@ -905,9 +898,6 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_POOL_BUILD_OVERWRITE));
 #endif
 
-#endif
-
-#if HAVE_TYPE_VIRSTORAGEVOLPTR
     /*
      * Class Libvirt::StorageVol and Libvirt::StorageVolInfo
      */
@@ -1016,7 +1006,5 @@ void ruby_libvirt_storage_init(void)
     rb_define_const(c_storage_vol, "RESIZE_SHRINK",
                     INT2NUM(VIR_STORAGE_VOL_RESIZE_SHRINK));
     rb_define_method(c_storage_vol, "resize", libvirt_storage_vol_resize, -1);
-#endif
-
 #endif
 }

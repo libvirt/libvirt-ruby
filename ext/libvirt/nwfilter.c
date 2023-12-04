@@ -26,7 +26,6 @@
 #include "connect.h"
 #include "extconf.h"
 
-#if HAVE_TYPE_VIRNWFILTERPTR
 static VALUE c_nwfilter;
 
 static void nwfilter_free(void *n)
@@ -117,14 +116,12 @@ static VALUE libvirt_nwfilter_free(VALUE n)
     ruby_libvirt_generate_call_free(NWFilter, n);
 }
 
-#endif
 
 /*
  * Class Libvirt::NWFilter
  */
 void ruby_libvirt_nwfilter_init(void)
 {
-#if HAVE_TYPE_VIRNWFILTERPTR
     c_nwfilter = rb_define_class_under(m_libvirt, "NWFilter", rb_cObject);
     rb_define_attr(c_nwfilter, "connection", 1, 0);
 
@@ -134,5 +131,4 @@ void ruby_libvirt_nwfilter_init(void)
     rb_define_method(c_nwfilter, "uuid", libvirt_nwfilter_uuid, 0);
     rb_define_method(c_nwfilter, "xml_desc", libvirt_nwfilter_xml_desc, -1);
     rb_define_method(c_nwfilter, "free", libvirt_nwfilter_free, 0);
-#endif
 }

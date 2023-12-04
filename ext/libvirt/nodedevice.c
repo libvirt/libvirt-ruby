@@ -26,7 +26,6 @@
 #include "connect.h"
 #include "extconf.h"
 
-#if HAVE_TYPE_VIRNODEDEVICEPTR
 static VALUE c_nodedevice;
 
 static void nodedevice_free(void *s)
@@ -265,14 +264,11 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
 }
 #endif
 
-#endif
-
 /*
  * Class Libvirt::NodeDevice
  */
 void ruby_libvirt_nodedevice_init(void)
 {
-#if HAVE_TYPE_VIRNODEDEVICEPTR
     c_nodedevice = rb_define_class_under(m_libvirt, "NodeDevice", rb_cObject);
 
     rb_define_attr(c_nodedevice, "connection", 1, 0);
@@ -294,6 +290,5 @@ void ruby_libvirt_nodedevice_init(void)
 #if HAVE_VIRNODEDEVICELOOKUPSCSIHOSTBYWWN
     rb_define_method(c_nodedevice, "lookup_scsi_host_by_wwn",
                      libvirt_nodedevice_lookup_scsi_host_by_wwn, -1);
-#endif
 #endif
 }
