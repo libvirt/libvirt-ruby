@@ -39,6 +39,10 @@
 #include "domain.h"
 #include "stream.h"
 
+#if !LIBVIR_CHECK_VERSION(2, 0, 0)
+# error "Libvirt >= 2.0.0 is required for the ruby binding"
+#endif
+
 static VALUE c_libvirt_version;
 
 VALUE m_libvirt;
