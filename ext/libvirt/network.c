@@ -71,7 +71,6 @@ static VALUE libvirt_network_create(VALUE n)
                                    network_get(n));
 }
 
-#if HAVE_VIRNETWORKUPDATE
 /*
  * call-seq:
  *   net.update -> nil
@@ -88,7 +87,6 @@ static VALUE libvirt_network_update(VALUE n, VALUE command, VALUE section,
                                    NUM2UINT(section), NUM2INT(index),
                                    StringValuePtr(xml), NUM2UINT(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -213,7 +211,6 @@ static VALUE libvirt_network_free(VALUE n)
     ruby_libvirt_generate_call_free(Network, n);
 }
 
-#if HAVE_VIRNETWORKISACTIVE
 /*
  * call-seq:
  *   net.active? -> [true|false]
@@ -227,9 +224,7 @@ static VALUE libvirt_network_active_p(VALUE n)
                                          ruby_libvirt_connect_get(n),
                                          network_get(n));
 }
-#endif
 
-#if HAVE_VIRNETWORKISPERSISTENT
 /*
  * call-seq:
  *   net.persistent? -> [true|false]
@@ -243,9 +238,7 @@ static VALUE libvirt_network_persistent_p(VALUE n)
                                          ruby_libvirt_connect_get(n),
                                          network_get(n));
 }
-#endif
 
-#if HAVE_VIRNETWORKGETDHCPLEASES
 struct leases_arg {
     virNetworkDHCPLeasePtr *leases;
     int nleases;
@@ -329,7 +322,6 @@ static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
 
     return result;
 }
-#endif
 
 /*
  * Class Libvirt::Network
@@ -341,9 +333,8 @@ void ruby_libvirt_network_init(void)
 
     rb_define_method(c_network, "undefine", libvirt_network_undefine, 0);
     rb_define_method(c_network, "create", libvirt_network_create, 0);
-#if HAVE_VIRNETWORKUPDATE
     rb_define_method(c_network, "update", libvirt_network_update, 5);
-#endif
+
     rb_define_method(c_network, "destroy", libvirt_network_destroy, 0);
     rb_define_method(c_network, "name", libvirt_network_name, 0);
     rb_define_method(c_network, "uuid", libvirt_network_uuid, 0);
@@ -354,12 +345,8 @@ void ruby_libvirt_network_init(void)
     rb_define_method(c_network, "autostart=", libvirt_network_autostart_equal,
                      1);
     rb_define_method(c_network, "free", libvirt_network_free, 0);
-#if HAVE_VIRNETWORKISACTIVE
     rb_define_method(c_network, "active?", libvirt_network_active_p, 0);
-#endif
-#if HAVE_VIRNETWORKISPERSISTENT
     rb_define_method(c_network, "persistent?", libvirt_network_persistent_p, 0);
-#endif
     /* Ideally we would just have the "UPDATE_COMMAND_NONE" constant.
      * Unfortunately we screwed up long ago, and we have to
      * leave "NETWORK_UPDATE_COMMAND_NONE" for backwards compatibility.
@@ -526,10 +513,8 @@ void ruby_libvirt_network_init(void)
     rb_define_const(c_network, "UPDATE_COMMAND_DELETE",
                     INT2NUM(VIR_NETWORK_UPDATE_COMMAND_DELETE));
 
-#if HAVE_VIRNETWORKGETDHCPLEASES
     rb_define_method(c_network, "dhcp_leases",
                      libvirt_network_get_dhcp_leases, -1);
-#endif
 
     rb_define_const(c_network, "IP_ADDR_TYPE_IPV4",
                     INT2NUM(VIR_IP_ADDR_TYPE_IPV4));

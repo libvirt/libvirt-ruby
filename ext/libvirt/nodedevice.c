@@ -158,25 +158,18 @@ static VALUE libvirt_nodedevice_detach(int argc, VALUE *argv, VALUE n)
 
     rb_scan_args(argc, argv, "02", &driver, &flags);
 
-#if HAVE_VIRNODEDEVICEDETACHFLAGS
-    ruby_libvirt_generate_call_nil(virNodeDeviceDetachFlags,
-                                   ruby_libvirt_connect_get(n),
-                                   nodedevice_get(n),
-                                   ruby_libvirt_get_cstring_or_null(driver),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+    if (ruby_libvirt_value_to_uint(flags) != 0 ||
+        ruby_libvirt_get_cstring_or_null(driver) != NULL) {
+        ruby_libvirt_generate_call_nil(virNodeDeviceDetachFlags,
+                                       ruby_libvirt_connect_get(n),
+                                       nodedevice_get(n),
+                                       ruby_libvirt_get_cstring_or_null(driver),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virNodeDeviceDettach,
+                                       ruby_libvirt_connect_get(n),
+                                       nodedevice_get(n));
     }
-
-    if (ruby_libvirt_get_cstring_or_null(driver) != NULL) {
-        rb_raise(e_NoSupportError, "Non-NULL driver not supported");
-    }
-
-    ruby_libvirt_generate_call_nil(virNodeDeviceDettach,
-                                   ruby_libvirt_connect_get(n),
-                                   nodedevice_get(n));
-#endif
 }
 
 /*
@@ -207,7 +200,6 @@ static VALUE libvirt_nodedevice_reset(VALUE n)
                                    nodedevice_get(n));
 }
 
-#if HAVE_VIRNODEDEVICEDESTROY
 /*
  * call-seq:
  *   nodedevice.destroy -> nil
@@ -221,7 +213,6 @@ static VALUE libvirt_nodedevice_destroy(VALUE n)
                                    ruby_libvirt_connect_get(n),
                                    nodedevice_get(n));
 }
-#endif
 
 /*
  * call-seq:
@@ -236,7 +227,6 @@ static VALUE libvirt_nodedevice_free(VALUE n)
     ruby_libvirt_generate_call_free(NodeDevice, n);
 }
 
-#if HAVE_VIRNODEDEVICELOOKUPSCSIHOSTBYWWN
 /*
  * call-seq:
  *   nodedevice.lookup_scsi_host_by_wwn(wwnn, wwpn, flags=0) -> Libvirt::NodeDevice
@@ -262,7 +252,7 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
 
     return ruby_libvirt_nodedevice_new(nd, ruby_libvirt_conn_attr(n));
 }
-#endif
+
 
 /*
  * Class Libvirt::NodeDevice
@@ -283,12 +273,8 @@ void ruby_libvirt_nodedevice_init(void)
     rb_define_method(c_nodedevice, "detach", libvirt_nodedevice_detach, -1);
     rb_define_method(c_nodedevice, "reattach", libvirt_nodedevice_reattach, 0);
     rb_define_method(c_nodedevice, "reset", libvirt_nodedevice_reset, 0);
-#if HAVE_VIRNODEDEVICEDESTROY
     rb_define_method(c_nodedevice, "destroy", libvirt_nodedevice_destroy, 0);
-#endif
     rb_define_method(c_nodedevice, "free", libvirt_nodedevice_free, 0);
-#if HAVE_VIRNODEDEVICELOOKUPSCSIHOSTBYWWN
     rb_define_method(c_nodedevice, "lookup_scsi_host_by_wwn",
                      libvirt_nodedevice_lookup_scsi_host_by_wwn, -1);
-#endif
 }

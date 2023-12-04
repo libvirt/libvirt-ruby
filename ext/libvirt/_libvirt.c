@@ -24,9 +24,7 @@
 #include <ruby.h>
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
-#if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
 #include <libvirt/libvirt-lxc.h>
-#endif
 #include "extconf.h"
 #include "common.h"
 #include "storage.h"
@@ -134,7 +132,6 @@ static VALUE libvirt_open_read_only(int argc, VALUE *argv,
     return ruby_libvirt_connect_new(conn);
 }
 
-#if HAVE_VIRCONNECTOPENAUTH
 static int libvirt_auth_callback_wrapper(virConnectCredentialPtr cred,
                                          unsigned int ncred, void *cbdata)
 {
@@ -266,9 +263,7 @@ static VALUE libvirt_open_auth(int argc, VALUE *argv,
 
     return ruby_libvirt_connect_new(conn);
 }
-#endif
 
-#if HAVE_VIREVENTREGISTERIMPL
 static VALUE add_handle, update_handle, remove_handle;
 static VALUE add_timeout, update_timeout, remove_timeout;
 
@@ -649,9 +644,7 @@ static VALUE libvirt_conn_event_register_impl(int argc, VALUE *argv,
 
     return Qnil;
 }
-#endif
 
-#if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
 /*
  * call-seq:
  *   Libvirt::lxc_enter_security_label(model, label, flags=0) -> Libvirt::Domain::SecurityLabel
@@ -705,7 +698,6 @@ static VALUE libvirt_domain_lxc_enter_security_label(int argc, VALUE *argv,
 
     return result;
 }
-#endif
 
 /*
  * Module Libvirt
@@ -716,7 +708,6 @@ void Init__libvirt(void)
     c_libvirt_version = rb_define_class_under(m_libvirt, "Version",
                                               rb_cObject);
 
-#if HAVE_VIRCONNECTOPENAUTH
     rb_define_const(m_libvirt, "CONNECT_RO", INT2NUM(VIR_CONNECT_RO));
 
     rb_define_const(m_libvirt, "CRED_USERNAME", INT2NUM(VIR_CRED_USERNAME));
@@ -729,7 +720,6 @@ void Init__libvirt(void)
                     INT2NUM(VIR_CRED_NOECHOPROMPT));
     rb_define_const(m_libvirt, "CRED_REALM", INT2NUM(VIR_CRED_REALM));
     rb_define_const(m_libvirt, "CRED_EXTERNAL", INT2NUM(VIR_CRED_EXTERNAL));
-#endif
 
     rb_define_const(m_libvirt, "CONNECT_NO_ALIASES",
                     INT2NUM(VIR_CONNECT_NO_ALIASES));
@@ -787,9 +777,7 @@ void Init__libvirt(void)
     rb_define_const(e_Error, "FROM_ESX", INT2NUM(VIR_FROM_ESX));
     rb_define_const(e_Error, "FROM_PHYP", INT2NUM(VIR_FROM_PHYP));
     rb_define_const(e_Error, "FROM_SECRET", INT2NUM(VIR_FROM_SECRET));
-#if HAVE_VIRCONNECTCOMPARECPU
     rb_define_const(e_Error, "FROM_CPU", INT2NUM(VIR_FROM_CPU));
-#endif
     rb_define_const(e_Error, "FROM_XENAPI", INT2NUM(VIR_FROM_XENAPI));
     rb_define_const(e_Error, "FROM_NWFILTER", INT2NUM(VIR_FROM_NWFILTER));
     rb_define_const(e_Error, "FROM_HOOK", INT2NUM(VIR_FROM_HOOK));
@@ -908,11 +896,8 @@ void Init__libvirt(void)
     rb_define_module_function(m_libvirt, "open", libvirt_open, -1);
     rb_define_module_function(m_libvirt, "open_read_only",
                               libvirt_open_read_only, -1);
-#if HAVE_VIRCONNECTOPENAUTH
     rb_define_module_function(m_libvirt, "open_auth", libvirt_open_auth, -1);
-#endif
 
-#if HAVE_VIREVENTREGISTERIMPL
     rb_define_const(m_libvirt, "EVENT_HANDLE_READABLE",
                     INT2NUM(VIR_EVENT_HANDLE_READABLE));
     rb_define_const(m_libvirt, "EVENT_HANDLE_WRITABLE",
@@ -936,12 +921,9 @@ void Init__libvirt(void)
                               libvirt_event_invoke_handle_callback, 4);
     rb_define_module_function(m_libvirt, "event_invoke_timeout_callback",
                               libvirt_event_invoke_timeout_callback, 2);
-#endif
 
-#if HAVE_VIRDOMAINLXCENTERSECURITYLABEL
     rb_define_method(m_libvirt, "lxc_enter_security_label",
                      libvirt_domain_lxc_enter_security_label, -1);
-#endif
 
     ruby_libvirt_connect_init();
     ruby_libvirt_storage_init();

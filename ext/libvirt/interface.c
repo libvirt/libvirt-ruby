@@ -95,7 +95,6 @@ static VALUE libvirt_interface_destroy(int argc, VALUE *argv, VALUE i)
                                    ruby_libvirt_value_to_uint(flags));
 }
 
-#if HAVE_VIRINTERFACEISACTIVE
 /*
  * call-seq:
  *   interface.active? -> [true|false]
@@ -168,7 +167,6 @@ static VALUE libvirt_interface_free(VALUE i)
 {
     ruby_libvirt_generate_call_free(Interface, i);
 }
-#endif
 
 /*
  * Class Libvirt::Interface
@@ -188,7 +186,5 @@ void ruby_libvirt_interface_init(void)
     rb_define_method(c_interface, "create", libvirt_interface_create, -1);
     rb_define_method(c_interface, "destroy", libvirt_interface_destroy, -1);
     rb_define_method(c_interface, "free", libvirt_interface_free, 0);
-#if HAVE_VIRINTERFACEISACTIVE
     rb_define_method(c_interface, "active?", libvirt_interface_active_p, 0);
-#endif
 }

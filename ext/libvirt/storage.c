@@ -430,7 +430,6 @@ static VALUE libvirt_storage_pool_lookup_vol_by_path(VALUE p, VALUE path)
     return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 
-#if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
 /*
  * call-seq:
  *   pool.list_all_volumes(flags=0) -> Array
@@ -498,7 +497,6 @@ static VALUE libvirt_storage_pool_create_volume_xml(int argc, VALUE *argv,
     return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
 
-#if HAVE_VIRSTORAGEVOLCREATEXMLFROM
 /*
  * call-seq:
  *   pool.create_volume_xml_from(xml, clonevol, flags=0) -> Libvirt::StorageVol
@@ -524,9 +522,7 @@ static VALUE libvirt_storage_pool_create_volume_xml_from(int argc, VALUE *argv,
 
     return vol_new(vol, ruby_libvirt_conn_attr(p));
 }
-#endif
 
-#if HAVE_VIRSTORAGEPOOLISACTIVE
 /*
  * call-seq:
  *   pool.active? -> [true|false]
@@ -540,9 +536,7 @@ static VALUE libvirt_storage_pool_active_p(VALUE p)
                                          ruby_libvirt_connect_get(p),
                                          pool_get(p));
 }
-#endif
 
-#if HAVE_VIRSTORAGEPOOLISPERSISTENT
 /*
  * call-seq:
  *   pool.persistent? -> [true|false]
@@ -556,7 +550,6 @@ static VALUE libvirt_storage_pool_persistent_p(VALUE p)
                                          ruby_libvirt_connect_get(p),
                                          pool_get(p));
 }
-#endif
 
 /*
  * call-seq:
@@ -577,7 +570,6 @@ static VALUE libvirt_storage_vol_delete(int argc, VALUE *argv, VALUE v)
                                    ruby_libvirt_value_to_uint(flags));
 }
 
-#if HAVE_VIRSTORAGEVOLWIPE
 /*
  * call-seq:
  *   vol.wipe(flags=0) -> nil
@@ -596,7 +588,6 @@ static VALUE libvirt_storage_vol_wipe(int argc, VALUE *argv, VALUE v)
                                    vol_get(v),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -668,9 +659,7 @@ static VALUE libvirt_storage_vol_free(VALUE v)
 {
     ruby_libvirt_generate_call_free(StorageVol, v);
 }
-#endif
 
-#if HAVE_VIRSTORAGEVOLDOWNLOAD
 /*
  * call-seq:
  *   vol.download(stream, offset, length, flags=0) -> nil
@@ -710,9 +699,7 @@ static VALUE libvirt_storage_vol_upload(int argc, VALUE *argv, VALUE v)
                                    NUM2ULL(offset), NUM2ULL(length),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRSTORAGEVOLWIPEPATTERN
 /*
  * call-seq:
  *   vol.wipe_pattern(alg, flags=0) -> nil
@@ -731,9 +718,7 @@ static VALUE libvirt_storage_vol_wipe_pattern(int argc, VALUE *argv, VALUE v)
                                    vol_get(v), NUM2UINT(alg),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRSTORAGEVOLRESIZE
 /*
  * call-seq:
  *   vol.resize(capacity, flags=0) -> nil
@@ -752,7 +737,6 @@ static VALUE libvirt_storage_vol_resize(int argc, VALUE *argv, VALUE v)
                                    vol_get(v), NUM2ULL(capacity),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 void ruby_libvirt_storage_init(void)
 {
@@ -852,25 +836,17 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_pool, "create_volume_xml",
                      libvirt_storage_pool_create_volume_xml, -1);
     rb_define_alias(c_storage_pool, "create_vol_xml", "create_volume_xml");
-#if HAVE_VIRSTORAGEVOLCREATEXMLFROM
     rb_define_method(c_storage_pool, "create_volume_xml_from",
                      libvirt_storage_pool_create_volume_xml_from, -1);
     rb_define_alias(c_storage_pool, "create_vol_xml_from",
                     "create_volume_xml_from");
-#endif
-#if HAVE_VIRSTORAGEPOOLISACTIVE
     rb_define_method(c_storage_pool, "active?", libvirt_storage_pool_active_p,
                      0);
-#endif
-#if HAVE_VIRSTORAGEPOOLISPERSISTENT
     rb_define_method(c_storage_pool, "persistent?",
                      libvirt_storage_pool_persistent_p, 0);
-#endif
 
-#if HAVE_VIRSTORAGEPOOLLISTALLVOLUMES
     rb_define_method(c_storage_pool, "list_all_volumes",
                      libvirt_storage_pool_list_all_volumes, -1);
-#endif
 
     rb_define_const(c_storage_pool, "BUILD_NO_OVERWRITE",
                     INT2NUM(VIR_STORAGE_POOL_BUILD_NO_OVERWRITE));
@@ -911,13 +887,9 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_vol, "name", libvirt_storage_vol_name, 0);
     rb_define_method(c_storage_vol, "key", libvirt_storage_vol_key, 0);
     rb_define_method(c_storage_vol, "delete", libvirt_storage_vol_delete, -1);
-#if HAVE_VIRSTORAGEVOLWIPE
     rb_define_method(c_storage_vol, "wipe", libvirt_storage_vol_wipe, -1);
-#endif
-#if HAVE_VIRSTORAGEVOLWIPEPATTERN
     rb_define_method(c_storage_vol, "wipe_pattern",
                      libvirt_storage_vol_wipe_pattern, -1);
-#endif
     rb_define_const(c_storage_vol, "WIPE_ALG_ZERO",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_ZERO));
     rb_define_const(c_storage_vol, "WIPE_ALG_NNSA",
@@ -943,13 +915,10 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_vol, "path", libvirt_storage_vol_path, 0);
     rb_define_method(c_storage_vol, "free", libvirt_storage_vol_free, 0);
 
-#if HAVE_VIRSTORAGEVOLDOWNLOAD
     rb_define_method(c_storage_vol, "download", libvirt_storage_vol_download,
                      -1);
     rb_define_method(c_storage_vol, "upload", libvirt_storage_vol_upload, -1);
-#endif
 
-#if HAVE_VIRSTORAGEVOLRESIZE
     rb_define_const(c_storage_vol, "RESIZE_ALLOCATE",
                     INT2NUM(VIR_STORAGE_VOL_RESIZE_ALLOCATE));
     rb_define_const(c_storage_vol, "RESIZE_DELTA",
@@ -957,5 +926,4 @@ void ruby_libvirt_storage_init(void)
     rb_define_const(c_storage_vol, "RESIZE_SHRINK",
                     INT2NUM(VIR_STORAGE_VOL_RESIZE_SHRINK));
     rb_define_method(c_storage_vol, "resize", libvirt_storage_vol_resize, -1);
-#endif
 }

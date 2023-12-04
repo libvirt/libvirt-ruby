@@ -21,9 +21,7 @@
 
 #include <ruby.h>
 #include <libvirt/libvirt.h>
-#if HAVE_VIRDOMAINQEMUATTACH
 #include <libvirt/libvirt-qemu.h>
-#endif
 #include <libvirt/virterror.h>
 #include "extconf.h"
 #include "common.h"
@@ -174,7 +172,6 @@ static VALUE libvirt_connect_version(VALUE c)
     return ULONG2NUM(v);
 }
 
-#if HAVE_VIRCONNECTGETLIBVERSION
 /*
  * call-seq:
  *   conn.libversion -> Fixnum
@@ -194,7 +191,6 @@ static VALUE libvirt_connect_libversion(VALUE c)
 
     return ULONG2NUM(v);
 }
-#endif
 
 /*
  * call-seq:
@@ -347,7 +343,6 @@ static VALUE libvirt_connect_node_cells_free_memory(int argc, VALUE *argv,
     return cells;
 }
 
-#if HAVE_VIRNODEGETSECURITYMODEL
 /*
  * call-seq:
  *   conn.node_security_model -> Libvirt::Connect::NodeSecurityModel
@@ -372,9 +367,7 @@ static VALUE libvirt_connect_node_security_model(VALUE c)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRCONNECTISENCRYPTED
 /*
  * call-seq:
  *   conn.encrypted? -> [True|False]
@@ -388,9 +381,7 @@ static VALUE libvirt_connect_encrypted_p(VALUE c)
                                          ruby_libvirt_connect_get(c),
                                          ruby_libvirt_connect_get(c));
 }
-#endif
 
-#if HAVE_VIRCONNECTISSECURE
 /*
  * call-seq:
  *   conn.secure? -> [True|False]
@@ -404,7 +395,6 @@ static VALUE libvirt_connect_secure_p(VALUE c)
                                          ruby_libvirt_connect_get(c),
                                          ruby_libvirt_connect_get(c));
 }
-#endif
 
 /*
  * call-seq:
@@ -420,7 +410,6 @@ static VALUE libvirt_connect_capabilities(VALUE c)
                                       ruby_libvirt_connect_get(c));
 }
 
-#if HAVE_VIRCONNECTCOMPARECPU
 /*
  * call-seq:
  *   conn.compare_cpu(xml, flags=0) -> compareflag
@@ -442,10 +431,7 @@ static VALUE libvirt_connect_compare_cpu(int argc, VALUE *argv, VALUE c)
                                    StringValueCStr(xml),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-
-#if HAVE_VIRCONNECTBASELINECPU
 /*
  * call-seq:
  *   conn.baseline_cpu([xml, xml2, ...], flags=0) -> XML
@@ -495,9 +481,7 @@ static VALUE libvirt_connect_baseline_cpu(int argc, VALUE *argv, VALUE c)
 
     return retval;
 }
-#endif
 
-#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY || HAVE_VIRCONNECTDOMAINEVENTREGISTER
 static int domain_event_lifecycle_callback(virConnectPtr conn,
                                            virDomainPtr dom, int event,
                                            int detail, void *opaque)
@@ -533,9 +517,7 @@ static int domain_event_lifecycle_callback(virConnectPtr conn,
 
     return 0;
 }
-#endif
 
-#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
 static int domain_event_reboot_callback(virConnectPtr conn, virDomainPtr dom,
                                         void *opaque)
 {
@@ -885,9 +867,7 @@ static VALUE libvirt_connect_domain_event_deregister_any(VALUE c,
                                    ruby_libvirt_connect_get(c),
                                    NUM2INT(callbackID));
 }
-#endif
 
-#if HAVE_VIRCONNECTDOMAINEVENTREGISTER
 /*
  * this is a bit of silliness.  Because libvirt internals track the address
  * of the function pointer, trying to use domain_event_lifecycle_callback
@@ -954,7 +934,6 @@ static VALUE libvirt_connect_domain_event_deregister(VALUE c)
                                    ruby_libvirt_connect_get(c),
                                    domain_event_callback);
 }
-#endif
 
 /*
  * call-seq:
@@ -1052,7 +1031,6 @@ static VALUE libvirt_connect_create_linux(int argc, VALUE *argv, VALUE c)
     return ruby_libvirt_domain_new(dom, c);
 }
 
-#if HAVE_VIRDOMAINCREATEXML
 /*
  * call-seq:
  *   conn.create_domain_xml(xml, flags=0) -> Libvirt::Domain
@@ -1074,7 +1052,6 @@ static VALUE libvirt_connect_create_domain_xml(int argc, VALUE *argv, VALUE c)
 
     return ruby_libvirt_domain_new(dom, c);
 }
-#endif
 
 /*
  * call-seq:
@@ -1150,16 +1127,14 @@ static VALUE libvirt_connect_define_domain_xml(int argc, VALUE *argv, VALUE c)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-#if HAVE_VIRDOMAINDEFINEXMLFLAGS
-    dom = virDomainDefineXMLFlags(ruby_libvirt_connect_get(c),
-                                  StringValueCStr(xml),
-                                  ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        dom = virDomainDefineXMLFlags(ruby_libvirt_connect_get(c),
+                                      StringValueCStr(xml),
+                                      ruby_libvirt_value_to_uint(flags));
+    } else {
+        dom = virDomainDefineXML(ruby_libvirt_connect_get(c),
+                                 StringValueCStr(xml));
     }
-    dom = virDomainDefineXML(ruby_libvirt_connect_get(c), StringValueCStr(xml));
-#endif
 
     ruby_libvirt_raise_error_if(dom == NULL, e_DefinitionError,
                                 "virDomainDefineXML",
@@ -1168,7 +1143,6 @@ static VALUE libvirt_connect_define_domain_xml(int argc, VALUE *argv, VALUE c)
     return ruby_libvirt_domain_new(dom, c);
 }
 
-#if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
 /*
  * call-seq:
  *   conn.domain_xml_from_native(nativeFormat, xml, flags=0) -> String
@@ -1190,9 +1164,7 @@ static VALUE libvirt_connect_domain_xml_from_native(int argc, VALUE *argv,
                                       StringValueCStr(xml),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRCONNECTDOMAINXMLTONATIVE
 /*
  * call-seq:
  *   conn.domain_xml_to_native(nativeFormat, xml, flags=0) -> String
@@ -1214,7 +1186,6 @@ static VALUE libvirt_connect_domain_xml_to_native(int argc, VALUE *argv,
                                       StringValueCStr(xml),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -1543,7 +1514,6 @@ static VALUE libvirt_connect_lookup_nodedevice_by_name(VALUE c, VALUE name)
 
 }
 
-#if HAVE_VIRNODEDEVICECREATEXML
 /*
  * call-seq:
  *   conn.create_nodedevice_xml(xml, flags=0) -> Libvirt::NodeDevice
@@ -1568,7 +1538,6 @@ static VALUE libvirt_connect_create_nodedevice_xml(int argc, VALUE *argv,
 
     return ruby_libvirt_nodedevice_new(nodedev, c);
 }
-#endif
 
 
 /*
@@ -1907,7 +1876,6 @@ static VALUE libvirt_connect_find_storage_pool_sources(int argc, VALUE *argv,
                                       ruby_libvirt_value_to_uint(flags));
 }
 
-#if HAVE_VIRCONNECTGETSYSINFO
 /*
  * call-seq:
  *   conn.sys_info(flags=0) -> String
@@ -1927,8 +1895,6 @@ static VALUE libvirt_connect_sys_info(int argc, VALUE *argv, VALUE c)
                                       ruby_libvirt_connect_get(c),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
-
 
 /*
  * call-seq:
@@ -1953,7 +1919,6 @@ static VALUE libvirt_connect_stream(int argc, VALUE *argv, VALUE c)
     return ruby_libvirt_stream_new(stream, c);
 }
 
-#if HAVE_VIRINTERFACECHANGEBEGIN
 /*
  * call-seq:
  *   conn.interface_change_begin(flags=0) -> nil
@@ -2015,9 +1980,7 @@ static VALUE libvirt_connect_interface_change_rollback(int argc, VALUE *argv,
                                    ruby_libvirt_connect_get(c),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRNODEGETCPUSTATS
 static void cpu_stats_set(void *voidparams, int i, VALUE result)
 {
     virNodeCPUStatsPtr params = (virNodeCPUStatsPtr)voidparams;
@@ -2079,9 +2042,7 @@ static VALUE libvirt_connect_node_cpu_stats(int argc, VALUE *argv, VALUE c)
                                        cpu_stats_nparams, cpu_stats_get,
                                        cpu_stats_set);
 }
-#endif
 
-#if HAVE_VIRNODEGETMEMORYSTATS
 static void memory_stats_set(void *voidparams, int i, VALUE result)
 {
     virNodeMemoryStatsPtr params = (virNodeMemoryStatsPtr)voidparams;
@@ -2144,9 +2105,7 @@ static VALUE libvirt_connect_node_memory_stats(int argc, VALUE *argv, VALUE c)
                                        memory_stats_nparams, memory_stats_get,
                                        memory_stats_set);
 }
-#endif
 
-#if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC
 /*
  * call-seq:
  *   conn.save_image_xml_desc(filename, flags=0) -> String
@@ -2188,9 +2147,7 @@ static VALUE libvirt_connect_define_save_image_xml(int argc, VALUE *argv,
                                    StringValueCStr(newxml),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRNODESUSPENDFORDURATION
 /*
  * call-seq:
  *   conn.node_suspend_for_duration(target, duration, flags=0) -> nil
@@ -2211,9 +2168,7 @@ static VALUE libvirt_connect_node_suspend_for_duration(int argc, VALUE *argv,
                                    NUM2UINT(target), NUM2ULL(duration),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRNODEGETMEMORYPARAMETERS
 static const char *node_memory_nparams(VALUE d, unsigned int flags,
                                        void *RUBY_LIBVIRT_UNUSED(opaque),
                                        int *nparams)
@@ -2299,9 +2254,7 @@ static VALUE libvirt_connect_node_memory_parameters_equal(VALUE c, VALUE input)
                                              ARRAY_SIZE(memory_allowed),
                                              node_memory_set);
 }
-#endif
 
-#if HAVE_VIRNODEGETCPUMAP
 struct cpu_map_field_to_value {
     VALUE result;
     int cpu;
@@ -2358,9 +2311,7 @@ static VALUE libvirt_connect_node_cpu_map(int argc, VALUE *argv, VALUE c)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRCONNECTSETKEEPALIVE
 /*
  * call-seq:
  *   conn.set_keepalive(interval, count) -> Fixnum
@@ -2403,9 +2354,7 @@ static VALUE libvirt_connect_keepalive_equal(VALUE c, VALUE in)
                                    ruby_libvirt_connect_get(c),
                                    NUM2INT(interval), NUM2UINT(count));
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLDOMAINS
 /*
  * call-seq:
  *   conn.list_all_domains(flags=0) -> Array
@@ -2420,9 +2369,7 @@ static VALUE libvirt_connect_list_all_domains(int argc, VALUE *argv, VALUE c)
                                         ruby_libvirt_connect_get(c), c,
                                         ruby_libvirt_domain_new, virDomainFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLNETWORKS
 /*
  * call-seq:
  *   conn.list_all_networks(flags=0) -> Array
@@ -2438,9 +2385,7 @@ static VALUE libvirt_connect_list_all_networks(int argc, VALUE *argv, VALUE c)
                                         ruby_libvirt_network_new,
                                         virNetworkFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLINTERFACES
 /*
  * call-seq:
  *   conn.list_all_interfaces(flags=0) -> Array
@@ -2456,9 +2401,7 @@ static VALUE libvirt_connect_list_all_interfaces(int argc, VALUE *argv, VALUE c)
                                         ruby_libvirt_interface_new,
                                         virInterfaceFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLSECRETS
 /*
  * call-seq:
  *   conn.list_all_secrets(flags=0) -> Array
@@ -2473,9 +2416,7 @@ static VALUE libvirt_connect_list_all_secrets(int argc, VALUE *argv, VALUE c)
                                         ruby_libvirt_connect_get(c), c,
                                         ruby_libvirt_secret_new, virSecretFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLNODEDEVICES
 /*
  * call-seq:
  *   conn.list_all_nodedevices(flags=0) -> Array
@@ -2492,9 +2433,7 @@ static VALUE libvirt_connect_list_all_nodedevices(int argc, VALUE *argv,
                                         ruby_libvirt_nodedevice_new,
                                         virNodeDeviceFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLSTORAGEPOOLS
 /*
  * call-seq:
  *   conn.list_all_storage_pools(flags=0) -> Array
@@ -2510,9 +2449,7 @@ static VALUE libvirt_connect_list_all_storage_pools(int argc, VALUE *argv,
                                         ruby_libvirt_connect_get(c), c,
                                         pool_new, virStoragePoolFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTLISTALLNWFILTERS
 /*
  * call-seq:
  *   conn.list_all_nwfilters(flags=0) -> Array
@@ -2528,9 +2465,7 @@ static VALUE libvirt_connect_list_all_nwfilters(int argc, VALUE *argv, VALUE c)
                                         ruby_libvirt_nwfilter_new,
                                         virNWFilterFree);
 }
-#endif
 
-#if HAVE_VIRCONNECTISALIVE
 /*
  * call-seq:
  *   conn.alive? -> [True|False]
@@ -2544,9 +2479,7 @@ static VALUE libvirt_connect_alive_p(VALUE c)
                                          ruby_libvirt_connect_get(c),
                                          ruby_libvirt_connect_get(c));
 }
-#endif
 
-#if HAVE_VIRDOMAINCREATEXMLWITHFILES
 /*
  * call-seq:
  *   conn.create_domain_xml_with_files(xml, fds=nil, flags=0) -> Libvirt::Domain
@@ -2591,9 +2524,7 @@ static VALUE libvirt_connect_create_domain_xml_with_files(int argc, VALUE *argv,
 
     return ruby_libvirt_domain_new(dom, c);
 }
-#endif
 
-#if HAVE_VIRDOMAINQEMUATTACH
 /*
  * call-seq:
  *   conn.qemu_attach(pid, flags=0) -> Libvirt::Domain
@@ -2615,9 +2546,7 @@ static VALUE libvirt_connect_qemu_attach(int argc, VALUE *argv, VALUE c)
 
     return ruby_libvirt_domain_new(dom, c);
 }
-#endif
 
-#if HAVE_VIRCONNECTGETCPUMODELNAMES
 /*
  * call-seq:
  *   conn.cpu_model_names(arch, flags=0) -> Array
@@ -2672,9 +2601,7 @@ error:
     rb_jump_tag(exception);
     return Qnil;
 }
-#endif
 
-#if HAVE_VIRNODEALLOCPAGES
 /*
  * call-seq:
  *   conn.node_alloc_pages(page_arr, cells=nil, flags=0) -> Fixnum
@@ -2738,9 +2665,7 @@ static VALUE libvirt_connect_node_alloc_pages(int argc, VALUE *argv, VALUE c)
 
     return INT2NUM(ret);
 }
-#endif
 
-#if HAVE_VIRCONNECTGETDOMAINCAPABILITIES
 /*
  * call-seq:
  *   conn.domain_capabilities(emulatorbin, arch, machine, virttype, flags=0) -> String
@@ -2764,9 +2689,7 @@ static VALUE libvirt_connect_domain_capabilities(int argc, VALUE *argv, VALUE c)
                                       ruby_libvirt_get_cstring_or_null(virttype),
                                       NUM2UINT(flags));
 }
-#endif
 
-#if HAVE_VIRNODEGETFREEPAGES
 /*
  * call-seq:
  *   conn.node_free_pages(pages, cells, flags=0) -> Hash
@@ -2811,7 +2734,6 @@ static VALUE libvirt_connect_node_free_pages(int argc, VALUE *argv, VALUE c)
 
     return result;
 }
-#endif
 
 /*
  * Class Libvirt::Connect
@@ -2846,9 +2768,7 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "closed?", libvirt_connect_closed_p, 0);
     rb_define_method(c_connect, "type", libvirt_connect_type, 0);
     rb_define_method(c_connect, "version", libvirt_connect_version, 0);
-#if HAVE_VIRCONNECTGETLIBVERSION
     rb_define_method(c_connect, "libversion", libvirt_connect_libversion, 0);
-#endif
     rb_define_method(c_connect, "hostname", libvirt_connect_hostname, 0);
     rb_define_method(c_connect, "uri", libvirt_connect_uri, 0);
     rb_define_method(c_connect, "max_vcpus", libvirt_connect_max_vcpus, -1);
@@ -2858,22 +2778,15 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_node_free_memory, 0);
     rb_define_method(c_connect, "node_cells_free_memory",
                      libvirt_connect_node_cells_free_memory, -1);
-#if HAVE_VIRNODEGETSECURITYMODEL
     rb_define_method(c_connect, "node_security_model",
                      libvirt_connect_node_security_model, 0);
     rb_define_alias(c_connect, "node_get_security_model",
                     "node_security_model");
-#endif
-#if HAVE_VIRCONNECTISENCRYPTED
     rb_define_method(c_connect, "encrypted?", libvirt_connect_encrypted_p, 0);
-#endif
-#if HAVE_VIRCONNECTISSECURE
     rb_define_method(c_connect, "secure?", libvirt_connect_secure_p, 0);
-#endif
     rb_define_method(c_connect, "capabilities", libvirt_connect_capabilities,
                      0);
 
-#if HAVE_VIRCONNECTCOMPARECPU
     rb_define_const(c_connect, "CPU_COMPARE_ERROR",
                     INT2NUM(VIR_CPU_COMPARE_ERROR));
     rb_define_const(c_connect, "CPU_COMPARE_INCOMPATIBLE",
@@ -2884,15 +2797,12 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CPU_COMPARE_SUPERSET));
 
     rb_define_method(c_connect, "compare_cpu", libvirt_connect_compare_cpu, -1);
-#endif
 
     rb_define_const(c_connect, "COMPARE_CPU_FAIL_INCOMPATIBLE",
                     INT2NUM(VIR_CONNECT_COMPARE_CPU_FAIL_INCOMPATIBLE));
 
-#if HAVE_VIRCONNECTBASELINECPU
     rb_define_method(c_connect, "baseline_cpu", libvirt_connect_baseline_cpu,
                      -1);
-#endif
     rb_define_const(c_connect, "BASELINE_CPU_EXPAND_FEATURES",
                     INT2NUM(VIR_CONNECT_BASELINE_CPU_EXPAND_FEATURES));
 
@@ -2982,10 +2892,8 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4));
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6",
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6));
-#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_LIFECYCLE",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_LIFECYCLE));
-#endif
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_REBOOT",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_REBOOT));
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_RTC_CHANGE",
@@ -3022,19 +2930,15 @@ void ruby_libvirt_connect_init(void)
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX",
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX));
 
-#if HAVE_VIRCONNECTDOMAINEVENTREGISTER
     rb_define_method(c_connect, "domain_event_register",
                      libvirt_connect_domain_event_register, -1);
     rb_define_method(c_connect, "domain_event_deregister",
                      libvirt_connect_domain_event_deregister, 0);
-#endif
 
-#if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
     rb_define_method(c_connect, "domain_event_register_any",
                      libvirt_connect_domain_event_register_any, -1);
     rb_define_method(c_connect, "domain_event_deregister_any",
                      libvirt_connect_domain_event_deregister_any, 1);
-#endif
 
     /* Domain creation/lookup */
     rb_define_method(c_connect, "num_of_domains",
@@ -3047,10 +2951,8 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_list_defined_domains, 0);
     rb_define_method(c_connect, "create_domain_linux",
                      libvirt_connect_create_linux, -1);
-#if HAVE_VIRDOMAINCREATEXML
     rb_define_method(c_connect, "create_domain_xml",
                      libvirt_connect_create_domain_xml, -1);
-#endif
     rb_define_method(c_connect, "lookup_domain_by_name",
                      libvirt_connect_lookup_domain_by_name, 1);
     rb_define_method(c_connect, "lookup_domain_by_id",
@@ -3062,14 +2964,10 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "define_domain_xml",
                      libvirt_connect_define_domain_xml, -1);
 
-#if HAVE_VIRCONNECTDOMAINXMLFROMNATIVE
     rb_define_method(c_connect, "domain_xml_from_native",
                      libvirt_connect_domain_xml_from_native, -1);
-#endif
-#if HAVE_VIRCONNECTDOMAINXMLTONATIVE
     rb_define_method(c_connect, "domain_xml_to_native",
                      libvirt_connect_domain_xml_to_native, -1);
-#endif
 
     /* Interface lookup/creation methods */
     rb_define_method(c_connect, "num_of_interfaces",
@@ -3112,10 +3010,8 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_list_nodedevices, -1);
     rb_define_method(c_connect, "lookup_nodedevice_by_name",
                      libvirt_connect_lookup_nodedevice_by_name, 1);
-#if HAVE_VIRNODEDEVICECREATEXML
     rb_define_method(c_connect, "create_nodedevice_xml",
                      libvirt_connect_create_nodedevice_xml, -1);
-#endif
 
     /* NWFilter lookup/creation methods */
     rb_define_method(c_connect, "num_of_nwfilters",
@@ -3161,41 +3057,30 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "discover_storage_pool_sources",
                      libvirt_connect_find_storage_pool_sources, -1);
 
-#if HAVE_VIRCONNECTGETSYSINFO
     rb_define_method(c_connect, "sys_info", libvirt_connect_sys_info, -1);
-#endif
     rb_define_method(c_connect, "stream", libvirt_connect_stream, -1);
 
-#if HAVE_VIRINTERFACECHANGEBEGIN
     rb_define_method(c_connect, "interface_change_begin",
                      libvirt_connect_interface_change_begin, -1);
     rb_define_method(c_connect, "interface_change_commit",
                      libvirt_connect_interface_change_commit, -1);
     rb_define_method(c_connect, "interface_change_rollback",
                      libvirt_connect_interface_change_rollback, -1);
-#endif
 
-#if HAVE_VIRNODEGETCPUSTATS
     rb_define_method(c_connect, "node_cpu_stats",
                      libvirt_connect_node_cpu_stats, -1);
-#endif
     rb_define_const(c_connect, "NODE_CPU_STATS_ALL_CPUS",
                     INT2NUM(VIR_NODE_CPU_STATS_ALL_CPUS));
-#if HAVE_VIRNODEGETMEMORYSTATS
     rb_define_method(c_connect, "node_memory_stats",
                      libvirt_connect_node_memory_stats, -1);
-#endif
     rb_define_const(c_connect, "NODE_MEMORY_STATS_ALL_CELLS",
                     INT2NUM(VIR_NODE_MEMORY_STATS_ALL_CELLS));
 
-#if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC
     rb_define_method(c_connect, "save_image_xml_desc",
                      libvirt_connect_save_image_xml_desc, -1);
     rb_define_method(c_connect, "define_save_image_xml",
                      libvirt_connect_define_save_image_xml, -1);
-#endif
 
-#if HAVE_VIRNODESUSPENDFORDURATION
     rb_define_const(c_connect, "NODE_SUSPEND_TARGET_MEM",
                     INT2NUM(VIR_NODE_SUSPEND_TARGET_MEM));
     rb_define_const(c_connect, "NODE_SUSPEND_TARGET_DISK",
@@ -3205,29 +3090,21 @@ void ruby_libvirt_connect_init(void)
 
     rb_define_method(c_connect, "node_suspend_for_duration",
                      libvirt_connect_node_suspend_for_duration, -1);
-#endif
 
-#if HAVE_VIRNODEGETMEMORYPARAMETERS
     rb_define_method(c_connect, "node_memory_parameters",
                      libvirt_connect_node_memory_parameters, -1);
     rb_define_method(c_connect, "node_memory_parameters=",
                      libvirt_connect_node_memory_parameters_equal, 1);
-#endif
 
-#if HAVE_VIRNODEGETCPUMAP
     rb_define_method(c_connect, "node_cpu_map",
                      libvirt_connect_node_cpu_map, -1);
     rb_define_alias(c_connect, "node_get_cpu_map", "node_cpu_map");
-#endif
 
-#if HAVE_VIRCONNECTSETKEEPALIVE
     rb_define_method(c_connect, "set_keepalive",
                      libvirt_connect_set_keepalive, 2);
     rb_define_method(c_connect, "keepalive=", libvirt_connect_keepalive_equal,
                      1);
-#endif
 
-#if HAVE_VIRCONNECTLISTALLDOMAINS
     rb_define_const(c_connect, "LIST_DOMAINS_ACTIVE",
                     INT2NUM(VIR_CONNECT_LIST_DOMAINS_ACTIVE));
     rb_define_const(c_connect, "LIST_DOMAINS_INACTIVE",
@@ -3258,8 +3135,7 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_DOMAINS_NO_SNAPSHOT));
     rb_define_method(c_connect, "list_all_domains",
                      libvirt_connect_list_all_domains, -1);
-#endif
-#if HAVE_VIRCONNECTLISTALLNETWORKS
+
     rb_define_const(c_connect, "LIST_NETWORKS_ACTIVE",
                     INT2NUM(VIR_CONNECT_LIST_NETWORKS_ACTIVE));
     rb_define_const(c_connect, "LIST_NETWORKS_INACTIVE",
@@ -3274,16 +3150,14 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_NETWORKS_NO_AUTOSTART));
     rb_define_method(c_connect, "list_all_networks",
                      libvirt_connect_list_all_networks, -1);
-#endif
-#if HAVE_VIRCONNECTLISTALLINTERFACES
+
     rb_define_const(c_connect, "LIST_INTERFACES_INACTIVE",
                     INT2NUM(VIR_CONNECT_LIST_INTERFACES_INACTIVE));
     rb_define_const(c_connect, "LIST_INTERFACES_ACTIVE",
                     INT2NUM(VIR_CONNECT_LIST_INTERFACES_ACTIVE));
     rb_define_method(c_connect, "list_all_interfaces",
                      libvirt_connect_list_all_interfaces, -1);
-#endif
-#if HAVE_VIRCONNECTLISTALLSECRETS
+
     rb_define_const(c_connect, "LIST_SECRETS_EPHEMERAL",
                     INT2NUM(VIR_CONNECT_LIST_SECRETS_EPHEMERAL));
     rb_define_const(c_connect, "LIST_SECRETS_NO_EPHEMERAL",
@@ -3294,8 +3168,7 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_SECRETS_NO_PRIVATE));
     rb_define_method(c_connect, "list_all_secrets",
                      libvirt_connect_list_all_secrets, -1);
-#endif
-#if HAVE_VIRCONNECTLISTALLNODEDEVICES
+
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SYSTEM",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SYSTEM));
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_PCI_DEV",
@@ -3322,8 +3195,7 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC));
     rb_define_method(c_connect, "list_all_nodedevices",
                      libvirt_connect_list_all_nodedevices, -1);
-#endif
-#if HAVE_VIRCONNECTLISTALLSTORAGEPOOLS
+
     rb_define_const(c_connect, "LIST_STORAGE_POOLS_INACTIVE",
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_INACTIVE));
     rb_define_const(c_connect, "LIST_STORAGE_POOLS_ACTIVE",
@@ -3358,43 +3230,26 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_SHEEPDOG));
     rb_define_method(c_connect, "list_all_storage_pools",
                      libvirt_connect_list_all_storage_pools, -1);
-#endif
     rb_define_const(c_connect, "LIST_STORAGE_POOLS_GLUSTER",
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER));
     rb_define_const(c_connect, "LIST_STORAGE_POOLS_ZFS",
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_ZFS));
-#if HAVE_VIRCONNECTLISTALLNWFILTERS
     rb_define_method(c_connect, "list_all_nwfilters",
                      libvirt_connect_list_all_nwfilters, -1);
-#endif
-#if HAVE_VIRCONNECTISALIVE
     rb_define_method(c_connect, "alive?", libvirt_connect_alive_p, 0);
-#endif
-#if HAVE_VIRDOMAINCREATEXMLWITHFILES
     rb_define_method(c_connect, "create_domain_xml_with_files",
                      libvirt_connect_create_domain_xml_with_files, -1);
-#endif
-#if HAVE_VIRDOMAINQEMUATTACH
     rb_define_method(c_connect, "qemu_attach", libvirt_connect_qemu_attach, -1);
-#endif
-#if HAVE_VIRCONNECTGETCPUMODELNAMES
     rb_define_method(c_connect, "cpu_model_names",
                      libvirt_connect_cpu_model_names, -1);
-#endif
-#if HAVE_VIRNODEALLOCPAGES
     rb_define_const(c_connect, "NODE_ALLOC_PAGES_ADD",
                     INT2NUM(VIR_NODE_ALLOC_PAGES_ADD));
     rb_define_const(c_connect, "NODE_ALLOC_PAGES_SET",
                     INT2NUM(VIR_NODE_ALLOC_PAGES_SET));
     rb_define_method(c_connect, "node_alloc_pages",
 		     libvirt_connect_node_alloc_pages, -1);
-#endif
-#if HAVE_VIRCONNECTGETDOMAINCAPABILITIES
     rb_define_method(c_connect, "domain_capabilities",
                      libvirt_connect_domain_capabilities, -1);
-#endif
-#if HAVE_VIRNODEGETFREEPAGES
     rb_define_method(c_connect, "node_free_pages",
                      libvirt_connect_node_free_pages, -1);
-#endif
 }

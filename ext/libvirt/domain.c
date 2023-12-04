@@ -25,12 +25,8 @@
 /* we need to include st.h since ruby 1.8 needs it for RHash */
 #include <ruby/st.h>
 #include <libvirt/libvirt.h>
-#if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 #include <libvirt/libvirt-qemu.h>
-#endif
-#if HAVE_VIRDOMAINLXCOPENNAMESPACE
 #include <libvirt/libvirt-lxc.h>
-#endif
 #include <libvirt/virterror.h>
 #include "common.h"
 #include "connect.h"
@@ -114,7 +110,6 @@ static VALUE libvirt_domain_migrate(int argc, VALUE *argv, VALUE d)
     return ruby_libvirt_domain_new(ddom, dconn);
 }
 
-#if HAVE_VIRDOMAINMIGRATETOURI
 /*
  * call-seq:
  *   dom.migrate_to_uri(duri, flags=0, dname=nil, bandwidth=0) -> nil
@@ -136,9 +131,7 @@ static VALUE libvirt_domain_migrate_to_uri(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_get_cstring_or_null(dname),
                                    ruby_libvirt_value_to_ulong(bandwidth));
 }
-#endif
 
-#if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
 /*
  * call-seq:
  *   dom.migrate_set_max_downtime(downtime, flags=0) -> nil
@@ -180,9 +173,7 @@ static VALUE libvirt_domain_migrate_max_downtime_equal(VALUE d, VALUE in)
                                    NUM2ULL(downtime),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINMIGRATE2
 /*
  * call-seq:
  *   dom.migrate2(dconn, dxml=nil, flags=0, dname=nil, uri=nil, bandwidth=0) -> Libvirt::Domain
@@ -280,7 +271,6 @@ static VALUE libvirt_domain_migrate_max_speed_equal(VALUE d, VALUE in)
                                    NUM2ULONG(bandwidth),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -297,20 +287,16 @@ static VALUE libvirt_domain_shutdown(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-#if HAVE_VIRDOMAINSHUTDOWNFLAGS
-    ruby_libvirt_generate_call_nil(virDomainShutdownFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainShutdownFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainShutdown,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d));
     }
-
-    ruby_libvirt_generate_call_nil(virDomainShutdown,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d));
-#endif
 }
 
 /*
@@ -344,19 +330,16 @@ static VALUE libvirt_domain_destroy(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-#if HAVE_VIRDOMAINDESTROYFLAGS
-    ruby_libvirt_generate_call_nil(virDomainDestroyFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainDestroyFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainDestroy,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d));
     }
-    ruby_libvirt_generate_call_nil(virDomainDestroy,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d));
-#endif
 }
 
 /*
@@ -402,27 +385,21 @@ static VALUE libvirt_domain_save(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "12", &to, &dxml, &flags);
 
-#if HAVE_VIRDOMAINSAVEFLAGS
-    ruby_libvirt_generate_call_nil(virDomainSaveFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(to),
-                                   ruby_libvirt_get_cstring_or_null(dxml),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
-    if (TYPE(dxml) != T_NIL) {
-        rb_raise(e_NoSupportError, "Non-nil dxml not supported");
+    if (ruby_libvirt_value_to_uint(flags) != 0 || TYPE(dxml) != T_NIL) {
+        ruby_libvirt_generate_call_nil(virDomainSaveFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       StringValueCStr(to),
+                                       ruby_libvirt_get_cstring_or_null(dxml),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainSave,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       StringValueCStr(to));
     }
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-    ruby_libvirt_generate_call_nil(virDomainSave, ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(to));
-#endif
 }
 
-#if HAVE_VIRDOMAINMANAGEDSAVE
 /*
  * call-seq:
  *   dom.managed_save(flags=0) -> nil
@@ -480,7 +457,6 @@ static VALUE libvirt_domain_managed_save_remove(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -545,7 +521,6 @@ static VALUE libvirt_domain_info(VALUE d)
     return result;
 }
 
-#if HAVE_VIRDOMAINGETSECURITYLABEL
 /*
  * call-seq:
  *   dom.security_label -> Libvirt::Domain::SecurityLabel
@@ -570,7 +545,6 @@ static VALUE libvirt_domain_security_label(VALUE d)
 
     return result;
 }
-#endif
 
 /*
  * call-seq:
@@ -671,7 +645,6 @@ static VALUE libvirt_domain_block_info(int argc, VALUE *argv, VALUE d)
     return result;
 }
 
-#if HAVE_VIRDOMAINBLOCKPEEK
 /*
  * call-seq:
  *   dom.block_peek(path, offset, size, flags=0) -> String
@@ -699,9 +672,7 @@ static VALUE libvirt_domain_block_peek(int argc, VALUE *argv, VALUE d)
 
     return rb_str_new(buffer, NUM2UINT(size));
 }
-#endif
 
-#if HAVE_VIRDOMAINMEMORYPEEK
 /*
  * call-seq:
  *   dom.memory_peek(start, size, flags=Libvirt::Domain::MEMORY_VIRTUAL) -> String
@@ -732,7 +703,6 @@ static VALUE libvirt_domain_memory_peek(int argc, VALUE *argv, VALUE d)
 
     return rb_str_new(buffer, NUM2UINT(size));
 }
-#endif
 
 /* call-seq:
  *   dom.vcpus -> [ Libvirt::Domain::VCPUInfo ]
@@ -764,7 +734,6 @@ static VALUE libvirt_domain_vcpus(VALUE d)
     r = virDomainGetVcpus(ruby_libvirt_domain_get(d), cpuinfo,
                           dominfo.nrVirtCpu, cpumap, cpumaplen);
     if (r < 0) {
-#if HAVE_VIRDOMAINGETVCPUPININFO
         /* if the domain is not shutoff, then this is an error */
         ruby_libvirt_raise_error_if(dominfo.state != VIR_DOMAIN_SHUTOFF,
                                     e_RetrieveError, "virDomainGetVcpus",
@@ -779,11 +748,6 @@ static VALUE libvirt_domain_vcpus(VALUE d)
         ruby_libvirt_raise_error_if(r < 0, e_RetrieveError,
                                     "virDomainGetVcpuPinInfo",
                                     ruby_libvirt_connect_get(d));
-
-#else
-        ruby_libvirt_raise_error_if(r < 0, e_RetrieveError, "virDomainGetVcpus",
-                                    ruby_libvirt_connect_get(d));
-#endif
     }
 
     result = rb_ary_new();
@@ -817,7 +781,6 @@ static VALUE libvirt_domain_vcpus(VALUE d)
     return result;
 }
 
-#if HAVE_VIRDOMAINISACTIVE
 /*
  * call-seq:
  *   dom.active? -> [true|false]
@@ -831,9 +794,7 @@ static VALUE libvirt_domain_active_p(VALUE d)
                                          ruby_libvirt_connect_get(d),
                                          ruby_libvirt_domain_get(d));
 }
-#endif
 
-#if HAVE_VIRDOMAINISPERSISTENT
 /*
  * call-seq:
  *   dom.persistent? -> [true|false]
@@ -847,7 +808,6 @@ static VALUE libvirt_domain_persistent_p(VALUE d)
                                          ruby_libvirt_connect_get(d),
                                          ruby_libvirt_domain_get(d));
 }
-#endif
 
 /*
  * call-seq:
@@ -1009,15 +969,14 @@ static VALUE libvirt_domain_memory_equal(VALUE d, VALUE in)
 
     domain_input_to_fixnum_and_flags(in, &memory, &flags);
 
-#if HAVE_VIRDOMAINSETMEMORYFLAGS
-    r = virDomainSetMemoryFlags(ruby_libvirt_domain_get(d), NUM2ULONG(memory),
-                                ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        r = virDomainSetMemoryFlags(ruby_libvirt_domain_get(d),
+                                    NUM2ULONG(memory),
+                                    ruby_libvirt_value_to_uint(flags));
+    } else {
+        r = virDomainSetMemory(ruby_libvirt_domain_get(d),
+                               NUM2ULONG(memory));
     }
-    r = virDomainSetMemory(ruby_libvirt_domain_get(d), NUM2ULONG(memory));
-#endif
 
     ruby_libvirt_raise_error_if(r < 0, e_DefinitionError, "virDomainSetMemory",
                                 ruby_libvirt_connect_get(d));
@@ -1039,7 +998,6 @@ static VALUE libvirt_domain_max_vcpus(VALUE d)
                                    ruby_libvirt_domain_get(d));
 }
 
-#if HAVE_VIRDOMAINGETVCPUSFLAGS
 /* call-seq:
  *   dom.num_vcpus(flags) -> Fixnum
  *
@@ -1053,7 +1011,6 @@ static VALUE libvirt_domain_num_vcpus(VALUE d, VALUE flags)
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -1070,40 +1027,28 @@ static VALUE libvirt_domain_vcpus_equal(VALUE d, VALUE in)
 
     if (TYPE(in) == T_FIXNUM) {
         nvcpus = in;
-        flags = INT2NUM(0);
-    }
-#if HAVE_VIRDOMAINSETVCPUSFLAGS
-    else if (TYPE(in) == T_ARRAY) {
+        ruby_libvirt_generate_call_nil(virDomainSetVcpus,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       NUM2UINT(nvcpus));
+    } else if (TYPE(in) == T_ARRAY) {
         if (RARRAY_LEN(in) != 2) {
             rb_raise(rb_eArgError, "wrong number of arguments (%ld for 2)",
                      RARRAY_LEN(in));
         }
         nvcpus = rb_ary_entry(in, 0);
         flags = rb_ary_entry(in, 1);
-    }
-    else {
+        ruby_libvirt_generate_call_nil(virDomainSetVcpusFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       NUM2UINT(nvcpus),
+                                       NUM2UINT(flags));
+    } else {
         rb_raise(rb_eTypeError,
                  "wrong argument type (expected Number or Array)");
     }
-
-    ruby_libvirt_generate_call_nil(virDomainSetVcpusFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d), NUM2UINT(nvcpus),
-                                   NUM2UINT(flags));
-#else
-
-    if (NUM2UINT(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
-    }
-
-    ruby_libvirt_generate_call_nil(virDomainSetVcpus,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   NUM2UINT(nvcpus));
-#endif
 }
 
-#if HAVE_VIRDOMAINSETVCPUSFLAGS
 /*
  * call-seq:
  *   dom.vcpus_flags = Fixnum,flags=0
@@ -1126,7 +1071,6 @@ static VALUE libvirt_domain_vcpus_flags_equal(VALUE d, VALUE in)
                                    ruby_libvirt_domain_get(d), NUM2UINT(nvcpus),
                                    NUM2UINT(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -1159,22 +1103,21 @@ static VALUE libvirt_domain_pin_vcpu(int argc, VALUE *argv, VALUE d)
         VIR_USE_CPU(cpumap, NUM2UINT(e));
     }
 
-#if HAVE_VIRDOMAINPINVCPUFLAGS
-    ruby_libvirt_generate_call_nil(virDomainPinVcpuFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   NUM2UINT(vcpu), cpumap, cpumaplen,
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainPinVcpuFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       NUM2UINT(vcpu),
+                                       cpumap,
+                                       cpumaplen,
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainPinVcpu,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       NUM2UINT(vcpu),
+                                       cpumap, cpumaplen);
     }
-
-    ruby_libvirt_generate_call_nil(virDomainPinVcpu,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d), NUM2UINT(vcpu),
-                                   cpumap, cpumaplen);
-#endif
 }
 
 /*
@@ -1210,20 +1153,16 @@ static VALUE libvirt_domain_undefine(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-#if HAVE_VIRDOMAINUNDEFINEFLAGS
-    ruby_libvirt_generate_call_nil(virDomainUndefineFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainUndefineFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainUndefine,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d));
     }
-
-    ruby_libvirt_generate_call_nil(virDomainUndefine,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d));
-#endif
 }
 
 /*
@@ -1239,18 +1178,16 @@ static VALUE libvirt_domain_create(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "01", &flags);
 
-#if HAVE_VIRDOMAINCREATEWITHFLAGS
-    ruby_libvirt_generate_call_nil(virDomainCreateWithFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainCreateWithFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainCreate,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d));
     }
-    ruby_libvirt_generate_call_nil(virDomainCreate, ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d));
-#endif
 }
 
 /*
@@ -1304,21 +1241,18 @@ static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-#if HAVE_VIRDOMAINATTACHDEVICEFLAGS
-    ruby_libvirt_generate_call_nil(virDomainAttachDeviceFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(xml),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainAttachDeviceFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       StringValueCStr(xml),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainAttachDevice,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       StringValueCStr(xml));
     }
-    ruby_libvirt_generate_call_nil(virDomainAttachDevice,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(xml));
-#endif
 }
 
 /*
@@ -1334,24 +1268,20 @@ static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-#if HAVE_VIRDOMAINDETACHDEVICEFLAGS
-    ruby_libvirt_generate_call_nil(virDomainDetachDeviceFlags,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(xml),
-                                   ruby_libvirt_value_to_uint(flags));
-#else
     if (ruby_libvirt_value_to_uint(flags) != 0) {
-        rb_raise(e_NoSupportError, "Non-zero flags not supported");
+        ruby_libvirt_generate_call_nil(virDomainDetachDeviceFlags,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       StringValueCStr(xml),
+                                       ruby_libvirt_value_to_uint(flags));
+    } else {
+        ruby_libvirt_generate_call_nil(virDomainDetachDevice,
+                                       ruby_libvirt_connect_get(d),
+                                       ruby_libvirt_domain_get(d),
+                                       StringValueCStr(xml));
     }
-    ruby_libvirt_generate_call_nil(virDomainDetachDevice,
-                                   ruby_libvirt_connect_get(d),
-                                   ruby_libvirt_domain_get(d),
-                                   StringValueCStr(xml));
-#endif
 }
 
-#if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
 /*
  * call-seq:
  *   dom.update_device(device_xml, flags=0) -> nil
@@ -1371,7 +1301,6 @@ static VALUE libvirt_domain_update_device(int argc, VALUE *argv, VALUE d)
                                    StringValueCStr(xml),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * call-seq:
@@ -1630,7 +1559,6 @@ static VALUE libvirt_domain_snapshot_free(VALUE s)
 }
 
 
-#if HAVE_VIRDOMAINSNAPSHOTGETNAME
 /*
  * call-seq:
  *   snapshot.name -> String
@@ -1644,7 +1572,6 @@ static VALUE libvirt_domain_snapshot_name(VALUE s)
                                       ruby_libvirt_connect_get(s),
                                       0, domain_snapshot_get(s));
 }
-#endif
 
 
 /*
@@ -1746,7 +1673,6 @@ static VALUE libvirt_domain_scheduler_type(VALUE d)
     return result;
 }
 
-#if HAVE_VIRDOMAINQEMUMONITORCOMMAND
 /*
  * call-seq:
  *   dom.qemu_monitor_command(cmd, flags=0) -> String
@@ -1794,9 +1720,7 @@ static VALUE libvirt_domain_qemu_monitor_command(int argc, VALUE *argv, VALUE d)
 
     return ret;
 }
-#endif
 
-#if HAVE_VIRDOMAINISUPDATED
 /*
  * call-seq:
  *   dom.updated? ->  [True|False]
@@ -1810,7 +1734,6 @@ static VALUE libvirt_domain_is_updated(VALUE d)
                                          ruby_libvirt_connect_get(d),
                                          ruby_libvirt_domain_get(d));
 }
-#endif
 
 static const char *scheduler_nparams(VALUE d,
                                      unsigned int RUBY_LIBVIRT_UNUSED(flags),
@@ -1923,7 +1846,6 @@ static VALUE libvirt_domain_scheduler_parameters_equal(VALUE d, VALUE input)
                                              scheduler_set);
 }
 
-#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
 static const char *memory_nparams(VALUE d, unsigned int flags,
                                   void *RUBY_LIBVIRT_UNUSED(opaque),
                                   int *nparams)
@@ -2006,9 +1928,7 @@ static VALUE libvirt_domain_memory_parameters_equal(VALUE d, VALUE in)
                                              ARRAY_SIZE(domain_memory_allowed),
                                              memory_set);
 }
-#endif
 
-#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
 static const char *blkio_nparams(VALUE d, unsigned int flags,
                                  void *RUBY_LIBVIRT_UNUSED(opaque),
                                  int *nparams)
@@ -2089,9 +2009,7 @@ static VALUE libvirt_domain_blkio_parameters_equal(VALUE d, VALUE in)
                                              ARRAY_SIZE(blkio_allowed),
                                              blkio_set);
 }
-#endif
 
-#if HAVE_VIRDOMAINGETSTATE
 /*
  * call-seq:
  *   dom.state(flags=0) -> state, reason
@@ -2118,9 +2036,7 @@ static VALUE libvirt_domain_state(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINOPENCONSOLE
 /*
  * call-seq:
  *   dom.open_console(device, stream, flags=0) -> nil
@@ -2141,9 +2057,7 @@ static VALUE libvirt_domain_open_console(int argc, VALUE *argv, VALUE d)
                                    StringValueCStr(dev),
                                    ruby_libvirt_stream_get(st), NUM2INT(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSCREENSHOT
 /*
  * call-seq:
  *   dom.screenshot(stream, screen, flags=0) -> nil
@@ -2164,9 +2078,7 @@ static VALUE libvirt_domain_screenshot(int argc, VALUE *argv, VALUE d)
                                       NUM2UINT(screen),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAININJECTNMI
 /*
  * call-seq:
  *   dom.inject_nmi(flags=0) -> nil
@@ -2185,9 +2097,7 @@ static VALUE libvirt_domain_inject_nmi(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETCONTROLINFO
 /*
  * call-seq:
  *   dom.control_info(flags=0) -> Libvirt::Domain::ControlInfo
@@ -2216,9 +2126,7 @@ static VALUE libvirt_domain_control_info(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINSENDKEY
 /*
  * call-seq:
  *   dom.send_key(codeset, holdtime, keycodes)
@@ -2246,9 +2154,7 @@ VALUE libvirt_domain_send_key(VALUE d, VALUE codeset, VALUE holdtime,
                                    NUM2UINT(codeset), NUM2UINT(holdtime), codes,
                                    RARRAY_LEN(keycodes), 0);
 }
-#endif
 
-#if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
 /*
  * call-seq:
  *   dom.migrate_max_speed(flags=0) -> Fixnum
@@ -2272,9 +2178,7 @@ static VALUE libvirt_domain_migrate_max_speed(int argc, VALUE *argv, VALUE d)
 
     return ULONG2NUM(bandwidth);
 }
-#endif
 
-#if HAVE_VIRDOMAINRESET
 /*
  * call-seq:
  *   dom.reset(flags=0) -> nil
@@ -2292,9 +2196,7 @@ static VALUE libvirt_domain_reset(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETHOSTNAME
 /*
  * call-seq:
  *   dom.hostname(flags=0) -> nil
@@ -2313,9 +2215,7 @@ static VALUE libvirt_domain_hostname(int argc, VALUE *argv, VALUE d)
                                       ruby_libvirt_domain_get(d),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETMETADATA
 /*
  * call-seq:
  *   dom.metadata(type, uri=nil, flags=0) -> String
@@ -2335,9 +2235,7 @@ static VALUE libvirt_domain_metadata(int argc, VALUE *argv, VALUE d)
                                       ruby_libvirt_get_cstring_or_null(uri),
                                       ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSETMETADATA
 /*
  * call-seq:
  *   dom.metadata = Fixnum,string/nil,key=nil,uri=nil,flags=0 -> nil
@@ -2381,9 +2279,7 @@ static VALUE libvirt_domain_metadata_equal(VALUE d, VALUE in)
                                    ruby_libvirt_get_cstring_or_null(uri),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSENDPROCESSSIGNAL
 /*
  * call-seq:
  *   dom.send_process_signal(pid, signum, flags=0) -> nil
@@ -2403,9 +2299,7 @@ static VALUE libvirt_domain_send_process_signal(int argc, VALUE *argv, VALUE d)
                                    NUM2UINT(signum),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINLISTALLSNAPSHOTS
 /*
  * call-seq:
  *   dom.list_all_snapshots(flags=0) -> Array
@@ -2421,9 +2315,7 @@ static VALUE libvirt_domain_list_all_snapshots(int argc, VALUE *argv, VALUE d)
                                         domain_snapshot_new,
                                         virDomainSnapshotFree);
 }
-#endif
 
-#if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
 /*
  * call-seq:
  *   snapshot.num_children(flags=0) -> Fixnum
@@ -2443,9 +2335,7 @@ static VALUE libvirt_domain_snapshot_num_children(int argc, VALUE *argv,
                                    domain_snapshot_get(s),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
 /*
  * call-seq:
  *   snapshot.list_children_names(flags=0) -> Array
@@ -2507,9 +2397,7 @@ error:
     /* not necessary, just to shut the compiler up */
     return Qnil;
 }
-#endif
 
-#if HAVE_VIRDOMAINSNAPSHOTLISTALLCHILDREN
 /*
  * call-seq:
  *   snapshot.list_all_children(flags=0) -> Array
@@ -2526,9 +2414,7 @@ static VALUE libvirt_domain_snapshot_list_all_children(int argc, VALUE *argv,
                                         domain_snapshot_new,
                                         virDomainSnapshotFree);
 }
-#endif
 
-#if HAVE_VIRDOMAINSNAPSHOTGETPARENT
 /*
  * call-seq:
  *   snapshot.parent(flags=0) -> [Libvirt::Domain::Snapshot|nil]
@@ -2563,9 +2449,7 @@ static VALUE libvirt_domain_snapshot_parent(int argc, VALUE *argv, VALUE s)
 
     return domain_snapshot_new(snap, s);
 }
-#endif
 
-#if HAVE_VIRDOMAINSNAPSHOTISCURRENT
 /*
  * call-seq:
  *   snapshot.current?(flags=0) -> [true|false]
@@ -2584,9 +2468,7 @@ static VALUE libvirt_domain_snapshot_current_p(int argc, VALUE *argv, VALUE s)
                                          domain_snapshot_get(s),
                                          ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
 /*
  * call-seq:
  *   snapshot.has_metadata?(flags=0) -> [true|false]
@@ -2606,9 +2488,7 @@ static VALUE libvirt_domain_snapshot_has_metadata_p(int argc, VALUE *argv,
                                          domain_snapshot_get(s),
                                          ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
 /*
  * call-seq:
  *   dom.memory_stats_period = Fixnum,flags=0
@@ -2628,9 +2508,7 @@ static VALUE libvirt_domain_memory_stats_period(VALUE d, VALUE in)
                                    NUM2INT(period),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINFSTRIM
 /*
  * call-seq:
  *   dom.fstrim(mountpoint=nil, minimum=0, flags=0) -> nil
@@ -2650,9 +2528,7 @@ static VALUE libvirt_domain_fstrim(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_value_to_ulonglong(minimum),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKREBASE
 /*
  * call-seq:
  *   dom.block_rebase(disk, base=nil, bandwidth=0, flags=0) -> nil
@@ -2674,9 +2550,7 @@ static VALUE libvirt_domain_block_rebase(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_value_to_ulong(bandwidth),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINOPENCHANNEL
 /*
  * call-seq:
  *   dom.open_channel(name, stream, flags=0) -> nil
@@ -2698,9 +2572,7 @@ static VALUE libvirt_domain_open_channel(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_stream_get(st),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINCREATEWITHFILES
 /*
  * call-seq:
  *   dom.create_with_files(fds=nil, flags=0) -> nil
@@ -2737,9 +2609,7 @@ static VALUE libvirt_domain_create_with_files(int argc, VALUE *argv, VALUE d)
                                    numfiles, files,
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINOPENGRAPHICS
 /*
  * call-seq:
  *   dom.open_graphics(fd, idx=0, flags=0) -> nil
@@ -2759,9 +2629,7 @@ static VALUE libvirt_domain_open_graphics(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_value_to_uint(idx), NUM2INT(fd),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINPMWAKEUP
 /*
  * call-seq:
  *   dom.pmwakeup(flags=0) -> nil
@@ -2780,9 +2648,7 @@ static VALUE libvirt_domain_pmwakeup(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_domain_get(d),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKRESIZE
 /*
  * call-seq:
  *   dom.block_resize(disk, size, flags=0) -> nil
@@ -2802,9 +2668,7 @@ static VALUE libvirt_domain_block_resize(int argc, VALUE *argv, VALUE d)
                                    StringValueCStr(disk), NUM2ULL(size),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINPMSUSPENDFORDURATION
 /*
  * call-seq:
  *   dom.pmsuspend_for_duration(target, duration, flags=0) -> nil
@@ -2825,9 +2689,7 @@ static VALUE libvirt_domain_pmsuspend_for_duration(int argc, VALUE *argv,
                                    NUM2UINT(target), NUM2ULL(duration),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
 /*
  * call-seq:
  *   dom.migrate_compression_cache(flags=0) -> Fixnum
@@ -2853,9 +2715,7 @@ static VALUE libvirt_domain_migrate_compression_cache(int argc, VALUE *argv,
 
     return ULL2NUM(cachesize);
 }
-#endif
 
-#if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
 /*
  * call-seq:
  *   dom.migrate_compression_cache = Fixnum,flags=0
@@ -2875,9 +2735,7 @@ static VALUE libvirt_domain_migrate_compression_cache_equal(VALUE d, VALUE in)
                                    NUM2ULL(cachesize),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETDISKERRORS
 /*
  * call-seq:
  *   dom.disk_errors(flags=0) -> Hash
@@ -2916,9 +2774,7 @@ static VALUE libvirt_domain_disk_errors(int argc, VALUE *argv, VALUE d)
 
     return hash;
 }
-#endif
 
-#if HAVE_VIRDOMAINGETEMULATORPININFO
 /*
  * call-seq:
  *   dom.emulator_pin_info(flags=0) -> Array
@@ -2960,9 +2816,7 @@ static VALUE libvirt_domain_emulator_pin_info(int argc, VALUE *argv, VALUE d)
 
     return emulator2cpumap;
 }
-#endif
 
-#if HAVE_VIRDOMAINPINEMULATOR
 /*
  * call-seq:
  *   dom.pin_emulator(cpulist, flags=0) -> nil
@@ -3000,9 +2854,7 @@ static VALUE libvirt_domain_pin_emulator(int argc, VALUE *argv, VALUE d)
                                    cpumaplen,
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETSECURITYLABELLIST
 /*
  * call-seq:
  *   dom.security_label_list -> [ Libvirt::Domain::SecurityLabel ]
@@ -3033,9 +2885,7 @@ static VALUE libvirt_domain_security_label_list(VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINGETJOBSTATS
 struct params_to_hash_arg {
     virTypedParameterPtr params;
     int nparams;
@@ -3104,9 +2954,7 @@ static VALUE libvirt_domain_job_stats(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINGETBLOCKIOTUNE
 static const char *iotune_nparams(VALUE d, unsigned int flags, void *opaque,
                                   int *nparams)
 {
@@ -3169,9 +3017,7 @@ static VALUE libvirt_domain_block_iotune(int argc, VALUE *argv, VALUE d)
                                              (void *)disk, iotune_nparams,
                                              iotune_get);
 }
-#endif
 
-#if HAVE_VIRDOMAINSETBLOCKIOTUNE
 static struct ruby_libvirt_typed_param iotune_allowed[] = {
     {VIR_DOMAIN_BLOCK_IOTUNE_TOTAL_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
     {VIR_DOMAIN_BLOCK_IOTUNE_READ_BYTES_SEC, VIR_TYPED_PARAM_ULLONG},
@@ -3216,9 +3062,7 @@ static VALUE libvirt_domain_block_iotune_equal(VALUE d, VALUE in)
                                              ARRAY_SIZE(iotune_allowed),
                                              iotune_set);
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKCOMMIT
 /*
  * call-seq:
  *   dom.block_commit(disk, base=nil, top=nil, bandwidth=0, flags=0) -> nil
@@ -3241,9 +3085,7 @@ static VALUE libvirt_domain_block_commit(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_value_to_ulong(bandwidth),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKPULL
 /*
  * call-seq:
  *   dom.block_pull(disk, bandwidth=0, flags=0) -> nil
@@ -3264,9 +3106,7 @@ static VALUE libvirt_domain_block_pull(int argc, VALUE *argv, VALUE d)
                                    ruby_libvirt_value_to_ulong(bandwidth),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKJOBSETSPEED
 /*
  * call-seq:
  *   dom.block_job_speed = disk,bandwidth=0,flags=0
@@ -3310,9 +3150,7 @@ static VALUE libvirt_domain_block_job_speed_equal(VALUE d, VALUE in)
                                    StringValueCStr(disk),
                                    NUM2UINT(bandwidth), NUM2UINT(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETBLOCKJOBINFO
 /*
  * call-seq:
  *   dom.block_job_info(disk, flags=0) -> Libvirt::Domain::BlockJobInfo
@@ -3345,9 +3183,7 @@ static VALUE libvirt_domain_block_job_info(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKJOBABORT
 /*
  * call-seq:
  *   dom.block_job_abort(disk, flags=0) -> nil
@@ -3367,9 +3203,7 @@ static VALUE libvirt_domain_block_job_abort(int argc, VALUE *argv, VALUE d)
                                    StringValueCStr(disk),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
 static const char *interface_nparams(VALUE d, unsigned int flags, void *opaque,
                                      int *nparams)
 {
@@ -3479,9 +3313,7 @@ static VALUE libvirt_domain_interface_parameters_equal(VALUE d, VALUE in)
                                              ARRAY_SIZE(interface_allowed),
                                              interface_set);
 }
-#endif
 
-#if HAVE_VIRDOMAINBLOCKSTATSFLAGS
 static const char *block_stats_nparams(VALUE d, unsigned int flags,
                                        void *opaque, int *nparams)
 {
@@ -3532,9 +3364,7 @@ static VALUE libvirt_domain_block_stats_flags(int argc, VALUE *argv, VALUE d)
                                              block_stats_nparams,
                                              block_stats_get);
 }
-#endif
 
-#if HAVE_VIRDOMAINGETNUMAPARAMETERS
 static const char *numa_nparams(VALUE d, unsigned int flags,
                                 void *RUBY_LIBVIRT_UNUSED(opaque),
                                 int *nparams)
@@ -3615,9 +3445,7 @@ static VALUE libvirt_domain_numa_parameters_equal(VALUE d, VALUE in)
                                              ARRAY_SIZE(numa_allowed),
                                              numa_set);
 }
-#endif
 
-#if HAVE_VIRDOMAINLXCOPENNAMESPACE
 /*
  * call-seq:
  *   dom.lxc_open_namespace(flags=0) -> Array
@@ -3672,9 +3500,7 @@ error:
     free(fdlist);
     rb_jump_tag(exception);
 }
-#endif
 
-#if HAVE_VIRDOMAINQEMUAGENTCOMMAND
 /*
  * call-seq:
  *   dom.qemu_agent_command(command, timeout=0, flags=0) -> String
@@ -3710,9 +3536,7 @@ static VALUE libvirt_domain_qemu_agent_command(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINLXCENTERNAMESPACE
 /*
  * call-seq:
  *   dom.lxc_enter_namespace(fds, flags=0) -> Array
@@ -3776,9 +3600,7 @@ static VALUE libvirt_domain_lxc_enter_namespace(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINMIGRATE3
 static struct ruby_libvirt_typed_param migrate3_allowed[] = {
     {VIR_MIGRATE_PARAM_URI, VIR_TYPED_PARAM_STRING},
     {VIR_MIGRATE_PARAM_DEST_NAME, VIR_TYPED_PARAM_STRING},
@@ -3872,9 +3694,7 @@ static VALUE libvirt_domain_migrate_to_uri3(int argc, VALUE *argv, VALUE d)
                                    args.params, args.i,
                                    ruby_libvirt_value_to_ulong(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETCPUSTATS
 /*
  * call-seq:
  *   dom.cpu_stats(start_cpu=-1, numcpus=1, flags=0) -> Hash
@@ -3965,9 +3785,7 @@ static VALUE libvirt_domain_cpu_stats(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINGETTIME
 /*
  * call-seq:
  *   dom.time(flags=0) -> Hash
@@ -3994,9 +3812,7 @@ static VALUE libvirt_domain_get_time(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINSETTIME
 /*
  * call-seq:
  *   dom.time = Hash,flags=0
@@ -4018,9 +3834,7 @@ static VALUE libvirt_domain_time_equal(VALUE d, VALUE in)
                                    NUM2LL(seconds), NUM2UINT(nseconds),
                                    NUM2UINT(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINCOREDUMPWITHFORMAT
 /*
  * call-seq:
  *   dom.core_dump_with_format(filename, dumpformat, flags=0) -> nil
@@ -4041,9 +3855,7 @@ static VALUE libvirt_domain_core_dump_with_format(int argc, VALUE *argv, VALUE d
                                    NUM2UINT(dumpformat),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINFSFREEZE
 /*
  * call-seq:
  *   dom.fs_freeze(mountpoints=nil, flags=0) -> Fixnum
@@ -4082,9 +3894,7 @@ static VALUE libvirt_domain_fs_freeze(int argc, VALUE *argv, VALUE d)
                                    mnt, nmountpoints,
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
- #if HAVE_VIRDOMAINFSTHAW
 /*
  * call-seq:
  *   dom.fs_thaw(mountpoints=nil, flags=0) -> Fixnum
@@ -4123,9 +3933,7 @@ static VALUE libvirt_domain_fs_thaw(int argc, VALUE *argv, VALUE d)
                                    mnt, nmountpoints,
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINGETFSINFO
 struct fs_info_arg {
     virDomainFSInfoPtr *info;
     int ninfo;
@@ -4196,9 +4004,7 @@ static VALUE libvirt_domain_fs_info(int argc, VALUE *argv, VALUE d)
 
     return result;
 }
-#endif
 
-#if HAVE_VIRDOMAINRENAME
 /*
  * call-seq:
  *   dom.rename(name, flags=0) -> nil
@@ -4218,9 +4024,7 @@ static VALUE libvirt_domain_rename(int argc, VALUE *argv, VALUE d)
                                    StringValueCStr(name),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
-#if HAVE_VIRDOMAINSETUSERPASSWORD
 /*
  * call-seq:
  *   dom.user_password = user,password,flags=0 -> nil
@@ -4256,7 +4060,6 @@ static VALUE libvirt_domain_user_password_equal(VALUE d, VALUE in)
                                    StringValueCStr(password),
                                    ruby_libvirt_value_to_uint(flags));
 }
-#endif
 
 /*
  * Class Libvirt::Domain
@@ -4326,9 +4129,7 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
     rb_define_const(c_domain, "XML_MIGRATABLE",
                     INT2NUM(VIR_DOMAIN_XML_MIGRATABLE));
-#if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_const(c_domain, "MEMORY_VIRTUAL", INT2NUM(VIR_MEMORY_VIRTUAL));
-#endif
     rb_define_const(c_domain, "MEMORY_PHYSICAL", INT2NUM(VIR_MEMORY_PHYSICAL));
 
     rb_define_const(c_domain, "START_PAUSED", INT2NUM(VIR_DOMAIN_START_PAUSED));
@@ -4346,26 +4147,19 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "RESET", INT2NUM(VIR_DUMP_RESET));
     rb_define_const(c_domain, "MEMORY_ONLY", INT2NUM(VIR_DUMP_MEMORY_ONLY));
 
-#if HAVE_VIRDOMAINGETVCPUSFLAGS
     rb_define_const(c_domain, "VCPU_LIVE", INT2NUM(VIR_DOMAIN_VCPU_LIVE));
     rb_define_const(c_domain, "VCPU_CONFIG", INT2NUM(VIR_DOMAIN_VCPU_CONFIG));
     rb_define_const(c_domain, "VCPU_MAXIMUM", INT2NUM(VIR_DOMAIN_VCPU_MAXIMUM));
-#endif
     rb_define_const(c_domain, "VCPU_CURRENT", INT2NUM(VIR_DOMAIN_VCPU_CURRENT));
     rb_define_const(c_domain, "VCPU_GUEST", INT2NUM(VIR_DOMAIN_VCPU_GUEST));
 
     rb_define_method(c_domain, "migrate", libvirt_domain_migrate, -1);
-#if HAVE_VIRDOMAINMIGRATETOURI
     rb_define_method(c_domain, "migrate_to_uri",
                      libvirt_domain_migrate_to_uri, -1);
-#endif
-#if HAVE_VIRDOMAINMIGRATESETMAXDOWNTIME
     rb_define_method(c_domain, "migrate_set_max_downtime",
                      libvirt_domain_migrate_set_max_downtime, -1);
     rb_define_method(c_domain, "migrate_max_downtime=",
                      libvirt_domain_migrate_max_downtime_equal, 1);
-#endif
-#if HAVE_VIRDOMAINMIGRATE2
     rb_define_method(c_domain, "migrate2", libvirt_domain_migrate2, -1);
     rb_define_method(c_domain, "migrate_to_uri2",
                      libvirt_domain_migrate_to_uri2, -1);
@@ -4373,7 +4167,6 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_migrate_set_max_speed, -1);
     rb_define_method(c_domain, "migrate_max_speed=",
                      libvirt_domain_migrate_max_speed_equal, 1);
-#endif
 
     rb_define_const(c_domain, "SAVE_BYPASS_CACHE",
                     INT2NUM(VIR_DOMAIN_SAVE_BYPASS_CACHE));
@@ -4447,10 +4240,8 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "memory=", libvirt_domain_memory_equal, 1);
     rb_define_method(c_domain, "max_vcpus", libvirt_domain_max_vcpus, 0);
     rb_define_method(c_domain, "vcpus=", libvirt_domain_vcpus_equal, 1);
-#if HAVE_VIRDOMAINSETVCPUSFLAGS
     rb_define_method(c_domain, "vcpus_flags=", libvirt_domain_vcpus_flags_equal,
                      1);
-#endif
     rb_define_method(c_domain, "pin_vcpu", libvirt_domain_pin_vcpu, -1);
     rb_define_method(c_domain, "xml_desc", libvirt_domain_xml_desc, -1);
     rb_define_method(c_domain, "undefine", libvirt_domain_undefine, -1);
@@ -4473,42 +4264,28 @@ void ruby_libvirt_domain_init(void)
                      -1);
     rb_define_method(c_domain, "detach_device", libvirt_domain_detach_device,
                      -1);
-#if HAVE_VIRDOMAINUPDATEDEVICEFLAGS
     rb_define_method(c_domain, "update_device", libvirt_domain_update_device,
                      -1);
-#endif
 
     rb_define_method(c_domain, "scheduler_type", libvirt_domain_scheduler_type,
                      0);
 
-#if HAVE_VIRDOMAINMANAGEDSAVE
     rb_define_method(c_domain, "managed_save", libvirt_domain_managed_save, -1);
     rb_define_method(c_domain, "has_managed_save?",
                      libvirt_domain_has_managed_save, -1);
     rb_define_method(c_domain, "managed_save_remove",
                      libvirt_domain_managed_save_remove, -1);
-#endif
-#if HAVE_VIRDOMAINGETSECURITYLABEL
     rb_define_method(c_domain, "security_label",
                      libvirt_domain_security_label, 0);
-#endif
     rb_define_method(c_domain, "block_stats", libvirt_domain_block_stats, 1);
     rb_define_method(c_domain, "memory_stats", libvirt_domain_memory_stats, -1);
-#if HAVE_VIRDOMAINBLOCKPEEK
     rb_define_method(c_domain, "block_peek", libvirt_domain_block_peek, -1);
-#endif
     rb_define_method(c_domain, "blockinfo", libvirt_domain_block_info, -1);
-#if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_method(c_domain, "memory_peek", libvirt_domain_memory_peek, -1);
-#endif
     rb_define_method(c_domain, "vcpus", libvirt_domain_vcpus, 0);
     rb_define_alias(c_domain, "get_vcpus", "vcpus");
-#if HAVE_VIRDOMAINISACTIVE
     rb_define_method(c_domain, "active?", libvirt_domain_active_p, 0);
-#endif
-#if HAVE_VIRDOMAINISPERSISTENT
     rb_define_method(c_domain, "persistent?", libvirt_domain_persistent_p, 0);
-#endif
     rb_define_method(c_domain, "snapshot_create_xml",
                      libvirt_domain_snapshot_create_xml, -1);
     rb_define_method(c_domain, "num_of_snapshots",
@@ -4628,10 +4405,8 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain_snapshot, "DELETE_CHILDREN_ONLY",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY));
 
-#if HAVE_VIRDOMAINSNAPSHOTGETNAME
     rb_define_method(c_domain_snapshot, "name", libvirt_domain_snapshot_name,
                      0);
-#endif
 
     /*
      * Class Libvirt::Domain::VCPUInfo
@@ -4677,25 +4452,16 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "job_info", libvirt_domain_job_info, 0);
     rb_define_method(c_domain, "abort_job", libvirt_domain_abort_job, 0);
 
-#if HAVE_VIRDOMAINQEMUMONITORCOMMAND
     rb_define_method(c_domain, "qemu_monitor_command",
                      libvirt_domain_qemu_monitor_command, -1);
-#endif
 
-#if HAVE_VIRDOMAINGETVCPUSFLAGS
     rb_define_method(c_domain, "num_vcpus", libvirt_domain_num_vcpus, 1);
-#endif
 
-#if HAVE_VIRDOMAINISUPDATED
     rb_define_method(c_domain, "updated?", libvirt_domain_is_updated, 0);
-#endif
 
-#ifdef VIR_DOMAIN_MEMORY_PARAM_UNLIMITED
     rb_define_const(c_domain, "MEMORY_PARAM_UNLIMITED",
                     LL2NUM(VIR_DOMAIN_MEMORY_PARAM_UNLIMITED));
-#endif
 
-#if HAVE_VIRDOMAINSETMEMORYFLAGS
     /* Ideally we would just have the "MEM_LIVE" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_MEM_LIVE" for
      * backwards compatibility.
@@ -4709,7 +4475,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "MEM_CONFIG", INT2NUM(VIR_DOMAIN_MEM_CONFIG));
     rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
                     INT2NUM(VIR_DOMAIN_MEM_CONFIG));
-#endif
+
     /* Ideally we would just have the "MEM_CURRENT" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_MEM_CURRENT" for
      * backwards compatibility.
@@ -4730,21 +4496,16 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "scheduler_parameters=",
                      libvirt_domain_scheduler_parameters_equal, 1);
 
-#if HAVE_VIRDOMAINSETMEMORYPARAMETERS
     rb_define_method(c_domain, "memory_parameters",
                      libvirt_domain_memory_parameters, -1);
     rb_define_method(c_domain, "memory_parameters=",
                      libvirt_domain_memory_parameters_equal, 1);
-#endif
 
-#if HAVE_VIRDOMAINSETBLKIOPARAMETERS
     rb_define_method(c_domain, "blkio_parameters",
                      libvirt_domain_blkio_parameters, -1);
     rb_define_method(c_domain, "blkio_parameters=",
                      libvirt_domain_blkio_parameters_equal, 1);
-#endif
 
-#if HAVE_VIRDOMAINGETSTATE
     /* Ideally we would just have the "RUNNING_UNKNOWN" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_RUNNING_UNKNOWN"
      * for backwards compatibility.
@@ -5019,7 +4780,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_CRASHED_PANICKED));
 
     rb_define_method(c_domain, "state", libvirt_domain_state, -1);
-#endif
 
     /* Ideally we would just have the "AFFECT_CURRENT" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_AFFECT_CURRENT" for
@@ -5050,19 +4810,12 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_CONSOLE_FORCE));
     rb_define_const(c_domain, "CONSOLE_SAFE", INT2NUM(VIR_DOMAIN_CONSOLE_SAFE));
 
-#if HAVE_VIRDOMAINOPENCONSOLE
     rb_define_method(c_domain, "open_console", libvirt_domain_open_console, -1);
-#endif
 
-#if HAVE_VIRDOMAINSCREENSHOT
     rb_define_method(c_domain, "screenshot", libvirt_domain_screenshot, -1);
-#endif
 
-#if HAVE_VIRDOMAININJECTNMI
     rb_define_method(c_domain, "inject_nmi", libvirt_domain_inject_nmi, -1);
-#endif
 
-#if HAVE_VIRDOMAINGETCONTROLINFO
     /*
      * Class Libvirt::Domain::ControlInfo
      */
@@ -5082,22 +4835,12 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_CONTROL_ERROR));
 
     rb_define_method(c_domain, "control_info", libvirt_domain_control_info, -1);
-#endif
 
-#if HAVE_VIRDOMAINMIGRATEGETMAXSPEED
     rb_define_method(c_domain, "migrate_max_speed",
                      libvirt_domain_migrate_max_speed, -1);
-#endif
-#if HAVE_VIRDOMAINSENDKEY
     rb_define_method(c_domain, "send_key", libvirt_domain_send_key, 3);
-#endif
-#if HAVE_VIRDOMAINRESET
     rb_define_method(c_domain, "reset", libvirt_domain_reset, -1);
-#endif
-#if HAVE_VIRDOMAINGETHOSTNAME
     rb_define_method(c_domain, "hostname", libvirt_domain_hostname, -1);
-#endif
-#if HAVE_VIRDOMAINGETMETADATA
     rb_define_const(c_domain, "METADATA_DESCRIPTION",
                     INT2NUM(VIR_DOMAIN_METADATA_DESCRIPTION));
     rb_define_const(c_domain, "METADATA_TITLE",
@@ -5105,11 +4848,7 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "METADATA_ELEMENT",
                     INT2NUM(VIR_DOMAIN_METADATA_ELEMENT));
     rb_define_method(c_domain, "metadata", libvirt_domain_metadata, -1);
-#endif
-#if HAVE_VIRDOMAINSETMETADATA
     rb_define_method(c_domain, "metadata=", libvirt_domain_metadata_equal, 1);
-#endif
-#if HAVE_VIRDOMAINSENDPROCESSSIGNAL
     rb_define_const(c_domain, "PROCESS_SIGNAL_NOP",
                     INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_NOP));
     rb_define_const(c_domain, "PROCESS_SIGNAL_HUP",
@@ -5242,8 +4981,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_PROCESS_SIGNAL_RT32));
     rb_define_method(c_domain, "send_process_signal",
                      libvirt_domain_send_process_signal, -1);
-#endif
-#if HAVE_VIRDOMAINLISTALLSNAPSHOTS
     rb_define_const(c_domain_snapshot, "LIST_ROOTS",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_ROOTS));
     rb_define_const(c_domain_snapshot, "LIST_DESCENDANTS",
@@ -5268,7 +5005,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_EXTERNAL));
     rb_define_method(c_domain, "list_all_snapshots",
                      libvirt_domain_list_all_snapshots, -1);
-#endif
 
     rb_define_const(c_domain_snapshot, "CREATE_REDEFINE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE));
@@ -5288,37 +5024,21 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC));
     rb_define_const(c_domain_snapshot, "CREATE_LIVE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_LIVE));
-#if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
     rb_define_method(c_domain_snapshot, "num_children",
                      libvirt_domain_snapshot_num_children, -1);
-#endif
-#if HAVE_VIRDOMAINSNAPSHOTLISTCHILDRENNAMES
     rb_define_method(c_domain_snapshot, "list_children_names",
                      libvirt_domain_snapshot_list_children_names, -1);
-#endif
-#if HAVE_VIRDOMAINSNAPSHOTLISTALLCHILDREN
     rb_define_method(c_domain_snapshot, "list_all_children",
                      libvirt_domain_snapshot_list_all_children, -1);
-#endif
-#if HAVE_VIRDOMAINSNAPSHOTGETPARENT
     rb_define_method(c_domain_snapshot, "parent",
                      libvirt_domain_snapshot_parent, -1);
-#endif
-#if HAVE_VIRDOMAINSNAPSHOTISCURRENT
     rb_define_method(c_domain_snapshot, "current?",
                      libvirt_domain_snapshot_current_p, -1);
-#endif
-#if HAVE_VIRDOMAINSNAPSHOTHASMETADATA
     rb_define_method(c_domain_snapshot, "has_metadata?",
                      libvirt_domain_snapshot_has_metadata_p, -1);
-#endif
-#if HAVE_VIRDOMAINSETMEMORYSTATSPERIOD
     rb_define_method(c_domain, "memory_stats_period=",
                      libvirt_domain_memory_stats_period, 1);
-#endif
-#if HAVE_VIRDOMAINFSTRIM
     rb_define_method(c_domain, "fstrim", libvirt_domain_fstrim, -1);
-#endif
     rb_define_const(c_domain, "BLOCK_REBASE_SHALLOW",
                     INT2NUM(VIR_DOMAIN_BLOCK_REBASE_SHALLOW));
     rb_define_const(c_domain, "BLOCK_REBASE_REUSE_EXT",
@@ -5328,30 +5048,18 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "BLOCK_REBASE_COPY",
                     INT2NUM(VIR_DOMAIN_BLOCK_REBASE_COPY));
 
-#if HAVE_VIRDOMAINBLOCKREBASE
     rb_define_method(c_domain, "block_rebase", libvirt_domain_block_rebase, -1);
-#endif
     rb_define_const(c_domain, "CHANNEL_FORCE",
                     INT2NUM(VIR_DOMAIN_CHANNEL_FORCE));
-#if HAVE_VIRDOMAINOPENCHANNEL
     rb_define_method(c_domain, "open_channel", libvirt_domain_open_channel, -1);
-#endif
-#if HAVE_VIRDOMAINCREATEWITHFILES
     rb_define_method(c_domain, "create_with_files",
                      libvirt_domain_create_with_files, -1);
-#endif
-#if HAVE_VIRDOMAINOPENGRAPHICS
     rb_define_const(c_domain, "OPEN_GRAPHICS_SKIPAUTH",
                     INT2NUM(VIR_DOMAIN_OPEN_GRAPHICS_SKIPAUTH));
     rb_define_method(c_domain, "open_graphics",
                      libvirt_domain_open_graphics, -1);
-#endif
-#if HAVE_VIRDOMAINPMWAKEUP
     rb_define_method(c_domain, "pmwakeup", libvirt_domain_pmwakeup, -1);
-#endif
-#if HAVE_VIRDOMAINBLOCKRESIZE
     rb_define_method(c_domain, "block_resize", libvirt_domain_block_resize, -1);
-#endif
     rb_define_const(c_domain, "BLOCK_RESIZE_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_RESIZE_BYTES));
     rb_define_const(c_domain_snapshot, "REVERT_RUNNING",
@@ -5360,19 +5068,12 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED));
     rb_define_const(c_domain_snapshot, "REVERT_FORCE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_FORCE));
-#if HAVE_VIRDOMAINPMSUSPENDFORDURATION
     rb_define_method(c_domain, "pmsuspend_for_duration",
                      libvirt_domain_pmsuspend_for_duration, -1);
-#endif
-#if HAVE_VIRDOMAINMIGRATEGETCOMPRESSIONCACHE
     rb_define_method(c_domain, "migrate_compression_cache",
                      libvirt_domain_migrate_compression_cache, -1);
-#endif
-#if HAVE_VIRDOMAINMIGRATESETCOMPRESSIONCACHE
     rb_define_method(c_domain, "migrate_compression_cache=",
                      libvirt_domain_migrate_compression_cache_equal, 1);
-#endif
-#if HAVE_VIRDOMAINGETDISKERRORS
     rb_define_const(c_domain, "DISK_ERROR_NONE",
                     INT2NUM(VIR_DOMAIN_DISK_ERROR_NONE));
     rb_define_const(c_domain, "DISK_ERROR_UNSPEC",
@@ -5380,18 +5081,11 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "DISK_ERROR_NO_SPACE",
                     INT2NUM(VIR_DOMAIN_DISK_ERROR_NO_SPACE));
     rb_define_method(c_domain, "disk_errors", libvirt_domain_disk_errors, -1);
-#endif
-#if HAVE_VIRDOMAINGETEMULATORPININFO
     rb_define_method(c_domain, "emulator_pin_info",
                      libvirt_domain_emulator_pin_info, -1);
-#endif
-#if HAVE_VIRDOMAINPINEMULATOR
     rb_define_method(c_domain, "pin_emulator", libvirt_domain_pin_emulator, -1);
-#endif
-#if HAVE_VIRDOMAINGETSECURITYLABELLIST
     rb_define_method(c_domain, "security_label_list",
                      libvirt_domain_security_label_list, 0);
-#endif
 
     rb_define_const(c_domain, "KEYCODE_SET_LINUX",
                     INT2NUM(VIR_KEYCODE_SET_LINUX));
@@ -5413,64 +5107,38 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_KEYCODE_SET_WIN32));
     rb_define_const(c_domain, "KEYCODE_SET_RFB", INT2NUM(VIR_KEYCODE_SET_RFB));
 
-#if HAVE_VIRDOMAINGETJOBSTATS
     rb_define_method(c_domain, "job_stats", libvirt_domain_job_stats, -1);
-#endif
-#if HAVE_VIRDOMAINGETBLOCKIOTUNE
     rb_define_method(c_domain, "block_iotune",
                      libvirt_domain_block_iotune, -1);
-#endif
-#if HAVE_VIRDOMAINSETBLOCKIOTUNE
     rb_define_method(c_domain, "block_iotune=",
                      libvirt_domain_block_iotune_equal, 1);
-#endif
-#if HAVE_VIRDOMAINBLOCKCOMMIT
     rb_define_method(c_domain, "block_commit", libvirt_domain_block_commit, -1);
-#endif
-#if HAVE_VIRDOMAINBLOCKPULL
     rb_define_method(c_domain, "block_pull", libvirt_domain_block_pull, -1);
-#endif
-#if HAVE_VIRDOMAINBLOCKJOBSETSPEED
     rb_define_method(c_domain, "block_job_speed=",
                      libvirt_domain_block_job_speed_equal, 1);
-#endif
     rb_define_const(c_domain, "BLOCK_JOB_SPEED_BANDWIDTH_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES));
-#if HAVE_VIRDOMAINGETBLOCKJOBINFO
     rb_define_method(c_domain, "block_job_info", libvirt_domain_block_job_info,
                      -1);
-#endif
     rb_define_const(c_domain, "BLOCK_JOB_INFO_BANDWIDTH_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES));
 
-#if HAVE_VIRDOMAINBLOCKJOBABORT
     rb_define_method(c_domain, "block_job_abort",
                      libvirt_domain_block_job_abort, -1);
-#endif
-#if HAVE_VIRDOMAINGETINTERFACEPARAMETERS
     rb_define_method(c_domain, "interface_parameters",
                      libvirt_domain_interface_parameters, -1);
     rb_define_method(c_domain, "interface_parameters=",
                      libvirt_domain_interface_parameters_equal, 1);
-#endif
-#if HAVE_VIRDOMAINBLOCKSTATSFLAGS
     rb_define_method(c_domain, "block_stats_flags",
                      libvirt_domain_block_stats_flags, -1);
-#endif
-#if HAVE_VIRDOMAINGETNUMAPARAMETERS
     rb_define_method(c_domain, "numa_parameters",
                      libvirt_domain_numa_parameters, -1);
     rb_define_method(c_domain, "numa_parameters=",
                      libvirt_domain_numa_parameters_equal, 1);
-#endif
-#if HAVE_VIRDOMAINLXCOPENNAMESPACE
     rb_define_method(c_domain, "lxc_open_namespace",
                      libvirt_domain_lxc_open_namespace, -1);
-#endif
-#if HAVE_VIRDOMAINQEMUAGENTCOMMAND
     rb_define_method(c_domain, "qemu_agent_command",
                      libvirt_domain_qemu_agent_command, -1);
-#endif
     rb_define_const(c_domain, "QEMU_AGENT_COMMAND_BLOCK",
                     INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK));
     rb_define_const(c_domain, "QEMU_AGENT_COMMAND_DEFAULT",
@@ -5483,15 +5151,11 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT));
     rb_define_const(c_domain, "QEMU_MONITOR_COMMAND_HMP",
                     INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP));
-#if HAVE_VIRDOMAINLXCENTERNAMESPACE
     rb_define_method(c_domain, "lxc_enter_namespace",
                      libvirt_domain_lxc_enter_namespace, -1);
-#endif
-#if HAVE_VIRDOMAINMIGRATE3
     rb_define_method(c_domain, "migrate3", libvirt_domain_migrate3, -1);
     rb_define_method(c_domain, "migrate_to_uri3",
                      libvirt_domain_migrate_to_uri3, -1);
-#endif
     rb_define_const(c_domain, "BLOCK_COMMIT_SHALLOW",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_SHALLOW));
     rb_define_const(c_domain, "BLOCK_COMMIT_DELETE",
@@ -5524,9 +5188,7 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_CANCELED));
     rb_define_const(c_domain, "BLOCK_JOB_READY",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_READY));
-#if HAVE_VIRDOMAINGETCPUSTATS
     rb_define_method(c_domain, "cpu_stats", libvirt_domain_cpu_stats, -1);
-#endif
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_RAW",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_RAW));
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_ZLIB",
@@ -5535,31 +5197,15 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_LZO));
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_SNAPPY",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY));
-#if HAVE_VIRDOMAINGETTIME
     rb_define_method(c_domain, "time", libvirt_domain_get_time, -1);
-#endif
-#if HAVE_VIRDOMAINSETTIME
     rb_define_method(c_domain, "time=", libvirt_domain_time_equal, 1);
-#endif
-#if HAVE_VIRDOMAINCOREDUMPWITHFORMAT
     rb_define_method(c_domain, "core_dump_with_format",
                      libvirt_domain_core_dump_with_format, -1);
-#endif
-#if HAVE_VIRDOMAINFSFREEZE
     rb_define_method(c_domain, "fs_freeze", libvirt_domain_fs_freeze, -1);
-#endif
-#if HAVE_VIRDOMAINFSTHAW
     rb_define_method(c_domain, "fs_thaw", libvirt_domain_fs_thaw, -1);
-#endif
-#if HAVE_VIRDOMAINGETFSINFO
     rb_define_method(c_domain, "fs_info", libvirt_domain_fs_info, -1);
-#endif
-#if HAVE_VIRDOMAINRENAME
     rb_define_method(c_domain, "rename", libvirt_domain_rename, -1);
-#endif
-#if HAVE_VIRDOMAINSETUSERPASSWORD
     rb_define_method(c_domain, "user_password=", libvirt_domain_user_password_equal, 1);
-#endif
     rb_define_const(c_domain, "PASSWORD_ENCRYPTED",
                     INT2NUM(VIR_DOMAIN_PASSWORD_ENCRYPTED));
     rb_define_const(c_domain, "TIME_SYNC", INT2NUM(VIR_DOMAIN_TIME_SYNC));
