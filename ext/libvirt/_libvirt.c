@@ -781,7 +781,7 @@ void Init__libvirt(void)
 #if HAVE_CONST_VIR_FROM_STATS_LINUX
     rb_define_const(e_Error, "FROM_STATS_LINUX", INT2NUM(VIR_FROM_STATS_LINUX));
 #endif
-#if HAVE_TYPE_VIR_FROM_LXC
+#if HAVE_CONST_VIR_FROM_LXC
     rb_define_const(e_Error, "FROM_LXC", INT2NUM(VIR_FROM_LXC));
 #endif
 #if HAVE_TYPE_VIRSTORAGEPOOLPTR
