@@ -37,34 +37,6 @@
 #include "extconf.h"
 #include "stream.h"
 
-#ifndef HAVE_TYPE_VIRTYPEDPARAMETERPTR
-#define VIR_TYPED_PARAM_INT VIR_DOMAIN_SCHED_FIELD_INT
-#define VIR_TYPED_PARAM_UINT VIR_DOMAIN_SCHED_FIELD_UINT
-#define VIR_TYPED_PARAM_LLONG VIR_DOMAIN_SCHED_FIELD_LLONG
-#define VIR_TYPED_PARAM_ULLONG VIR_DOMAIN_SCHED_FIELD_ULLONG
-#define VIR_TYPED_PARAM_DOUBLE VIR_DOMAIN_SCHED_FIELD_DOUBLE
-#define VIR_TYPED_PARAM_BOOLEAN VIR_DOMAIN_SCHED_FIELD_BOOLEAN
-#define VIR_TYPED_PARAM_STRING 7
-
-#define VIR_TYPED_PARAM_FIELD_LENGTH 80
-typedef struct _virTypedParameter virTypedParameter;
-struct _virTypedParameter {
-    char field[VIR_TYPED_PARAM_FIELD_LENGTH];  /* parameter name */
-    int type;   /* parameter type, virTypedParameterType */
-    union {
-        int i;                      /* type is INT */
-        unsigned int ui;            /* type is UINT */
-        long long int l;            /* type is LLONG */
-        unsigned long long int ul;  /* type is ULLONG */
-        double d;                   /* type is DOUBLE */
-        char b;                     /* type is BOOLEAN */
-        char *s;                    /* type is STRING, may not be NULL */
-    } value; /* parameter value */
-};
-typedef virTypedParameter *virTypedParameterPtr;
-
-#endif
-
 static VALUE c_domain;
 static VALUE c_domain_info;
 static VALUE c_domain_ifinfo;
