@@ -780,15 +780,11 @@ void ruby_libvirt_storage_init(void)
                     INT2NUM(VIR_STORAGE_POOL_RUNNING));
     rb_define_const(c_storage_pool, "DEGRADED",
                     INT2NUM(VIR_STORAGE_POOL_DEGRADED));
-#if HAVE_CONST_VIR_STORAGE_POOL_INACCESSIBLE
     rb_define_const(c_storage_pool, "INACCESSIBLE",
                     INT2NUM(VIR_STORAGE_POOL_INACCESSIBLE));
-#endif
 
-#if HAVE_CONST_VIR_STORAGE_XML_INACTIVE
     rb_define_const(c_storage_pool, "XML_INACTIVE",
                     INT2NUM(VIR_STORAGE_XML_INACTIVE));
-#endif
 
     /* virStoragePoolBuildFlags */
     rb_define_const(c_storage_pool, "BUILD_NEW",
@@ -804,31 +800,19 @@ void ruby_libvirt_storage_init(void)
     rb_define_const(c_storage_pool, "DELETE_ZEROED",
                     INT2NUM(VIR_STORAGE_POOL_DELETE_ZEROED));
 
-#if HAVE_CONST_VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA
     rb_define_const(c_storage_pool, "CREATE_PREALLOC_METADATA",
                     INT2NUM(VIR_STORAGE_VOL_CREATE_PREALLOC_METADATA));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_CREATE_REFLINK
     rb_define_const(c_storage_pool, "CREATE_REFLINK",
                     INT2NUM(VIR_STORAGE_VOL_CREATE_REFLINK));
-#endif
 
-#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_NORMAL
     rb_define_const(c_storage_pool, "CREATE_NORMAL",
                     INT2NUM(VIR_STORAGE_POOL_CREATE_NORMAL));
-#endif
-#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_WITH_BUILD
     rb_define_const(c_storage_pool, "CREATE_WITH_BUILD",
                     INT2NUM(VIR_STORAGE_POOL_CREATE_WITH_BUILD));
-#endif
-#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_WITH_BUILD_OVERWRITE
     rb_define_const(c_storage_pool, "CREATE_WITH_BUILD_OVERWRITE",
                     INT2NUM(VIR_STORAGE_POOL_CREATE_WITH_BUILD_OVERWRITE));
-#endif
-#if HAVE_CONST_VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE
     rb_define_const(c_storage_pool, "CREATE_WITH_BUILD_NO_OVERWRITE",
                     INT2NUM(VIR_STORAGE_POOL_CREATE_WITH_BUILD_NO_OVERWRITE));
-#endif
 
     /* Creating/destroying pools */
     rb_define_method(c_storage_pool, "build", libvirt_storage_pool_build, -1);
@@ -888,15 +872,10 @@ void ruby_libvirt_storage_init(void)
                      libvirt_storage_pool_list_all_volumes, -1);
 #endif
 
-#if HAVE_CONST_VIR_STORAGE_POOL_BUILD_NO_OVERWRITE
     rb_define_const(c_storage_pool, "BUILD_NO_OVERWRITE",
                     INT2NUM(VIR_STORAGE_POOL_BUILD_NO_OVERWRITE));
-#endif
-
-#if HAVE_CONST_VIR_STORAGE_POOL_BUILD_OVERWRITE
     rb_define_const(c_storage_pool, "BUILD_OVERWRITE",
                     INT2NUM(VIR_STORAGE_POOL_BUILD_OVERWRITE));
-#endif
 
     /*
      * Class Libvirt::StorageVol and Libvirt::StorageVolInfo
@@ -910,33 +889,23 @@ void ruby_libvirt_storage_init(void)
     c_storage_vol = rb_define_class_under(m_libvirt, "StorageVol",
                                           rb_cObject);
 
-#if HAVE_CONST_VIR_STORAGE_XML_INACTIVE
     rb_define_const(c_storage_vol, "XML_INACTIVE",
                     INT2NUM(VIR_STORAGE_XML_INACTIVE));
-#endif
 
     /* virStorageVolType */
     rb_define_const(c_storage_vol, "FILE", INT2NUM(VIR_STORAGE_VOL_FILE));
     rb_define_const(c_storage_vol, "BLOCK", INT2NUM(VIR_STORAGE_VOL_BLOCK));
-#if HAVE_CONST_VIR_STORAGE_VOL_DIR
     rb_define_const(c_storage_vol, "DIR", INT2NUM(VIR_STORAGE_VOL_DIR));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_NETWORK
     rb_define_const(c_storage_vol, "NETWORK", INT2NUM(VIR_STORAGE_VOL_NETWORK));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_NETDIR
     rb_define_const(c_storage_vol, "NETDIR", INT2NUM(VIR_STORAGE_VOL_NETDIR));
-#endif
 
     /* virStorageVolDeleteFlags */
     rb_define_const(c_storage_vol, "DELETE_NORMAL",
                     INT2NUM(VIR_STORAGE_VOL_DELETE_NORMAL));
     rb_define_const(c_storage_vol, "DELETE_ZEROED",
                     INT2NUM(VIR_STORAGE_VOL_DELETE_ZEROED));
-#if HAVE_CONST_VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS
     rb_define_const(c_storage_vol, "DELETE_WITH_SNAPSHOTS",
                     INT2NUM(VIR_STORAGE_VOL_DELETE_WITH_SNAPSHOTS));
-#endif
 
     rb_define_method(c_storage_vol, "pool", libvirt_storage_vol_pool, 0);
     rb_define_method(c_storage_vol, "name", libvirt_storage_vol_name, 0);
@@ -949,42 +918,24 @@ void ruby_libvirt_storage_init(void)
     rb_define_method(c_storage_vol, "wipe_pattern",
                      libvirt_storage_vol_wipe_pattern, -1);
 #endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_ZERO
     rb_define_const(c_storage_vol, "WIPE_ALG_ZERO",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_ZERO));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_NNSA
     rb_define_const(c_storage_vol, "WIPE_ALG_NNSA",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_NNSA));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_DOD
     rb_define_const(c_storage_vol, "WIPE_ALG_DOD",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_DOD));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_BSI
     rb_define_const(c_storage_vol, "WIPE_ALG_BSI",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_BSI));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_GUTMANN
     rb_define_const(c_storage_vol, "WIPE_ALG_GUTMANN",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_GUTMANN));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_SCHNEIER
     rb_define_const(c_storage_vol, "WIPE_ALG_SCHNEIER",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_SCHNEIER));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_PFITZNER7
     rb_define_const(c_storage_vol, "WIPE_ALG_PFITZNER7",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_PFITZNER7));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_PFITZNER33
     rb_define_const(c_storage_vol, "WIPE_ALG_PFITZNER33",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_PFITZNER33));
-#endif
-#if HAVE_CONST_VIR_STORAGE_VOL_WIPE_ALG_RANDOM
     rb_define_const(c_storage_vol, "WIPE_ALG_RANDOM",
                     INT2NUM(VIR_STORAGE_VOL_WIPE_ALG_RANDOM));
-#endif
 
     rb_define_method(c_storage_vol, "info", libvirt_storage_vol_info, 0);
     rb_define_method(c_storage_vol, "xml_desc", libvirt_storage_vol_xml_desc,

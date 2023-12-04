@@ -360,7 +360,6 @@ void ruby_libvirt_network_init(void)
 #if HAVE_VIRNETWORKISPERSISTENT
     rb_define_method(c_network, "persistent?", libvirt_network_persistent_p, 0);
 #endif
-#if HAVE_CONST_VIR_NETWORK_UPDATE_COMMAND_NONE
     /* Ideally we would just have the "UPDATE_COMMAND_NONE" constant.
      * Unfortunately we screwed up long ago, and we have to
      * leave "NETWORK_UPDATE_COMMAND_NONE" for backwards compatibility.
@@ -521,29 +520,20 @@ void ruby_libvirt_network_init(void)
                     INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CONFIG));
     rb_define_const(c_network, "NETWORK_UPDATE_AFFECT_CONFIG",
                     INT2NUM(VIR_NETWORK_UPDATE_AFFECT_CONFIG));
-#endif
 
-#if HAVE_CONST_VIR_NETWORK_XML_INACTIVE
     rb_define_const(c_network, "XML_INACTIVE",
                     INT2NUM(VIR_NETWORK_XML_INACTIVE));
-#endif
-#if HAVE_CONST_VIR_NETWORK_UPDATE_COMMAND_DELETE
     rb_define_const(c_network, "UPDATE_COMMAND_DELETE",
                     INT2NUM(VIR_NETWORK_UPDATE_COMMAND_DELETE));
-#endif
 
 #if HAVE_VIRNETWORKGETDHCPLEASES
     rb_define_method(c_network, "dhcp_leases",
                      libvirt_network_get_dhcp_leases, -1);
 #endif
 
-#if HAVE_CONST_VIR_IP_ADDR_TYPE_IPV4
     rb_define_const(c_network, "IP_ADDR_TYPE_IPV4",
                     INT2NUM(VIR_IP_ADDR_TYPE_IPV4));
-#endif
 
-#if HAVE_CONST_VIR_IP_ADDR_TYPE_IPV6
     rb_define_const(c_network, "IP_ADDR_TYPE_IPV6",
                     INT2NUM(VIR_IP_ADDR_TYPE_IPV6));
-#endif
 }

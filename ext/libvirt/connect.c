@@ -2886,30 +2886,16 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "compare_cpu", libvirt_connect_compare_cpu, -1);
 #endif
 
-#if HAVE_CONST_VIR_CONNECT_COMPARE_CPU_FAIL_INCOMPATIBLE
     rb_define_const(c_connect, "COMPARE_CPU_FAIL_INCOMPATIBLE",
                     INT2NUM(VIR_CONNECT_COMPARE_CPU_FAIL_INCOMPATIBLE));
-#endif
 
 #if HAVE_VIRCONNECTBASELINECPU
     rb_define_method(c_connect, "baseline_cpu", libvirt_connect_baseline_cpu,
                      -1);
 #endif
-#if HAVE_CONST_VIR_CONNECT_BASELINE_CPU_EXPAND_FEATURES
     rb_define_const(c_connect, "BASELINE_CPU_EXPAND_FEATURES",
                     INT2NUM(VIR_CONNECT_BASELINE_CPU_EXPAND_FEATURES));
-#endif
 
-    /* In the libvirt development history, the events were
-     * first defined in commit 1509b8027fd0b73c30aeab443f81dd5a18d80544,
-     * then ADDED and REMOVED were renamed to DEFINED and UNDEFINED at
-     * the same time that the details were added
-     * (d3d54d2fc92e350f250eda26cee5d0342416a9cf).  What this means is that
-     * we have to check for HAVE_CONST_VIR_DOMAIN_EVENT_DEFINED and
-     * HAVE_CONST_VIR_DOMAIN_EVENT_STARTED to untangle these, and then we
-     * can make a decision for many of the events based on that.
-     */
-#if HAVE_CONST_VIR_DOMAIN_EVENT_DEFINED
     rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED",
                     INT2NUM(VIR_DOMAIN_EVENT_DEFINED));
     rb_define_const(c_connect, "DOMAIN_EVENT_DEFINED_ADDED",
@@ -2946,8 +2932,6 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_SAVED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FAILED",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FAILED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_STARTED
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED));
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED",
@@ -2956,18 +2940,14 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_DOMAIN_EVENT_RESUMED));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED));
-#endif
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED_FROM_SNAPSHOT));
     rb_define_const(c_connect, "DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_STOPPED_FROM_SNAPSHOT));
-#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_IOERROR
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_IOERROR",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_IOERROR));
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_WATCHDOG",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_WATCHDOG));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_WATCHDOG
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_WATCHDOG",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_WATCHDOG));
     rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_NONE",
@@ -2982,8 +2962,6 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_SHUTDOWN));
     rb_define_const(c_connect, "DOMAIN_EVENT_WATCHDOG_DEBUG",
                     INT2NUM(VIR_DOMAIN_EVENT_WATCHDOG_DEBUG));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_IO_ERROR
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR));
     rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_NONE",
@@ -2992,8 +2970,6 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_PAUSE));
     rb_define_const(c_connect, "DOMAIN_EVENT_IO_ERROR_REPORT",
                     INT2NUM(VIR_DOMAIN_EVENT_IO_ERROR_REPORT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_GRAPHICS
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_GRAPHICS",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_GRAPHICS));
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_CONNECT",
@@ -3006,80 +2982,45 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV4));
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6",
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_IPV6));
-#endif
 #if HAVE_VIRCONNECTDOMAINEVENTREGISTERANY
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_LIFECYCLE",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_LIFECYCLE));
 #endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_REBOOT
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_REBOOT",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_REBOOT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_RTC_CHANGE
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_RTC_CHANGE",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_RTC_CHANGE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_IO_ERROR_REASON",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_IO_ERROR_REASON));
-#endif
 
-#if HAVE_CONST_VIR_DOMAIN_EVENT_ID_CONTROL_ERROR
     rb_define_const(c_connect, "DOMAIN_EVENT_ID_CONTROL_ERROR",
                     INT2NUM(VIR_DOMAIN_EVENT_ID_CONTROL_ERROR));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_SHUTDOWN
     rb_define_const(c_connect, "DOMAIN_EVENT_SHUTDOWN",
                     INT2NUM(VIR_DOMAIN_EVENT_SHUTDOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_PMSUSPENDED
     rb_define_const(c_connect, "DOMAIN_EVENT_PMSUSPENDED",
                     INT2NUM(VIR_DOMAIN_EVENT_PMSUSPENDED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_CRASHED
     rb_define_const(c_connect, "DOMAIN_EVENT_CRASHED",
                     INT2NUM(VIR_DOMAIN_EVENT_CRASHED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_STARTED_WAKEUP
     rb_define_const(c_connect, "DOMAIN_EVENT_STARTED_WAKEUP",
                     INT2NUM(VIR_DOMAIN_EVENT_STARTED_WAKEUP));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_RESTORED
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_RESTORED",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_RESTORED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_FROM_SNAPSHOT
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_FROM_SNAPSHOT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_SUSPENDED_API_ERROR
     rb_define_const(c_connect, "DOMAIN_EVENT_SUSPENDED_API_ERROR",
                     INT2NUM(VIR_DOMAIN_EVENT_SUSPENDED_API_ERROR));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_RESUMED_FROM_SNAPSHOT
     rb_define_const(c_connect, "DOMAIN_EVENT_RESUMED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_EVENT_RESUMED_FROM_SNAPSHOT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_SHUTDOWN_FINISHED
     rb_define_const(c_connect, "DOMAIN_EVENT_SHUTDOWN_FINISHED",
                     INT2NUM(VIR_DOMAIN_EVENT_SHUTDOWN_FINISHED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_PMSUSPENDED_MEMORY
     rb_define_const(c_connect, "DOMAIN_EVENT_PMSUSPENDED_MEMORY",
                     INT2NUM(VIR_DOMAIN_EVENT_PMSUSPENDED_MEMORY));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_PMSUSPENDED_DISK
     rb_define_const(c_connect, "DOMAIN_EVENT_PMSUSPENDED_DISK",
                     INT2NUM(VIR_DOMAIN_EVENT_PMSUSPENDED_DISK));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_CRASHED_PANICKED
     rb_define_const(c_connect, "DOMAIN_EVENT_CRASHED_PANICKED",
                     INT2NUM(VIR_DOMAIN_EVENT_CRASHED_PANICKED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX
     rb_define_const(c_connect, "DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX",
                     INT2NUM(VIR_DOMAIN_EVENT_GRAPHICS_ADDRESS_UNIX));
-#endif
 
 #if HAVE_VIRCONNECTDOMAINEVENTREGISTER
     rb_define_method(c_connect, "domain_event_register",
@@ -3116,10 +3057,8 @@ void ruby_libvirt_connect_init(void)
                      libvirt_connect_lookup_domain_by_id, 1);
     rb_define_method(c_connect, "lookup_domain_by_uuid",
                      libvirt_connect_lookup_domain_by_uuid, 1);
-#if HAVE_CONST_VIR_DOMAIN_DEFINE_VALIDATE
     rb_define_const(c_connect, "DOMAIN_DEFINE_VALIDATE",
                     INT2NUM(VIR_DOMAIN_DEFINE_VALIDATE));
-#endif
     rb_define_method(c_connect, "define_domain_xml",
                      libvirt_connect_define_domain_xml, -1);
 
@@ -3240,18 +3179,14 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "node_cpu_stats",
                      libvirt_connect_node_cpu_stats, -1);
 #endif
-#if HAVE_CONST_VIR_NODE_CPU_STATS_ALL_CPUS
     rb_define_const(c_connect, "NODE_CPU_STATS_ALL_CPUS",
                     INT2NUM(VIR_NODE_CPU_STATS_ALL_CPUS));
-#endif
 #if HAVE_VIRNODEGETMEMORYSTATS
     rb_define_method(c_connect, "node_memory_stats",
                      libvirt_connect_node_memory_stats, -1);
 #endif
-#if HAVE_CONST_VIR_NODE_MEMORY_STATS_ALL_CELLS
     rb_define_const(c_connect, "NODE_MEMORY_STATS_ALL_CELLS",
                     INT2NUM(VIR_NODE_MEMORY_STATS_ALL_CELLS));
-#endif
 
 #if HAVE_VIRDOMAINSAVEIMAGEGETXMLDESC
     rb_define_method(c_connect, "save_image_xml_desc",
@@ -3379,16 +3314,12 @@ void ruby_libvirt_connect_init(void)
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI));
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_STORAGE",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_STORAGE));
-#if HAVE_CONST_VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_FC_HOST",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_FC_HOST));
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_VPORTS",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_VPORTS));
-#endif
-#if HAVE_CONST_VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC
     rb_define_const(c_connect, "LIST_NODE_DEVICES_CAP_SCSI_GENERIC",
                     INT2NUM(VIR_CONNECT_LIST_NODE_DEVICES_CAP_SCSI_GENERIC));
-#endif
     rb_define_method(c_connect, "list_all_nodedevices",
                      libvirt_connect_list_all_nodedevices, -1);
 #endif
@@ -3428,14 +3359,10 @@ void ruby_libvirt_connect_init(void)
     rb_define_method(c_connect, "list_all_storage_pools",
                      libvirt_connect_list_all_storage_pools, -1);
 #endif
-#if HAVE_CONST_VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER
     rb_define_const(c_connect, "LIST_STORAGE_POOLS_GLUSTER",
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_GLUSTER));
-#endif
-#if HAVE_CONST_VIR_CONNECT_LIST_STORAGE_POOLS_ZFS
     rb_define_const(c_connect, "LIST_STORAGE_POOLS_ZFS",
                     INT2NUM(VIR_CONNECT_LIST_STORAGE_POOLS_ZFS));
-#endif
 #if HAVE_VIRCONNECTLISTALLNWFILTERS
     rb_define_method(c_connect, "list_all_nwfilters",
                      libvirt_connect_list_all_nwfilters, -1);

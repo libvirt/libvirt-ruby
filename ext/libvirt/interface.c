@@ -176,10 +176,8 @@ static VALUE libvirt_interface_free(VALUE i)
 void ruby_libvirt_interface_init(void)
 {
     c_interface = rb_define_class_under(m_libvirt, "Interface", rb_cObject);
-#if HAVE_CONST_VIR_INTERFACE_XML_INACTIVE
     rb_define_const(c_interface, "XML_INACTIVE",
                     INT2NUM(VIR_INTERFACE_XML_INACTIVE));
-#endif
     rb_define_attr(c_interface, "connection", 1, 0);
 
     /* Interface object methods */

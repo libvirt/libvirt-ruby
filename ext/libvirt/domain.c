@@ -4272,67 +4272,35 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "SHUTDOWN", INT2NUM(VIR_DOMAIN_SHUTDOWN));
     rb_define_const(c_domain, "SHUTOFF", INT2NUM(VIR_DOMAIN_SHUTOFF));
     rb_define_const(c_domain, "CRASHED", INT2NUM(VIR_DOMAIN_CRASHED));
-#if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED
     rb_define_const(c_domain, "PMSUSPENDED", INT2NUM(VIR_DOMAIN_PMSUSPENDED));
-#endif
 
     /* virDomainMigrateFlags */
-#if HAVE_CONST_VIR_MIGRATE_LIVE
     rb_define_const(c_domain, "MIGRATE_LIVE", INT2NUM(VIR_MIGRATE_LIVE));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_PEER2PEER
     rb_define_const(c_domain, "MIGRATE_PEER2PEER",
                     INT2NUM(VIR_MIGRATE_PEER2PEER));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_TUNNELLED
     rb_define_const(c_domain, "MIGRATE_TUNNELLED",
                     INT2NUM(VIR_MIGRATE_TUNNELLED));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_PERSIST_DEST
     rb_define_const(c_domain, "MIGRATE_PERSIST_DEST",
                     INT2NUM(VIR_MIGRATE_PERSIST_DEST));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_UNDEFINE_SOURCE
     rb_define_const(c_domain, "MIGRATE_UNDEFINE_SOURCE",
                     INT2NUM(VIR_MIGRATE_UNDEFINE_SOURCE));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_PAUSED
     rb_define_const(c_domain, "MIGRATE_PAUSED", INT2NUM(VIR_MIGRATE_PAUSED));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_NON_SHARED_DISK
     rb_define_const(c_domain, "MIGRATE_NON_SHARED_DISK",
                     INT2NUM(VIR_MIGRATE_NON_SHARED_DISK));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_NON_SHARED_INC
     rb_define_const(c_domain, "MIGRATE_NON_SHARED_INC",
                     INT2NUM(VIR_MIGRATE_NON_SHARED_INC));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_CHANGE_PROTECTION
     rb_define_const(c_domain, "MIGRATE_CHANGE_PROTECTION",
                     INT2NUM(VIR_MIGRATE_CHANGE_PROTECTION));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_UNSAFE
     rb_define_const(c_domain, "MIGRATE_UNSAFE", INT2NUM(VIR_MIGRATE_UNSAFE));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_OFFLINE
     rb_define_const(c_domain, "MIGRATE_OFFLINE", INT2NUM(VIR_MIGRATE_OFFLINE));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_COMPRESSED
     rb_define_const(c_domain, "MIGRATE_COMPRESSED",
                     INT2NUM(VIR_MIGRATE_COMPRESSED));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_ABORT_ON_ERROR
     rb_define_const(c_domain, "MIGRATE_ABORT_ON_ERROR",
                     INT2NUM(VIR_MIGRATE_ABORT_ON_ERROR));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_AUTO_CONVERGE
     rb_define_const(c_domain, "MIGRATE_AUTO_CONVERGE",
                     INT2NUM(VIR_MIGRATE_AUTO_CONVERGE));
-#endif
-#if HAVE_CONST_VIR_MIGRATE_RDMA_PIN_ALL
     rb_define_const(c_domain, "MIGRATE_RDMA_PIN_ALL",
                     INT2NUM(VIR_MIGRATE_RDMA_PIN_ALL));
-#endif
 
     /* Ideally we would just have the "XML_SECURE" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_XML_SECURE" for
@@ -4348,7 +4316,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "XML_INACTIVE", INT2NUM(VIR_DOMAIN_XML_INACTIVE));
     rb_define_const(c_domain, "DOMAIN_XML_INACTIVE",
                     INT2NUM(VIR_DOMAIN_XML_INACTIVE));
-#if HAVE_CONST_VIR_DOMAIN_XML_UPDATE_CPU
     /* Ideally we would just have the "XML_UPDATE_CPU" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_XML_UPDATE_CPU" for
      * backwards compatibility.
@@ -4357,64 +4324,35 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
     rb_define_const(c_domain, "DOMAIN_XML_UPDATE_CPU",
                     INT2NUM(VIR_DOMAIN_XML_UPDATE_CPU));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_XML_MIGRATABLE
     rb_define_const(c_domain, "XML_MIGRATABLE",
                     INT2NUM(VIR_DOMAIN_XML_MIGRATABLE));
-#endif
 #if HAVE_VIRDOMAINMEMORYPEEK
     rb_define_const(c_domain, "MEMORY_VIRTUAL", INT2NUM(VIR_MEMORY_VIRTUAL));
 #endif
-#if HAVE_CONST_VIR_MEMORY_PHYSICAL
     rb_define_const(c_domain, "MEMORY_PHYSICAL", INT2NUM(VIR_MEMORY_PHYSICAL));
-#endif
 
-#if HAVE_CONST_VIR_DOMAIN_START_PAUSED
     rb_define_const(c_domain, "START_PAUSED", INT2NUM(VIR_DOMAIN_START_PAUSED));
-#endif
 
-#if HAVE_CONST_VIR_DOMAIN_START_AUTODESTROY
     rb_define_const(c_domain, "START_AUTODESTROY",
                     INT2NUM(VIR_DOMAIN_START_AUTODESTROY));
-#endif
-
-#if HAVE_CONST_VIR_DOMAIN_START_BYPASS_CACHE
     rb_define_const(c_domain, "START_BYPASS_CACHE",
                     INT2NUM(VIR_DOMAIN_START_BYPASS_CACHE));
-#endif
-
-#if HAVE_CONST_VIR_DOMAIN_START_FORCE_BOOT
     rb_define_const(c_domain, "START_FORCE_BOOT",
                     INT2NUM(VIR_DOMAIN_START_FORCE_BOOT));
-#endif
 
-#if HAVE_CONST_VIR_DUMP_CRASH
     rb_define_const(c_domain, "DUMP_CRASH", INT2NUM(VIR_DUMP_CRASH));
-#endif
-#if HAVE_CONST_VIR_DUMP_LIVE
     rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
-#endif
-#if HAVE_CONST_VIR_DUMP_BYPASS_CACHE
     rb_define_const(c_domain, "BYPASS_CACHE", INT2NUM(VIR_DUMP_BYPASS_CACHE));
-#endif
-#if HAVE_CONST_VIR_DUMP_RESET
     rb_define_const(c_domain, "RESET", INT2NUM(VIR_DUMP_RESET));
-#endif
-#if HAVE_CONST_VIR_DUMP_MEMORY_ONLY
     rb_define_const(c_domain, "MEMORY_ONLY", INT2NUM(VIR_DUMP_MEMORY_ONLY));
-#endif
 
 #if HAVE_VIRDOMAINGETVCPUSFLAGS
     rb_define_const(c_domain, "VCPU_LIVE", INT2NUM(VIR_DOMAIN_VCPU_LIVE));
     rb_define_const(c_domain, "VCPU_CONFIG", INT2NUM(VIR_DOMAIN_VCPU_CONFIG));
     rb_define_const(c_domain, "VCPU_MAXIMUM", INT2NUM(VIR_DOMAIN_VCPU_MAXIMUM));
 #endif
-#if HAVE_CONST_VIR_DOMAIN_VCPU_CURRENT
     rb_define_const(c_domain, "VCPU_CURRENT", INT2NUM(VIR_DOMAIN_VCPU_CURRENT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_VCPU_GUEST
     rb_define_const(c_domain, "VCPU_GUEST", INT2NUM(VIR_DOMAIN_VCPU_GUEST));
-#endif
 
     rb_define_method(c_domain, "migrate", libvirt_domain_migrate, -1);
 #if HAVE_VIRDOMAINMIGRATETOURI
@@ -4437,98 +4375,59 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_migrate_max_speed_equal, 1);
 #endif
 
-#if HAVE_CONST_VIR_DOMAIN_SAVE_BYPASS_CACHE
     rb_define_const(c_domain, "SAVE_BYPASS_CACHE",
                     INT2NUM(VIR_DOMAIN_SAVE_BYPASS_CACHE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SAVE_RUNNING
     rb_define_const(c_domain, "SAVE_RUNNING", INT2NUM(VIR_DOMAIN_SAVE_RUNNING));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SAVE_PAUSED
     rb_define_const(c_domain, "SAVE_PAUSED", INT2NUM(VIR_DOMAIN_SAVE_PAUSED));
-#endif
 
-#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_MANAGED_SAVE
     rb_define_const(c_domain, "UNDEFINE_MANAGED_SAVE",
                     INT2NUM(VIR_DOMAIN_UNDEFINE_MANAGED_SAVE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
     rb_define_const(c_domain, "UNDEFINE_SNAPSHOTS_METADATA",
                     INT2NUM(VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_NVRAM
     rb_define_const(c_domain, "UNDEFINE_NVRAM",
                     INT2NUM(VIR_DOMAIN_UNDEFINE_NVRAM));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_KEEP_NVRAM
+#if LIBVIR_CHECK_VERSION(2, 3, 0)
     rb_define_const(c_domain, "UNDEFINE_KEEP_NVRAM",
                     INT2NUM(VIR_DOMAIN_UNDEFINE_KEEP_NVRAM));
 #endif
-#if HAVE_CONST_VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA
+#if LIBVIR_CHECK_VERSION(5, 6, 0)
     rb_define_const(c_domain, "UNDEFINE_CHECKPOINTS_METADATA",
                     INT2NUM(VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA));
 #endif
     rb_define_attr(c_domain, "connection", 1, 0);
 
-#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_DEFAULT
     rb_define_const(c_domain, "SHUTDOWN_DEFAULT",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_DEFAULT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_ACPI_POWER_BTN
     rb_define_const(c_domain, "SHUTDOWN_ACPI_POWER_BTN",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_ACPI_POWER_BTN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_GUEST_AGENT
     rb_define_const(c_domain, "SHUTDOWN_GUEST_AGENT",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_GUEST_AGENT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_INITCTL
     rb_define_const(c_domain, "SHUTDOWN_INITCTL",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_INITCTL));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_SIGNAL
     rb_define_const(c_domain, "SHUTDOWN_SIGNAL",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_SIGNAL));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SHUTDOWN_PARAVIRT
     rb_define_const(c_domain, "SHUTDOWN_PARAVIRT",
                     INT2NUM(VIR_DOMAIN_SHUTDOWN_PARAVIRT));
-#endif
     rb_define_method(c_domain, "shutdown", libvirt_domain_shutdown, -1);
 
-#if HAVE_CONST_VIR_DOMAIN_REBOOT_DEFAULT
     rb_define_const(c_domain, "REBOOT_DEFAULT",
                     INT2NUM(VIR_DOMAIN_REBOOT_DEFAULT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_REBOOT_ACPI_POWER_BTN
     rb_define_const(c_domain, "REBOOT_ACPI_POWER_BTN",
                     INT2NUM(VIR_DOMAIN_REBOOT_ACPI_POWER_BTN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_REBOOT_GUEST_AGENT
     rb_define_const(c_domain, "REBOOT_GUEST_AGENT",
                     INT2NUM(VIR_DOMAIN_REBOOT_GUEST_AGENT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_REBOOT_INITCTL
     rb_define_const(c_domain, "REBOOT_INITCTL",
                     INT2NUM(VIR_DOMAIN_REBOOT_INITCTL));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_REBOOT_SIGNAL
     rb_define_const(c_domain, "REBOOT_SIGNAL",
                     INT2NUM(VIR_DOMAIN_REBOOT_SIGNAL));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_REBOOT_PARAVIRT
     rb_define_const(c_domain, "REBOOT_PARAVIRT",
                     INT2NUM(VIR_DOMAIN_REBOOT_PARAVIRT));
-#endif
     rb_define_method(c_domain, "reboot", libvirt_domain_reboot, -1);
-#if HAVE_CONST_VIR_DOMAIN_DESTROY_DEFAULT
+
     rb_define_const(c_domain, "DESTROY_DEFAULT",
                     INT2NUM(VIR_DOMAIN_DESTROY_DEFAULT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_DESTROY_GRACEFUL
     rb_define_const(c_domain, "DESTROY_GRACEFUL",
                     INT2NUM(VIR_DOMAIN_DESTROY_GRACEFUL));
-#endif
     rb_define_method(c_domain, "destroy", libvirt_domain_destroy, -1);
     rb_define_method(c_domain, "suspend", libvirt_domain_suspend, 0);
     rb_define_method(c_domain, "resume", libvirt_domain_resume, 0);
@@ -4561,22 +4460,15 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "autostart=", libvirt_domain_autostart_equal, 1);
     rb_define_method(c_domain, "free", libvirt_domain_free, 0);
 
-#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_CURRENT
     rb_define_const(c_domain, "DEVICE_MODIFY_CURRENT",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CURRENT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_LIVE
     rb_define_const(c_domain, "DEVICE_MODIFY_LIVE",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_LIVE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_CONFIG
     rb_define_const(c_domain, "DEVICE_MODIFY_CONFIG",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_CONFIG));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_DEVICE_MODIFY_FORCE
     rb_define_const(c_domain, "DEVICE_MODIFY_FORCE",
                     INT2NUM(VIR_DOMAIN_DEVICE_MODIFY_FORCE));
-#endif
+
     rb_define_method(c_domain, "attach_device", libvirt_domain_attach_device,
                      -1);
     rb_define_method(c_domain, "detach_device", libvirt_domain_detach_device,
@@ -4705,14 +4597,10 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_UNUSED));
     rb_define_const(c_domain_memory_stats, "AVAILABLE",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_AVAILABLE));
-#if HAVE_CONST_VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON
     rb_define_const(c_domain_memory_stats, "ACTUAL_BALLOON",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_MEMORY_STATE_RSS
     rb_define_const(c_domain_memory_stats, "RSS",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_RSS));
-#endif
 
     /*
      * Class Libvirt::Domain::BlockInfo
@@ -4735,14 +4623,10 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_snapshot_delete, -1);
     rb_define_method(c_domain_snapshot, "free", libvirt_domain_snapshot_free,
                      0);
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_DELETE_METADATA_ONLY
     rb_define_const(c_domain_snapshot, "DELETE_METADATA_ONLY",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_METADATA_ONLY));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY
     rb_define_const(c_domain_snapshot, "DELETE_CHILDREN_ONLY",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN_ONLY));
-#endif
 
 #if HAVE_VIRDOMAINSNAPSHOTGETNAME
     rb_define_method(c_domain_snapshot, "name", libvirt_domain_snapshot_name,
@@ -4826,7 +4710,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "DOMAIN_MEM_CONFIG",
                     INT2NUM(VIR_DOMAIN_MEM_CONFIG));
 #endif
-#if HAVE_CONST_VIR_DOMAIN_MEM_CURRENT
     /* Ideally we would just have the "MEM_CURRENT" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_MEM_CURRENT" for
      * backwards compatibility.
@@ -4841,7 +4724,6 @@ void ruby_libvirt_domain_init(void)
     rb_define_const(c_domain, "MEM_MAXIMUM", INT2NUM(VIR_DOMAIN_MEM_MAXIMUM));
     rb_define_const(c_domain, "DOMAIN_MEM_MAXIMUM",
                     INT2NUM(VIR_DOMAIN_MEM_MAXIMUM));
-#endif
 
     rb_define_method(c_domain, "scheduler_parameters",
                      libvirt_domain_scheduler_parameters, -1);
@@ -4927,7 +4809,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_RUNNING_SAVE_CANCELED));
     rb_define_const(c_domain, "DOMAIN_RUNNING_SAVE_CANCELED",
                     INT2NUM(VIR_DOMAIN_RUNNING_SAVE_CANCELED));
-#if HAVE_CONST_VIR_DOMAIN_RUNNING_WAKEUP
     /* Ideally we would just have the "RUNNING_WAKEUP" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_RUNNING_WAKEUP"
      * for backwards compatibility.
@@ -4936,7 +4817,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_RUNNING_WAKEUP));
     rb_define_const(c_domain, "DOMAIN_RUNNING_WAKEUP",
                     INT2NUM(VIR_DOMAIN_RUNNING_WAKEUP));
-#endif
     /* Ideally we would just have the "BLOCKED_UNKNOWN" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_BLOCKED_UNKNOWN"
      * for backwards compatibility.
@@ -5009,7 +4889,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_PAUSED_FROM_SNAPSHOT));
     rb_define_const(c_domain, "DOMAIN_PAUSED_FROM_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_PAUSED_FROM_SNAPSHOT));
-#if HAVE_CONST_VIR_DOMAIN_PAUSED_SHUTTING_DOWN
     /* Ideally we would just have the "PAUSED_SHUTTING_DOWN" constant.
      * Unfortunately we screwed up long ago, and we have to leave
      * "DOMAIN_PAUSED_SHUTTING_DOWN" for backwards compatibility.
@@ -5018,8 +4897,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_PAUSED_SHUTTING_DOWN));
     rb_define_const(c_domain, "DOMAIN_PAUSED_SHUTTING_DOWN",
                     INT2NUM(VIR_DOMAIN_PAUSED_SHUTTING_DOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_PAUSED_SNAPSHOT
     /* Ideally we would just have the "PAUSED_SNAPSHOT" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_PAUSED_SNAPSHOT"
      * for backwards compatibility.
@@ -5028,7 +4905,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_PAUSED_SNAPSHOT));
     rb_define_const(c_domain, "DOMAIN_PAUSED_SNAPSHOT",
                     INT2NUM(VIR_DOMAIN_PAUSED_SNAPSHOT));
-#endif
     /* Ideally we would just have the "SHUTDOWN_UNKNOWN" constant.
      * Unfortunately we screwed up long ago, and we have to leave
      * "DOMAIN_SHUTDOWN_UNKNOWN" for backwards compatibility.
@@ -5117,7 +4993,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
     rb_define_const(c_domain, "DOMAIN_CRASHED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_CRASHED_UNKNOWN));
-#if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_UNKNOWN
     /* Ideally we would just have the "PMSUSPENDED_UNKNOWN" constant.
      * Unfortunately we screwed up long ago, and we have to leave
      * "DOMAIN_PMSUSPENDED_UNKNOWN" for backwards compatibility.
@@ -5126,8 +5001,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_UNKNOWN));
     rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_UNKNOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN
     /* Ideally we would just have the "PMSUSPENDED_DISK_UNKNOWN" constant.
      * Unfortunately we screwed up long ago, and we have to leave
      * "DOMAIN_PMSUSPENDED_DISK_UNKNOWN" for backwards compatibility.
@@ -5136,28 +5009,18 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN));
     rb_define_const(c_domain, "DOMAIN_PMSUSPENDED_DISK_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_PMSUSPENDED_DISK_UNKNOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_RUNNING_CRASHED
     rb_define_const(c_domain, "RUNNING_CRASHED",
                     INT2NUM(VIR_DOMAIN_RUNNING_CRASHED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_NOSTATE_UNKNOWN
     rb_define_const(c_domain, "NOSTATE_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_NOSTATE_UNKNOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_PAUSED_CRASHED
     rb_define_const(c_domain, "PAUSED_CRASHED",
                     INT2NUM(VIR_DOMAIN_PAUSED_CRASHED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_CRASHED_PANICKED
     rb_define_const(c_domain, "CRASHED_PANICKED",
                     INT2NUM(VIR_DOMAIN_CRASHED_PANICKED));
-#endif
 
     rb_define_method(c_domain, "state", libvirt_domain_state, -1);
 #endif
 
-#if HAVE_CONST_VIR_DOMAIN_AFFECT_CURRENT
     /* Ideally we would just have the "AFFECT_CURRENT" constant.  Unfortunately
      * we screwed up long ago, and we have to leave "DOMAIN_AFFECT_CURRENT" for
      * backwards compatibility.
@@ -5182,15 +5045,10 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_AFFECT_CONFIG));
     rb_define_const(c_domain, "DOMAIN_AFFECT_CONFIG",
                     INT2NUM(VIR_DOMAIN_AFFECT_CONFIG));
-#endif
 
-#if HAVE_CONST_VIR_DOMAIN_CONSOLE_FORCE
     rb_define_const(c_domain, "CONSOLE_FORCE",
                     INT2NUM(VIR_DOMAIN_CONSOLE_FORCE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_CONSOLE_SAFE
     rb_define_const(c_domain, "CONSOLE_SAFE", INT2NUM(VIR_DOMAIN_CONSOLE_SAFE));
-#endif
 
 #if HAVE_VIRDOMAINOPENCONSOLE
     rb_define_method(c_domain, "open_console", libvirt_domain_open_console, -1);
@@ -5398,7 +5256,6 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_METADATA));
     rb_define_const(c_domain_snapshot, "LIST_NO_METADATA",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_NO_METADATA));
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE
     rb_define_const(c_domain_snapshot, "LIST_INACTIVE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_INACTIVE));
     rb_define_const(c_domain_snapshot, "LIST_ACTIVE",
@@ -5409,11 +5266,10 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_INTERNAL));
     rb_define_const(c_domain_snapshot, "LIST_EXTERNAL",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_LIST_EXTERNAL));
-#endif
     rb_define_method(c_domain, "list_all_snapshots",
                      libvirt_domain_list_all_snapshots, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE
+
     rb_define_const(c_domain_snapshot, "CREATE_REDEFINE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_REDEFINE));
     rb_define_const(c_domain_snapshot, "CREATE_CURRENT",
@@ -5424,23 +5280,14 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_HALT));
     rb_define_const(c_domain_snapshot, "CREATE_DISK_ONLY",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_REUSE_EXT
     rb_define_const(c_domain_snapshot, "CREATE_REUSE_EXT",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_REUSE_EXT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_QUIESCE
     rb_define_const(c_domain_snapshot, "CREATE_QUIESCE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_QUIESCE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC
     rb_define_const(c_domain_snapshot, "CREATE_ATOMIC",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_CREATE_LIVE
     rb_define_const(c_domain_snapshot, "CREATE_LIVE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_CREATE_LIVE));
-#endif
 #if HAVE_VIRDOMAINSNAPSHOTNUMCHILDREN
     rb_define_method(c_domain_snapshot, "num_children",
                      libvirt_domain_snapshot_num_children, -1);
@@ -5472,29 +5319,20 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINFSTRIM
     rb_define_method(c_domain, "fstrim", libvirt_domain_fstrim, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_SHALLOW
     rb_define_const(c_domain, "BLOCK_REBASE_SHALLOW",
                     INT2NUM(VIR_DOMAIN_BLOCK_REBASE_SHALLOW));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_REUSE_EXT
     rb_define_const(c_domain, "BLOCK_REBASE_REUSE_EXT",
                     INT2NUM(VIR_DOMAIN_BLOCK_REBASE_REUSE_EXT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_COPY_RAW
     rb_define_const(c_domain, "BLOCK_REBASE_COPY_RAW",
                     INT2NUM(VIR_DOMAIN_BLOCK_REBASE_COPY_RAW));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_REBASE_COPY
     rb_define_const(c_domain, "BLOCK_REBASE_COPY",
                     INT2NUM(VIR_DOMAIN_BLOCK_REBASE_COPY));
-#endif
+
 #if HAVE_VIRDOMAINBLOCKREBASE
     rb_define_method(c_domain, "block_rebase", libvirt_domain_block_rebase, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_CHANNEL_FORCE
     rb_define_const(c_domain, "CHANNEL_FORCE",
                     INT2NUM(VIR_DOMAIN_CHANNEL_FORCE));
-#endif
 #if HAVE_VIRDOMAINOPENCHANNEL
     rb_define_method(c_domain, "open_channel", libvirt_domain_open_channel, -1);
 #endif
@@ -5514,22 +5352,14 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINBLOCKRESIZE
     rb_define_method(c_domain, "block_resize", libvirt_domain_block_resize, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_RESIZE_BYTES
     rb_define_const(c_domain, "BLOCK_RESIZE_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_RESIZE_BYTES));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING
     rb_define_const(c_domain_snapshot, "REVERT_RUNNING",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_RUNNING));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED
     rb_define_const(c_domain_snapshot, "REVERT_PAUSED",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_PAUSED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
     rb_define_const(c_domain_snapshot, "REVERT_FORCE",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_REVERT_FORCE));
-#endif
 #if HAVE_VIRDOMAINPMSUSPENDFORDURATION
     rb_define_method(c_domain, "pmsuspend_for_duration",
                      libvirt_domain_pmsuspend_for_duration, -1);
@@ -5563,45 +5393,26 @@ void ruby_libvirt_domain_init(void)
                      libvirt_domain_security_label_list, 0);
 #endif
 
-#if HAVE_CONST_VIR_KEYCODE_SET_LINUX
     rb_define_const(c_domain, "KEYCODE_SET_LINUX",
                     INT2NUM(VIR_KEYCODE_SET_LINUX));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_XT
     rb_define_const(c_domain, "KEYCODE_SET_XT",
                     INT2NUM(VIR_KEYCODE_SET_XT));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_ATSET1
     rb_define_const(c_domain, "KEYCODE_SET_ATSET1",
                     INT2NUM(VIR_KEYCODE_SET_ATSET1));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_ATSET2
     rb_define_const(c_domain, "KEYCODE_SET_ATSET2",
                     INT2NUM(VIR_KEYCODE_SET_ATSET2));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_ATSET3
     rb_define_const(c_domain, "KEYCODE_SET_ATSET3",
                     INT2NUM(VIR_KEYCODE_SET_ATSET3));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_OSX
     rb_define_const(c_domain, "KEYCODE_SET_OSX",
                     INT2NUM(VIR_KEYCODE_SET_OSX));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_XT_KBD
     rb_define_const(c_domain, "KEYCODE_SET_XT_KBD",
                     INT2NUM(VIR_KEYCODE_SET_XT_KBD));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_USB
     rb_define_const(c_domain, "KEYCODE_SET_USB",
                     INT2NUM(VIR_KEYCODE_SET_USB));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_WIN32
     rb_define_const(c_domain, "KEYCODE_SET_WIN32",
                     INT2NUM(VIR_KEYCODE_SET_WIN32));
-#endif
-#if HAVE_CONST_VIR_KEYCODE_SET_RFB
     rb_define_const(c_domain, "KEYCODE_SET_RFB", INT2NUM(VIR_KEYCODE_SET_RFB));
-#endif
+
 #if HAVE_VIRDOMAINGETJOBSTATS
     rb_define_method(c_domain, "job_stats", libvirt_domain_job_stats, -1);
 #endif
@@ -5623,18 +5434,14 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "block_job_speed=",
                      libvirt_domain_block_job_speed_equal, 1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES
     rb_define_const(c_domain, "BLOCK_JOB_SPEED_BANDWIDTH_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_SPEED_BANDWIDTH_BYTES));
-#endif
 #if HAVE_VIRDOMAINGETBLOCKJOBINFO
     rb_define_method(c_domain, "block_job_info", libvirt_domain_block_job_info,
                      -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES
     rb_define_const(c_domain, "BLOCK_JOB_INFO_BANDWIDTH_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_INFO_BANDWIDTH_BYTES));
-#endif
 
 #if HAVE_VIRDOMAINBLOCKJOBABORT
     rb_define_method(c_domain, "block_job_abort",
@@ -5664,30 +5471,18 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "qemu_agent_command",
                      libvirt_domain_qemu_agent_command, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK
     rb_define_const(c_domain, "QEMU_AGENT_COMMAND_BLOCK",
                     INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT
     rb_define_const(c_domain, "QEMU_AGENT_COMMAND_DEFAULT",
                     INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_DEFAULT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT
     rb_define_const(c_domain, "QEMU_AGENT_COMMAND_NOWAIT",
                     INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN
     rb_define_const(c_domain, "QEMU_AGENT_COMMAND_SHUTDOWN",
                     INT2NUM(VIR_DOMAIN_QEMU_AGENT_COMMAND_SHUTDOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT
     rb_define_const(c_domain, "QEMU_MONITOR_COMMAND_DEFAULT",
                     INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_DEFAULT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP
     rb_define_const(c_domain, "QEMU_MONITOR_COMMAND_HMP",
                     INT2NUM(VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP));
-#endif
 #if HAVE_VIRDOMAINLXCENTERNAMESPACE
     rb_define_method(c_domain, "lxc_enter_namespace",
                      libvirt_domain_lxc_enter_namespace, -1);
@@ -5697,89 +5492,49 @@ void ruby_libvirt_domain_init(void)
     rb_define_method(c_domain, "migrate_to_uri3",
                      libvirt_domain_migrate_to_uri3, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_SHALLOW
     rb_define_const(c_domain, "BLOCK_COMMIT_SHALLOW",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_SHALLOW));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_DELETE
     rb_define_const(c_domain, "BLOCK_COMMIT_DELETE",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_DELETE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_ACTIVE
     rb_define_const(c_domain, "BLOCK_COMMIT_ACTIVE",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_ACTIVE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_RELATIVE
     rb_define_const(c_domain, "BLOCK_COMMIT_RELATIVE",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_RELATIVE));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_COMMIT_BANDWIDTH_BYTES
     rb_define_const(c_domain, "BLOCK_COMMIT_BANDWIDTH_BYTES",
                     INT2NUM(VIR_DOMAIN_BLOCK_COMMIT_BANDWIDTH_BYTES));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_UNKNOWN",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_UNKNOWN));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_PULL
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_PULL",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_PULL));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_COPY
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_COPY",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_COPY));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_COMMIT
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_COMMIT",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_COMMIT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_TYPE_ACTIVE_COMMIT
     rb_define_const(c_domain, "BLOCK_JOB_TYPE_ACTIVE_COMMIT",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_TYPE_ACTIVE_COMMIT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC
     rb_define_const(c_domain, "BLOCK_JOB_ABORT_ASYNC",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_ABORT_ASYNC));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT
     rb_define_const(c_domain, "BLOCK_JOB_ABORT_PIVOT",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_ABORT_PIVOT));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_COMPLETED
     rb_define_const(c_domain, "BLOCK_JOB_COMPLETED",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_COMPLETED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_FAILED
     rb_define_const(c_domain, "BLOCK_JOB_FAILED",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_FAILED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_CANCELED
     rb_define_const(c_domain, "BLOCK_JOB_CANCELED",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_CANCELED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_BLOCK_JOB_READY
     rb_define_const(c_domain, "BLOCK_JOB_READY",
                     INT2NUM(VIR_DOMAIN_BLOCK_JOB_READY));
-#endif
 #if HAVE_VIRDOMAINGETCPUSTATS
     rb_define_method(c_domain, "cpu_stats", libvirt_domain_cpu_stats, -1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_RAW
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_RAW",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_RAW));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_ZLIB
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_ZLIB",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_ZLIB));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_LZO
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_LZO",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_LZO));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY
     rb_define_const(c_domain, "CORE_DUMP_FORMAT_KDUMP_SNAPPY",
                     INT2NUM(VIR_DOMAIN_CORE_DUMP_FORMAT_KDUMP_SNAPPY));
-#endif
 #if HAVE_VIRDOMAINGETTIME
     rb_define_method(c_domain, "time", libvirt_domain_get_time, -1);
 #endif
@@ -5805,11 +5560,7 @@ void ruby_libvirt_domain_init(void)
 #if HAVE_VIRDOMAINSETUSERPASSWORD
     rb_define_method(c_domain, "user_password=", libvirt_domain_user_password_equal, 1);
 #endif
-#if HAVE_CONST_VIR_DOMAIN_PASSWORD_ENCRYPTED
     rb_define_const(c_domain, "PASSWORD_ENCRYPTED",
                     INT2NUM(VIR_DOMAIN_PASSWORD_ENCRYPTED));
-#endif
-#if HAVE_CONST_VIR_DOMAIN_TIME_SYNC
     rb_define_const(c_domain, "TIME_SYNC", INT2NUM(VIR_DOMAIN_TIME_SYNC));
-#endif
 }
