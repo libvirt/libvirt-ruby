@@ -6,42 +6,16 @@ RbConfig::MAKEFILE_CONFIG['EXTDLDFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
 
 extension_name = '_libvirt'
 
-# this is a poor-man's dir_config, but is a bit more flexible.  In particular,
-# it allows you to specify the exact location of the libvirt.so, as opposed
-# to requiring a lib/ subdirectory.  Note that due to the way include files
-# are done within ruby-libvirt, the libvirt header file(s) must be in a libvirt/
-# subdirectory.  Also note that if specifying the include directory, the
-# location of the library must also be specified.  Finally, note that if neither
-# the include nor the library are specified, the build will attempt to use
-# pkg-config to discover this information.
-#
-# Taking all of the above rules into account, the valid options are either:
-#   $ ruby extconf.rb --with-libvirt-include=/home/clalance/libvirt/include \
-#          --with-libvirt-lib=/home/clalance/libvirt/src/.libs
-#
-# To specify the location of the include files and the library, or:
-#   $ ruby extconf.rb
-#
-# to attempt to use pkg-config to do it automatically from the system files.
-include = with_config("libvirt-include")
-lib = with_config("libvirt-lib")
-if include and lib
-  print "Looking for libvirt in " + include + " and " + lib + "\n"
-  $LIBPATH = [lib] | $LIBPATH
-  $CPPFLAGS += " -I" + include
-elsif (include and not lib) or (not include and lib)
-  raise "Must specify both --with-libvirt-include and --with-libvirt-lib, or neither"
-else
-  print "Looking for libvirt using pkg-config\n"
-  unless pkg_config("libvirt")
-    raise "libvirt library not found in default locations"
-  end
+unless pkg_config("libvirt")
+  raise "libvirt library not found in default locations"
 end
 
-# Quick sanity check: if we can't find the virConnectOpen() function,
-# there's no way anything will work and we might as well give up now
-unless have_library("virt", "virConnectOpen", "libvirt/libvirt.h")
-  raise "No working libvirt installation found"
+unless pkg_config("libvirt-qemu")
+  raise "libvirt library not found in default locations"
+end
+
+unless pkg_config("libvirt-lxc")
+  raise "libvirt library not found in default locations"
 end
 
 libvirt_types = [ 'virNetworkPtr',
@@ -457,16 +431,11 @@ libvirt_types.each { |t| have_type(t, "libvirt/libvirt.h") }
 libvirt_funcs.each { |f| have_func(f, "libvirt/libvirt.h") }
 libvirt_consts.each { |c| have_const(c, ["libvirt/libvirt.h"]) }
 virterror_consts.each { |c| have_const(c, ["libvirt/virterror.h"]) }
-if find_header("libvirt/libvirt-qemu.h")
-  have_library("virt-qemu", "virDomainQemuMonitorCommand", "libvirt/libvirt-qemu.h")
-  libvirt_qemu_funcs.each { |f| have_func(f, "libvirt/libvirt-qemu.h") }
-  libvirt_qemu_consts.each { |c| have_const(c, ["libvirt/libvirt-qemu.h"]) }
-end
 
-if find_header("libvirt/libvirt-lxc.h")
-  have_library("virt-lxc", "virDomainLxcOpenNamespace", "libvirt/libvirt-lxc.h")
-  libvirt_lxc_funcs.each{ |f| have_func(f, "libvirt/libvirt-lxc.h") }
-end
+libvirt_qemu_funcs.each { |f| have_func(f, "libvirt/libvirt-qemu.h") }
+libvirt_qemu_consts.each { |c| have_const(c, ["libvirt/libvirt-qemu.h"]) }
+
+libvirt_lxc_funcs.each{ |f| have_func(f, "libvirt/libvirt-lxc.h") }
 
 create_header
 create_makefile(extension_name)
