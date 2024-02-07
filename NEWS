@@ -1,3 +1,9 @@
+2024-02-08 0.8.1
+  * Add missing virDomainUndefineFlagsValues constants
+  * Require libvirt 2.0.0
+  * Always use pkg-config for detecting libvirt
+  * Drop most compile-time feature checks
+
 2021-11-15 0.8.0
   * Fix default values for node_cpu_stats and node_memory_stats
   * Fix cpumap allocation for virDomainGetVcpus
