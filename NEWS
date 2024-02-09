@@ -1,3 +1,7 @@
+2024-02-09 0.8.1
+  * Fix StoragePool#list_all_volumes
+  * Fix regression in Domain#attach_device and Domain#detach_device
+
 2024-02-08 0.8.1
   * Add missing virDomainUndefineFlagsValues constants
   * Require libvirt 2.0.0
