@@ -442,8 +442,8 @@ static VALUE libvirt_storage_pool_list_all_volumes(int argc, VALUE *argv,
 {
     ruby_libvirt_generate_call_list_all(virStorageVolPtr, argc, argv,
                                         virStoragePoolListAllVolumes,
-                                        pool_get(p), p, vol_new,
-                                        virStorageVolFree);
+                                        pool_get(p), ruby_libvirt_conn_attr(p),
+                                        vol_new, virStorageVolFree);
 }
 
 /*
