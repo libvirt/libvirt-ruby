@@ -1243,7 +1243,7 @@ static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
 
     /* NOTE: can't use virDomainAttachDevice() when flags==0 here
      *       because that function only works on active domains and
-     *       VIR_DOMAIN_AFFECT_CONFIG==0.
+     *       VIR_DOMAIN_AFFECT_CURRENT==0.
      *
      * See https://gitlab.com/libvirt/libvirt-ruby/-/issues/11 */
     ruby_libvirt_generate_call_nil(virDomainAttachDeviceFlags,
@@ -1268,7 +1268,7 @@ static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
 
     /* NOTE: can't use virDomainDetachDevice() when flags==0 here
      *       because that function only works on active domains and
-     *       VIR_DOMAIN_AFFECT_CONFIG==0.
+     *       VIR_DOMAIN_AFFECT_CURRENT==0.
      *
      * See https://gitlab.com/libvirt/libvirt-ruby/-/issues/11 */
     ruby_libvirt_generate_call_nil(virDomainDetachDeviceFlags,
