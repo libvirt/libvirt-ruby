@@ -1232,7 +1232,7 @@ static VALUE libvirt_domain_autostart_equal(VALUE d, VALUE autostart)
  * call-seq:
  *   dom.attach_device(device_xml, flags=0) -> nil
  *
- * Call virDomainAttachDevice[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainAttachDevice]
+ * Call virDomainAttachDeviceFlags[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainAttachDeviceFlags]
  * to attach the device described by the device_xml to the domain.
  */
 static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
@@ -1241,25 +1241,23 @@ static VALUE libvirt_domain_attach_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        ruby_libvirt_generate_call_nil(virDomainAttachDeviceFlags,
-                                       ruby_libvirt_connect_get(d),
-                                       ruby_libvirt_domain_get(d),
-                                       StringValueCStr(xml),
-                                       ruby_libvirt_value_to_uint(flags));
-    } else {
-        ruby_libvirt_generate_call_nil(virDomainAttachDevice,
-                                       ruby_libvirt_connect_get(d),
-                                       ruby_libvirt_domain_get(d),
-                                       StringValueCStr(xml));
-    }
+    /* NOTE: can't use virDomainAttachDevice() when flags==0 here
+     *       because that function only works on active domains and
+     *       VIR_DOMAIN_AFFECT_CONFIG==0.
+     *
+     * See https://gitlab.com/libvirt/libvirt-ruby/-/issues/11 */
+    ruby_libvirt_generate_call_nil(virDomainAttachDeviceFlags,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(xml),
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
  * call-seq:
  *   dom.detach_device(device_xml, flags=0) -> nil
  *
- * Call virDomainDetachDevice[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainDetachDevice]
+ * Call virDomainDetachDeviceFlags[https://libvirt.org/html/libvirt-libvirt-domain.html#virDomainDetachDeviceFlags]
  * to detach the device described by the device_xml from the domain.
  */
 static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
@@ -1268,18 +1266,16 @@ static VALUE libvirt_domain_detach_device(int argc, VALUE *argv, VALUE d)
 
     rb_scan_args(argc, argv, "11", &xml, &flags);
 
-    if (ruby_libvirt_value_to_uint(flags) != 0) {
-        ruby_libvirt_generate_call_nil(virDomainDetachDeviceFlags,
-                                       ruby_libvirt_connect_get(d),
-                                       ruby_libvirt_domain_get(d),
-                                       StringValueCStr(xml),
-                                       ruby_libvirt_value_to_uint(flags));
-    } else {
-        ruby_libvirt_generate_call_nil(virDomainDetachDevice,
-                                       ruby_libvirt_connect_get(d),
-                                       ruby_libvirt_domain_get(d),
-                                       StringValueCStr(xml));
-    }
+    /* NOTE: can't use virDomainDetachDevice() when flags==0 here
+     *       because that function only works on active domains and
+     *       VIR_DOMAIN_AFFECT_CONFIG==0.
+     *
+     * See https://gitlab.com/libvirt/libvirt-ruby/-/issues/11 */
+    ruby_libvirt_generate_call_nil(virDomainDetachDeviceFlags,
+                                   ruby_libvirt_connect_get(d),
+                                   ruby_libvirt_domain_get(d),
+                                   StringValueCStr(xml),
+                                   ruby_libvirt_value_to_uint(flags));
 }
 
 /*
