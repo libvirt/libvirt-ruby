@@ -2,7 +2,7 @@ $FAIL = 0
 $SUCCESS = 0
 $SKIPPED = 0
 
-DEFAULT_URI = "qemu:///system"
+DEFAULT_URI = "test:///default"
 URI = ENV['RUBY_LIBVIRT_TEST_URI'] || DEFAULT_URI
 
 $GUEST_BASE = '/var/lib/libvirt/images/rb-libvirt-test'
