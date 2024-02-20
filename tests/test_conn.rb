@@ -205,7 +205,7 @@ expect_too_many_args(conn, "list_domains", 1)
 expect_success(conn, "no args", "list_domains")
 
 newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
+test_sleep 1
 
 expect_success(conn, "no args", "list_domains")
 
@@ -227,7 +227,7 @@ expect_invalid_arg_type(conn, "create_domain_linux", 1)
 expect_invalid_arg_type(conn, "create_domain_linux", $new_dom_xml, "foo")
 expect_fail(conn, Libvirt::Error, "invalid xml", "create_domain_linux", "hello")
 newdom = expect_success(conn, "domain xml", "create_domain_linux", $new_dom_xml) {|x| x.class == Libvirt::Domain}
-sleep 1
+test_sleep 1
 
 expect_fail(conn, Libvirt::Error, "already existing domain", "create_domain_linux", $new_dom_xml)
 
@@ -241,7 +241,7 @@ expect_invalid_arg_type(conn, "create_domain_xml", 1)
 expect_invalid_arg_type(conn, "create_domain_xml", $new_dom_xml, "foo")
 expect_fail(conn, Libvirt::Error, "invalid xml", "create_domain_xml", "hello")
 newdom = expect_success(conn, "domain xml", "create_domain_xml", $new_dom_xml) {|x| x.class == Libvirt::Domain}
-sleep 1
+test_sleep 1
 
 expect_fail(conn, Libvirt::Error, "already existing domain", "create_domain_xml", $new_dom_xml)
 
@@ -249,7 +249,7 @@ newdom.destroy
 
 # TESTGROUP: conn.lookup_domain_by_name
 newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
+test_sleep 1
 
 expect_too_many_args(conn, "lookup_domain_by_name", 1, 2)
 expect_too_few_args(conn, "lookup_domain_by_name")
@@ -265,7 +265,7 @@ newdom.undefine
 
 # TESTGROUP: conn.lookup_domain_by_id
 newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
+test_sleep 1
 
 expect_too_many_args(conn, "lookup_domain_by_id", 1, 2)
 expect_too_few_args(conn, "lookup_domain_by_id")
@@ -277,7 +277,7 @@ newdom.destroy
 
 # TESTGROUP: conn.lookup_domain_by_uuid
 newdom = conn.create_domain_xml($new_dom_xml)
-sleep 1
+test_sleep 1
 
 expect_too_many_args(conn, "lookup_domain_by_uuid", 1, 2)
 expect_too_few_args(conn, "lookup_domain_by_uuid")
@@ -675,7 +675,7 @@ expect_success(conn, "node memory status", "node_memory_stats")
 # TESTGROUP: conn.save_image_xml_desc
 newdom = conn.define_domain_xml($new_dom_xml)
 newdom.create
-sleep 1
+test_sleep 1
 newdom.save($GUEST_SAVE)
 
 expect_too_many_args(conn, "save_image_xml_desc", 1, 2, 3)

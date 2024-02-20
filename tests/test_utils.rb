@@ -132,6 +132,16 @@ def set_test_object(obj)
   $test_object = obj
 end
 
+def test_default_uri?()
+  return URI == DEFAULT_URI
+end
+
+def test_sleep(s)
+  if !test_default_uri?
+    sleep s
+  end
+end
+
 def expect_success(object, msg, func, *args)
   begin
     x = object.__send__(func, *args)

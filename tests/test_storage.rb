@@ -320,7 +320,7 @@ newpool.undefine
 
 # TESTGROUP: pool.persistent?
 newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
-sleep 1
+test_sleep 1
 
 expect_too_many_args(newpool, "persistent?", 1)
 
@@ -336,7 +336,7 @@ newpool.undefine
 
 # TESTGROUP:
 newpool = conn.create_storage_pool_xml($new_storage_pool_xml)
-sleep 1
+test_sleep 1
 
 expect_too_many_args(newpool, "list_all_volumes", 1, 2)
 expect_invalid_arg_type(newpool, "list_all_volumes", 'foo')
