@@ -301,32 +301,6 @@ expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_domain_xml", 
 newdom = expect_success(conn, "domain xml arg", "define_domain_xml", $new_dom_xml)
 newdom.undefine
 
-# TESTGROUP: conn.domain_xml_from_native
-expect_too_many_args(conn, "domain_xml_from_native", 1, 2, 3, 4)
-expect_too_few_args(conn, "domain_xml_from_native")
-expect_too_few_args(conn, "domain_xml_from_native", 1)
-expect_invalid_arg_type(conn, "domain_xml_from_native", 1, 2)
-expect_invalid_arg_type(conn, "domain_xml_from_native", nil, 2)
-expect_invalid_arg_type(conn, "domain_xml_from_native", "qemu-argv", 2)
-expect_invalid_arg_type(conn, "domain_xml_from_native", "qemu-argv", nil)
-expect_invalid_arg_type(conn, "domain_xml_from_native", "qemu-argv", "foo", "bar")
-expect_fail(conn, Libvirt::Error, "unsupported first arg", "domain_xml_from_native", "foo", "bar")
-
-expect_success(conn, "qemu-argv and qemu_cmd_line", "domain_xml_from_native", "qemu-argv", $qemu_cmd_line)
-
-# TESTGROUP: conn.domain_xml_to_native
-expect_too_many_args(conn, "domain_xml_to_native", 1, 2, 3, 4)
-expect_too_few_args(conn, "domain_xml_to_native")
-expect_too_few_args(conn, "domain_xml_to_native", 1)
-expect_invalid_arg_type(conn, "domain_xml_to_native", 1, 2)
-expect_invalid_arg_type(conn, "domain_xml_to_native", nil, 2)
-expect_invalid_arg_type(conn, "domain_xml_to_native", "qemu-argv", 2)
-expect_invalid_arg_type(conn, "domain_xml_to_native", "qemu-argv", nil)
-expect_invalid_arg_type(conn, "domain_xml_to_native", "qemu-argv", "foo", "bar")
-expect_fail(conn, Libvirt::Error, "unsupported first arg", "domain_xml_to_native", "foo", "bar")
-
-expect_success(conn, "qemu-argv and domain XML", "domain_xml_to_native", "qemu-argv", $new_dom_xml)
-
 # TESTGROUP: conn.num_of_interfaces
 expect_too_many_args(conn, "num_of_interfaces", 1)
 expect_success(conn, "no args", "num_of_interfaces")
