@@ -46,13 +46,7 @@ task :default => :build
 #
 file MAKEFILE => EXT_CONF do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
-        extra = ""
-        args = ARGV.grep(/^--with-libvirt-include=/)
-        extra += args[0].chomp unless args.empty?
-        args = ARGV.grep(/^--with-libvirt-lib=/)
-        extra += " " + args[0].chomp unless args.empty?
-
-        unless sh "ruby #{File::basename(EXT_CONF)} #{extra}"
+        unless sh "ruby #{File::basename(EXT_CONF)}"
             $stderr.puts "Failed to run extconf"
             break
         end
