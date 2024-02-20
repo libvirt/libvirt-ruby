@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("secret")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 # TESTGROUP: secret.uuid
 newsecret = conn.define_secret_xml($new_secret_xml)

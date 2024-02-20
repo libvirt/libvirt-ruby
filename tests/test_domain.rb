@@ -13,7 +13,7 @@ require 'test_utils.rb'
 
 set_test_object("domain")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 cleanup_test_domain(conn)
 
@@ -175,7 +175,7 @@ newdom.destroy
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-dconn = Libvirt::open("qemu:///system")
+dconn = Libvirt::open(URI)
 
 expect_too_many_args(newdom, "migrate", 1, 2, 3, 4, 5, 6)
 expect_too_few_args(newdom, "migrate")
@@ -199,9 +199,9 @@ sleep 1
 expect_too_many_args(newdom, "migrate_to_uri", 1, 2, 3, 4, 5)
 expect_too_few_args(newdom, "migrate_to_uri")
 expect_invalid_arg_type(newdom, "migrate_to_uri", 1)
-expect_invalid_arg_type(newdom, "migrate_to_uri", "qemu:///system", 'foo')
-expect_invalid_arg_type(newdom, "migrate_to_uri", "qemu:///system", 0, 1)
-expect_invalid_arg_type(newdom, "migrate_to_uri", "qemu:///system", 0, 'foo', 'bar')
+expect_invalid_arg_type(newdom, "migrate_to_uri", URI, 'foo')
+expect_invalid_arg_type(newdom, "migrate_to_uri", URI, 0, 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri", URI, 0, 'foo', 'bar')
 
 #expect_success(newdom, "URI arg", "migrate_to_uri", "qemu://remote/system")
 
@@ -233,7 +233,7 @@ newdom.destroy
 newdom = conn.create_domain_xml($new_dom_xml)
 sleep 1
 
-dconn = Libvirt::open("qemu:///system")
+dconn = Libvirt::open(URI)
 
 expect_too_many_args(newdom, "migrate2", 1, 2, 3, 4, 5, 6, 7)
 expect_too_few_args(newdom, "migrate2")
@@ -253,11 +253,11 @@ sleep 1
 
 expect_too_many_args(newdom, "migrate_to_uri2", 1, 2, 3, 4, 5, 6, 7)
 expect_invalid_arg_type(newdom, "migrate_to_uri2", 1)
-expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 1)
-expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 1)
-expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 'bar', 'baz')
-expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 'bar', 0, 1)
-expect_invalid_arg_type(newdom, "migrate_to_uri2", "qemu:///system", 'foo', 'bar', 0, 'foo', 'baz')
+expect_invalid_arg_type(newdom, "migrate_to_uri2", URI, 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", URI, 'foo', 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", URI, 'foo', 'bar', 'baz')
+expect_invalid_arg_type(newdom, "migrate_to_uri2", URI, 'foo', 'bar', 0, 1)
+expect_invalid_arg_type(newdom, "migrate_to_uri2", URI, 'foo', 'bar', 0, 'foo', 'baz')
 
 #expect_success(newdom, "URI arg", "migrate_to_uri2", "qemu://remote/system")
 

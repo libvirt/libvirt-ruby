@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("nwfilter")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 # TESTGROUP: nwfilter.undefine
 newnw = conn.define_nwfilter_xml($new_nwfilter_xml)

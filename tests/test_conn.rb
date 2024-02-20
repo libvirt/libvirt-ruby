@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("connect")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 cleanup_test_domain(conn)
 cleanup_test_network(conn)
@@ -31,12 +31,12 @@ cpu_xml = <<EOF
 EOF
 
 # TESTGROUP: conn.close
-conn2 = Libvirt::open("qemu:///system")
+conn2 = Libvirt::open(URI)
 expect_too_many_args(conn2, "close", 1)
 expect_success(conn2, "no args", "close")
 
 # TESTGROUP: conn.closed?
-conn2 = Libvirt::open("qemu:///system")
+conn2 = Libvirt::open(URI)
 
 expect_too_many_args(conn2, "closed?", 1)
 expect_success(conn2, "no args", "closed?") {|x| x == false }
@@ -66,7 +66,7 @@ expect_success(conn, "no args", "hostname")
 # TESTGROUP: conn.uri
 expect_too_many_args(conn, "uri", 1)
 
-expect_success(conn, "no args", "uri") {|x| x == "qemu:///system" }
+expect_success(conn, "no args", "uri") {|x| x == URI }
 
 # TESTGROUP: conn.max_vcpus
 expect_too_many_args(conn, "max_vcpus", 'kvm', 1)

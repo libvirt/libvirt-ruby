@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("network")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 cleanup_test_network(conn)
 

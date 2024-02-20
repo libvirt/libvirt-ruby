@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("interface")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 # test setup
 begin

@@ -9,7 +9,7 @@ require 'test_utils.rb'
 
 set_test_object("storage_pool")
 
-conn = Libvirt::open("qemu:///system")
+conn = Libvirt::open(URI)
 
 begin
   oldpool = conn.lookup_storage_pool_by_name("rb-libvirt-test")
