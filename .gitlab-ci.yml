@@ -22,6 +22,7 @@ stages:
     - ninja -C build install
     - popd
     - rake build
+    - rake test
     - if test "$DIST" != "skip" ; then rake package; fi
 
 .native_git_build_job_prebuilt_env:
@@ -38,6 +39,7 @@ stages:
   script:
     - export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN)"
     - rake build
+    - rake test
     - if test "$DIST" != "skip" ; then rake package; fi
 
 .native_build_job_prebuilt_env:
