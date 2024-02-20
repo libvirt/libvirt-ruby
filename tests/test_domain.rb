@@ -18,8 +18,10 @@ conn = Libvirt::open(URI)
 cleanup_test_domain(conn)
 
 # setup for later tests
-`qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
-`qemu-img create -f raw #{$GUEST_RAW_DISK} 5G`
+if !test_default_uri?
+  `qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
+  `qemu-img create -f raw #{$GUEST_RAW_DISK} 5G`
+end
 
 
 new_hostdev_xml = <<EOF
@@ -33,17 +35,19 @@ EOF
 # start tests
 
 # TESTGROUP: dom.migrate_max_speed
-newdom = conn.create_domain_xml($new_dom_xml)
-test_sleep 1
+if !test_default_uri?
+  newdom = conn.create_domain_xml($new_dom_xml)
+  test_sleep 1
 
-expect_too_many_args(newdom, "migrate_max_speed", 1, 2)
-expect_invalid_arg_type(newdom, "migrate_max_speed", 'foo')
-expect_invalid_arg_type(newdom, "migrate_max_speed", [])
-expect_invalid_arg_type(newdom, "migrate_max_speed", {})
+  expect_too_many_args(newdom, "migrate_max_speed", 1, 2)
+  expect_invalid_arg_type(newdom, "migrate_max_speed", 'foo')
+  expect_invalid_arg_type(newdom, "migrate_max_speed", [])
+  expect_invalid_arg_type(newdom, "migrate_max_speed", {})
 
-expect_success(newdom, "no args", "migrate_max_speed")
+  expect_success(newdom, "no args", "migrate_max_speed")
 
-newdom.destroy
+  newdom.destroy
+end
 
 # TESTGROUP: dom.reset
 newdom = conn.create_domain_xml($new_dom_xml)
@@ -279,13 +283,15 @@ expect_invalid_arg_type(newdom, "migrate_set_max_speed", 5, 'foo')
 newdom.destroy
 
 # TESTGROUP: dom.shutdown
-newdom = conn.create_domain_xml($new_dom_xml)
-test_sleep 1
+if !test_default_uri?
+  newdom = conn.create_domain_xml($new_dom_xml)
+  test_sleep 1
 
-expect_too_many_args(newdom, "shutdown", 1, 2)
-expect_success(newdom, "no args", "shutdown")
-sleep 1
-newdom.destroy
+  expect_too_many_args(newdom, "shutdown", 1, 2)
+  expect_success(newdom, "no args", "shutdown")
+  sleep 1
+  newdom.destroy
+end
 
 # TESTGROUP: dom.reboot
 newdom = conn.create_domain_xml($new_dom_xml)
@@ -328,28 +334,32 @@ expect_success(newdom, "no args suspended domain", "resume")
 newdom.destroy
 
 # TESTGROUP: dom.save
-newdom = conn.create_domain_xml($new_dom_xml)
-test_sleep 1
+if !test_default_uri?
+  newdom = conn.create_domain_xml($new_dom_xml)
+  test_sleep 1
 
-expect_too_many_args(newdom, "save", 1, 2, 3, 4)
-expect_too_few_args(newdom, "save")
-expect_invalid_arg_type(newdom, "save", 1)
-expect_invalid_arg_type(newdom, "save", nil)
-expect_fail(newdom, Libvirt::Error, "non-existent path", "save", "/this/path/does/not/exist")
+  expect_too_many_args(newdom, "save", 1, 2, 3, 4)
+  expect_too_few_args(newdom, "save")
+  expect_invalid_arg_type(newdom, "save", 1)
+  expect_invalid_arg_type(newdom, "save", nil)
+  expect_fail(newdom, Libvirt::Error, "non-existent path", "save", "/this/path/does/not/exist")
 
-expect_success(newdom, "path arg", "save", $GUEST_SAVE)
+  expect_success(newdom, "path arg", "save", $GUEST_SAVE)
 
-`rm -f #{$GUEST_SAVE}`
+  `rm -f #{$GUEST_SAVE}`
+end
 
 # TESTGROUP: dom.managed_save
-newdom = conn.define_domain_xml($new_dom_xml)
-newdom.create
-test_sleep 1
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  newdom.create
+  test_sleep 1
 
-expect_too_many_args(newdom, "managed_save", 1, 2)
-expect_invalid_arg_type(newdom, "managed_save", "hello")
-expect_success(newdom, "no args", "managed_save")
-newdom.undefine(Libvirt::Domain::UNDEFINE_MANAGED_SAVE)
+  expect_too_many_args(newdom, "managed_save", 1, 2)
+  expect_invalid_arg_type(newdom, "managed_save", "hello")
+  expect_success(newdom, "no args", "managed_save")
+  newdom.undefine(Libvirt::Domain::UNDEFINE_MANAGED_SAVE)
+end
 
 # TESTGROUP: dom.has_managed_save?
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -397,49 +407,53 @@ end
 newdom.undefine
 
 # TESTGROUP: dom.core_dump
-newdom = conn.define_domain_xml($new_dom_xml)
-newdom.create
-test_sleep 1
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  newdom.create
+  test_sleep 1
 
-expect_too_many_args(newdom, "core_dump", 1, 2, 3)
-expect_too_few_args(newdom, "core_dump")
-expect_invalid_arg_type(newdom, "core_dump", 1, 2)
-expect_invalid_arg_type(newdom, "core_dump", "/path", "foo")
-expect_fail(newdom, Libvirt::Error, "invalid path", "core_dump", "/this/path/does/not/exist")
+  expect_too_many_args(newdom, "core_dump", 1, 2, 3)
+  expect_too_few_args(newdom, "core_dump")
+  expect_invalid_arg_type(newdom, "core_dump", 1, 2)
+  expect_invalid_arg_type(newdom, "core_dump", "/path", "foo")
+  expect_fail(newdom, Libvirt::Error, "invalid path", "core_dump", "/this/path/does/not/exist")
 
-expect_success(newdom, "live with path arg", "core_dump", "/var/lib/libvirt/images/ruby-libvirt-test.core")
+  expect_success(newdom, "live with path arg", "core_dump", "/var/lib/libvirt/images/ruby-libvirt-test.core")
 
-`rm -f /var/lib/libvirt/images/ruby-libvirt-test.core`
+  `rm -f /var/lib/libvirt/images/ruby-libvirt-test.core`
 
-expect_success(newdom, "crash with path arg", "core_dump", "/var/lib/libvirt/images/ruby-libvirt-test.core", Libvirt::Domain::DUMP_CRASH)
+  expect_success(newdom, "crash with path arg", "core_dump", "/var/lib/libvirt/images/ruby-libvirt-test.core", Libvirt::Domain::DUMP_CRASH)
 
-expect_fail(newdom, Libvirt::Error, "of shut-off domain", "core_dump", "/var/lib/libvirt/images/ruby-libvirt-test.core", Libvirt::Domain::DUMP_CRASH)
+  expect_fail(newdom, Libvirt::Error, "of shut-off domain", "core_dump", "/var/lib/libvirt/images/ruby-libvirt-test.core", Libvirt::Domain::DUMP_CRASH)
 
-`rm -f /var/lib/libvirt/images/ruby-libvirt-test.core`
+  `rm -f /var/lib/libvirt/images/ruby-libvirt-test.core`
 
-newdom.undefine
+  newdom.undefine
+end
 
 # TESTGROUP: Libvirt::Domain::restore
-newdom = conn.define_domain_xml($new_dom_xml)
-newdom.create
-test_sleep 1
-newdom.save($GUEST_SAVE)
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  newdom.create
+  test_sleep 1
+  newdom.save($GUEST_SAVE)
 
-expect_too_many_args(Libvirt::Domain, "restore", 1, 2, 3)
-expect_too_few_args(Libvirt::Domain, "restore")
-expect_invalid_arg_type(Libvirt::Domain, "restore", 1, 2)
-expect_invalid_arg_type(Libvirt::Domain, "restore", conn, 2)
-expect_fail(Libvirt::Domain, Libvirt::Error, "invalid path", "restore", conn, "/this/path/does/not/exist")
-`touch /tmp/foo`
-expect_fail(Libvirt::Domain, Libvirt::Error, "invalid save file", "restore", conn, "/tmp/foo")
-`rm -f /tmp/foo`
+  expect_too_many_args(Libvirt::Domain, "restore", 1, 2, 3)
+  expect_too_few_args(Libvirt::Domain, "restore")
+  expect_invalid_arg_type(Libvirt::Domain, "restore", 1, 2)
+  expect_invalid_arg_type(Libvirt::Domain, "restore", conn, 2)
+  expect_fail(Libvirt::Domain, Libvirt::Error, "invalid path", "restore", conn, "/this/path/does/not/exist")
+  `touch /tmp/foo`
+  expect_fail(Libvirt::Domain, Libvirt::Error, "invalid save file", "restore", conn, "/tmp/foo")
+  `rm -f /tmp/foo`
 
-expect_success(Libvirt::Domain, "2 args", "restore", conn, $GUEST_SAVE)
+  expect_success(Libvirt::Domain, "2 args", "restore", conn, $GUEST_SAVE)
 
-`rm -f #{$GUEST_SAVE}`
+  `rm -f #{$GUEST_SAVE}`
 
-newdom.destroy
-newdom.undefine
+  newdom.destroy
+  newdom.undefine
+end
 
 # TESTGROUP: dom.info
 newdom = conn.create_domain_xml($new_dom_xml)
@@ -636,7 +650,11 @@ test_sleep 1
 
 expect_too_many_args(newdom, "os_type", 1)
 
-expect_success(newdom, "no args", "os_type") {|x| x == "hvm"}
+if test_default_uri?
+  expect_success(newdom, "no args", "os_type") {|x| x == "linux"}
+else
+  expect_success(newdom, "no args", "os_type") {|x| x == "hvm"}
+end
 
 newdom.destroy
 
@@ -962,20 +980,22 @@ expect_success(newdom, "no args", "current_snapshot")
 newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 
 # TESTGROUP: dom.job_info
-newdom = conn.define_domain_xml($new_dom_xml)
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
 
-expect_too_many_args(newdom, "job_info", 1)
+  expect_too_many_args(newdom, "job_info", 1)
 
-expect_fail(newdom, Libvirt::RetrieveError, "shutoff domain", "job_info")
+  expect_fail(newdom, Libvirt::RetrieveError, "shutoff domain", "job_info")
 
-newdom.undefine
+  newdom.undefine
 
-newdom = conn.create_domain_xml($new_dom_xml)
-test_sleep 1
+  newdom = conn.create_domain_xml($new_dom_xml)
+  test_sleep 1
 
-expect_success(newdom, "no args", "job_info")
+  expect_success(newdom, "no args", "job_info")
 
-newdom.destroy
+  newdom.destroy
+end
 
 # TESTGROUP: dom.abort_job
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1021,22 +1041,26 @@ expect_too_many_args(newdom, "scheduler_parameters=", 1, 2)
 expect_too_few_args(newdom, "scheduler_parameters=")
 expect_invalid_arg_type(newdom, "scheduler_parameters=", 0)
 
-expect_success(newdom, "cpu shares arg", "scheduler_parameters=", {"cpu_shares" => 512})
+if !test_default_uri?
+  expect_success(newdom, "cpu shares arg", "scheduler_parameters=", {"cpu_shares" => 512})
+end
 
 newdom.undefine
 
 # TESTGROUP: dom.qemu_monitor_command
-newdom = conn.create_domain_xml($new_dom_xml)
+if !test_default_uri?
+  newdom = conn.create_domain_xml($new_dom_xml)
 
-expect_too_many_args(newdom, "qemu_monitor_command", 1, 2, 3)
-expect_too_few_args(newdom, "qemu_monitor_command")
-expect_invalid_arg_type(newdom, "qemu_monitor_command", 1)
-expect_invalid_arg_type(newdom, "qemu_monitor_command", "foo", "bar")
-expect_fail(newdom, Libvirt::RetrieveError, "invalid command", "qemu_monitor_command", "foo")
+  expect_too_many_args(newdom, "qemu_monitor_command", 1, 2, 3)
+  expect_too_few_args(newdom, "qemu_monitor_command")
+  expect_invalid_arg_type(newdom, "qemu_monitor_command", 1)
+  expect_invalid_arg_type(newdom, "qemu_monitor_command", "foo", "bar")
+  expect_fail(newdom, Libvirt::RetrieveError, "invalid command", "qemu_monitor_command", "foo")
 
-expect_success(newdom, "monitor command", "qemu_monitor_command", '{"execute":"query-cpus"}')
+  expect_success(newdom, "monitor command", "qemu_monitor_command", '{"execute":"query-cpus"}')
 
-newdom.destroy
+  newdom.destroy
+end
 
 # TESTGROUP: dom.num_vcpus
 newdom = conn.define_domain_xml($new_dom_xml)
@@ -1276,132 +1300,152 @@ newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
 test_sleep 1
 
 # TESTGROUP: snapshot.delete
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "delete", 1, 2)
-expect_invalid_arg_type(snap, "delete", 'foo')
+  expect_too_many_args(snap, "delete", 1, 2)
+  expect_invalid_arg_type(snap, "delete", 'foo')
 
-expect_success(snap, "no args", "delete")
+  expect_success(snap, "no args", "delete")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.name
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "name", 1)
+  expect_too_many_args(snap, "name", 1)
 
-expect_success(snap, "no args", "name")
+  expect_success(snap, "no args", "name")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.num_children
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "num_children", 1, 2)
+  expect_too_many_args(snap, "num_children", 1, 2)
 
-expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
+  expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.list_children_names
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "list_children_names", 1, 2)
+  expect_too_many_args(snap, "list_children_names", 1, 2)
 
-expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
+  expect_success(snap, "no args, no children", "num_children") {|x| x == 0}
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.free
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "free", 1)
+  expect_too_many_args(snap, "free", 1)
 
-expect_success(snap, "no args", "free")
+  expect_success(snap, "no args", "free")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.has_metadata?
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "has_metadata?", 1, 2)
-expect_invalid_arg_type(snap, "has_metadata?", "foo")
+  expect_too_many_args(snap, "has_metadata?", 1, 2)
+  expect_invalid_arg_type(snap, "has_metadata?", "foo")
 
-expect_success(snap, "no args", "has_metadata?") {|x| x == true}
+  expect_success(snap, "no args", "has_metadata?") {|x| x == true}
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.list_children_names
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot><name>snap</name></domainsnapshot>")
-snap2 = newdom.snapshot_create_xml("<domainsnapshot><name>snap2</name></domainsnapshot>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot><name>snap</name></domainsnapshot>")
+  snap2 = newdom.snapshot_create_xml("<domainsnapshot><name>snap2</name></domainsnapshot>")
 
-expect_too_many_args(snap, "list_children_names", 1, 2)
-expect_invalid_arg_type(snap, "list_children_names", "foo")
-expect_invalid_arg_type(snap, "list_children_names", [])
-expect_invalid_arg_type(snap, "list_children_names", {})
+  expect_too_many_args(snap, "list_children_names", 1, 2)
+  expect_invalid_arg_type(snap, "list_children_names", "foo")
+  expect_invalid_arg_type(snap, "list_children_names", [])
+  expect_invalid_arg_type(snap, "list_children_names", {})
 
-expect_success(snap, "no args", "list_children_names")
+  expect_success(snap, "no args", "list_children_names")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.list_all_children
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "list_all_children", 1, 2)
-expect_invalid_arg_type(snap, "list_all_children", "foo")
-expect_invalid_arg_type(snap, "list_all_children", [])
-expect_invalid_arg_type(snap, "list_all_children", {})
+  expect_too_many_args(snap, "list_all_children", 1, 2)
+  expect_invalid_arg_type(snap, "list_all_children", "foo")
+  expect_invalid_arg_type(snap, "list_all_children", [])
+  expect_invalid_arg_type(snap, "list_all_children", {})
 
-expect_success(snap, "no args", "list_all_children")
+  expect_success(snap, "no args", "list_all_children")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.parent
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
-test_sleep 1
-snap2 = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+  test_sleep 1
+  snap2 = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap2, "parent", 1, 2)
-expect_invalid_arg_type(snap2, "parent", "foo")
-expect_invalid_arg_type(snap2, "parent", [])
-expect_invalid_arg_type(snap2, "parent", {})
+  expect_too_many_args(snap2, "parent", 1, 2)
+  expect_invalid_arg_type(snap2, "parent", "foo")
+  expect_invalid_arg_type(snap2, "parent", [])
+  expect_invalid_arg_type(snap2, "parent", {})
 
-expect_success(snap2, "no args", "parent")
-expect_success(snap, "no args", "parent")
+  expect_success(snap2, "no args", "parent")
+  expect_success(snap, "no args", "parent")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # TESTGROUP: snapshot.current?
-newdom = conn.define_domain_xml($new_dom_xml)
-snap = newdom.snapshot_create_xml("<domainsnapshot/>")
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  snap = newdom.snapshot_create_xml("<domainsnapshot/>")
 
-expect_too_many_args(snap, "current?", 1, 2)
-expect_invalid_arg_type(snap, "current?", "foo")
-expect_invalid_arg_type(snap, "current?", [])
-expect_invalid_arg_type(snap, "current?", {})
+  expect_too_many_args(snap, "current?", 1, 2)
+  expect_invalid_arg_type(snap, "current?", "foo")
+  expect_invalid_arg_type(snap, "current?", [])
+  expect_invalid_arg_type(snap, "current?", {})
 
-expect_success(snap, "no args", "current?")
+  expect_success(snap, "no args", "current?")
 
-newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
-test_sleep 1
+  newdom.undefine(Libvirt::Domain::UNDEFINE_SNAPSHOTS_METADATA)
+  test_sleep 1
+end
 
 # END TESTS
 

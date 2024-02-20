@@ -254,8 +254,10 @@ def cleanup_test_domain(conn)
     # in case we didn't undefine it, don't do anything
   end
 
-  `rm -f #{$GUEST_DISK}`
-  `rm -f #{$GUEST_SAVE}`
+  if URI != DEFAULT_URI
+    `rm -f #{$GUEST_DISK}`
+    `rm -f #{$GUEST_SAVE}`
+  end
 end
 
 def cleanup_test_network(conn)

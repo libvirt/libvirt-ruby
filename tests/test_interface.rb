@@ -12,10 +12,12 @@ set_test_object("interface")
 conn = Libvirt::open(URI)
 
 # test setup
-begin
-  `rm -f /etc/sysconfig/network-scripts/ifcfg-rb-libvirt-test`
-  `brctl delbr rb-libvirt-test >& /dev/null`
-rescue
+if !test_default_uri?
+  begin
+    `rm -f /etc/sysconfig/network-scripts/ifcfg-rb-libvirt-test`
+    `brctl delbr rb-libvirt-test >& /dev/null`
+  rescue
+  end
 end
 
 # TESTGROUP: iface.undefine

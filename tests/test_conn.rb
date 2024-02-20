@@ -15,13 +15,15 @@ cleanup_test_domain(conn)
 cleanup_test_network(conn)
 
 # test setup
-begin
-  `rm -f /etc/sysconfig/network-scripts/ifcfg-rb-libvirt-test`
-  `brctl delbr rb-libvirt-test >& /dev/null`
-rescue
+if !test_default_uri?
+  begin
+    `rm -f /etc/sysconfig/network-scripts/ifcfg-rb-libvirt-test`
+    `brctl delbr rb-libvirt-test >& /dev/null`
+  rescue
+  end
+  `qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
+  `rm -rf #{$POOL_PATH}; mkdir #{$POOL_PATH} ; echo $?`
 end
-`qemu-img create -f qcow2 #{$GUEST_DISK} 5G`
-`rm -rf #{$POOL_PATH}; mkdir #{$POOL_PATH} ; echo $?`
 
 cpu_xml = <<EOF
 <cpu>
@@ -46,7 +48,11 @@ expect_success(conn2, "no args", "closed?") {|x| x == true }
 # TESTGROUP: conn.type
 expect_too_many_args(conn, "type", 1)
 
-expect_success(conn, "no args", "type") {|x| x == "QEMU"}
+if test_default_uri?
+  expect_success(conn, "no args", "type") {|x| x == "TEST"}
+else
+  expect_success(conn, "no args", "type") {|x| x == "QEMU"}
+end
 
 # TESTGROUP: conn.version
 expect_too_many_args(conn, "version", 1)
@@ -70,7 +76,10 @@ expect_success(conn, "no args", "uri") {|x| x == URI }
 
 # TESTGROUP: conn.max_vcpus
 expect_too_many_args(conn, "max_vcpus", 'kvm', 1)
-expect_fail(conn, Libvirt::RetrieveError, "invalid arg", "max_vcpus", "foo")
+
+if !test_default_uri?
+  expect_fail(conn, Libvirt::RetrieveError, "invalid arg", "max_vcpus", "foo")
+end
 
 expect_success(conn, "no args", "max_vcpus")
 expect_success(conn, "nil arg", "max_vcpus")
@@ -113,12 +122,14 @@ expect_too_many_args(conn, "capabilities", 1)
 expect_success(conn, "no args", "capabilities")
 
 # TESTGROUP: conn.compare_cpu
-expect_too_many_args(conn, "compare_cpu", 1, 2, 3)
-expect_too_few_args(conn, "compare_cpu")
-expect_invalid_arg_type(conn, "compare_cpu", 1)
-expect_invalid_arg_type(conn, "compare_cpu", "hello", 'bar')
-expect_fail(conn, Libvirt::RetrieveError, "invalid XML", "compare_cpu", "hello")
-expect_success(conn, "CPU XML", "compare_cpu", cpu_xml)
+if !test_default_uri?
+  expect_too_many_args(conn, "compare_cpu", 1, 2, 3)
+  expect_too_few_args(conn, "compare_cpu")
+  expect_invalid_arg_type(conn, "compare_cpu", 1)
+  expect_invalid_arg_type(conn, "compare_cpu", "hello", 'bar')
+  expect_fail(conn, Libvirt::RetrieveError, "invalid XML", "compare_cpu", "hello")
+  expect_success(conn, "CPU XML", "compare_cpu", cpu_xml)
+end
 
 # TESTGROUP: conn.baseline_cpu
 expect_too_many_args(conn, "baseline_cpu", 1, 2, 3)
@@ -457,89 +468,109 @@ expect_fail(conn, Libvirt::Error, "invalid XML", "create_nodedevice_xml", "hello
 #expect_success(conn, "nodedevice XML", "create_nodedevice_xml", "<nodedevice/>")
 
 # TESTGROUP: conn.num_of_nwfilters
-expect_too_many_args(conn, "num_of_nwfilters", 1)
-expect_success(conn, "no args", "num_of_nwfilters")
+if !test_default_uri?
+  expect_too_many_args(conn, "num_of_nwfilters", 1)
+  expect_success(conn, "no args", "num_of_nwfilters")
+end
 
 # TESTGROUP: conn.list_nwfilters
-expect_too_many_args(conn, "list_nwfilters", 1)
-expect_success(conn, "no args", "list_nwfilters")
+if !test_default_uri?
+  expect_too_many_args(conn, "list_nwfilters", 1)
+  expect_success(conn, "no args", "list_nwfilters")
+end
 
 # TESTGROUP: conn.lookup_nwfilter_by_name
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
-expect_too_many_args(conn, "lookup_nwfilter_by_name", 1, 2)
-expect_too_few_args(conn, "lookup_nwfilter_by_name")
-expect_invalid_arg_type(conn, "lookup_nwfilter_by_name", 1)
+  expect_too_many_args(conn, "lookup_nwfilter_by_name", 1, 2)
+  expect_too_few_args(conn, "lookup_nwfilter_by_name")
+  expect_invalid_arg_type(conn, "lookup_nwfilter_by_name", 1)
 
-expect_success(conn, "name arg", "lookup_nwfilter_by_name", "rb-libvirt-test")
+  expect_success(conn, "name arg", "lookup_nwfilter_by_name", "rb-libvirt-test")
 
-newnw.undefine
+  newnw.undefine
+end
 
 # TESTGROUP: conn.lookup_nwfilter_by_uuid
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
-expect_too_many_args(conn, "lookup_nwfilter_by_uuid", 1, 2)
-expect_too_few_args(conn, "lookup_nwfilter_by_uuid")
-expect_invalid_arg_type(conn, "lookup_nwfilter_by_uuid", 1)
+  expect_too_many_args(conn, "lookup_nwfilter_by_uuid", 1, 2)
+  expect_too_few_args(conn, "lookup_nwfilter_by_uuid")
+  expect_invalid_arg_type(conn, "lookup_nwfilter_by_uuid", 1)
 
-expect_success(conn, "uuid arg", "lookup_nwfilter_by_uuid", $NWFILTER_UUID) {|x| x.uuid == $NWFILTER_UUID}
+  expect_success(conn, "uuid arg", "lookup_nwfilter_by_uuid", $NWFILTER_UUID) {|x| x.uuid == $NWFILTER_UUID}
 
-newnw.undefine
+  newnw.undefine
+end
 
 # TESTGROUP: conn.define_nwfilter_xml
-expect_too_many_args(conn, "define_nwfilter_xml", 1, 2)
-expect_too_few_args(conn, "define_nwfilter_xml")
-expect_invalid_arg_type(conn, "define_nwfilter_xml", 1)
-expect_invalid_arg_type(conn, "define_nwfilter_xml", nil)
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_nwfilter_xml", "hello")
+if !test_default_uri?
+  expect_too_many_args(conn, "define_nwfilter_xml", 1, 2)
+  expect_too_few_args(conn, "define_nwfilter_xml")
+  expect_invalid_arg_type(conn, "define_nwfilter_xml", 1)
+  expect_invalid_arg_type(conn, "define_nwfilter_xml", nil)
+  expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_nwfilter_xml", "hello")
 
-newnw = expect_success(conn, "nwfilter XML", "define_nwfilter_xml", $new_nwfilter_xml)
+  newnw = expect_success(conn, "nwfilter XML", "define_nwfilter_xml", $new_nwfilter_xml)
 
-newnw.undefine
+  newnw.undefine
+end
 
 # TESTGROUP: conn.num_of_secrets
-expect_too_many_args(conn, "num_of_secrets", 1)
-expect_success(conn, "no args", "num_of_secrets")
+if !test_default_uri?
+  expect_too_many_args(conn, "num_of_secrets", 1)
+  expect_success(conn, "no args", "num_of_secrets")
+end
 
 # TESTGROUP: conn.list_secrets
-expect_too_many_args(conn, "list_secrets", 1)
-expect_success(conn, "no args", "list_secrets")
+if !test_default_uri?
+  expect_too_many_args(conn, "list_secrets", 1)
+  expect_success(conn, "no args", "list_secrets")
+end
 
 # TESTGROUP: conn.lookup_secret_by_uuid
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(conn, "lookup_secret_by_uuid", 1, 2)
-expect_too_few_args(conn, "lookup_secret_by_uuid")
-expect_invalid_arg_type(conn, "lookup_secret_by_uuid", 1)
+  expect_too_many_args(conn, "lookup_secret_by_uuid", 1, 2)
+  expect_too_few_args(conn, "lookup_secret_by_uuid")
+  expect_invalid_arg_type(conn, "lookup_secret_by_uuid", 1)
 
-expect_success(conn, "uuid arg", "lookup_secret_by_uuid", $SECRET_UUID) {|x| x.uuid == $SECRET_UUID}
+  expect_success(conn, "uuid arg", "lookup_secret_by_uuid", $SECRET_UUID) {|x| x.uuid == $SECRET_UUID}
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: conn.lookup_secret_by_usage
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(conn, "lookup_secret_by_usage", 1, 2, 3)
-expect_too_few_args(conn, "lookup_secret_by_usage")
-expect_invalid_arg_type(conn, "lookup_secret_by_usage", 'foo', 1)
-expect_invalid_arg_type(conn, "lookup_secret_by_usage", 1, 2)
-expect_fail(conn, Libvirt::RetrieveError, "invalid secret", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "foo")
+  expect_too_many_args(conn, "lookup_secret_by_usage", 1, 2, 3)
+  expect_too_few_args(conn, "lookup_secret_by_usage")
+  expect_invalid_arg_type(conn, "lookup_secret_by_usage", 'foo', 1)
+  expect_invalid_arg_type(conn, "lookup_secret_by_usage", 1, 2)
+  expect_fail(conn, Libvirt::RetrieveError, "invalid secret", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "foo")
 
-expect_success(conn, "usage type and key", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "/var/lib/libvirt/images/mail.img")
+  expect_success(conn, "usage type and key", "lookup_secret_by_usage", Libvirt::Secret::USAGE_TYPE_VOLUME, "/var/lib/libvirt/images/mail.img")
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: conn.define_secret_xml
-expect_too_many_args(conn, "define_secret_xml", 1, 2, 3)
-expect_too_few_args(conn, "define_secret_xml")
-expect_invalid_arg_type(conn, "define_secret_xml", 1)
-expect_invalid_arg_type(conn, "define_secret_xml", nil)
-expect_invalid_arg_type(conn, "define_secret_xml", "hello", 'foo')
-expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_secret_xml", "hello")
+if !test_default_uri?
+  expect_too_many_args(conn, "define_secret_xml", 1, 2, 3)
+  expect_too_few_args(conn, "define_secret_xml")
+  expect_invalid_arg_type(conn, "define_secret_xml", 1)
+  expect_invalid_arg_type(conn, "define_secret_xml", nil)
+  expect_invalid_arg_type(conn, "define_secret_xml", "hello", 'foo')
+  expect_fail(conn, Libvirt::DefinitionError, "invalid XML", "define_secret_xml", "hello")
 
-expect_success(conn, "secret XML", "define_secret_xml", $new_secret_xml)
+  expect_success(conn, "secret XML", "define_secret_xml", $new_secret_xml)
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: conn.list_storage_pools
 expect_too_many_args(conn, "list_storage_pools", 1)
@@ -666,26 +697,30 @@ expect_invalid_arg_type(conn, "node_cpu_stats", 1, 'bar')
 expect_success(conn, "node cpu stats", "node_cpu_stats")
 
 # TESTGROUP: conn.node_memory_stats
-expect_too_many_args(conn, "node_memory_stats", 1, 2, 3)
-expect_invalid_arg_type(conn, "node_memory_stats", 'foo')
-expect_invalid_arg_type(conn, "node_memory_stats", 1, 'bar')
+if !test_default_uri?
+  expect_too_many_args(conn, "node_memory_stats", 1, 2, 3)
+  expect_invalid_arg_type(conn, "node_memory_stats", 'foo')
+  expect_invalid_arg_type(conn, "node_memory_stats", 1, 'bar')
 
-expect_success(conn, "node memory status", "node_memory_stats")
+  expect_success(conn, "node memory status", "node_memory_stats")
+end
 
 # TESTGROUP: conn.save_image_xml_desc
-newdom = conn.define_domain_xml($new_dom_xml)
-newdom.create
-test_sleep 1
-newdom.save($GUEST_SAVE)
+if !test_default_uri?
+  newdom = conn.define_domain_xml($new_dom_xml)
+  newdom.create
+  test_sleep 1
+  newdom.save($GUEST_SAVE)
 
-expect_too_many_args(conn, "save_image_xml_desc", 1, 2, 3)
-expect_too_few_args(conn, "save_image_xml_desc")
-expect_invalid_arg_type(conn, "save_image_xml_desc", nil)
-expect_invalid_arg_type(conn, "save_image_xml_desc", 1)
-expect_invalid_arg_type(conn, "save_image_xml_desc", 'foo', 'bar')
+  expect_too_many_args(conn, "save_image_xml_desc", 1, 2, 3)
+  expect_too_few_args(conn, "save_image_xml_desc")
+  expect_invalid_arg_type(conn, "save_image_xml_desc", nil)
+  expect_invalid_arg_type(conn, "save_image_xml_desc", 1)
+  expect_invalid_arg_type(conn, "save_image_xml_desc", 'foo', 'bar')
 
-expect_success(conn, "save image path", "save_image_xml_desc", $GUEST_SAVE)
-`rm -f #{$GUEST_SAVE}`
+  expect_success(conn, "save image path", "save_image_xml_desc", $GUEST_SAVE)
+  `rm -f #{$GUEST_SAVE}`
+end
 
 # TESTGROUP: conn.define_save_image_xml
 expect_too_many_args(conn, "define_save_image_xml", 1, 2, 3, 4)
@@ -703,10 +738,12 @@ expect_too_many_args(conn, "alive?", 1)
 expect_success(conn, "alive connection", "alive?") {|x| x == true}
 
 # TESTGROUP: conn.list_all_nwfilters
-expect_too_many_args(conn, "list_all_nwfilters", 1, 2)
-expect_invalid_arg_type(conn, "list_all_nwfilters", "foo")
+if !test_default_uri?
+  expect_too_many_args(conn, "list_all_nwfilters", 1, 2)
+  expect_invalid_arg_type(conn, "list_all_nwfilters", "foo")
 
-expect_success(conn, "no args", "list_all_nwfilters")
+  expect_success(conn, "no args", "list_all_nwfilters")
+end
 
 # TESTGROUP: conn.list_all_storage_pools
 expect_too_many_args(conn, "list_all_storage_pools", 1, 2)
@@ -721,10 +758,12 @@ expect_invalid_arg_type(conn, "list_all_nodedevices", "foo")
 expect_success(conn, "no args", "list_all_nodedevices")
 
 # TESTGROUP: conn.list_all_secrets
-expect_too_many_args(conn, "list_all_secrets", 1, 2)
-expect_invalid_arg_type(conn, "list_all_secrets", "foo")
+if !test_default_uri?
+  expect_too_many_args(conn, "list_all_secrets", 1, 2)
+  expect_invalid_arg_type(conn, "list_all_secrets", "foo")
 
-expect_success(conn, "no args", "list_all_secrets")
+  expect_success(conn, "no args", "list_all_secrets")
+end
 
 # TESTGROUP: conn.list_all_interfaces
 expect_too_many_args(conn, "list_all_interfaces", 1, 2)
@@ -763,10 +802,12 @@ expect_invalid_arg_type(conn, "node_suspend_for_duration", 1, 'foo')
 expect_invalid_arg_type(conn, "node_suspend_for_duration", 1, 2, 'foo')
 
 # TESTGROUP: conn.node_memory_parameters
-expect_too_many_args(conn, "node_memory_parameters", 1, 2)
-expect_invalid_arg_type(conn, "node_memory_parameters", 'foo')
+if !test_default_uri?
+  expect_too_many_args(conn, "node_memory_parameters", 1, 2)
+  expect_invalid_arg_type(conn, "node_memory_parameters", 'foo')
 
-expect_success(conn, "no args", "node_memory_parameters")
+  expect_success(conn, "no args", "node_memory_parameters")
+end
 
 # TESTGROUP: conn.node_memory_paramters=
 expect_too_many_args(conn, "node_memory_parameters=", 1, 2)

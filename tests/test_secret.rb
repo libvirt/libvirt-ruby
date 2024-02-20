@@ -12,100 +12,118 @@ set_test_object("secret")
 conn = Libvirt::open(URI)
 
 # TESTGROUP: secret.uuid
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "uuid", 1)
+  expect_too_many_args(newsecret, "uuid", 1)
 
-expect_success(newsecret, "no args", "uuid") {|x| x == $SECRET_UUID}
+  expect_success(newsecret, "no args", "uuid") {|x| x == $SECRET_UUID}
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.usagetype
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "usagetype", 1)
+  expect_too_many_args(newsecret, "usagetype", 1)
 
-expect_success(newsecret, "no args", "usagetype") {|x| x == Libvirt::Secret::USAGE_TYPE_VOLUME}
+  expect_success(newsecret, "no args", "usagetype") {|x| x == Libvirt::Secret::USAGE_TYPE_VOLUME}
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.usageid
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "usageid", 1)
+  expect_too_many_args(newsecret, "usageid", 1)
 
-expect_success(newsecret, "no args", "usageid")
+  expect_success(newsecret, "no args", "usageid")
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.xml_desc
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "xml_desc", 1, 2)
-expect_invalid_arg_type(newsecret, "xml_desc", "foo")
+  expect_too_many_args(newsecret, "xml_desc", 1, 2)
+  expect_invalid_arg_type(newsecret, "xml_desc", "foo")
 
-expect_success(newsecret, "no args", "xml_desc")
+  expect_success(newsecret, "no args", "xml_desc")
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.set_value
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "set_value", 1, 2, 3)
-expect_too_few_args(newsecret, "set_value")
-expect_invalid_arg_type(newsecret, "set_value", 1)
-expect_invalid_arg_type(newsecret, "set_value", "foo", "bar")
+  expect_too_many_args(newsecret, "set_value", 1, 2, 3)
+  expect_too_few_args(newsecret, "set_value")
+  expect_invalid_arg_type(newsecret, "set_value", 1)
+  expect_invalid_arg_type(newsecret, "set_value", "foo", "bar")
 
-expect_success(newsecret, "value arg", "set_value", "foo")
+  expect_success(newsecret, "value arg", "set_value", "foo")
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.value=
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "value=", 1, 2)
-expect_too_few_args(newsecret, "value=")
-expect_invalid_arg_type(newsecret, "value=", {})
-expect_invalid_arg_type(newsecret, "value=", nil)
-expect_invalid_arg_type(newsecret, "value=", 1)
-expect_invalid_arg_type(newsecret, "value=", [1, 1])
-expect_invalid_arg_type(newsecret, "value=", [nil, 1])
-expect_invalid_arg_type(newsecret, "value=", [[], 1])
-expect_invalid_arg_type(newsecret, "value=", [{}, 1])
-expect_invalid_arg_type(newsecret, "value=", ['foo', nil])
-expect_invalid_arg_type(newsecret, "value=", ['foo', 'foo'])
-expect_invalid_arg_type(newsecret, "value=", ['foo', []])
-expect_invalid_arg_type(newsecret, "value=", ['foo', {}])
+  expect_too_many_args(newsecret, "value=", 1, 2)
+  expect_too_few_args(newsecret, "value=")
+  expect_invalid_arg_type(newsecret, "value=", {})
+  expect_invalid_arg_type(newsecret, "value=", nil)
+  expect_invalid_arg_type(newsecret, "value=", 1)
+  expect_invalid_arg_type(newsecret, "value=", [1, 1])
+  expect_invalid_arg_type(newsecret, "value=", [nil, 1])
+  expect_invalid_arg_type(newsecret, "value=", [[], 1])
+  expect_invalid_arg_type(newsecret, "value=", [{}, 1])
+  expect_invalid_arg_type(newsecret, "value=", ['foo', nil])
+  expect_invalid_arg_type(newsecret, "value=", ['foo', 'foo'])
+  expect_invalid_arg_type(newsecret, "value=", ['foo', []])
+  expect_invalid_arg_type(newsecret, "value=", ['foo', {}])
 
-expect_success(newsecret, "value arg", "value=", "foo")
+  expect_success(newsecret, "value arg", "value=", "foo")
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.get_value
-newsecret = conn.define_secret_xml($new_secret_xml)
-newsecret.set_value("foo")
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
+  newsecret.set_value("foo")
 
-expect_too_many_args(newsecret, "get_value", 1, 2)
-expect_invalid_arg_type(newsecret, "get_value", 'foo')
+  expect_too_many_args(newsecret, "get_value", 1, 2)
+  expect_invalid_arg_type(newsecret, "get_value", 'foo')
 
-expect_success(newsecret, "no args", "get_value") {|x| x == 'foo'}
+  expect_success(newsecret, "no args", "get_value") {|x| x == 'foo'}
 
-newsecret.undefine
+  newsecret.undefine
+end
 
 # TESTGROUP: secret.undefine
-newsecret = conn.define_secret_xml($new_secret_xml)
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
 
-expect_too_many_args(newsecret, "undefine", 1)
+  expect_too_many_args(newsecret, "undefine", 1)
 
-expect_success(newsecret, "no args", "undefine")
+  expect_success(newsecret, "no args", "undefine")
+end
 
 # TESTGROUP: secret.free
-newsecret = conn.define_secret_xml($new_secret_xml)
-newsecret.undefine
+if !test_default_uri?
+  newsecret = conn.define_secret_xml($new_secret_xml)
+  newsecret.undefine
 
-expect_too_many_args(newsecret, "free", 1)
+  expect_too_many_args(newsecret, "free", 1)
 
-expect_success(newsecret, "no args", "free")
+  expect_success(newsecret, "no args", "free")
+end
 
 # END TESTS
 

@@ -12,46 +12,56 @@ set_test_object("nwfilter")
 conn = Libvirt::open(URI)
 
 # TESTGROUP: nwfilter.undefine
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
-expect_too_many_args(newnw, "undefine", 1)
+  expect_too_many_args(newnw, "undefine", 1)
 
-expect_success(newnw, "no args", "undefine")
+  expect_success(newnw, "no args", "undefine")
+end
 
 # TESTGROUP: nwfilter.name
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
-expect_too_many_args(newnw, "name", 1)
+  expect_too_many_args(newnw, "name", 1)
 
-expect_success(newnw, "no args", "name") {|x| x == "rb-libvirt-test"}
+  expect_success(newnw, "no args", "name") {|x| x == "rb-libvirt-test"}
 
-newnw.undefine
+  newnw.undefine
+end
 
 # TESTGROUP: nwfilter.uuid
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
-expect_too_many_args(newnw, "uuid", 1)
+  expect_too_many_args(newnw, "uuid", 1)
 
-expect_success(newnw, "no args", "uuid") {|x| x == $NWFILTER_UUID}
+  expect_success(newnw, "no args", "uuid") {|x| x == $NWFILTER_UUID}
 
-newnw.undefine
+  newnw.undefine
+end
 
 # TESTGROUP: nwfilter.xml_desc
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
 
-expect_too_many_args(newnw, "xml_desc", 1, 2)
-expect_invalid_arg_type(newnw, "xml_desc", "foo")
+  expect_too_many_args(newnw, "xml_desc", 1, 2)
+  expect_invalid_arg_type(newnw, "xml_desc", "foo")
 
-expect_success(newnw, "no args", "xml_desc")
+  expect_success(newnw, "no args", "xml_desc")
 
-newnw.undefine
+  newnw.undefine
+end
 
 # TESTGROUP: nwfilter.free
-newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
-newnw.undefine
-expect_too_many_args(newnw, "free", 1)
+if !test_default_uri?
+  newnw = conn.define_nwfilter_xml($new_nwfilter_xml)
+  newnw.undefine
+  expect_too_many_args(newnw, "free", 1)
 
-expect_success(newnw, "no args", "free")
+  expect_success(newnw, "no args", "free")
+end
 
 # END TESTS
 
