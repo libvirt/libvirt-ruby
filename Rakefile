@@ -18,7 +18,6 @@ rescue LoadError
 end
 require 'rake/testtask'
 require 'rubygems/package_task'
-require 'rbconfig'
 
 PKG_NAME='ruby-libvirt'
 PKG_VERSION='0.8.2'
@@ -99,19 +98,6 @@ Rake::RDocTask.new(:ri) do |rd|
     rd.rdoc_dir = "doc/ri"
     rd.options << "--ri-system"
     rd.rdoc_files.include(RDOC_FILES)
-end
-
-#
-# Splint task
-#
-
-task :splint => [ MAKEFILE ] do |t|
-    Dir::chdir(File::dirname(EXT_CONF)) do
-        unless sh "splint -I" + Config::CONFIG['vendorarchdir'] + " *.c"
-            $stderr.puts "Failed to run splint"
-            break
-        end
-    end
 end
 
 #
