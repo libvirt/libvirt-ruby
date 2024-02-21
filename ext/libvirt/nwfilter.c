@@ -123,6 +123,8 @@ static VALUE libvirt_nwfilter_free(VALUE n)
 void ruby_libvirt_nwfilter_init(void)
 {
     c_nwfilter = rb_define_class_under(m_libvirt, "NWFilter", rb_cObject);
+    rb_undef_alloc_func(c_nwfilter);
+
     rb_define_attr(c_nwfilter, "connection", 1, 0);
 
     /* NWFilter object methods */

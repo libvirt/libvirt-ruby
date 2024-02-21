@@ -4063,6 +4063,7 @@ static VALUE libvirt_domain_user_password_equal(VALUE d, VALUE in)
 void ruby_libvirt_domain_init(void)
 {
     c_domain = rb_define_class_under(m_libvirt, "Domain", rb_cObject);
+    rb_undef_alloc_func(c_domain);
 
     rb_define_const(c_domain, "NOSTATE", INT2NUM(VIR_DOMAIN_NOSTATE));
     rb_define_const(c_domain, "RUNNING", INT2NUM(VIR_DOMAIN_RUNNING));
@@ -4388,6 +4389,8 @@ void ruby_libvirt_domain_init(void)
      * Class Libvirt::Domain::Snapshot
      */
     c_domain_snapshot = rb_define_class_under(c_domain, "Snapshot", rb_cObject);
+    rb_undef_alloc_func(c_domain_snapshot);
+
     rb_define_const(c_domain_snapshot, "DELETE_CHILDREN",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN));
     rb_define_method(c_domain_snapshot, "xml_desc",

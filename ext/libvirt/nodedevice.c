@@ -260,6 +260,7 @@ static VALUE libvirt_nodedevice_lookup_scsi_host_by_wwn(int argc, VALUE *argv,
 void ruby_libvirt_nodedevice_init(void)
 {
     c_nodedevice = rb_define_class_under(m_libvirt, "NodeDevice", rb_cObject);
+    rb_undef_alloc_func(c_nodedevice);
 
     rb_define_attr(c_nodedevice, "connection", 1, 0);
 

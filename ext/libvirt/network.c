@@ -329,6 +329,8 @@ static VALUE libvirt_network_get_dhcp_leases(int argc, VALUE *argv, VALUE n)
 void ruby_libvirt_network_init(void)
 {
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
+    rb_undef_alloc_func(c_network);
+
     rb_define_attr(c_network, "connection", 1, 0);
 
     rb_define_method(c_network, "undefine", libvirt_network_undefine, 0);

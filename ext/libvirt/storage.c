@@ -752,6 +752,7 @@ void ruby_libvirt_storage_init(void)
 
     c_storage_pool = rb_define_class_under(m_libvirt, "StoragePool",
                                            rb_cObject);
+    rb_undef_alloc_func(c_storage_pool);
 
     rb_define_attr(c_storage_pool, "connection", 1, 0);
 
@@ -864,6 +865,7 @@ void ruby_libvirt_storage_init(void)
 
     c_storage_vol = rb_define_class_under(m_libvirt, "StorageVol",
                                           rb_cObject);
+    rb_undef_alloc_func(c_storage_vol);
 
     rb_define_const(c_storage_vol, "XML_INACTIVE",
                     INT2NUM(VIR_STORAGE_XML_INACTIVE));

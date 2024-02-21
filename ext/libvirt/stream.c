@@ -360,6 +360,7 @@ static VALUE libvirt_stream_free(VALUE s)
 void ruby_libvirt_stream_init(void)
 {
     c_stream = rb_define_class_under(m_libvirt, "Stream", rb_cObject);
+    rb_undef_alloc_func(c_stream);
 
     rb_define_attr(c_stream, "connection", 1, 0);
 
