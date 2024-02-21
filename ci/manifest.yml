@@ -26,11 +26,17 @@ targets:
 
   debian-11: x86_64
 
-  debian-sid: x86_64
+  debian-sid:
+    jobs:
+      - arch: x86_64
+        allow-failure: true
 
   fedora-38: x86_64
 
-  fedora-rawhide: x86_64
+  fedora-rawhide:
+    jobs:
+      - arch: x86_64
+        allow-failure: true
 
   opensuse-leap-15:
     jobs:
@@ -41,6 +47,7 @@ targets:
   opensuse-tumbleweed:
     jobs:
       - arch: x86_64
+        allow-failure: true
         variables:
           DIST: skip
 

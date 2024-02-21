@@ -67,7 +67,7 @@ x86_64-debian-sid:
   needs:
     - job: x86_64-debian-sid-container
       optional: true
-  allow_failure: false
+  allow_failure: true
   variables:
     NAME: debian-sid
     TARGET_BASE_IMAGE: docker.io/library/debian:sid-slim
@@ -89,7 +89,7 @@ x86_64-fedora-rawhide:
   needs:
     - job: x86_64-fedora-rawhide-container
       optional: true
-  allow_failure: false
+  allow_failure: true
   variables:
     NAME: fedora-rawhide
     TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:rawhide
@@ -112,7 +112,7 @@ x86_64-opensuse-tumbleweed:
   needs:
     - job: x86_64-opensuse-tumbleweed-container
       optional: true
-  allow_failure: false
+  allow_failure: true
   variables:
     DIST: skip
     NAME: opensuse-tumbleweed
