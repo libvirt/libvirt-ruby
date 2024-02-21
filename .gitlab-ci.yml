@@ -2,6 +2,7 @@
 stages:
   - containers
   - builds
+  - pages
   - sanity_checks
 
 .native_git_build_job:
@@ -46,6 +47,7 @@ stages:
 
 pages:
   extends: .website
+  stage: pages
   needs:
     - job: x86_64-ubuntu-2204-container
       optional: true
