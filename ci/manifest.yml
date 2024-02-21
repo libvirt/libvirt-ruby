@@ -20,11 +20,20 @@ targets:
         template: .native_git_build_job
         suffix: -git
 
+  alpine-319: x86_64
+
+  alpine-edge:
+    jobs:
+      - arch: x86_64
+        allow-failure: true
+
   centos-stream-8: x86_64
 
   centos-stream-9: x86_64
 
   debian-11: x86_64
+
+  debian-12: x86_64
 
   debian-sid:
     jobs:
@@ -33,10 +42,20 @@ targets:
 
   fedora-38: x86_64
 
+  fedora-39: x86_64
+
+  freebsd-13: x86_64
+
+  freebsd-14: x86_64
+
   fedora-rawhide:
     jobs:
       - arch: x86_64
         allow-failure: true
+
+  macos-13: aarch64
+
+  macos-14: aarch64
 
   opensuse-leap-15:
     jobs:
