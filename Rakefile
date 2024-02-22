@@ -18,33 +18,62 @@ require 'rubygems/package_task'
 PKG_NAME='ruby-libvirt'
 PKG_VERSION='0.8.2'
 
-EXT_CONF='ext/libvirt/extconf.rb'
-MAKEFILE="ext/libvirt/Makefile"
-LIBVIRT_MODULE="ext/libvirt/_libvirt.so"
-SPEC_FILE="ruby-libvirt.spec"
-LIBVIRT_SRC=Dir.glob("ext/libvirt/*.c")
-LIBVIRT_SRC << MAKEFILE
+EXT_DIR = "ext/libvirt"
+EXTCONF = "#{EXT_DIR}/extconf.rb"
+MAKEFILE = "#{EXT_DIR}/Makefile"
+LIBVIRT_MODULE = "#{EXT_DIR}/_libvirt.so"
+SPEC_FILE = "#{PKG_NAME}.spec"
+SRC_FILES = FileList[
+    "#{EXT_DIR}/_libvirt.c",
+    "#{EXT_DIR}/common.c",
+    "#{EXT_DIR}/common.h",
+    "#{EXT_DIR}/connect.c",
+    "#{EXT_DIR}/connect.h",
+    "#{EXT_DIR}/domain.c",
+    "#{EXT_DIR}/domain.h",
+    "#{EXT_DIR}/interface.c",
+    "#{EXT_DIR}/interface.h",
+    "#{EXT_DIR}/network.c",
+    "#{EXT_DIR}/network.h",
+    "#{EXT_DIR}/nodedevice.c",
+    "#{EXT_DIR}/nodedevice.h",
+    "#{EXT_DIR}/nwfilter.c",
+    "#{EXT_DIR}/nwfilter.h",
+    "#{EXT_DIR}/secret.c",
+    "#{EXT_DIR}/secret.h",
+    "#{EXT_DIR}/storage.c",
+    "#{EXT_DIR}/storage.h",
+    "#{EXT_DIR}/stream.c",
+    "#{EXT_DIR}/stream.h",
+]
+LIB_FILES = FileList[
+    "lib/libvirt.rb",
+]
+GEN_FILES = FileList[
+    MAKEFILE,
+    "#{EXT_DIR}/extconf.h",
+]
 
 #
 # Additional files for clean/clobber
 #
 
-CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE ]
-
-CLOBBER.include [ "ext/**/mkmf.log", "ext/**/extconf.h", MAKEFILE ]
-
-task :default => :build
+CLEAN.include [ "#{EXT_DIR}/*.o", LIBVIRT_MODULE ]
+CLOBBER.include [ "#{EXT_DIR}/mkmf.log" ] + GEN_FILES
 
 #
 # Build locally
 #
-file MAKEFILE => EXT_CONF do |t|
-    Dir::chdir(File::dirname(EXT_CONF)) do
-        sh "ruby #{File::basename(EXT_CONF)}"
+
+task :default => :build
+
+file MAKEFILE => EXTCONF do |t|
+    Dir::chdir(File::dirname(EXTCONF)) do
+        sh "ruby #{File::basename(EXTCONF)}"
     end
 end
-file LIBVIRT_MODULE => LIBVIRT_SRC do |t|
-    Dir::chdir(File::dirname(EXT_CONF)) do
+file LIBVIRT_MODULE => SRC_FILES + [ MAKEFILE ] do |t|
+    Dir::chdir(File::dirname(EXTCONF)) do
         sh "make"
     end
 end
@@ -52,16 +81,26 @@ desc "Build the native library"
 task :build => LIBVIRT_MODULE
 
 #
-# Test task
+# Test tasks
 #
 
+TEST_FILES = FileList[
+    "tests/test_conn.rb",
+    "tests/test_domain.rb",
+    "tests/test_interface.rb",
+    "tests/test_network.rb",
+    "tests/test_nodedevice.rb",
+    "tests/test_nwfilter.rb",
+    "tests/test_open.rb",
+    "tests/test_secret.rb",
+    "tests/test_storage.rb",
+    "tests/test_stream.rb",
+    "tests/test_utils.rb",
+]
+
 Rake::TestTask.new(:test) do |t|
-    t.test_files = [ 'tests/test_conn.rb', 'tests/test_domain.rb',
-                     'tests/test_interface.rb', 'tests/test_network.rb',
-                     'tests/test_nodedevice.rb', 'tests/test_nwfilter.rb',
-                     'tests/test_open.rb', 'tests/test_secret.rb',
-                     'tests/test_storage.rb', 'tests/test_stream.rb' ]
-    t.libs = [ 'lib', 'ext/libvirt' ]
+    t.test_files = TEST_FILES
+    t.libs << EXT_DIR
 end
 task :test => :build
 
@@ -69,21 +108,17 @@ task :test => :build
 # Documentation tasks
 #
 
-RDOC_FILES = FileList[ "README.rdoc", "lib/libvirt.rb",
-                       "ext/libvirt/_libvirt.c", "ext/libvirt/connect.c",
-                       "ext/libvirt/domain.c", "ext/libvirt/interface.c",
-                       "ext/libvirt/network.c", "ext/libvirt/nodedevice.c",
-                       "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c",
-                       "ext/libvirt/storage.c", "ext/libvirt/stream.c" ]
+RDOC_MAIN = "README.rdoc"
+RDOC_FILES = FileList[ RDOC_MAIN ] + SRC_FILES + LIB_FILES
 
 RDoc::Task.new do |rd|
-    rd.main = "README.rdoc"
+    rd.main = RDOC_MAIN
     rd.rdoc_dir = "doc/site/api"
     rd.rdoc_files.include(RDOC_FILES)
 end
 
 RDoc::Task.new(:ri) do |rd|
-    rd.main = "README.rdoc"
+    rd.main = RDOC_MAIN
     rd.rdoc_dir = "doc/ri"
     rd.options << "--ri-system"
     rd.rdoc_files.include(RDOC_FILES)
@@ -93,16 +128,20 @@ end
 # Package tasks
 #
 
-PKG_FILES = FileList[ "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
-                      "lib/**/*.rb",
-                      "ext/**/*.[ch]", "ext/**/extconf.rb",
-                      "tests/**/*" ]
+PKG_FILES = FileList[
+    "Rakefile",
+    "COPYING",
+    "README",
+    "NEWS",
+    EXTCONF,
+    RDOC_MAIN,
+] + SRC_FILES + LIB_FILES + TEST_FILES
 
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
     s.version = PKG_VERSION
     s.files = PKG_FILES
-    s.extensions = EXT_CONF
+    s.extensions = EXTCONF
     s.required_ruby_version = ">= 1.8.1"
     s.summary = "Ruby bindings for libvirt"
     s.description = <<~EOF
