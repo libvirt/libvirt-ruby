@@ -6,7 +6,7 @@ set -v
 rake clean || :
 
 rake build
-#rake test
+rake test
 
 rm -rf pkg
 rake package
