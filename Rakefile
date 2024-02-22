@@ -101,16 +101,23 @@ PKG_FILES = FileList[ "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
     s.version = PKG_VERSION
-    s.email = "libvir-list@redhat.com"
-    s.homepage = "https://ruby.libvirt.org/"
-    s.summary = "Ruby bindings for LIBVIRT"
     s.files = PKG_FILES
-    s.required_ruby_version = '>= 1.8.1'
-    s.extensions = "ext/libvirt/extconf.rb"
-    s.author = "David Lutterkort, Chris Lalancette"
-    s.rubyforge_project = "None"
-    s.description = "Ruby bindings for libvirt."
+    s.extensions = EXT_CONF
+    s.required_ruby_version = ">= 1.8.1"
+    s.summary = "Ruby bindings for libvirt"
+    s.description = <<~EOF
+        ruby-libvirt allows applications written in Ruby to use the
+        libvirt API.
+    EOF
+    s.authors = ["David Lutterkort", "Chris Lalancette"]
     s.license = "LGPL-2.1-or-later"
+    s.email = "devel@lists.libvirt.org"
+    s.homepage = "https://ruby.libvirt.org/"
+    s.metadata = {
+        "source_code_uri" => "https://gitlab.com/libvirt/libvirt-ruby",
+        "bug_tracker_uri" => "https://gitlab.com/libvirt/libvirt-ruby/-/issues",
+        "documentation_uri" => "https://ruby.libvirt.org/api/index.html",
+    }
 end
 
 Gem::PackageTask.new(SPEC) do |pkg|
