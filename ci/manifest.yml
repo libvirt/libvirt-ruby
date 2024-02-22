@@ -62,6 +62,7 @@ targets:
       - arch: x86_64
         variables:
           DIST: skip
+          RPM: skip
 
   opensuse-tumbleweed:
     jobs:
@@ -69,6 +70,7 @@ targets:
         allow-failure: true
         variables:
           DIST: skip
+          RPM: skip
 
   ubuntu-2004: x86_64
 
