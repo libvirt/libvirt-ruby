@@ -165,6 +165,7 @@ task :rpm => [ :package ] do |t|
         dir = File::expand_path(".")
         rpmbuild = [
             "rpmbuild",
+            "--clean",
             "--define", "'_topdir #{dir}'",
             "--define", "'_sourcedir #{dir}'",
             "--define", "'_srcrpmdir #{dir}'",
