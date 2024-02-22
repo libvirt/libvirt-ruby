@@ -40,19 +40,13 @@ task :default => :build
 #
 file MAKEFILE => EXT_CONF do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
-        unless sh "ruby #{File::basename(EXT_CONF)}"
-            $stderr.puts "Failed to run extconf"
-            break
-        end
+        sh "ruby #{File::basename(EXT_CONF)}"
     end
 end
 file LIBVIRT_MODULE => LIBVIRT_SRC do |t|
     Dir::chdir(File::dirname(EXT_CONF)) do
-        unless sh "make"
-            $stderr.puts "make failed"
-            break
-        end
-     end
+        sh "make"
+    end
 end
 desc "Build the native library"
 task :build => LIBVIRT_MODULE
