@@ -28,6 +28,9 @@ stages:
     - if test "$DIST" != "skip"; then
         rake package;
       fi
+    - if test -x /usr/bin/rpmbuild && test "$RPM" != "skip"; then
+        rake rpm;
+      fi
 
 .native_build_job:
   extends: .gitlab_native_build_job
@@ -37,6 +40,9 @@ stages:
     - rake test
     - if test "$DIST" != "skip"; then
         rake package;
+      fi
+    - if test -x /usr/bin/rpmbuild && test "$RPM" != "skip"; then
+        rake rpm;
       fi
 
 .website:
