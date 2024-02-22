@@ -159,7 +159,7 @@ task :rpm => [ :package ] do |t|
     sed = [
         "sed",
         "-e", "'s/@VERSION@/#{PKG_VERSION}/'",
-        "#{SPEC_FILE}", ">#{pkg_dir}/#{SPEC_FILE}",
+        "#{SPEC_FILE}.in", ">#{pkg_dir}/#{SPEC_FILE}",
     ]
     sh sed.join(" ")
     rpmbuild = [
