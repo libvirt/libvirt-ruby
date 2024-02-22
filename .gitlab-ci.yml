@@ -25,7 +25,9 @@ stages:
     - popd
     - rake build
     - rake test
-    - if test "$DIST" != "skip" ; then rake package; fi
+    - if test "$DIST" != "skip"; then
+        rake package;
+      fi
 
 .native_build_job:
   extends: .gitlab_native_build_job
@@ -33,7 +35,9 @@ stages:
     - export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN)"
     - rake build
     - rake test
-    - if test "$DIST" != "skip" ; then rake package; fi
+    - if test "$DIST" != "skip"; then
+        rake package;
+      fi
 
 .website:
   extends: .gitlab_native_build_job
