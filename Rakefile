@@ -11,12 +11,8 @@
 
 # Rakefile for ruby-rpm -*- ruby -*-
 require 'rake/clean'
-begin
-  require 'rdoc/task'
-rescue LoadError
-  require 'rake/rdoctask'
-end
 require 'rake/testtask'
+require 'rdoc/task'
 require 'rubygems/package_task'
 
 PKG_NAME='ruby-libvirt'
@@ -87,13 +83,13 @@ RDOC_FILES = FileList[ "README.rdoc", "lib/libvirt.rb",
                        "ext/libvirt/nwfilter.c", "ext/libvirt/secret.c",
                        "ext/libvirt/storage.c", "ext/libvirt/stream.c" ]
 
-Rake::RDocTask.new do |rd|
+RDoc::Task.new do |rd|
     rd.main = "README.rdoc"
     rd.rdoc_dir = "doc/site/api"
     rd.rdoc_files.include(RDOC_FILES)
 end
 
-Rake::RDocTask.new(:ri) do |rd|
+RDoc::Task.new(:ri) do |rd|
     rd.main = "README.rdoc"
     rd.rdoc_dir = "doc/ri"
     rd.options << "--ri-system"
