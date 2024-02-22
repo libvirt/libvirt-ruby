@@ -171,7 +171,6 @@ task :rpm => [ :package ] do |t|
             "--define", "'_rpmdir #{dir}'",
             "--define", "'_builddir #{dir}'",
             "-ba", "#{SPEC_FILE}",
-            ">rpmbuild.log", "2>&1",
         ]
         sh rpmbuild.join(" ")
     end
