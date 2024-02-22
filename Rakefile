@@ -124,9 +124,6 @@ PKG_FILES = FileList[ "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
                       "tests/**/*",
                       "spec/**/*" ]
 
-DIST_FILES = FileList[ "pkg/*.src.rpm",  "pkg/*.gem",  "pkg/*.zip",
-                       "pkg/*.tgz" ]
-
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
     s.version = PKG_VERSION
