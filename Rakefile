@@ -160,7 +160,7 @@ task :rpm => [ :package ] do |t|
         "-e", "'s/@VERSION@/#{PKG_VERSION}/'",
         "#{SPEC_FILE}", ">pkg/#{SPEC_FILE}",
     ]
-    system(sed.join(" "))
+    sh sed.join(" ")
     Dir::chdir("pkg") do |dir|
         dir = File::expand_path(".")
         rpmbuild = [
@@ -173,9 +173,6 @@ task :rpm => [ :package ] do |t|
             "-ba", "#{SPEC_FILE}",
             ">rpmbuild.log", "2>&1",
         ]
-        system(rpmbuild.join(" "))
-        if $? != 0
-            raise "rpmbuild failed"
-        end
+        sh rpmbuild.join(" ")
     end
 end
