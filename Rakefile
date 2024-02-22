@@ -29,8 +29,7 @@ LIBVIRT_SRC << MAKEFILE
 # Additional files for clean/clobber
 #
 
-CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE, "ext/**/depend", "ext/**/*.gcda",
-                "ext/**/*.gcno", "ext/**/*.gcov" ]
+CLEAN.include [ "ext/**/*.o", LIBVIRT_MODULE ]
 
 CLOBBER.include [ "ext/**/mkmf.log", "ext/**/extconf.h", MAKEFILE ]
 
@@ -102,9 +101,8 @@ end
 
 PKG_FILES = FileList[ "Rakefile", "COPYING", "README", "NEWS", "README.rdoc",
                       "lib/**/*.rb",
-                      "ext/**/*.[ch]", "ext/**/MANIFEST", "ext/**/extconf.rb",
-                      "tests/**/*",
-                      "spec/**/*" ]
+                      "ext/**/*.[ch]", "ext/**/extconf.rb",
+                      "tests/**/*" ]
 
 SPEC = Gem::Specification.new do |s|
     s.name = PKG_NAME
