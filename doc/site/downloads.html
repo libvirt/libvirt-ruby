@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/main.css" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/ruby-libvirt.css" />
-    <link rel="SHORTCUT ICON" href="https://libvirt.org/32favicon.png" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/ruby-libvirt.css">
     <title>Ruby bindings for libvirt</title>
-    <meta name="description" content="ruby, libvirt, virtualization, virtualization API" />
+    <meta name="description" content="ruby, libvirt, virtualization, virtualization API">
   </head>
   <body>
     <div id="header">
@@ -16,75 +15,89 @@
     <div id="body">
       <div id="menu">
         <ul class="l0">
-	  <li>
+          <li>
             <div>
-	      <a title="Front page of the ruby-libvirt website" class="active" href="index.html">Ruby</a>
-	      <ul class="l1">
-		<li><div><a title="Details of new features and bugs fixed in each release" class="inactive" href="news.html">News</a></div></li>
-		<li><div><span class="active">Downloads</span></div></li>
-		<li><div><a title="Documentation for application developers" class="inactive" href="documentation.html">Documentation</a></div></li>
-		<li><div><a title="How and where to report bugs, request features, and otherwise get in touch with the developers" class="inactive" href="contact.html">Contact</a></div></li>
-		<li><div><a title="Miscellaneous links of interest related to libvirt" class="inactive" href="relatedlinks.html">Related Links</a></div></li>
-		<li><div><a title="Libvirt.org Home" class="inactive" href="https://libvirt.org">Libvirt.org</a></div></li>
-	      </ul>
+              <a class="inactive" href="index.html">Home</a>
             </div>
           </li>
-	</ul>
+          <li>
+            <div>
+              <a class="active" href="downloads.html">Downloads</a>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a class="inactive" href="api/index.html">API reference</a>
+            </div>
+          </li>
+          <li>
+            <div>
+              <a class="inactive" href="contact.html">Contacts</a>
+            </div>
+          </li>
+        </ul>
       </div>
       <div id="content">
-	<h1>Downloads</h1>
-	<p>The latest released version of the ruby-libvirt bindings can be
-	downloaded from:</p>
-	<ul>
-	  <li><a href="https://download.libvirt.org/ruby">libvirt.org HTTP server</a></li>
-	</ul>
-	<h2>Distribution Packages</h2>
-	<p>If your distribution packages the ruby-libvirt bindings,
-	this is the easiest way to obtain the code and binaries.  The
-	bindings are packaged for at least:
-	  <ul>
-	    <li><a href="http://fedoraproject.org">Fedora</a></li>
-	    <li><a href="http://debian.org">Debian</a></li>
-	    <li><a href="http://www.ubuntu.com">Ubuntu</a></li>
-	  </ul>
-	</p>
-	<h2>GEM</h2>
-	<p>The ruby-libvirt package is also available via
-	<a href="http://rubygems.org">rubygems.org</a> gem.  To
-	install the ruby-libvirt gem, make sure you have rubygems
-	installed and then run:
-	  <p><code>$ gem install ruby-libvirt</code></p>
-	</p>
-        <h2>GIT source repository</h2>
-        <p>The ruby-libvirt source code that is in development is maintained in a <a href="http://git-scm.com/">git</a> repository available on
-	  <a href="http://gitlab.com/libvirt/libvirt-ruby">GitLab</a>:
-	</p>
+        <h1>Downloads</h1>
+        <p>
+          There are several ways to obtain ruby-libvirt.
+        </p>
+        <h2>Distribution packages</h2>
+        <p>
+          Most Linux distributions, as well as some of the BSDs, include a
+          package for ruby-libvirt in their repositories. If your operating
+          system is among those, that's probably the easiest way to obtain
+          ruby-libvirt.
+        </p>
+        <h2>RubyGems.org</h2>
+        <p>
+          ruby-libvirt is also available from
+          <a href="https://rubygems.org/gems/ruby-libvirt/">RubyGems.org</a>.
+          To install it from there, simply run:
+        </p>
         <pre>
-git clone https://gitlab.com/libvirt/libvirt-ruby.git
-	</pre>
-	<h2>Compilation</h2>
-	<p>In order to compile ruby-libvirt, you will need to have the
-	development libraries for both ruby and libvirt installed.
-	These are typically called something like ruby-devel and
-	libvirt-devel.  Once those are installed, the library can be
-	compiled using rake:</p>
-	<p><code>$ tar -zxvf ruby-libvirt-xxx.tar.gz</code></p>
-	<p><code>$ cd ruby-libvirt-xxx</code></p>
-	<p><code>$ rake build</code></p>
-	<p>If the libvirt development libraries are header files are
-	in a non-system location, the ruby-libvirt bindings can be
-	compiled against them by using:</p>
-	<p><code>$ rake build --
-	--with-libvirt-include=/home/clalance/upstream/libvirt/include
-	--with-libvirt-lib=/home/clalance/upstream/libvirt/src/.libs</code></p>
-	<p>(due to the way that rake parses command-line arguments,
-	the -- immediately after the build argument is required)</p>
+$ gem install ruby-libvirt</pre>
+        <h2>Release archives</h2>
+        <p>
+          The latest released version of the ruby-libvirt bindings can be
+          downloaded from the
+          <a href="https://download.libvirt.org/ruby">libvirt.org HTTP server</a>.
+        </p>
+        <h2>Git source repository</h2>
+        <p>
+          The ruby-libvirt source code is maintained in a
+          <a href="http://git-scm.com/">git</a> repository available on
+          <a href="http://gitlab.com/libvirt/libvirt-ruby">GitLab</a>. To
+          obtain a copy, run:
+        </p>
+        <pre>
+$ git clone https://gitlab.com/libvirt/libvirt-ruby.git</pre>
+        <h1>Compiling</h1>
+        <p>
+          If you're building from source (this includes installing from
+          RubyGems.org) then you need to have the development packages for
+          both Ruby and libvirt installed, as well as the <code>rake</code>
+          tool. On a Fedora system, run:
+        </p>
+        <pre>
+$ yum install libvirt-devel ruby-devel rubygem-rake</pre>
+        <p>
+          to install all these requirements. Once they are available, building
+          ruby-libvirt is as simple as running:
+        </p>
+        <pre>
+$ rake build</pre>
+        <h1>Release notes</h1>
+        <p>
+          A list of changes between releases is available in the
+          <a href="https://gitlab.com/libvirt/libvirt-ruby/-/blob/master/NEWS.rst">NEWS.rst</a>
+          file.
+        </p>
       </div>
     </div>
-    <div>
-      <p id="sponsor">Ruby Logo is Copyright (c) 2006, Yukihiro
-      Matsumoto.  Licensed under the terms of the Creative
-      Commons Attribution-ShareAlike 2.5 agreement.</p>
+    <div id="footer">
+      The Ruby Logo is Copyright (c) 2006, Yukihiro Matsumoto. Licensed under
+      the terms of the Creative Commons Attribution-ShareAlike 2.5 agreement.
     </div>
   </body>
 </html>
