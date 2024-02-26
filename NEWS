@@ -92,9 +92,6 @@
   * Documentation update of many methods, including all of the lookup methods
     that were missing before.
 
-2010-11-10
-  * Gem for version 0.2.0 pushed to rubygems.org
-
 2010-07-01 0.2.0
   * Updated Storage class, implementing pool.active?, pool.persistent?,
     pool.vol_create_xml_from.
