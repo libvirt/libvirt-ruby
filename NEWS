@@ -1,4 +1,4 @@
-2024-02-09 0.8.1
+2024-02-09 0.8.2
   * Fix StoragePool#list_all_volumes
   * Fix regression in Domain#attach_device and Domain#detach_device
 
