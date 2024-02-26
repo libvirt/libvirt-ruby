@@ -42,7 +42,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc COPYING NEWS README
+%doc COPYING NEWS README.rst
 %{ruby_sitelib}/libvirt.rb
 %{ruby_sitearch}/_libvirt.so
 

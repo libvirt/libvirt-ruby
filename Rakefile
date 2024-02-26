@@ -131,7 +131,7 @@ end
 PKG_FILES = FileList[
     "Rakefile",
     "COPYING",
-    "README",
+    "README.rst",
     "NEWS",
     EXTCONF,
     RDOC_MAIN,
