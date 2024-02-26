@@ -155,24 +155,22 @@ end
 
 desc "Build (S)RPM for #{PKG_NAME}"
 task :rpm => [ :package ] do |t|
+    pkg_dir = File::expand_path("pkg")
     sed = [
         "sed",
         "-e", "'s/@VERSION@/#{PKG_VERSION}/'",
-        "#{SPEC_FILE}", ">pkg/#{SPEC_FILE}",
+        "#{SPEC_FILE}", ">#{pkg_dir}/#{SPEC_FILE}",
     ]
     sh sed.join(" ")
-    Dir::chdir("pkg") do |dir|
-        dir = File::expand_path(".")
-        rpmbuild = [
-            "rpmbuild",
-            "--clean",
-            "--define", "'_topdir #{dir}'",
-            "--define", "'_sourcedir #{dir}'",
-            "--define", "'_srcrpmdir #{dir}'",
-            "--define", "'_rpmdir #{dir}'",
-            "--define", "'_builddir #{dir}'",
-            "-ba", "#{SPEC_FILE}",
-        ]
-        sh rpmbuild.join(" ")
-    end
+    rpmbuild = [
+        "rpmbuild",
+        "--clean",
+        "--define", "'_topdir #{pkg_dir}'",
+        "--define", "'_sourcedir #{pkg_dir}'",
+        "--define", "'_srcrpmdir #{pkg_dir}'",
+        "--define", "'_rpmdir #{pkg_dir}'",
+        "--define", "'_builddir #{pkg_dir}'",
+        "-ba", "#{pkg_dir}/#{SPEC_FILE}",
+    ]
+    sh rpmbuild.join(" ")
 end
