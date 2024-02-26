@@ -108,7 +108,7 @@ task :test => :build
 # Documentation tasks
 #
 
-RDOC_MAIN = "README.rdoc"
+RDOC_MAIN = "doc/main.rdoc"
 RDOC_FILES = FileList[ RDOC_MAIN ] + SRC_FILES + LIB_FILES
 
 RDoc::Task.new do |rd|
