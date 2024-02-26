@@ -132,7 +132,7 @@ PKG_FILES = FileList[
     "Rakefile",
     "COPYING",
     "README.rst",
-    "NEWS",
+    "NEWS.rst",
     EXTCONF,
     RDOC_MAIN,
 ] + SRC_FILES + LIB_FILES + TEST_FILES
