@@ -45,23 +45,29 @@ stages:
         rake rpm;
       fi
 
-.website:
+website_job:
   extends: .gitlab_native_build_job
-  script:
-    - export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN)"
-    - rake rdoc
-    - mv doc/site/ public
-  artifacts:
-    paths:
-      - public
-
-pages:
-  extends: .website
-  stage: pages
   needs:
     - job: x86_64-ubuntu-2204-container
       optional: true
+  script:
+    - export MAKEFLAGS="-j$(getconf _NPROCESSORS_ONLN)"
+    - rake rdoc
+    - mv doc/site website
+  artifacts:
+    paths:
+      - website
   variables:
     NAME: ubuntu-2204
+
+pages:
+  stage: pages
+  dependencies:
+    - website_job
+  script:
+    - mv website public
+  artifacts:
+    paths:
+      - public
 
 include: '/ci/gitlab.yml'
