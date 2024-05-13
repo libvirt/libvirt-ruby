@@ -3,6 +3,14 @@ ruby-libvirt releases
 =====================
 
 
+0.8.3 (2024-05-13)
+==================
+
+* Fix runtime warnings with Ruby >= 3.2
+* Improve build system
+* Improve website
+
+
 0.8.2 (2024-02-09)
 ==================
 
