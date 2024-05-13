@@ -8,7 +8,7 @@ gitlab:
 
 targets:
 
-  almalinux-8:
+  almalinux-9:
     projects:
       - libvirt-ruby
       - libvirt+minimal
