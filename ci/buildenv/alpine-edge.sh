@@ -19,7 +19,7 @@ function install_buildenv() {
         ruby-dev \
         ruby-rake \
         zip
-    apk list | sort > /packages.txt
+    apk list --installed | sort > /packages.txt
     mkdir -p /usr/libexec/ccache-wrappers
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/gcc

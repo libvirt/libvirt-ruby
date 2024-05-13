@@ -27,8 +27,6 @@ targets:
       - arch: x86_64
         allow-failure: true
 
-  centos-stream-8: x86_64
-
   centos-stream-9: x86_64
 
   debian-11: x86_64
@@ -40,9 +38,9 @@ targets:
       - arch: x86_64
         allow-failure: true
 
-  fedora-38: x86_64
-
   fedora-39: x86_64
+
+  fedora-40: x86_64
 
   freebsd-13: x86_64
 
@@ -72,6 +70,6 @@ targets:
           DIST: skip
           RPM: skip
 
-  ubuntu-2004: x86_64
-
   ubuntu-2204: x86_64
+
+  ubuntu-2404: x86_64

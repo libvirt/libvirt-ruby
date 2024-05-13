@@ -51,17 +51,6 @@ x86_64-alpine-edge:
     TARGET_BASE_IMAGE: docker.io/library/alpine:edge
 
 
-x86_64-centos-stream-8:
-  extends: .native_build_job
-  needs:
-    - job: x86_64-centos-stream-8-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: centos-stream-8
-    TARGET_BASE_IMAGE: quay.io/centos/centos:stream8
-
-
 x86_64-centos-stream-9:
   extends: .native_build_job
   needs:
@@ -106,17 +95,6 @@ x86_64-debian-sid:
     TARGET_BASE_IMAGE: docker.io/library/debian:sid-slim
 
 
-x86_64-fedora-38:
-  extends: .native_build_job
-  needs:
-    - job: x86_64-fedora-38-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: fedora-38
-    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:38
-
-
 x86_64-fedora-39:
   extends: .native_build_job
   needs:
@@ -126,6 +104,17 @@ x86_64-fedora-39:
   variables:
     NAME: fedora-39
     TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:39
+
+
+x86_64-fedora-40:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-fedora-40-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: fedora-40
+    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:40
 
 
 x86_64-fedora-rawhide:
@@ -165,17 +154,6 @@ x86_64-opensuse-tumbleweed:
     TARGET_BASE_IMAGE: registry.opensuse.org/opensuse/tumbleweed:latest
 
 
-x86_64-ubuntu-2004:
-  extends: .native_build_job
-  needs:
-    - job: x86_64-ubuntu-2004-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: ubuntu-2004
-    TARGET_BASE_IMAGE: docker.io/library/ubuntu:20.04
-
-
 x86_64-ubuntu-2204:
   extends: .native_build_job
   needs:
@@ -187,6 +165,17 @@ x86_64-ubuntu-2204:
     TARGET_BASE_IMAGE: docker.io/library/ubuntu:22.04
 
 
+x86_64-ubuntu-2404:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-ubuntu-2404-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: ubuntu-2404
+    TARGET_BASE_IMAGE: docker.io/library/ubuntu:24.04
+
+
 # Native cirrus build jobs
 
 x86_64-freebsd-13:
@@ -194,7 +183,7 @@ x86_64-freebsd-13:
   needs: []
   allow_failure: false
   variables:
-    CIRRUS_VM_IMAGE_NAME: freebsd-13-2
+    CIRRUS_VM_IMAGE_NAME: freebsd-13-3
     CIRRUS_VM_IMAGE_SELECTOR: image_family
     CIRRUS_VM_INSTANCE_TYPE: freebsd_instance
     INSTALL_COMMAND: pkg install -y
