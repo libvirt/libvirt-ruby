@@ -1,9 +1,5 @@
 require 'mkmf'
 
-RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
-RbConfig::MAKEFILE_CONFIG['CCDLFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
-RbConfig::MAKEFILE_CONFIG['EXTDLDFLAGS'] = ENV['CFLAGS'] if ENV['CFLAGS']
-
 extension_name = '_libvirt'
 
 unless pkg_config("libvirt")
