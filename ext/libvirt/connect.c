@@ -2742,6 +2742,8 @@ void ruby_libvirt_connect_init(void)
 {
     c_connect = rb_define_class_under(m_libvirt, "Connect", rb_cObject);
     rb_undef_alloc_func(c_connect);
+    rb_define_singleton_method(c_connect, "new",
+                               ruby_libvirt_new_not_allowed, -1);
 
     /*
      * Class Libvirt::Connect::Nodeinfo

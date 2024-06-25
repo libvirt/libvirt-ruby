@@ -491,3 +491,14 @@ int ruby_libvirt_get_maxcpus(virConnectPtr conn)
 
     return maxcpu;
 }
+
+/* For classes where Ruby objects are just wrappers around C pointers,
+ * the only acceptable way to create new instances is to use
+ * Connect.create_domain_xml and similar. The use of Domain.new and
+ * friends is explicitly disallowed by providing this functions as
+ * implementation when defining the class
+ */
+VALUE ruby_libvirt_new_not_allowed(int argc, VALUE *argv, VALUE obj)
+{
+    rb_raise(rb_eTypeError, "Not allowed for this class");
+}

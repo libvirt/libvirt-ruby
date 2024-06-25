@@ -4064,6 +4064,8 @@ void ruby_libvirt_domain_init(void)
 {
     c_domain = rb_define_class_under(m_libvirt, "Domain", rb_cObject);
     rb_undef_alloc_func(c_domain);
+    rb_define_singleton_method(c_domain, "new",
+                               ruby_libvirt_new_not_allowed, -1);
 
     rb_define_const(c_domain, "NOSTATE", INT2NUM(VIR_DOMAIN_NOSTATE));
     rb_define_const(c_domain, "RUNNING", INT2NUM(VIR_DOMAIN_RUNNING));
@@ -4390,6 +4392,8 @@ void ruby_libvirt_domain_init(void)
      */
     c_domain_snapshot = rb_define_class_under(c_domain, "Snapshot", rb_cObject);
     rb_undef_alloc_func(c_domain_snapshot);
+    rb_define_singleton_method(c_domain_snapshot, "new",
+                               ruby_libvirt_new_not_allowed, -1);
 
     rb_define_const(c_domain_snapshot, "DELETE_CHILDREN",
                     INT2NUM(VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN));

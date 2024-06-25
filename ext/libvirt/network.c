@@ -330,6 +330,8 @@ void ruby_libvirt_network_init(void)
 {
     c_network = rb_define_class_under(m_libvirt, "Network", rb_cObject);
     rb_undef_alloc_func(c_network);
+    rb_define_singleton_method(c_network, "new",
+                               ruby_libvirt_new_not_allowed, -1);
 
     rb_define_attr(c_network, "connection", 1, 0);
 

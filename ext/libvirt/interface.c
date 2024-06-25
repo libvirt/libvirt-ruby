@@ -175,6 +175,8 @@ void ruby_libvirt_interface_init(void)
 {
     c_interface = rb_define_class_under(m_libvirt, "Interface", rb_cObject);
     rb_undef_alloc_func(c_interface);
+    rb_define_singleton_method(c_interface, "new",
+                               ruby_libvirt_new_not_allowed, -1);
 
     rb_define_const(c_interface, "XML_INACTIVE",
                     INT2NUM(VIR_INTERFACE_XML_INACTIVE));

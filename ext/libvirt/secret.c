@@ -231,6 +231,8 @@ void ruby_libvirt_secret_init(void)
 {
     c_secret = rb_define_class_under(m_libvirt, "Secret", rb_cObject);
     rb_undef_alloc_func(c_secret);
+    rb_define_singleton_method(c_secret, "new",
+                               ruby_libvirt_new_not_allowed, -1);
 
     rb_define_attr(c_secret, "connection", 1, 0);
 

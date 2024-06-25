@@ -268,6 +268,8 @@ struct ruby_libvirt_str_new2_and_ary_store_arg {
 };
 VALUE ruby_libvirt_str_new2_and_ary_store_wrap(VALUE arg);
 
+VALUE ruby_libvirt_new_not_allowed(int argc, VALUE *argv, VALUE obj);
+
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(ar) (RARRAY(ar)->len)
 #endif
