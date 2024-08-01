@@ -3,6 +3,12 @@ ruby-libvirt releases
 =====================
 
 
+0.8.4 (2024-08-01)
+==================
+
+* Explicitly disallow use of ``new`` for wrapper classes
+
+
 0.8.3 (2024-05-13)
 ==================
 

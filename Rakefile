@@ -16,7 +16,7 @@ require 'rdoc/task'
 require 'rubygems/package_task'
 
 PKG_NAME='ruby-libvirt'
-PKG_VERSION='0.8.3'
+PKG_VERSION='0.8.4'
 
 EXT_DIR = "ext/libvirt"
 EXTCONF = "#{EXT_DIR}/extconf.rb"
