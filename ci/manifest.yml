@@ -1,6 +1,6 @@
 projects:
   - libvirt-ruby
-  - libvirt+dist
+  - https://gitlab.com/libvirt/libvirt/-/raw/master/ci/lcitool/projects/libvirt+dist.yml
 
 gitlab:
   namespace: libvirt
@@ -11,8 +11,8 @@ targets:
   almalinux-9:
     projects:
       - libvirt-ruby
-      - libvirt+minimal
-      - libvirt+dist
+      - https://gitlab.com/libvirt/libvirt/-/raw/master/ci/lcitool/projects/libvirt+minimal.yml
+      - https://gitlab.com/libvirt/libvirt/-/raw/master/ci/lcitool/projects/libvirt+dist.yml
 
     jobs:
       - arch: x86_64
@@ -50,8 +50,6 @@ targets:
   freebsd-13: x86_64
 
   freebsd-14: x86_64
-
-  macos-13: aarch64
 
   macos-14: aarch64
 
