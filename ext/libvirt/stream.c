@@ -87,8 +87,10 @@ static VALUE libvirt_stream_recv(VALUE s, VALUE bytes)
     data = alloca(sizeof(char) * NUM2INT(bytes));
 
     ret = virStreamRecv(ruby_libvirt_stream_get(s), data, NUM2INT(bytes));
-    ruby_libvirt_raise_error_if(ret < 0, e_RetrieveError, "virStreamRecv",
+    ruby_libvirt_raise_error_if(ret == -1, e_RetrieveError, "virStreamRecv",
                                 ruby_libvirt_connect_get(s));
+    ruby_libvirt_raise_error_if(ret == -2, e_AgainError, "virStreamRecv",
+				ruby_libvirt_connect_get(s));
 
     result = rb_ary_new2(2);
 

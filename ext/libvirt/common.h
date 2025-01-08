@@ -165,6 +165,7 @@ void ruby_libvirt_raise_error_if(const int condition, VALUE error,
 int ruby_libvirt_is_symbol_or_proc(VALUE handle);
 
 extern VALUE e_RetrieveError;
+extern VALUE e_AgainError;
 extern VALUE e_Error;
 extern VALUE e_DefinitionError;
 extern VALUE e_NoSupportError;

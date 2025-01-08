@@ -49,6 +49,7 @@ VALUE m_libvirt;
 static VALUE e_ConnectionError;         /* ConnectionError - error during connection establishment */
 VALUE e_DefinitionError;
 VALUE e_RetrieveError;
+VALUE e_AgainError;
 VALUE e_Error;
 VALUE e_NoSupportError;
 
@@ -735,6 +736,8 @@ void Init__libvirt(void)
                                               e_Error);
     e_RetrieveError =   rb_define_class_under(m_libvirt, "RetrieveError",
                                               e_Error);
+    e_AgainError =      rb_define_class_under(m_libvirt, "AgainError",
+					      e_Error);
     e_NoSupportError =  rb_define_class_under(m_libvirt, "NoSupportError",
                                               e_Error);
 
