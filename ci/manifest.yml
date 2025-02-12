@@ -38,9 +38,9 @@ targets:
       - arch: x86_64
         allow-failure: true
 
-  fedora-39: x86_64
-
   fedora-40: x86_64
+
+  fedora-41: x86_64
 
   fedora-rawhide:
     jobs:
