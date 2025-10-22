@@ -583,13 +583,13 @@ static VALUE libvirt_domain_block_stats(VALUE d, VALUE path)
  */
 static VALUE libvirt_domain_memory_stats(int argc, VALUE *argv, VALUE d)
 {
-    virDomainMemoryStatStruct stats[6];
+    virDomainMemoryStatStruct stats[13];
     int i, r;
     VALUE result, flags, tmp;
 
     rb_scan_args(argc, argv, "01", &flags);
 
-    r = virDomainMemoryStats(ruby_libvirt_domain_get(d), stats, 6,
+    r = virDomainMemoryStats(ruby_libvirt_domain_get(d), stats, 13,
                              ruby_libvirt_value_to_uint(flags));
     ruby_libvirt_raise_error_if(r < 0, e_RetrieveError, "virDomainMemoryStats",
                                 ruby_libvirt_connect_get(d));
@@ -4377,6 +4377,16 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_ACTUAL_BALLOON));
     rb_define_const(c_domain_memory_stats, "RSS",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_RSS));
+    rb_define_const(c_domain_memory_stats, "USABLE",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_USABLE));
+    rb_define_const(c_domain_memory_stats, "LAST_UPDATE",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_LAST_UPDATE));
+    rb_define_const(c_domain_memory_stats, "DISK_CACHES",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_DISK_CACHES));
+    rb_define_const(c_domain_memory_stats, "HUGETLB_PGALLOC",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_HUGETLB_PGALLOC));
+    rb_define_const(c_domain_memory_stats, "HUGETLB_PGFAIL",
+                    INT2NUM(VIR_DOMAIN_MEMORY_STAT_HUGETLB_PGFAIL));
 
     /*
      * Class Libvirt::Domain::BlockInfo
