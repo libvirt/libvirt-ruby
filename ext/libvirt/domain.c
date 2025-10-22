@@ -4359,7 +4359,7 @@ void ruby_libvirt_domain_init(void)
     c_domain_memory_stats = rb_define_class_under(c_domain, "MemoryStats",
                                                   rb_cObject);
     rb_define_attr(c_domain_memory_stats, "tag", 1, 0);
-    rb_define_attr(c_domain_memory_stats, "value", 1, 0);
+    rb_define_attr(c_domain_memory_stats, "val", 1, 0);
 
     rb_define_const(c_domain_memory_stats, "SWAP_IN",
                     INT2NUM(VIR_DOMAIN_MEMORY_STAT_SWAP_IN));
