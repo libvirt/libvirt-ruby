@@ -8,7 +8,9 @@ gitlab:
 
 targets:
 
-  almalinux-9:
+  almalinux-9: x86_64
+
+  almalinux-10:
     projects:
       - libvirt-ruby
       - https://gitlab.com/libvirt/libvirt/-/raw/master/ci/lcitool/projects/libvirt+minimal.yml
@@ -20,7 +22,9 @@ targets:
         template: .native_git_build_job
         suffix: -git
 
-  alpine-319: x86_64
+  alpine-322: x86_64
+
+  alpine-323: x86_64
 
   alpine-edge:
     jobs:
@@ -29,18 +33,20 @@ targets:
 
   centos-stream-9: x86_64
 
-  debian-11: x86_64
+  centos-stream-10: x86_64
 
   debian-12: x86_64
+
+  debian-13: x86_64
 
   debian-sid:
     jobs:
       - arch: x86_64
         allow-failure: true
 
-  fedora-40: x86_64
+  fedora-42: x86_64
 
-  fedora-41: x86_64
+  fedora-43: x86_64
 
   fedora-rawhide:
     jobs:

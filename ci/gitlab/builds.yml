@@ -18,26 +18,48 @@ x86_64-almalinux-9:
     TARGET_BASE_IMAGE: docker.io/library/almalinux:9
 
 
-x86_64-almalinux-9-git:
-  extends: .native_git_build_job
-  needs:
-    - job: x86_64-almalinux-9-container
-      optional: true
-  allow_failure: false
-  variables:
-    NAME: almalinux-9
-    TARGET_BASE_IMAGE: docker.io/library/almalinux:9
-
-
-x86_64-alpine-319:
+x86_64-almalinux-10:
   extends: .native_build_job
   needs:
-    - job: x86_64-alpine-319-container
+    - job: x86_64-almalinux-10-container
       optional: true
   allow_failure: false
   variables:
-    NAME: alpine-319
-    TARGET_BASE_IMAGE: docker.io/library/alpine:3.19
+    NAME: almalinux-10
+    TARGET_BASE_IMAGE: docker.io/library/almalinux:10
+
+
+x86_64-almalinux-10-git:
+  extends: .native_git_build_job
+  needs:
+    - job: x86_64-almalinux-10-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: almalinux-10
+    TARGET_BASE_IMAGE: docker.io/library/almalinux:10
+
+
+x86_64-alpine-322:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-alpine-322-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: alpine-322
+    TARGET_BASE_IMAGE: docker.io/library/alpine:3.22
+
+
+x86_64-alpine-323:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-alpine-323-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: alpine-323
+    TARGET_BASE_IMAGE: docker.io/library/alpine:3.23
 
 
 x86_64-alpine-edge:
@@ -62,15 +84,15 @@ x86_64-centos-stream-9:
     TARGET_BASE_IMAGE: quay.io/centos/centos:stream9
 
 
-x86_64-debian-11:
+x86_64-centos-stream-10:
   extends: .native_build_job
   needs:
-    - job: x86_64-debian-11-container
+    - job: x86_64-centos-stream-10-container
       optional: true
   allow_failure: false
   variables:
-    NAME: debian-11
-    TARGET_BASE_IMAGE: docker.io/library/debian:11-slim
+    NAME: centos-stream-10
+    TARGET_BASE_IMAGE: quay.io/centos/centos:stream10
 
 
 x86_64-debian-12:
@@ -84,6 +106,17 @@ x86_64-debian-12:
     TARGET_BASE_IMAGE: docker.io/library/debian:12-slim
 
 
+x86_64-debian-13:
+  extends: .native_build_job
+  needs:
+    - job: x86_64-debian-13-container
+      optional: true
+  allow_failure: false
+  variables:
+    NAME: debian-13
+    TARGET_BASE_IMAGE: docker.io/library/debian:13-slim
+
+
 x86_64-debian-sid:
   extends: .native_build_job
   needs:
@@ -95,26 +128,26 @@ x86_64-debian-sid:
     TARGET_BASE_IMAGE: docker.io/library/debian:sid-slim
 
 
-x86_64-fedora-40:
+x86_64-fedora-42:
   extends: .native_build_job
   needs:
-    - job: x86_64-fedora-40-container
+    - job: x86_64-fedora-42-container
       optional: true
   allow_failure: false
   variables:
-    NAME: fedora-40
-    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:40
+    NAME: fedora-42
+    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:42
 
 
-x86_64-fedora-41:
+x86_64-fedora-43:
   extends: .native_build_job
   needs:
-    - job: x86_64-fedora-41-container
+    - job: x86_64-fedora-43-container
       optional: true
   allow_failure: false
   variables:
-    NAME: fedora-41
-    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:41
+    NAME: fedora-43
+    TARGET_BASE_IMAGE: registry.fedoraproject.org/fedora:43
 
 
 x86_64-fedora-rawhide:
@@ -184,7 +217,7 @@ x86_64-freebsd-13:
   allow_failure:
     exit_codes: 3
   variables:
-    CIRRUS_VM_IMAGE_NAME: freebsd-13-4
+    CIRRUS_VM_IMAGE_NAME: freebsd-13-5
     CIRRUS_VM_IMAGE_SELECTOR: image_family
     CIRRUS_VM_INSTANCE_TYPE: freebsd_instance
     INSTALL_COMMAND: pkg install -y
@@ -199,7 +232,7 @@ x86_64-freebsd-14:
   allow_failure:
     exit_codes: 3
   variables:
-    CIRRUS_VM_IMAGE_NAME: freebsd-14-2
+    CIRRUS_VM_IMAGE_NAME: freebsd-14-3
     CIRRUS_VM_IMAGE_SELECTOR: image_family
     CIRRUS_VM_INSTANCE_TYPE: freebsd_instance
     INSTALL_COMMAND: pkg install -y
