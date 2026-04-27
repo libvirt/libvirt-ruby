@@ -4139,6 +4139,12 @@ void ruby_libvirt_domain_init(void)
                     INT2NUM(VIR_DOMAIN_START_BYPASS_CACHE));
     rb_define_const(c_domain, "START_FORCE_BOOT",
                     INT2NUM(VIR_DOMAIN_START_FORCE_BOOT));
+    rb_define_const(c_domain, "START_VALIDATE",
+                    INT2NUM(VIR_DOMAIN_START_VALIDATE));
+#if LIBVIR_CHECK_VERSION(8, 1, 0)
+    rb_define_const(c_domain, "START_RESET_NVRAM",
+                    INT2NUM(VIR_DOMAIN_START_RESET_NVRAM));
+#endif
 
     rb_define_const(c_domain, "DUMP_CRASH", INT2NUM(VIR_DUMP_CRASH));
     rb_define_const(c_domain, "DUMP_LIVE", INT2NUM(VIR_DUMP_LIVE));
