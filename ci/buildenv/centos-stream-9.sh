@@ -5,25 +5,25 @@
 # https://gitlab.com/libvirt/libvirt-ci
 
 function install_buildenv() {
-    dnf distro-sync -y
-    dnf install 'dnf-command(config-manager)' -y
-    dnf config-manager --set-enabled -y crb
-    dnf install -y epel-release
-    dnf install -y epel-next-release
-    dnf install -y \
-        ca-certificates \
-        ccache \
-        gcc \
-        git \
-        glibc-devel \
-        glibc-langpack-en \
-        libvirt-devel \
-        make \
-        pkgconfig \
-        rpm-build \
-        ruby-devel \
-        rubygem-rake \
-        zip
+    dnf --quiet distro-sync -y
+    dnf --quiet install 'dnf-command(config-manager)' -y
+    dnf --quiet config-manager --set-enabled -y crb
+    dnf --quiet install -y epel-release
+    dnf --quiet install -y epel-next-release
+    dnf --quiet install -y \
+                ca-certificates \
+                ccache \
+                gcc \
+                git \
+                glibc-devel \
+                glibc-langpack-en \
+                libvirt-devel \
+                make \
+                pkgconfig \
+                rpm-build \
+                ruby-devel \
+                rubygem-rake \
+                zip
     rpm -qa | sort > /packages.txt
     mkdir -p /usr/libexec/ccache-wrappers
     ln -s /usr/bin/ccache /usr/libexec/ccache-wrappers/cc

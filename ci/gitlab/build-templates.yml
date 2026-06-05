@@ -32,8 +32,9 @@
       then
         source ci/buildenv/$NAME.sh ;
         install_buildenv ;
+      else
+        cat /packages.txt ;
       fi
-    - cat /packages.txt
   variables:
     IMAGE: $CI_REGISTRY/$CONTAINER_UPSTREAM_NAMESPACE/libvirt-ruby/ci-$NAME:latest
   rules:
@@ -144,59 +145,6 @@
 
 
     ### Catch all unhandled events
-
-    # upstream+forks: that's all folks
-    - when: never
-
-
-.cirrus_build_job:
-  stage: builds
-  image: registry.gitlab.com/libvirt/libvirt-ci/cirrus-run:latest
-  interruptible: true
-  needs: []
-  script:
-    - set -o allexport
-    - source ci/cirrus/$NAME.vars
-    - set +o allexport
-    - cirrus-vars <ci/cirrus/build.yml >ci/cirrus/$NAME.yml
-    - cat ci/cirrus/$NAME.yml
-    - cirrus-run -v --show-build-log always ci/cirrus/$NAME.yml
-  rules:
-    # upstream+forks: Can't run unless Cirrus is configured
-    - if: '$CIRRUS_GITHUB_REPO == null || $CIRRUS_API_TOKEN == null'
-      when: never
-
-    # upstream: pushes to branches
-    - if: '$CI_PROJECT_NAMESPACE == $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $JOB_OPTIONAL'
-      when: manual
-      allow_failure: true
-    - if: '$CI_PROJECT_NAMESPACE == $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push"'
-      when: on_success
-
-    # forks: pushes to branches with pipeline requested (including pipeline in upstream environment)
-    - if: '$CI_PROJECT_NAMESPACE != $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $RUN_PIPELINE == "0"'
-      when: manual
-      allow_failure: true
-    - if: '$CI_PROJECT_NAMESPACE != $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $RUN_PIPELINE == "1" && $JOB_OPTIONAL'
-      when: manual
-      allow_failure: true
-    - if: '$CI_PROJECT_NAMESPACE != $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $RUN_PIPELINE == "1"'
-      when: on_success
-    - if: '$CI_PROJECT_NAMESPACE != $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $RUN_PIPELINE_UPSTREAM_ENV == "0"'
-      when: manual
-      allow_failure: true
-    - if: '$CI_PROJECT_NAMESPACE != $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $RUN_PIPELINE_UPSTREAM_ENV == "1" && $JOB_OPTIONAL'
-      when: manual
-      allow_failure: true
-    - if: '$CI_PROJECT_NAMESPACE != $RUN_UPSTREAM_NAMESPACE && $CI_PIPELINE_SOURCE == "push" && $RUN_PIPELINE_UPSTREAM_ENV == "1"'
-      when: on_success
-
-    # upstream+forks: Run pipelines on MR, web, api & scheduled
-    - if: '$CI_PIPELINE_SOURCE =~ /(web|api|schedule|merge_request_event)/ && $JOB_OPTIONAL'
-      when: manual
-      allow_failure: true
-    - if: '$CI_PIPELINE_SOURCE =~ /(web|api|schedule|merge_request_event)/'
-      when: on_success
 
     # upstream+forks: that's all folks
     - when: never

@@ -77,18 +77,18 @@ x86_64-debian-sid-container:
     NAME: debian-sid
 
 
-x86_64-fedora-42-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: fedora-42
-
-
 x86_64-fedora-43-container:
   extends: .container_job
   allow_failure: false
   variables:
     NAME: fedora-43
+
+
+x86_64-fedora-44-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: fedora-44
 
 
 x86_64-fedora-rawhide-container:
@@ -112,15 +112,15 @@ x86_64-opensuse-tumbleweed-container:
     NAME: opensuse-tumbleweed
 
 
-x86_64-ubuntu-2204-container:
-  extends: .container_job
-  allow_failure: false
-  variables:
-    NAME: ubuntu-2204
-
-
 x86_64-ubuntu-2404-container:
   extends: .container_job
   allow_failure: false
   variables:
     NAME: ubuntu-2404
+
+
+x86_64-ubuntu-2604-container:
+  extends: .container_job
+  allow_failure: false
+  variables:
+    NAME: ubuntu-2604
